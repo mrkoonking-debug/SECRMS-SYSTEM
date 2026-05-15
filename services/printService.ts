@@ -557,7 +557,11 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
     ? { label: 'ดำเนินการเสร็จสิ้น', en: 'Completed', cls: 'ok' }
     : rma.status === 'REJECTED'
       ? { label: 'ส่งคืน / ปฏิเสธ', en: 'Returned/Rejected', cls: 'warn' }
-      : { label: rma.status.replace('_', ' '), en: '', cls: 'info' };
+      : rma.status === 'REPLACED_FROM_STOCK'
+        ? { label: 'สลับของสต๊อกให้แล้ว', en: 'Stock Replacement', cls: 'ok' }
+        : rma.status === 'RETURNED_FROM_VENDOR'
+          ? { label: 'ของเคลมกลับคลังแล้ว', en: 'Restocked', cls: 'ok' }
+          : { label: rma.status.replace('_', ' '), en: '', cls: 'info' };
 
   const tableRows = rmas.map((item, index) => {
     const accList = (item.accessories || []).filter(a => a !== 'unit_only');
@@ -567,6 +571,15 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
       ? formatAction(item.resolution.actionTaken)
       : (item.status === 'REPAIRED' ? 'Completed / Replaced' : 'Checked');
 
+    // For Advance Replacement: show the STOCK S/N (replacedSerialNumber) as the primary S/N
+    // because that's what the customer actually received. The original S/N went to the vendor.
+    const isAdvanceReplacement = (item.status === 'REPLACED_FROM_STOCK' || item.status === 'RETURNED_FROM_VENDOR') 
+      && item.resolution?.replacedSerialNumber;
+    
+    const displaySN = isAdvanceReplacement
+      ? item.resolution!.replacedSerialNumber!
+      : item.serialNumber;
+
     return `
       <tr>
         <td class="align-center">${index + 1}</td>
@@ -575,10 +588,12 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
           <div class="item-desc">อาการเสีย: ${escapeHtml(item.resolution?.rootCause || '-')}</div>
           <div class="item-desc">การดำเนินการ: ${escapeHtml(actionText)}</div>
           <div class="item-desc">อุปกรณ์ที่คืน: ${escapeHtml(accString)}</div>
-          <div class="item-sn">S/N: ${escapeHtml(item.serialNumber)}</div>
-          ${item.resolution?.replacedSerialNumber
-        ? `<div class="item-sn-new">S/N ใหม่: ${escapeHtml(item.resolution.replacedSerialNumber)}</div>`
-        : ''}
+          <div class="item-sn">S/N: ${escapeHtml(displaySN)}</div>
+          ${isAdvanceReplacement
+        ? `<div class="item-desc" style="color:#8b5cf6; margin-top:4px; font-size:9.5px;">* สินค้าสลับจากสต๊อก (Advance Replacement)</div>`
+        : (item.resolution?.replacedSerialNumber
+          ? `<div class="item-sn-new">S/N ใหม่: ${escapeHtml(item.resolution.replacedSerialNumber)}</div>`
+          : '')}
         </td>
         <td></td>
       </tr>

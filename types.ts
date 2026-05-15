@@ -9,9 +9,11 @@ export enum RMAStatus {
   PENDING = 'PENDING',             // รอดำเนินการ (เพิ่งรับของมา)
   DIAGNOSING = 'DIAGNOSING',       // กำลังตรวจเช็ค/วิเคราะห์อาการ
   WAITING_PARTS = 'WAITING_PARTS', // รออะไหล่มาส่ง
+  REPLACED_FROM_STOCK = 'REPLACED_FROM_STOCK', // เบิกของในสต๊อกให้ลูกค้าแล้ว (รอของจากศูนย์)
   REPAIRED = 'REPAIRED',           // ซ่อมเสร็จแล้ว พร้อมคืน
   REJECTED = 'REJECTED',           // ปฏิเสธการเคลม (เช่น ผิดเงื่อนไข)
-  CLOSED = 'CLOSED'                // ปิดงานสมบูรณ์ (ลูกค้าได้รับของแล้ว)
+  CLOSED = 'CLOSED',               // ปิดงานสมบูรณ์ (ลูกค้าได้รับของแล้ว)
+  RETURNED_FROM_VENDOR = 'RETURNED_FROM_VENDOR' // ของเคลมกลับมาเข้าคลังแล้ว (จบงาน Advance Replacement)
 }
 
 // 2. ประเภทสินค้า (Enum)
@@ -58,6 +60,7 @@ export interface ResolutionDetails {
   technicalNotes: string;  // บันทึกเชิงเทคนิคสำหรับช่างด้วยกัน
   replacedSerialNumber?: string; // *** NEW: S/N ใหม่กรณีเปลี่ยนตัว ***
   actionDetails?: string;  // รายละเอียดการดำเนินการ เช่น "เปลี่ยน Mainboard"
+  restockCondition?: 'NEW' | 'REFURBISHED'; // *** NEW: สภาพสินค้าที่ส่งกลับมาเข้าคลัง ***
 }
 
 // 7. สาเหตุความล่าช้า (Enum)
@@ -139,8 +142,10 @@ export interface DashboardStats {
     pending: number;
     diagnosing: number;
     waitingParts: number;
+    replacedFromStock: number;
     repaired: number;
     closed: number;
+    returnedFromVendor: number;
   };
   urgentRMAs: RMA[];      // รายการงานด่วนที่ต้องรีบดู
 }

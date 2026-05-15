@@ -23,6 +23,10 @@ export const StatusBadge: React.FC<Props> = React.memo(({ status, isOverdue }) =
         return 'bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-500/20';
       case RMAStatus.WAITING_PARTS:
         return 'bg-orange-50 text-orange-600 border border-orange-100 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-500/20';
+      case RMAStatus.REPLACED_FROM_STOCK:
+        return 'bg-purple-50 text-purple-600 border border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-500/20';
+      case RMAStatus.RETURNED_FROM_VENDOR:
+        return 'bg-teal-50 text-teal-600 border border-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-500/20';
       case RMAStatus.REPAIRED:
       case RMAStatus.CLOSED:
         return 'bg-green-500 text-white shadow-md shadow-green-500/20';

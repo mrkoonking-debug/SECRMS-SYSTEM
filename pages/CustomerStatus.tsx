@@ -42,9 +42,11 @@ export const CustomerStatus: React.FC = () => {
       case RMAStatus.PENDING: return 0;
       case RMAStatus.DIAGNOSING: return 1;
       case RMAStatus.WAITING_PARTS: return 2;
+      case RMAStatus.REPLACED_FROM_STOCK: return 3; // For customer, getting replacement means it's done/ready
       case RMAStatus.REPAIRED: return 3;
-      case RMAStatus.CLOSED: return 3;
-      case RMAStatus.REJECTED: return 3;
+      case RMAStatus.RETURNED_FROM_VENDOR: return 3; // Completed state
+      case RMAStatus.CLOSED: return 4;
+      case RMAStatus.REJECTED: return 4;
       default: return 0;
     }
   };

@@ -52,11 +52,17 @@ export const translations = {
       PENDING: 'Received',
       DIAGNOSING: 'Inspecting',
       WAITING_PARTS: 'Sent to Service Center',
-      REPAIRED: 'Ready for Pickup',
-      REJECTED: 'Out of Warranty/Rejected',
+      REPLACED_FROM_STOCK: 'Replaced (Waiting Vendor)',
+      REPAIRED: 'Repaired & Ready',
+      REJECTED: 'Rejected',
       CLOSED: 'Closed',
+      RETURNED_FROM_VENDOR: 'Returned from Vendor (Restocked)',
       IN_PROGRESS: 'In Progress',
       DONE: 'Completed'
+    },
+    restockCondition: {
+      NEW: 'New Replacement',
+      REFURBISHED: 'Refurbished'
     },
     statusSteps: {
       received: 'Received',
@@ -439,11 +445,17 @@ export const translations = {
       PENDING: 'รับเรื่องแล้ว',
       DIAGNOSING: 'กำลังตรวจสอบ (ที่ร้าน)',
       WAITING_PARTS: 'ส่งเคลมศูนย์แล้ว',
-      REPAIRED: 'สินค้ากลับมาแล้ว/พร้อมส่ง',
-      REJECTED: 'ผิดเงื่อนไข/นอกประกัน',
-      CLOSED: 'ปิดงานสมบูรณ์',
+      REPLACED_FROM_STOCK: 'สลับของให้แล้ว (รอศูนย์)',
+      REPAIRED: 'แก้ไขเรียบร้อยรอส่ง',
+      REJECTED: 'ปฏิเสธการเคลม',
+      CLOSED: 'ปิดงาน',
+      RETURNED_FROM_VENDOR: 'ของเคลมกลับมาเข้าคลังแล้ว (จบงาน)',
       IN_PROGRESS: 'กำลังดำเนินการ',
       DONE: 'เสร็จสิ้น'
+    },
+    restockCondition: {
+      NEW: 'ของใหม่แกะกล่อง (New)',
+      REFURBISHED: 'ซ่อมแล้ว (Refurbished)'
     },
     statusSteps: {
       received: 'รับเรื่อง',

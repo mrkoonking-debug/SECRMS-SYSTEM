@@ -42,9 +42,11 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
     // Event-Driven Workflow
     const [showManualStatus, setShowManualStatus] = useState(false);
     const [showVendorResultPopup, setShowVendorResultPopup] = useState(false);
+    const [showAdvanceReplacementPopup, setShowAdvanceReplacementPopup] = useState(false);
+    const [advanceSerialNumber, setAdvanceSerialNumber] = useState('');
     const [showCloseSummary, setShowCloseSummary] = useState(false);
     const [showFlowFullscreen, setShowFlowFullscreen] = useState(false);
-    const [vendorForm, setVendorForm] = useState({ actionTaken: '', actionDetails: '', replacedSerialNumber: '', vendorTicketRef: '' });
+    const [vendorForm, setVendorForm] = useState({ actionTaken: '', actionDetails: '', replacedSerialNumber: '', vendorTicketRef: '', restockCondition: '' as '' | 'NEW' | 'REFURBISHED' });
 
     // Validation error state
     const [rootCauseError, setRootCauseError] = useState(false);
@@ -131,8 +133,9 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                     [RMAStatus.PENDING]: 0,
                     [RMAStatus.DIAGNOSING]: 1,
                     [RMAStatus.WAITING_PARTS]: 2,
-                    [RMAStatus.REPAIRED]: 3,
-                    [RMAStatus.CLOSED]: 4,
+                    [RMAStatus.REPLACED_FROM_STOCK]: 3,
+                    [RMAStatus.REPAIRED]: 4,
+                    [RMAStatus.CLOSED]: 5,
                 };
                 const oldLevel = statusOrder[prev.status] ?? 0;
                 const newLevel = statusOrder[value] ?? 0;
@@ -593,7 +596,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
 
                 const statusLevel: Record<string, number> = {
                     [RMAStatus.PENDING]: 0, [RMAStatus.DIAGNOSING]: 1,
-                    [RMAStatus.WAITING_PARTS]: 2, [RMAStatus.REPAIRED]: 3, [RMAStatus.CLOSED]: 4,
+                    [RMAStatus.WAITING_PARTS]: 2, [RMAStatus.REPLACED_FROM_STOCK]: 2, [RMAStatus.REPAIRED]: 3, [RMAStatus.CLOSED]: 4, [RMAStatus.RETURNED_FROM_VENDOR]: 4,
                 };
                 const level = statusLevel[s] ?? 0;
 
@@ -698,7 +701,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                 const vendorPath = pathDecided && wentThroughVendor;
                                 const statusLevel: Record<string, number> = {
                                     [RMAStatus.PENDING]: 0, [RMAStatus.DIAGNOSING]: 1,
-                                    [RMAStatus.WAITING_PARTS]: 2, [RMAStatus.REPAIRED]: 3, [RMAStatus.CLOSED]: 4,
+                                    [RMAStatus.WAITING_PARTS]: 2, [RMAStatus.REPLACED_FROM_STOCK]: 2, [RMAStatus.REPAIRED]: 3, [RMAStatus.CLOSED]: 4,
                                 };
                                 const level = statusLevel[s] ?? 0;
 
@@ -834,14 +837,18 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                 formData.status === RMAStatus.PENDING ? 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300' :
                                 formData.status === RMAStatus.DIAGNOSING ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600/40 text-blue-700 dark:text-blue-300' :
                                 formData.status === RMAStatus.WAITING_PARTS ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-600/40 text-orange-700 dark:text-orange-300' :
+                                formData.status === RMAStatus.REPLACED_FROM_STOCK ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-300 dark:border-purple-600/40 text-purple-700 dark:text-purple-300' :
                                 formData.status === RMAStatus.REPAIRED ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-600/40 text-green-700 dark:text-green-300' :
+                                formData.status === RMAStatus.RETURNED_FROM_VENDOR ? 'bg-teal-50 dark:bg-teal-900/20 border-teal-300 dark:border-teal-600/40 text-teal-700 dark:text-teal-300' :
                                 formData.status === RMAStatus.CLOSED ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-300 dark:border-purple-600/40 text-purple-700 dark:text-purple-300' :
                                 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-600/40 text-red-700 dark:text-red-300'
                             }`}>
                                 {formData.status === RMAStatus.PENDING && <AlertCircle className="w-4 h-4" />}
                                 {formData.status === RMAStatus.DIAGNOSING && <Search className="w-4 h-4" />}
                                 {formData.status === RMAStatus.WAITING_PARTS && <Package className="w-4 h-4" />}
+                                {formData.status === RMAStatus.REPLACED_FROM_STOCK && <RefreshCw className="w-4 h-4" />}
                                 {formData.status === RMAStatus.REPAIRED && <CheckCircle2 className="w-4 h-4" />}
+                                {formData.status === RMAStatus.RETURNED_FROM_VENDOR && <CheckCircle2 className="w-4 h-4" />}
                                 {formData.status === RMAStatus.CLOSED && <Lock className="w-4 h-4" />}
                                 {formData.status === RMAStatus.REJECTED && <X className="w-4 h-4" />}
                                 {t(`status.${formData.status}`)}
@@ -906,13 +913,35 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
 
                                 {formData.status === RMAStatus.WAITING_PARTS && (
                                     <>
+                                        <p className="text-[11px] text-gray-400 ml-2 mb-1">สถานะปัจจุบัน: รอศูนย์ สามารถสลับสต๊อกให้ลูกค้าก่อนได้</p>
+                                        <button type="button" onClick={() => {
+                                            setAdvanceSerialNumber('');
+                                            setShowAdvanceReplacementPopup(true);
+                                        }}
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-purple-300 dark:border-purple-600/40 bg-purple-50/50 dark:bg-purple-900/10 hover:bg-purple-100 dark:hover:bg-purple-900/20 text-purple-700 dark:text-purple-300 text-sm font-medium transition-colors mb-2">
+                                            <RefreshCw className="w-4 h-4" /> 🔄 สลับของสต๊อกให้ลูกค้าเลย (Advance Replacement)
+                                        </button>
+
                                         <p className="text-[11px] text-gray-400 ml-2 mb-1">ของกลับจากศูนย์แล้ว กดเพื่อลงข้อมูลผลจากศูนย์</p>
                                         <button type="button" onClick={() => {
-                                            setVendorForm({ actionTaken: '', actionDetails: '', replacedSerialNumber: '', vendorTicketRef: formData.resolution?.vendorTicketRef || '' });
+                                            setVendorForm({ actionTaken: '', actionDetails: '', replacedSerialNumber: '', vendorTicketRef: formData.resolution?.vendorTicketRef || '', restockCondition: '' });
                                             setShowVendorResultPopup(true);
                                         }}
                                             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50/50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium transition-colors">
                                             <PackageCheck className="w-4 h-4" /> 📥 รับของคืนจากศูนย์
+                                        </button>
+                                    </>
+                                )}
+
+                                {formData.status === RMAStatus.REPLACED_FROM_STOCK && (
+                                    <>
+                                        <p className="text-[11px] text-gray-400 ml-2 mb-1">ของกลับจากศูนย์แล้ว นำของที่ได้กลับเข้าสต๊อกคืน</p>
+                                        <button type="button" onClick={() => {
+                                            setVendorForm({ actionTaken: '', actionDetails: '', replacedSerialNumber: '', vendorTicketRef: formData.resolution?.vendorTicketRef || '', restockCondition: '' });
+                                            setShowVendorResultPopup(true);
+                                        }}
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50/50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium transition-colors">
+                                            <PackageCheck className="w-4 h-4" /> 📥 รับของคืนจากศูนย์ (เข้าคลัง)
                                         </button>
                                     </>
                                 )}
@@ -1183,6 +1212,19 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                     <input type="text" value={vendorForm.actionDetails} onChange={e => setVendorForm(p => ({ ...p, actionDetails: e.target.value }))} className="w-full px-4 py-3.5 text-sm rounded-2xl outline-none bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] text-[#1d1d1f] dark:text-white" placeholder="ระบุ..." />
                                 </div>
                             )}
+                            {formData.status === RMAStatus.REPLACED_FROM_STOCK && (
+                                <div>
+                                    <label className="block text-xs font-semibold text-teal-500 uppercase mb-1.5 ml-2 flex items-center gap-1"><PackageCheck className="w-3.5 h-3.5" /> สภาพสินค้าที่ส่งกลับมา (เข้าคลัง)</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button type="button" onClick={() => setVendorForm(p => ({ ...p, restockCondition: 'NEW' }))} className={`px-4 py-3 rounded-2xl text-sm font-medium border transition-colors ${vendorForm.restockCondition === 'NEW' ? 'bg-teal-50 dark:bg-teal-900/20 border-teal-500 text-teal-700 dark:text-teal-300' : 'bg-white dark:bg-[#2c2c2e] border-gray-200 dark:border-[#424245] text-gray-500 hover:border-teal-300'}`}>
+                                            ของใหม่แกะกล่อง (New)
+                                        </button>
+                                        <button type="button" onClick={() => setVendorForm(p => ({ ...p, restockCondition: 'REFURBISHED' }))} className={`px-4 py-3 rounded-2xl text-sm font-medium border transition-colors ${vendorForm.restockCondition === 'REFURBISHED' ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-500 text-orange-700 dark:text-orange-300' : 'bg-white dark:bg-[#2c2c2e] border-gray-200 dark:border-[#424245] text-gray-500 hover:border-orange-300'}`}>
+                                            ซ่อมแล้ว (Refurbished)
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                             <div>
                                 <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5 ml-2">เลข RMA Vendor</label>
                                 <input type="text" value={vendorForm.vendorTicketRef} onChange={e => setVendorForm(p => ({ ...p, vendorTicketRef: e.target.value }))} className="w-full px-4 py-3.5 text-sm rounded-2xl outline-none bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] text-[#1d1d1f] dark:text-white" placeholder="e.g. RMA-SYN-9988" />
@@ -1192,22 +1234,64 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                             <button onClick={() => setShowVendorResultPopup(false)} className="px-6 py-2.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">ยกเลิก</button>
                             <button onClick={() => {
                                 if (!vendorForm.actionTaken) { showToast('⚠️ กรุณาเลือกวิธีดำเนินการ', 'error'); return; }
+                                if (formData.status === RMAStatus.REPLACED_FROM_STOCK && !vendorForm.restockCondition) { showToast('⚠️ กรุณาเลือกสภาพสินค้าที่ส่งกลับมา', 'error'); return; }
                                 // Apply vendor form to resolution
                                 setFormData(prev => prev ? ({
                                     ...prev,
-                                    status: RMAStatus.REPAIRED,
+                                    status: prev.status === RMAStatus.REPLACED_FROM_STOCK ? RMAStatus.RETURNED_FROM_VENDOR : RMAStatus.REPAIRED,
                                     resolution: {
                                         ...prev.resolution!,
                                         actionTaken: vendorForm.actionTaken === 'Other' ? vendorForm.actionDetails : vendorForm.actionTaken,
                                         actionDetails: vendorForm.actionTaken === 'Replaced Component' ? vendorForm.actionDetails : (prev.resolution?.actionDetails || ''),
                                         replacedSerialNumber: vendorForm.replacedSerialNumber || (prev.resolution?.replacedSerialNumber || ''),
-                                        vendorTicketRef: vendorForm.vendorTicketRef || (prev.resolution?.vendorTicketRef || '')
+                                        vendorTicketRef: vendorForm.vendorTicketRef || (prev.resolution?.vendorTicketRef || ''),
+                                        restockCondition: vendorForm.restockCondition || undefined
                                     }
                                 }) : null);
                                 if (vendorForm.actionTaken === 'Other') setCustomAction(vendorForm.actionDetails);
                                 setShowVendorResultPopup(false);
                             }} className="px-8 py-2.5 rounded-full text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2">
                                 <Check className="w-4 h-4" /> บันทึกผล
+                            </button>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {/* ADVANCE REPLACEMENT POPUP */}
+            {showAdvanceReplacementPopup && createPortal(
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 animate-fade-in font-sans">
+                    <div className="bg-white dark:bg-[#1e1e20] w-full max-w-lg rounded-[2rem] shadow-2xl border border-purple-200 dark:border-purple-800/30 flex flex-col overflow-hidden">
+                        <div className="px-8 py-6 border-b border-purple-100 dark:border-purple-900/30 bg-purple-50/50 dark:bg-purple-900/10">
+                            <h3 className="text-xl font-bold text-purple-800 dark:text-purple-300 flex items-center gap-2">
+                                <RefreshCw className="w-6 h-6 text-purple-500" /> 🔄 สลับของสต๊อก (Advance Replacement)
+                            </h3>
+                            <p className="text-sm text-purple-600 dark:text-purple-400 mt-1">กรุณากรอก S/N ของสินค้าในสต๊อกที่จะให้ลูกค้า</p>
+                        </div>
+                        <div className="p-8 space-y-5">
+                            <div>
+                                <label className="block text-xs font-semibold text-purple-600 uppercase mb-1.5 ml-2">S/N ของใหม่ที่จะให้ลูกค้า</label>
+                                <input autoFocus type="text" value={advanceSerialNumber} onChange={e => setAdvanceSerialNumber(e.target.value)} className="w-full px-4 py-3.5 text-sm rounded-2xl outline-none bg-white dark:bg-[#2c2c2e] border border-purple-200 dark:border-purple-800/30 focus:border-purple-500 text-[#1d1d1f] dark:text-white" placeholder="สแกนหรือพิมพ์ Serial Number" />
+                            </div>
+                        </div>
+                        <div className="p-6 border-t border-purple-100 dark:border-purple-900/30 bg-purple-50/30 dark:bg-[#2c2c2e] flex justify-end gap-3">
+                            <button onClick={() => setShowAdvanceReplacementPopup(false)} className="px-6 py-2.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">ยกเลิก</button>
+                            <button onClick={() => {
+                                if (!advanceSerialNumber.trim()) { showToast('⚠️ กรุณากรอก S/N ของใหม่ที่จะให้ลูกค้า', 'error'); return; }
+                                setFormData(prev => prev ? ({
+                                    ...prev,
+                                    status: RMAStatus.REPLACED_FROM_STOCK,
+                                    resolution: {
+                                        ...prev.resolution!,
+                                        actionTaken: 'Advance Replacement',
+                                        replacedSerialNumber: advanceSerialNumber.trim(),
+                                    }
+                                }) : null);
+                                setShowAdvanceReplacementPopup(false);
+                                showToast('✅ สลับของสต๊อกสำเร็จ - บันทึก S/N ใหม่เรียบร้อย', 'success');
+                            }} className="px-8 py-2.5 rounded-full text-sm font-bold text-white bg-purple-500 hover:bg-purple-600 shadow-lg shadow-purple-500/20 transition-all flex items-center gap-2">
+                                <Check className="w-4 h-4" /> ยืนยันสลับของ
                             </button>
                         </div>
                     </div>

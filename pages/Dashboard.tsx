@@ -48,8 +48,10 @@ export const Dashboard: React.FC = () => {
             { name: 'รอดำเนินการ', value: stats.statusCounts.pending, fill: '#f59e0b' },
             { name: 'ตรวจสอบ', value: stats.statusCounts.diagnosing, fill: '#3b82f6' },
             { name: 'ส่งศูนย์', value: stats.statusCounts.waitingParts, fill: '#f97316' },
-            { name: 'แก้ไขเรียบร้อยรอส่ง', value: stats.statusCounts.repaired, fill: '#10b981' },
+            { name: 'สลับของสต๊อก', value: stats.statusCounts.replacedFromStock, fill: '#8b5cf6' },
+            { name: 'แก้ไขเรียบร้อย', value: stats.statusCounts.repaired, fill: '#10b981' },
             { name: 'ปิดงาน', value: stats.statusCounts.closed, fill: '#6b7280' },
+            { name: 'เข้าคลังคืน', value: stats.statusCounts.returnedFromVendor, fill: '#14b8a6' }, // teal-500
         ];
     }, [stats]);
 

@@ -834,23 +834,39 @@ export const MockDb = {
       throw new Error("Cannot fetch Dashboard stats. Please check your internet connection or reload the page.");
     }
 
-    // Client-side counting from loaded docs (no composite index needed)
+    // Client-side counting from loaded docs
     const now = new Date();
-    const activeDocs = teamDocs.filter(c => ![RMAStatus.CLOSED].includes(c.status));
+    // activeDocs includes everything except CLOSED, REPAIRED, and RETURNED_FROM_VENDOR
+    // if it's REPLACED_FROM_STOCK, the customer is already satisfied, so we should NOT count it as an active/overdue issue FOR THE CUSTOMER.
+    // However, the admin still needs to track it. So we keep it in activeDocs but we calculate aging differently.
+    const activeDocs = teamDocs.filter(c => ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.RETURNED_FROM_VENDOR].includes(c.status));
     const aging = { bucket0_7: 0, bucket8_15: 0, bucket15plus: 0 };
+    
     activeDocs.forEach(c => {
-      const diff = Math.floor((now.getTime() - new Date(c.createdAt).getTime()) / 86400000);
+      // If it's REPLACED_FROM_STOCK, stop the clock at the time it was replaced (we approximate by using updatedAt or history)
+      // Since history might not be perfectly parsed here, we can use the difference between now and createdAt unless it's replaced.
+      let endTime = now.getTime();
+      if (c.status === RMAStatus.REPLACED_FROM_STOCK && c.updatedAt) {
+          endTime = new Date(c.updatedAt).getTime();
+      }
+      const diff = Math.floor((endTime - new Date(c.createdAt).getTime()) / 86400000);
       if (diff <= 7) aging.bucket0_7++; else if (diff <= 15) aging.bucket8_15++; else aging.bucket15plus++;
     });
 
     const urgentRMAs = activeDocs
-      .filter(c => Math.floor((now.getTime() - new Date(c.createdAt).getTime()) / 86400000) > 15)
+      .filter(c => {
+          let endTime = now.getTime();
+          if (c.status === RMAStatus.REPLACED_FROM_STOCK && c.updatedAt) {
+              endTime = new Date(c.updatedAt).getTime();
+          }
+          return Math.floor((endTime - new Date(c.createdAt).getTime()) / 86400000) > 15;
+      })
       .slice(0, 10);
 
     // Filter CLOSED RMAs that were resolved THIS month only
     const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const resolvedThisMonth = teamDocs.filter(c => {
-      if (c.status !== RMAStatus.CLOSED) return false;
+      if (c.status !== RMAStatus.CLOSED && c.status !== RMAStatus.RETURNED_FROM_VENDOR) return false;
       const updatedDate = new Date(c.updatedAt);
       return updatedDate >= thisMonthStart;
     }).length;
@@ -860,16 +876,20 @@ export const MockDb = {
       pendingRMAs: activeDocs.length,
       resolvedThisMonth,
       criticalIssues: aging.bucket15plus,
-      revenuePipeline: teamDocs.filter(c => c.status === RMAStatus.WAITING_PARTS).length, // Count of RMAs waiting for parts
+      revenuePipeline: teamDocs.filter(c => c.status === RMAStatus.WAITING_PARTS || c.status === RMAStatus.REPLACED_FROM_STOCK).length,
       avgTurnaroundHours: (() => {
-        const closedDocs = teamDocs.filter(c => c.status === RMAStatus.CLOSED && c.createdAt && c.updatedAt);
-        if (closedDocs.length === 0) return 0;
-        const totalHours = closedDocs.reduce((sum, c) => {
+        const completedDocs = teamDocs.filter(c => 
+            (c.status === RMAStatus.CLOSED || c.status === RMAStatus.REPLACED_FROM_STOCK || c.status === RMAStatus.RETURNED_FROM_VENDOR) && c.createdAt && c.updatedAt
+        );
+        if (completedDocs.length === 0) return 0;
+        const totalHours = completedDocs.reduce((sum, c) => {
           const created = new Date(c.createdAt).getTime();
+          // For REPLACED_FROM_STOCK and RETURNED_FROM_VENDOR, the turnaround ends when they got the stock unit. 
+          // We use updatedAt.
           const updated = new Date(c.updatedAt).getTime();
           return sum + Math.max(0, (updated - created) / 3600000);
         }, 0);
-        return Math.round(totalHours / closedDocs.length);
+        return Math.round(totalHours / completedDocs.length);
       })(),
       overdueCount: aging.bucket15plus,
       agingBuckets: aging,
@@ -877,8 +897,10 @@ export const MockDb = {
         pending: teamDocs.filter(c => c.status === RMAStatus.PENDING).length,
         diagnosing: teamDocs.filter(c => c.status === RMAStatus.DIAGNOSING).length,
         waitingParts: teamDocs.filter(c => c.status === RMAStatus.WAITING_PARTS).length,
+        replacedFromStock: teamDocs.filter(c => c.status === RMAStatus.REPLACED_FROM_STOCK).length,
         repaired: teamDocs.filter(c => c.status === RMAStatus.REPAIRED).length,
         closed: teamDocs.filter(c => c.status === RMAStatus.CLOSED).length,
+        returnedFromVendor: teamDocs.filter(c => c.status === RMAStatus.RETURNED_FROM_VENDOR).length,
       },
       urgentRMAs
     };

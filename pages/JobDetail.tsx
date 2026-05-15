@@ -26,6 +26,11 @@ export const JobDetail: React.FC = () => {
     // Shipment Tag Modal state
     const [isShipmentTagModalOpen, setIsShipmentTagModalOpen] = useState(false);
     const [shipmentTagTarget, setShipmentTagTarget] = useState<'CUSTOMER' | 'DISTRIBUTOR'>('CUSTOMER');
+    const [shipmentTagRmas, setShipmentTagRmas] = useState<RMA[]>([]); // Selected RMAs for shipment tag
+
+    // Distributor Picker state (appears before ShipmentTagModal when multiple distributors)
+    const [showDistributorPicker, setShowDistributorPicker] = useState(false);
+    const [selectedDistRmas, setSelectedDistRmas] = useState<Set<string>>(new Set());
 
     // Document Preview Popup state
     const [docPreviewHtml, setDocPreviewHtml] = useState<string | null>(null);
@@ -250,7 +255,7 @@ export const JobDetail: React.FC = () => {
     if (loading) return <div className="p-12 text-center">Loading Job...</div>;
     if (!jobInfo) return null;
 
-    const closedRMAs = rmas.filter(rma => rma.status === RMAStatus.CLOSED);
+    const closedRMAs = rmas.filter(rma => rma.status === RMAStatus.CLOSED || rma.status === RMAStatus.REPAIRED || rma.status === RMAStatus.REPLACED_FROM_STOCK || rma.status === RMAStatus.RETURNED_FROM_VENDOR);
     const hasClosedRMAs = closedRMAs.length > 0;
     const allHaveDistributor = rmas.every(rma => rma.distributor && rma.distributor.trim() !== '' && rma.distributor !== 'Pending Staff Input');
     const missingDistributorCount = rmas.filter(rma => !rma.distributor || rma.distributor.trim() === '' || rma.distributor === 'Pending Staff Input').length;
@@ -284,11 +289,11 @@ export const JobDetail: React.FC = () => {
                                 <div className="flex gap-2">
                                     <div className="flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium border border-green-100 dark:border-green-900/30">
                                         <CheckCircle2 className="w-3 h-3" />
-                                        {rmas.filter(c => c.status === RMAStatus.CLOSED || c.status === RMAStatus.REPAIRED).length} {t('track.doneBadge')}
+                                        {rmas.filter(c => c.status === RMAStatus.CLOSED || c.status === RMAStatus.REPAIRED || c.status === RMAStatus.REPLACED_FROM_STOCK || c.status === RMAStatus.RETURNED_FROM_VENDOR).length} {t('track.doneBadge')}
                                     </div>
                                     <div className="flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium border border-blue-100 dark:border-blue-900/30">
                                         <Clock className="w-3 h-3" />
-                                        {rmas.filter(c => c.status !== RMAStatus.CLOSED && c.status !== RMAStatus.REPAIRED).length} {t('track.activeBadge')}
+                                        {rmas.filter(c => c.status !== RMAStatus.CLOSED && c.status !== RMAStatus.REPAIRED && c.status !== RMAStatus.REPLACED_FROM_STOCK && c.status !== RMAStatus.RETURNED_FROM_VENDOR).length} {t('track.activeBadge')}
                                     </div>
                                 </div>
                             </div>
@@ -331,7 +336,19 @@ export const JobDetail: React.FC = () => {
 
                         {/* Bottom-Left: ใบปะหน้า (ศูนย์) */}
                         <button
-                            onClick={() => { setShipmentTagTarget('DISTRIBUTOR'); setIsShipmentTagModalOpen(true); }}
+                            onClick={() => {
+                                const distributorGroups = new Set(rmas.map(r => r.distributor || '').filter(Boolean));
+                                if (distributorGroups.size > 1) {
+                                    // Multiple distributors — show picker
+                                    setSelectedDistRmas(new Set(rmas.map(r => r.id)));
+                                    setShowDistributorPicker(true);
+                                } else {
+                                    // Single distributor — go straight to label
+                                    setShipmentTagRmas(rmas);
+                                    setShipmentTagTarget('DISTRIBUTOR');
+                                    setIsShipmentTagModalOpen(true);
+                                }
+                            }}
                             disabled={!allHaveDistributor}
                             className={`h-11 flex items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-all ${allHaveDistributor
                                 ? 'border border-orange-300 dark:border-orange-500/30 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:scale-[1.02] active:scale-95'
@@ -344,7 +361,7 @@ export const JobDetail: React.FC = () => {
 
                         {/* Bottom-Right: ใบปะหน้า (ลูกค้า) */}
                         <button
-                            onClick={() => { setShipmentTagTarget('CUSTOMER'); setIsShipmentTagModalOpen(true); }}
+                            onClick={() => { setShipmentTagRmas(closedRMAs); setShipmentTagTarget('CUSTOMER'); setIsShipmentTagModalOpen(true); }}
                             disabled={!hasClosedRMAs}
                             className={`h-11 flex items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-all ${hasClosedRMAs
                                 ? 'border border-blue-300 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:scale-[1.02] active:scale-95'
@@ -592,13 +609,123 @@ export const JobDetail: React.FC = () => {
                 })}
             </div>
 
+            {/* Distributor Picker Modal — Choose which items to create shipping label for */}
+            {showDistributorPicker && (() => {
+                const distGrouped: Record<string, RMA[]> = {};
+                for (const r of rmas) {
+                    const key = r.distributor || 'Unknown';
+                    if (!distGrouped[key]) distGrouped[key] = [];
+                    distGrouped[key].push(r);
+                }
+                const distributorNames = Object.keys(distGrouped);
+                const selectedRmasArr = rmas.filter(r => selectedDistRmas.has(r.id));
+                const selectedDistributors = [...new Set(selectedRmasArr.map(r => r.distributor || 'Unknown'))];
+
+                return (
+                    <div className="fixed inset-0 z-[55] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                        <div className="bg-white dark:bg-[#1c1c1e] w-full max-w-lg rounded-2xl shadow-2xl border border-gray-200 dark:border-[#333] flex flex-col max-h-[80vh] overflow-hidden">
+                            {/* Header */}
+                            <div className="px-6 py-5 border-b border-gray-200 dark:border-[#333] bg-orange-50/50 dark:bg-orange-900/10">
+                                <h3 className="text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2">
+                                    <Truck className="w-5 h-5 text-orange-500" /> เลือกรายการที่จะพิมพ์ใบปะหน้า
+                                </h3>
+                                <p className="text-sm text-gray-500 mt-1">เลือกศูนย์ที่ต้องการ — เลือกหลายศูนย์ได้ ระบบจะสร้างใบปะหน้าแยกให้ทีละศูนย์</p>
+                            </div>
+
+                            {/* Content */}
+                            <div className="p-6 overflow-y-auto flex-1 space-y-4">
+                                {distributorNames.map(distName => {
+                                    const items = distGrouped[distName];
+                                    const allSelected = items.every(r => selectedDistRmas.has(r.id));
+
+                                    return (
+                                        <div key={distName} className={`rounded-xl border-2 transition-all ${allSelected ? 'border-orange-400 dark:border-orange-500/60 bg-orange-50/50 dark:bg-orange-900/10' : 'border-gray-200 dark:border-[#333] bg-white dark:bg-[#2c2c2e]'}`}>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const newSet = new Set(selectedDistRmas);
+                                                    if (allSelected) {
+                                                        // Deselect this group
+                                                        items.forEach(r => newSet.delete(r.id));
+                                                    } else {
+                                                        // Select this group
+                                                        items.forEach(r => newSet.add(r.id));
+                                                    }
+                                                    setSelectedDistRmas(newSet);
+                                                }}
+                                                className="w-full flex items-center gap-3 px-4 py-3"
+                                            >
+                                                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${allSelected ? 'bg-orange-500 border-orange-500 text-white' : 'border-gray-300 dark:border-gray-600'}`}>
+                                                    {allSelected && <CheckCircle2 className="w-3.5 h-3.5" />}
+                                                </div>
+                                                <div className="flex-1 text-left">
+                                                    <div className="font-bold text-sm text-[#1d1d1f] dark:text-white">{distName}</div>
+                                                    <div className="text-xs text-gray-500 mt-0.5">{items.length} รายการ</div>
+                                                </div>
+                                                <Package className="w-4 h-4 text-gray-400" />
+                                            </button>
+                                            {/* Show item details */}
+                                            <div className="px-4 pb-3 space-y-1">
+                                                {items.map(item => (
+                                                    <div key={item.id} className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 pl-8">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600 flex-shrink-0" />
+                                                        <span className="font-medium text-[#1d1d1f] dark:text-gray-300">{item.brand} {item.productModel}</span>
+                                                        <span className="text-gray-400">S/N: {item.serialNumber || '-'}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Footer */}
+                            <div className="p-4 border-t border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#2c2c2e] flex justify-between items-center gap-3">
+                                <button onClick={() => setShowDistributorPicker(false)} className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">ยกเลิก</button>
+                                <div className="text-xs text-gray-500">
+                                    {selectedDistributors.length > 1 && <span className="text-orange-500 font-medium">📄 จะสร้าง {selectedDistributors.length} ใบ (ศูนย์ละ 1 ใบ)</span>}
+                                </div>
+                                <button
+                                    disabled={selectedRmasArr.length === 0}
+                                    onClick={() => {
+                                        setShowDistributorPicker(false);
+                                        if (selectedDistributors.length <= 1) {
+                                            // Single distributor — open modal directly
+                                            setShipmentTagRmas(selectedRmasArr);
+                                            setShipmentTagTarget('DISTRIBUTOR');
+                                            setIsShipmentTagModalOpen(true);
+                                        } else {
+                                            // Multiple distributors — process the first one, queue the rest
+                                            const firstDistItems = distGrouped[selectedDistributors[0]];
+                                            const remainingDists = selectedDistributors.slice(1);
+                                            const remainingIds = new Set<string>();
+                                            remainingDists.forEach(d => distGrouped[d]?.forEach(r => remainingIds.add(r.id)));
+                                            setSelectedDistRmas(remainingIds);
+                                            setShipmentTagRmas(firstDistItems);
+                                            setShipmentTagTarget('DISTRIBUTOR');
+                                            setIsShipmentTagModalOpen(true);
+                                        }
+                                    }}
+                                    className={`px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all flex items-center gap-2 ${selectedRmasArr.length > 0 ? 'bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-500/20' : 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'}`}
+                                >
+                                    <Truck className="w-4 h-4" /> สร้างใบปะหน้า ({selectedDistributors.length > 1 ? `${selectedDistributors.length} ใบ` : `${selectedRmasArr.length} รายการ`})
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
+
             {/* Shipment Tag Modal - Appears when "Print Shipping Label" is clicked */}
             {rmas.length > 0 && (
                 <ShipmentTagModal
                     isOpen={isShipmentTagModalOpen}
-                    onClose={() => setIsShipmentTagModalOpen(false)}
-                    rma={rmas[0]}
-                    allRmas={rmas}
+                    onClose={() => {
+                        setIsShipmentTagModalOpen(false);
+                        setSelectedDistRmas(new Set());
+                    }}
+                    rma={shipmentTagRmas[0] || rmas[0]}
+                    allRmas={shipmentTagRmas.length > 0 ? shipmentTagRmas : rmas}
                     onSave={handleSaveShipmentTagData}
                     targetType={shipmentTagTarget}
                 />
