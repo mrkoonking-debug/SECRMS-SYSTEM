@@ -835,9 +835,12 @@ export const getCustomerShippingLabelHTML = async (payloads: ShippingLabelPayloa
         height: auto;
         min-height: 148mm;
         padding: 8mm;
-        margin: 0;
+        margin: 0 0 24px 0;
         position: relative;
         box-sizing: border-box;
+        background: #fff;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+        border-radius: 4px;
       }
       
       .st-container {
@@ -1092,12 +1095,15 @@ export const getCustomerShippingLabelHTML = async (payloads: ShippingLabelPayloa
         html, body { padding: 0; margin: 0; background: #fff; }
         .shipping-label { 
           width: 210mm; 
-          height: 148mm; /* Half A4 height (A5) for print */
+          height: 297mm; /* Full A4 white page */
           padding: 8mm;
           margin: 0;
           page-break-after: always;
+          box-shadow: none;
+          border-radius: 0;
         }
         .st-container {
+          width: 100%;
           border-color: #000; /* High contrast print border */
           box-shadow: none;
         }

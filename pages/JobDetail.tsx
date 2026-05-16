@@ -31,6 +31,7 @@ export const JobDetail: React.FC = () => {
     // Distributor Picker state (appears before ShipmentTagModal when multiple distributors)
     const [showDistributorPicker, setShowDistributorPicker] = useState(false);
     const [selectedDistRmas, setSelectedDistRmas] = useState<Set<string>>(new Set());
+    const [shipmentDistGroups, setShipmentDistGroups] = useState<Record<string, RMA[]> | undefined>(undefined);
 
     // Document Preview Popup state
     const [docPreviewHtml, setDocPreviewHtml] = useState<string | null>(null);
@@ -171,11 +172,11 @@ export const JobDetail: React.FC = () => {
         }
     };
 
-    const handleSaveShipmentTagData = async (customerData: any) => {
+    const handleSaveShipmentTagData = async (customerData: any, rmaIds?: string[]) => {
         if (!jobInfo || rmas.length === 0) return;
         try {
-            // Update all RMAs in this job
-            for (const rma of rmas) {
+            const rmasToUpdate = rmaIds ? rmas.filter(r => rmaIds.includes(r.id)) : rmas;
+            for (const rma of rmasToUpdate) {
                 await MockDb.updateRMA(rma.id, customerData);
             }
             await refreshRMAs();
@@ -695,13 +696,13 @@ export const JobDetail: React.FC = () => {
                                             setShipmentTagTarget('DISTRIBUTOR');
                                             setIsShipmentTagModalOpen(true);
                                         } else {
-                                            // Multiple distributors — process the first one, queue the rest
-                                            const firstDistItems = distGrouped[selectedDistributors[0]];
-                                            const remainingDists = selectedDistributors.slice(1);
-                                            const remainingIds = new Set<string>();
-                                            remainingDists.forEach(d => distGrouped[d]?.forEach(r => remainingIds.add(r.id)));
-                                            setSelectedDistRmas(remainingIds);
-                                            setShipmentTagRmas(firstDistItems);
+                                            // Multiple distributors — pass all groups to modal with tabs
+                                            const selectedGroups: Record<string, RMA[]> = {};
+                                            for (const d of selectedDistributors) {
+                                                selectedGroups[d] = distGrouped[d];
+                                            }
+                                            setShipmentDistGroups(selectedGroups);
+                                            setShipmentTagRmas(selectedRmasArr);
                                             setShipmentTagTarget('DISTRIBUTOR');
                                             setIsShipmentTagModalOpen(true);
                                         }
@@ -722,12 +723,15 @@ export const JobDetail: React.FC = () => {
                     isOpen={isShipmentTagModalOpen}
                     onClose={() => {
                         setIsShipmentTagModalOpen(false);
+                        setShowDistributorPicker(false);
                         setSelectedDistRmas(new Set());
+                        setShipmentDistGroups(undefined);
                     }}
                     rma={shipmentTagRmas[0] || rmas[0]}
                     allRmas={shipmentTagRmas.length > 0 ? shipmentTagRmas : rmas}
                     onSave={handleSaveShipmentTagData}
                     targetType={shipmentTagTarget}
+                    distributorGroups={shipmentDistGroups}
                 />
             )}
 

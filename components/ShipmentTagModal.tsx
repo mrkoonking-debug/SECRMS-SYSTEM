@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { renderHtmlToBlob } from '../services/renderToImage';
 import { X, Package, Trash2, Expand, RefreshCw, Copy, Mail, Plus, Save, Truck } from 'lucide-react';
 import { RMA, Distributor } from '../types';
@@ -7,13 +7,22 @@ import { MockDb } from '../services/mockDb';
 import { useLanguage } from '../contexts/LanguageContext';
 import { showToast } from '../services/toast';
 
+interface TabState {
+    receiverName: string;
+    contactPerson: string;
+    receiverPhone: string;
+    receiverAddress: string;
+    trackingIds: string[];
+}
+
 interface ShipmentTagModalProps {
     isOpen: boolean;
     onClose: () => void;
     rma: RMA;
     allRmas?: RMA[];
-    onSave: (customerData: any) => Promise<void>;
+    onSave: (customerData: any, rmaIds?: string[]) => Promise<void>;
     targetType: 'CUSTOMER' | 'DISTRIBUTOR';
+    distributorGroups?: Record<string, RMA[]>;
 }
 
 export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
@@ -22,7 +31,8 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
     rma,
     allRmas,
     onSave,
-    targetType
+    targetType,
+    distributorGroups
 }) => {
     const { t } = useLanguage();
 
@@ -38,43 +48,119 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
     const [isSaving, setIsSaving] = useState(false);
     const [previewHtml, setPreviewHtml] = useState<string | null>(null);
 
+    // Tabbed multi-distributor state
+    const [activeTab, setActiveTab] = useState('');
+    const [tabData, setTabData] = useState<Record<string, TabState>>({});
+    const isTabbed = !!distributorGroups && Object.keys(distributorGroups).length > 1;
+    const tabNames = isTabbed ? Object.keys(distributorGroups!) : [];
+
+    // Get current RMAs for the active tab (or all RMAs in single mode)
+    const currentRmas = isTabbed && distributorGroups
+        ? (distributorGroups[activeTab] || [])
+        : (allRmas && allRmas.length > 0 ? allRmas : [rma]);
+    const currentRma = (isTabbed && distributorGroups ? distributorGroups[activeTab]?.[0] : null) || rma;
+
+    // Switch tab: save current form state, load new tab's state
+    const handleTabChange = useCallback((newTab: string) => {
+        // Save current form to tabData
+        setTabData(prev => ({
+            ...prev,
+            [activeTab]: { receiverName, contactPerson, receiverPhone, receiverAddress, trackingIds }
+        }));
+        // Load new tab's data
+        const data = tabData[newTab];
+        if (data) {
+            setReceiverName(data.receiverName);
+            setContactPerson(data.contactPerson);
+            setReceiverPhone(data.receiverPhone);
+            setReceiverAddress(data.receiverAddress);
+            setTrackingIds(data.trackingIds);
+        }
+        setActiveTab(newTab);
+        setPreviewHtml(null);
+    }, [activeTab, receiverName, contactPerson, receiverPhone, receiverAddress, trackingIds, tabData]);
+
     useEffect(() => {
         if (isOpen) {
-            if (targetType === 'DISTRIBUTOR') {
-                // Start with RMA-saved data (from previous saves)
+            setPreviewHtml(null);
+            if (isTabbed && distributorGroups) {
+                // Tabbed mode: initialize all tabs
+                const tabs = Object.keys(distributorGroups);
+                setActiveTab(tabs[0]);
+                MockDb.getDistributors().then((distributors: Distributor[]) => {
+                    const initial: Record<string, TabState> = {};
+                    for (const distName of tabs) {
+                        const firstRma = distributorGroups[distName][0];
+                        const sc = (firstRma as any).distributorContactPerson || '';
+                        const sp = (firstRma as any).distributorPhone || '';
+                        const sa = (firstRma as any).distributorAddress || '';
+                        const match = distributors.find(d => d.value === distName);
+                        initial[distName] = {
+                            receiverName: match?.label || distName,
+                            contactPerson: (match?.contactPerson && !sc) ? match.contactPerson : sc,
+                            receiverPhone: (match?.phone && !sp) ? match.phone : sp,
+                            receiverAddress: (match?.address && !sa) ? match.address : sa,
+                            trackingIds: firstRma.trackingIds?.length ? firstRma.trackingIds : ['']
+                        };
+                    }
+                    setTabData(initial);
+                    // Load first tab into form
+                    const first = initial[tabs[0]];
+                    setReceiverName(first.receiverName);
+                    setContactPerson(first.contactPerson);
+                    setReceiverPhone(first.receiverPhone);
+                    setReceiverAddress(first.receiverAddress);
+                    setTrackingIds(first.trackingIds);
+                }).catch(() => {
+                    const initial: Record<string, TabState> = {};
+                    for (const distName of tabs) {
+                        const firstRma = distributorGroups[distName][0];
+                        initial[distName] = {
+                            receiverName: distName,
+                            contactPerson: (firstRma as any).distributorContactPerson || '',
+                            receiverPhone: (firstRma as any).distributorPhone || '',
+                            receiverAddress: (firstRma as any).distributorAddress || '',
+                            trackingIds: firstRma.trackingIds?.length ? firstRma.trackingIds : ['']
+                        };
+                    }
+                    setTabData(initial);
+                    const first = initial[tabs[0]];
+                    setReceiverName(first.receiverName);
+                    setContactPerson(first.contactPerson);
+                    setReceiverPhone(first.receiverPhone);
+                    setReceiverAddress(first.receiverAddress);
+                    setTrackingIds(first.trackingIds);
+                });
+            } else if (targetType === 'DISTRIBUTOR') {
+                // Single distributor mode (original logic)
                 const savedContact = (rma as any).distributorContactPerson || '';
                 const savedPhone = (rma as any).distributorPhone || '';
                 const savedAddress = (rma as any).distributorAddress || '';
                 setContactPerson(savedContact);
                 setReceiverPhone(savedPhone);
                 setReceiverAddress(savedAddress);
-
-                // Always fetch distributor master data to get full Thai name (label)
                 if (rma.distributor) {
-                    setReceiverName(rma.distributor); // Temporary: show short name while loading
+                    setReceiverName(rma.distributor);
                     MockDb.getDistributors().then((distributors: Distributor[]) => {
                         const match = distributors.find(d => d.value === rma.distributor);
                         if (match) {
-                            // Use full Thai company name (label) instead of short English name (value)
                             setReceiverName(match.label || rma.distributor || '');
                             if (match.contactPerson && !savedContact) setContactPerson(match.contactPerson);
                             if (match.phone && !savedPhone) setReceiverPhone(match.phone);
                             if (match.address && !savedAddress) setReceiverAddress(match.address);
                         }
-                    }).catch(() => { /* silently fail - user can still type manually */ });
+                    }).catch(() => {});
                 } else {
                     setReceiverName('');
                 }
+                setTrackingIds(rma.trackingIds?.length ? rma.trackingIds : ['']);
             } else {
                 setReceiverName(rma.customerName || '');
                 setContactPerson(rma.contactPerson || '');
                 setReceiverPhone(rma.customerPhone || '');
                 setReceiverAddress(rma.customerReturnAddress || '');
+                setTrackingIds(rma.customerTrackingIds?.length ? rma.customerTrackingIds : ['']);
             }
-            const sourceTrackingIds = targetType === 'DISTRIBUTOR' 
-                ? rma.trackingIds 
-                : rma.customerTrackingIds;
-            setTrackingIds(sourceTrackingIds && sourceTrackingIds.length > 0 ? sourceTrackingIds : ['']);
         }
     }, [isOpen, rma, targetType]);
 
@@ -124,13 +210,11 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
     const handleSaveAndPrint = async () => {
         try {
             setIsSaving(true);
+            const rmaIds = isTabbed ? currentRmas.map(r => r.id) : undefined;
+            await onSave(buildSavePayload(), rmaIds);
 
-            // 1. Save updated info to DB
-            await onSave(buildSavePayload());
-
-            // 2. Prepare payloads for print service
             const payloads: ShippingLabelPayload[] = trackingIds.map((tid, index) => ({
-                rma,
+                rma: currentRma,
                 receiverName,
                 contactPerson,
                 receiverPhone,
@@ -140,7 +224,6 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                 totalBoxes: trackingIds.length
             }));
 
-            // 3. Get HTML and show preview
             const html = await getCustomerShippingLabelHTML(payloads);
             setPreviewHtml(html);
 
@@ -159,10 +242,67 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
         }
     };
 
+    // Preview ALL distributors at once (tabbed mode only)
+    const handlePreviewAll = async () => {
+        if (!isTabbed || !distributorGroups) return;
+        try {
+            setIsSaving(true);
+            // Save current tab's form to tabData first
+            const latestTabData = {
+                ...tabData,
+                [activeTab]: { receiverName, contactPerson, receiverPhone, receiverAddress, trackingIds }
+            };
+            setTabData(latestTabData);
+
+            // Save all tabs to DB
+            for (const [distName, data] of Object.entries(latestTabData)) {
+                const distRmas = distributorGroups[distName];
+                if (!distRmas) continue;
+                const cleanIds = data.trackingIds.map(t => t.trim()).filter(Boolean);
+                const payload = {
+                    distributorContactPerson: data.contactPerson,
+                    distributorPhone: data.receiverPhone,
+                    distributorAddress: data.receiverAddress,
+                    trackingIds: cleanIds
+                };
+                await onSave(payload, distRmas.map(r => r.id));
+            }
+
+            // Build combined payloads for ALL distributors
+            const allPayloads: ShippingLabelPayload[] = [];
+            for (const [distName, data] of Object.entries(latestTabData)) {
+                const distRmas = distributorGroups[distName];
+                if (!distRmas) continue;
+                const firstRma = distRmas[0];
+                data.trackingIds.forEach((tid, index) => {
+                    allPayloads.push({
+                        rma: firstRma,
+                        receiverName: data.receiverName,
+                        contactPerson: data.contactPerson,
+                        receiverPhone: data.receiverPhone,
+                        receiverAddress: data.receiverAddress,
+                        trackingId: tid,
+                        currentBox: index + 1,
+                        totalBoxes: data.trackingIds.length
+                    });
+                });
+            }
+
+            const html = await getCustomerShippingLabelHTML(allPayloads);
+            setPreviewHtml(html);
+        } catch (error) {
+            console.error("Failed to generate preview all", error);
+            showToast('เกิดข้อผิดพลาดในการสร้าง Preview', 'error');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     const handleSaveClick = async () => {
         try {
             setIsSaving(true);
-            await onSave(buildSavePayload());
+            const rmaIds = isTabbed ? currentRmas.map(r => r.id) : undefined;
+            await onSave(buildSavePayload(), rmaIds);
             showToast('บันทึกข้อมูลสำเร็จ', 'success');
         } catch (error) {
             console.error(error);
@@ -173,10 +313,10 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
     };
 
     const handleCopyData = () => {
-        const jobId = rma.groupRequestId || rma.id;
-        const refNo = rma.quotationNumber || '-';
+        const jobId = currentRma.groupRequestId || currentRma.id;
+        const refNo = currentRma.quotationNumber || '-';
         const cleanTrackingIds = trackingIds.map(t => t.trim()).filter(Boolean);
-        const items = allRmas && allRmas.length > 0 ? allRmas : [rma];
+        const items = currentRmas;
 
         let text = `เลขที่งานเคลม (Job ID): ${jobId}\n`;
         text += `เลขอ้างอิง/ใบเสนอราคา: ${refNo}\n\n`;
@@ -233,6 +373,31 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                         <X className="w-5 h-5" />
                     </button>
                 </div>
+
+                {/* Distributor Tabs */}
+                {isTabbed && tabNames.length > 0 && (
+                    <div className="flex-shrink-0 flex items-center gap-1 px-4 md:px-6 py-2 bg-white dark:bg-[#1c1c1e] border-b border-gray-200 dark:border-[#333] overflow-x-auto">
+                        {tabNames.map((name, i) => (
+                            <button
+                                key={name}
+                                onClick={() => handleTabChange(name)}
+                                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
+                                    activeTab === name
+                                        ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20'
+                                        : 'bg-gray-100 dark:bg-[#2c2c2e] text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#3c3c3e]'
+                                }`}
+                            >
+                                <Package className="w-3.5 h-3.5" />
+                                {name}
+                                <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                                    activeTab === name ? 'bg-white/20' : 'bg-gray-200 dark:bg-gray-600'
+                                }`}>
+                                    {distributorGroups![name]?.length || 0}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {/* Content */}
                 <div className="p-4 md:p-6 overflow-y-auto flex-1 space-y-6 md:space-y-8">
@@ -366,8 +531,18 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                             disabled={isSaving}
                             className="px-6 py-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl font-medium shadow-md shadow-blue-500/20 transition-all flex items-center gap-2"
                         >
-                            <Expand className="w-4 h-4" /> Preview ใบติดหน้ากล่อง
+                            <Expand className="w-4 h-4" /> Preview {isTabbed ? `ศูนย์นี้` : 'ใบติดหน้ากล่อง'}
                         </button>
+
+                        {isTabbed && (
+                            <button
+                                onClick={handlePreviewAll}
+                                disabled={isSaving}
+                                className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl font-bold shadow-md shadow-orange-500/20 transition-all flex items-center gap-2"
+                            >
+                                <Truck className="w-4 h-4" /> Preview ทั้งหมด ({tabNames.length} ใบ)
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -411,10 +586,10 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                                 if (!previewHtml) { showToast('ไม่มีเอกสารสำหรับก็อปปี้', 'error'); return; }
                                 const blob = await renderHtmlToBlob(previewHtml);
                                 // Build text
-                                const jobId = rma.groupRequestId || rma.id;
-                                const refNo = rma.quotationNumber || '-';
+                                const jobId = currentRma.groupRequestId || currentRma.id;
+                                const refNo = currentRma.quotationNumber || '-';
                                 const cleanTrackingIds = trackingIds.map(t => t.trim()).filter(Boolean);
-                                const items = allRmas && allRmas.length > 0 ? allRmas : [rma];
+                                const items = currentRmas;
                                 let text = `เลขที่งานเคลม (Job ID): ${jobId}\n`;
                                 text += `เลขอ้างอิง/ใบเสนอราคา: ${refNo}\n\n`;
                                 text += `รายการสินค้า (${items.length} ชิ้น):\n`;
@@ -467,9 +642,9 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                     <div className="origin-top flex justify-center" style={{ zoom: 'min(0.8, calc(100vw / 850))' }}>
                         <iframe
                             id="preview-iframe"
-                            srcDoc={`<html><head><title>Preview</title></head><body style="margin:0;padding:0;background:#fff;">${previewHtml}</body></html>`}
-                            className="border-0 shadow-2xl bg-white"
-                            style={{ width: '794px', height: '1123px', minWidth: '794px' }}
+                            srcDoc={`<html><head><title>Preview</title><style>body{margin:0;padding:24px;background:#e5e7eb;}@media print{body{padding:0;margin:0;background:#fff !important;}}</style></head><body>${previewHtml}</body></html>`}
+                            className="border-0 bg-gray-200"
+                            style={{ width: '850px', height: `${isTabbed ? Math.max(1, tabNames.length) * 620 : 1123}px`, minWidth: '794px' }}
                         />
                     </div>
                 </div>
