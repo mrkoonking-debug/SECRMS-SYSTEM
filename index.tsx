@@ -23,3 +23,29 @@ root.render(
     <App />
   </React.StrictMode>
 );
+
+// ============================================
+// Auto-reload เมื่อมี version ใหม่ (ไม่ต้องกด Ctrl+Shift+R)
+// ============================================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.ready.then((registration) => {
+    registration.addEventListener('updatefound', () => {
+      const newWorker = registration.installing;
+      if (newWorker) {
+        newWorker.addEventListener('statechange', () => {
+          // เมื่อ SW ใหม่พร้อมใช้งาน → reload ทันที
+          if (newWorker.state === 'activated') {
+            window.location.reload();
+          }
+        });
+      }
+    });
+
+    // เช็ค update เมื่อกลับมาเปิดหน้าเว็บ (ไม่กิน request ตอนไม่ใช้งาน)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        registration.update();
+      }
+    });
+  });
+}

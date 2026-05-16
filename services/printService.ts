@@ -426,14 +426,12 @@ export const getImporterFormHTML = async (rmas: RMA[]): Promise<string> => {
       <tr>
         <td class="align-center">${index + 1}</td>
         <td style="padding-left: 12px;">
-          <div class="item-brand-model">${escapeHtml(item.brand)} ${escapeHtml(item.productModel)}</div>
+          <div class="item-brand-model">${escapeHtml(item.brand.toUpperCase())} | ${escapeHtml(item.productModel)} <span class="item-sn" style="display:inline; margin-left:8px;">S/N: ${escapeHtml(item.serialNumber)}</span></div>
           <div class="item-desc">อาการที่พบ: ${escapeHtml(item.resolution?.rootCause || '-')}</div>
           <div class="item-desc">อุปกรณ์ที่ส่ง: ${escapeHtml(sentString)}</div>
           ${keptString ? `<div class="item-desc" style="color:#86868b;">เก็บไว้ที่ร้าน: ${escapeHtml(keptString)}</div>` : ''}
           ${item.deviceUsername ? `<div class="item-desc" style="color:#ea580c;">User: ${escapeHtml(item.deviceUsername)} / Pass: ${escapeHtml(item.devicePassword)}</div>` : ''}
-          <div class="item-sn">S/N: ${escapeHtml(item.serialNumber)}</div>
         </td>
-        <td></td>
       </tr>
     `;
   }).join('');
@@ -454,9 +452,9 @@ export const getImporterFormHTML = async (rmas: RMA[]): Promise<string> => {
         </div>
       </div>
       
-      <div style="height: 2px; background-color: #2563eb; margin-bottom: 20px;"></div>
+      <div style="height: 2px; background-color: #2563eb; margin-bottom: 14px;"></div>
       
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
         <div>
           <div style="font-size: 24px; font-weight: 700; color: #2563eb;">ใบส่งเคลมสินค้า</div>
           <div style="font-size: 14px; color: #555; margin-top: 4px; text-transform: uppercase;">DISTRIBUTOR RMA REQUEST FORM</div>
@@ -495,8 +493,7 @@ export const getImporterFormHTML = async (rmas: RMA[]): Promise<string> => {
         <thead>
           <tr>
             <th style="width: 5%;">#</th>
-            <th class="align-left" style="width: 75%; padding-left: 12px;">รายละเอียดชิ้นส่วน/สินค้า</th>
-            <th style="width: 20%;">หมายเหตุ</th>
+            <th class="align-left" style="width: 95%; padding-left: 12px;">รายละเอียดชิ้นส่วน/สินค้า</th>
           </tr>
         </thead>
         <tbody>${tableRows}</tbody>
