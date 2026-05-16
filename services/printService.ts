@@ -565,7 +565,7 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
 
   const tableRows = rmas.map((item, index) => {
     const accList = (item.accessories || []).filter(a => a !== 'unit_only');
-    const accString = accList.length > 0 ? accList.map(a => formatAccessory(a)).join(', ') : 'Unit Only';
+    const accString = accList.length > 0 ? accList.map(a => formatAccessory(a)).join(', ') : 'ตัวเครื่องเท่านั้น';
 
     let actionText = item.resolution?.actionTaken
       ? formatAction(item.resolution.actionTaken)
