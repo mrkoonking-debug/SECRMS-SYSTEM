@@ -344,7 +344,7 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
 
     /* ── FOOTER / SIGNATURES ── */
     .footer-section {
-      margin-top: 24px;
+      margin-top: 16px;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 20px;
@@ -358,7 +358,7 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 110px;
+      min-height: 80px;
       background: #fff;
     }
     .sig-title {
@@ -367,7 +367,7 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: ${primary};
-      margin-bottom: 32px;
+      margin-bottom: 16px;
     }
     .sig-subtitle { font-size: 9px; color: #86868b; margin-bottom: 24px; }
     .sig-line { border-bottom: 1px solid #1d1d1f; margin-bottom: 6px; }
@@ -567,35 +567,31 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
     const accList = (item.accessories || []).filter(a => a !== 'unit_only');
     const accString = accList.length > 0 ? accList.map(a => formatAccessory(a)).join(', ') : 'Unit Only';
 
-    const actionText = item.resolution?.actionTaken
+    let actionText = item.resolution?.actionTaken
       ? formatAction(item.resolution.actionTaken)
       : (item.status === 'REPAIRED' ? 'Completed / Replaced' : 'Checked');
 
-    // For Advance Replacement: show the STOCK S/N (replacedSerialNumber) as the primary S/N
-    // because that's what the customer actually received. The original S/N went to the vendor.
-    const isAdvanceReplacement = (item.status === 'REPLACED_FROM_STOCK' || item.status === 'RETURNED_FROM_VENDOR') 
-      && item.resolution?.replacedSerialNumber;
-    
-    const displaySN = isAdvanceReplacement
-      ? item.resolution!.replacedSerialNumber!
-      : item.serialNumber;
+    // Advance Replacement → show as normal swap
+    const isAdvanceReplacement = (item.status === 'REPLACED_FROM_STOCK' || item.status === 'RETURNED_FROM_VENDOR');
+    if (isAdvanceReplacement) {
+      actionText = 'ศูนย์เปลี่ยนตัวใหม่ (Swap)';
+    }
+
+    // Always show original S/N — if replaced, show new S/N next to it
+    const displaySN = item.serialNumber;
+    const newSNBadge = item.resolution?.replacedSerialNumber
+      ? ` <span style="display:inline-block; margin-left:8px; padding:1px 8px; background:#dcfce7; border:1px solid #86efac; border-radius:4px; color:#166534; font-weight:600; font-size:10px;">S/N ใหม่: ${escapeHtml(item.resolution.replacedSerialNumber)}</span>`
+      : '';
 
     return `
       <tr>
         <td class="align-center">${index + 1}</td>
         <td style="padding-left: 12px;">
-          <div class="item-brand-model">${escapeHtml(item.brand)} ${escapeHtml(item.productModel)}</div>
+          <div class="item-brand-model">${escapeHtml(item.brand.toUpperCase())} | ${escapeHtml(item.productModel)} <span class="item-sn" style="display:inline; margin-left:8px;">S/N: ${escapeHtml(displaySN)}</span>${newSNBadge}</div>
           <div class="item-desc">อาการเสีย: ${escapeHtml(item.resolution?.rootCause || '-')}</div>
           <div class="item-desc">การดำเนินการ: ${escapeHtml(actionText)}</div>
           <div class="item-desc">อุปกรณ์ที่คืน: ${escapeHtml(accString)}</div>
-          <div class="item-sn">S/N: ${escapeHtml(displaySN)}</div>
-          ${isAdvanceReplacement
-        ? `<div class="item-desc" style="color:#8b5cf6; margin-top:4px; font-size:9.5px;">* สินค้าสลับจากสต๊อก (Advance Replacement)</div>`
-        : (item.resolution?.replacedSerialNumber
-          ? `<div class="item-sn-new">S/N ใหม่: ${escapeHtml(item.resolution.replacedSerialNumber)}</div>`
-          : '')}
         </td>
-        <td></td>
       </tr>
     `;
   }).join('');
@@ -616,9 +612,9 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
         </div>
       </div>
       
-      <div style="height: 2px; background-color: #2563eb; margin-bottom: 20px;"></div>
+      <div style="height: 2px; background-color: #2563eb; margin-bottom: 14px;"></div>
       
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
         <div>
           <div style="font-size: 24px; font-weight: 700; color: #2563eb;">ใบส่งคืนสินค้าเคลม</div>
           <div style="font-size: 14px; color: #555; margin-top: 4px;">Product Return Note</div>
@@ -631,7 +627,7 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
       </div>
 
       <!-- CUSTOMER INFO -->
-      <div class="party-box" style="margin-bottom: 20px;">
+      <div class="party-box" style="margin-bottom: 14px;">
         <div class="party-box-label">CUSTOMER DETAILS (ลูกค้า)</div>
         <div class="party-name">${escapeHtml(rma.customerName)}</div>
         <div class="party-detail" style="margin-top: 4px;">
@@ -650,8 +646,7 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
         <thead>
           <tr>
             <th style="width: 5%;">#</th>
-            <th class="align-left" style="width: 75%; padding-left: 12px;">รายละเอียดชิ้นส่วน/สินค้า</th>
-            <th style="width: 20%;">หมายเหตุ</th>
+            <th class="align-left" style="width: 95%; padding-left: 12px;">รายละเอียดชิ้นส่วน/สินค้า</th>
           </tr>
         </thead>
         <tbody>${tableRows}</tbody>
@@ -661,7 +656,7 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
         <span class="summary-label">รวมจำนวนสินค้า</span>
         <span class="summary-value">${rmas.length} ชิ้น</span>
       </div>
-      
+
       <div class="remarks-card">
         <div class="remarks-card-title">หมายเหตุ / Remarks</div>
         <div>1. ได้รับสินค้าข้างบนนี้เรียบร้อยแล้ว</div>
