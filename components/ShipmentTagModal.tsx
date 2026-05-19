@@ -60,25 +60,30 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
         : (allRmas && allRmas.length > 0 ? allRmas : [rma]);
     const currentRma = (isTabbed && distributorGroups ? distributorGroups[activeTab]?.[0] : null) || rma;
 
-    // Switch tab: save current form state, load new tab's state
-    const handleTabChange = useCallback((newTab: string) => {
-        // Save current form to tabData
+    // --- TABBED MODE: derive form values directly from tabData[activeTab] ---
+    // This eliminates the dual-state desync that caused fields not to update on tab switch.
+    const activeTabData = isTabbed ? tabData[activeTab] : null;
+
+    // Effective values: in tabbed mode read from tabData, otherwise from individual state
+    const effectiveReceiverName = isTabbed ? (activeTabData?.receiverName ?? '') : receiverName;
+    const effectiveContactPerson = isTabbed ? (activeTabData?.contactPerson ?? '') : contactPerson;
+    const effectiveReceiverPhone = isTabbed ? (activeTabData?.receiverPhone ?? '') : receiverPhone;
+    const effectiveReceiverAddress = isTabbed ? (activeTabData?.receiverAddress ?? '') : receiverAddress;
+    const effectiveTrackingIds = isTabbed ? (activeTabData?.trackingIds ?? ['']) : trackingIds;
+
+    // Tabbed mode field updater: writes directly to tabData[activeTab]
+    const updateTabField = useCallback((field: keyof TabState, value: any) => {
         setTabData(prev => ({
             ...prev,
-            [activeTab]: { receiverName, contactPerson, receiverPhone, receiverAddress, trackingIds }
+            [activeTab]: { ...prev[activeTab], [field]: value }
         }));
-        // Load new tab's data
-        const data = tabData[newTab];
-        if (data) {
-            setReceiverName(data.receiverName);
-            setContactPerson(data.contactPerson);
-            setReceiverPhone(data.receiverPhone);
-            setReceiverAddress(data.receiverAddress);
-            setTrackingIds(data.trackingIds);
-        }
+    }, [activeTab]);
+
+    // Switch tab: just change activeTab — data is already in tabData
+    const handleTabChange = useCallback((newTab: string) => {
         setActiveTab(newTab);
         setPreviewHtml(null);
-    }, [activeTab, receiverName, contactPerson, receiverPhone, receiverAddress, trackingIds, tabData]);
+    }, []);
 
     useEffect(() => {
         if (isOpen) {
@@ -97,9 +102,9 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                         const match = distributors.find(d => d.value === distName);
                         initial[distName] = {
                             receiverName: match?.label || distName,
-                            contactPerson: (match?.contactPerson && !sc) ? match.contactPerson : sc,
-                            receiverPhone: (match?.phone && !sp) ? match.phone : sp,
-                            receiverAddress: (match?.address && !sa) ? match.address : sa,
+                            contactPerson: match?.contactPerson || sc,
+                            receiverPhone: match?.phone || sp,
+                            receiverAddress: match?.address || sa,
                             trackingIds: firstRma.trackingIds?.length ? firstRma.trackingIds : ['']
                         };
                     }
@@ -188,20 +193,20 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
     };
 
     const buildSavePayload = () => {
-        const cleanTrackingIds = trackingIds.map(t => t.trim()).filter(Boolean);
+        const cleanTrackingIds = effectiveTrackingIds.map(t => t.trim()).filter(Boolean);
         if (targetType === 'DISTRIBUTOR') {
             return {
-                distributorContactPerson: contactPerson,
-                distributorPhone: receiverPhone,
-                distributorAddress: receiverAddress,
+                distributorContactPerson: effectiveContactPerson,
+                distributorPhone: effectiveReceiverPhone,
+                distributorAddress: effectiveReceiverAddress,
                 trackingIds: cleanTrackingIds
             };
         } else {
             return {
-                customerName: receiverName,
-                contactPerson: contactPerson,
-                customerPhone: receiverPhone,
-                customerReturnAddress: receiverAddress,
+                customerName: effectiveReceiverName,
+                contactPerson: effectiveContactPerson,
+                customerPhone: effectiveReceiverPhone,
+                customerReturnAddress: effectiveReceiverAddress,
                 customerTrackingIds: cleanTrackingIds
             };
         }
@@ -213,15 +218,15 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
             const rmaIds = isTabbed ? currentRmas.map(r => r.id) : undefined;
             await onSave(buildSavePayload(), rmaIds);
 
-            const payloads: ShippingLabelPayload[] = trackingIds.map((tid, index) => ({
+            const payloads: ShippingLabelPayload[] = effectiveTrackingIds.map((tid, index) => ({
                 rma: currentRma,
-                receiverName,
-                contactPerson,
-                receiverPhone,
-                receiverAddress,
+                receiverName: effectiveReceiverName,
+                contactPerson: effectiveContactPerson,
+                receiverPhone: effectiveReceiverPhone,
+                receiverAddress: effectiveReceiverAddress,
                 trackingId: tid,
                 currentBox: index + 1,
-                totalBoxes: trackingIds.length
+                totalBoxes: effectiveTrackingIds.length
             }));
 
             const html = await getCustomerShippingLabelHTML(payloads);
@@ -247,12 +252,8 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
         if (!isTabbed || !distributorGroups) return;
         try {
             setIsSaving(true);
-            // Save current tab's form to tabData first
-            const latestTabData = {
-                ...tabData,
-                [activeTab]: { receiverName, contactPerson, receiverPhone, receiverAddress, trackingIds }
-            };
-            setTabData(latestTabData);
+            // In tabbed mode, tabData is already up-to-date (no separate form state)
+            const latestTabData = { ...tabData };
 
             // Save all tabs to DB
             for (const [distName, data] of Object.entries(latestTabData)) {
@@ -315,7 +316,7 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
     const handleCopyData = () => {
         const jobId = currentRma.groupRequestId || currentRma.id;
         const refNo = currentRma.quotationNumber || '-';
-        const cleanTrackingIds = trackingIds.map(t => t.trim()).filter(Boolean);
+        const cleanTrackingIds = effectiveTrackingIds.map(t => t.trim()).filter(Boolean);
         const items = currentRmas;
 
         let text = `เลขที่งานเคลม (Job ID): ${jobId}\n`;
@@ -329,10 +330,10 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
             text += `   อาการที่พบ: ${item.resolution?.rootCause || '-'}\n`;
         });
 
-        text += `\nนำส่ง...${receiverName}\n`;
-        if (contactPerson) text += `ผู้ติดต่อ: ${contactPerson}\n`;
-        if (receiverAddress) text += `${receiverAddress}\n`;
-        if (receiverPhone) text += `โทร. ${receiverPhone}\n`;
+        text += `\nนำส่ง...${effectiveReceiverName}\n`;
+        if (effectiveContactPerson) text += `ผู้ติดต่อ: ${effectiveContactPerson}\n`;
+        if (effectiveReceiverAddress) text += `${effectiveReceiverAddress}\n`;
+        if (effectiveReceiverPhone) text += `โทร. ${effectiveReceiverPhone}\n`;
         text += `\nพัสดุจะปรากฏในระบบภายใน 1-3 วันทำการ\nหากยังไม่ปรากฏ กรุณาตรวจสอบอีกครั้งในวันถัดไป\n`;
 
         if (cleanTrackingIds.length > 0) {
@@ -431,8 +432,8 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                                 </label>
                                 <input
                                     type="text"
-                                    value={receiverName}
-                                    onChange={e => setReceiverName(e.target.value)}
+                                    value={effectiveReceiverName}
+                                    onChange={e => isTabbed ? updateTabField('receiverName', e.target.value) : setReceiverName(e.target.value)}
                                     className="w-full rounded-xl px-4 py-2.5 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-[#424245] outline-none font-medium"
                                     placeholder={targetType === 'DISTRIBUTOR' ? 'เช่น Synnex, SIS...' : 'ชื่อลูกค้า'}
                                 />
@@ -441,8 +442,8 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                                 <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">ผู้ติดต่อ</label>
                                 <input
                                     type="text"
-                                    value={contactPerson}
-                                    onChange={(e) => setContactPerson(e.target.value)}
+                                    value={effectiveContactPerson}
+                                    onChange={(e) => isTabbed ? updateTabField('contactPerson', e.target.value) : setContactPerson(e.target.value)}
                                     className="w-full px-4 py-2 bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#0071e3] outline-none text-[#1d1d1f] dark:text-white text-sm"
                                 />
                             </div>
@@ -450,8 +451,8 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                                 <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">เบอร์โทรติดต่อ</label>
                                 <input
                                     type="text"
-                                    value={receiverPhone}
-                                    onChange={(e) => setReceiverPhone(e.target.value)}
+                                    value={effectiveReceiverPhone}
+                                    onChange={(e) => isTabbed ? updateTabField('receiverPhone', e.target.value) : setReceiverPhone(e.target.value)}
                                     className="w-full px-4 py-2 bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#0071e3] outline-none text-[#1d1d1f] dark:text-white text-sm"
                                 />
                             </div>
@@ -459,8 +460,8 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                         <div className="mt-4">
                             <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">ที่อยู่จัดส่ง</label>
                             <textarea
-                                value={receiverAddress}
-                                onChange={(e) => setReceiverAddress(e.target.value)}
+                                value={effectiveReceiverAddress}
+                                onChange={(e) => isTabbed ? updateTabField('receiverAddress', e.target.value) : setReceiverAddress(e.target.value)}
                                 rows={3}
                                 className="w-full px-4 py-2 bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#0071e3] outline-none text-[#1d1d1f] dark:text-white text-sm resize-none"
                             />
@@ -471,15 +472,23 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
 
                     {/* Tracking IDs Section */}
                     <div>
-                        <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-white mb-4">รายการ EMS / Tracking No. ({trackingIds.length} กล่อง)</h3>
+                        <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-white mb-4">รายการ EMS / Tracking No. ({effectiveTrackingIds.length} กล่อง)</h3>
                         <div className="space-y-3">
-                            {trackingIds.map((tid, index) => (
+                            {effectiveTrackingIds.map((tid, index) => (
                                 <div key={index} className="flex items-center gap-3">
                                     <div className="text-gray-400 text-sm font-mono w-6">#{index + 1}</div>
                                     <input
                                         type="text"
                                         value={tid}
-                                        onChange={(e) => handleTrackingIdChange(index, e.target.value)}
+                                        onChange={(e) => {
+                                            if (isTabbed) {
+                                                const newIds = [...effectiveTrackingIds];
+                                                newIds[index] = e.target.value;
+                                                updateTabField('trackingIds', newIds);
+                                            } else {
+                                                handleTrackingIdChange(index, e.target.value);
+                                            }
+                                        }}
                                         placeholder="กรอก EMS / Tracking No. (เว้นว่างไว้ได้)"
                                         className="flex-1 px-4 py-2 bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#0071e3] outline-none text-[#1d1d1f] dark:text-white text-sm"
                                     />
@@ -488,7 +497,16 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                                         <button className="p-2 text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg"><RefreshCw className="w-4 h-4" /></button>
                                         <button className="p-2 text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg"><Expand className="w-4 h-4" /></button>
                                         <button
-                                            onClick={() => handleRemoveTrackingId(index)}
+                                            onClick={() => {
+                                                if (isTabbed) {
+                                                    const newIds = [...effectiveTrackingIds];
+                                                    newIds.splice(index, 1);
+                                                    if (newIds.length === 0) newIds.push('');
+                                                    updateTabField('trackingIds', newIds);
+                                                } else {
+                                                    handleRemoveTrackingId(index);
+                                                }
+                                            }}
                                             className="p-2 text-red-400 hover:text-red-600 border border-red-100 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
                                         >
                                             <Trash2 className="w-4 h-4" />
@@ -499,10 +517,10 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                         </div>
 
                         <button
-                            onClick={handleAddTrackingId}
+                            onClick={() => isTabbed ? updateTabField('trackingIds', [...effectiveTrackingIds, '']) : handleAddTrackingId()}
                             className="mt-4 w-full py-3 border border-dashed border-gray-300 dark:border-[#444] rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-[#0071e3] dark:hover:text-[#2997ff] hover:border-[#0071e3] dark:hover:border-[#2997ff] transition-all flex justify-center items-center gap-2 font-medium text-sm"
                         >
-                            <Plus className="w-4 h-4" /> เพิ่ม EMS / Tracking No. (กล่องที่ {trackingIds.length + 1})
+                            <Plus className="w-4 h-4" /> เพิ่ม EMS / Tracking No. (กล่องที่ {effectiveTrackingIds.length + 1})
                         </button>
                     </div>
 
@@ -588,7 +606,7 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                                 // Build text
                                 const jobId = currentRma.groupRequestId || currentRma.id;
                                 const refNo = currentRma.quotationNumber || '-';
-                                const cleanTrackingIds = trackingIds.map(t => t.trim()).filter(Boolean);
+                                const cleanTrackingIds = effectiveTrackingIds.map(t => t.trim()).filter(Boolean);
                                 const items = currentRmas;
                                 let text = `เลขที่งานเคลม (Job ID): ${jobId}\n`;
                                 text += `เลขอ้างอิง/ใบเสนอราคา: ${refNo}\n\n`;
@@ -596,10 +614,10 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                                 items.forEach((item, i) => {
                                     text += `${i + 1}. ${item.brand} ${item.productModel} | S/N: ${item.serialNumber || '-'}\n`;
                                 });
-                                text += `\nนำส่ง...${receiverName}\n`;
-                                if (contactPerson) text += `ผู้ติดต่อ: ${contactPerson}\n`;
-                                if (receiverAddress) text += `${receiverAddress}\n`;
-                                if (receiverPhone) text += `โทร. ${receiverPhone}\n`;
+                                text += `\nนำส่ง...${effectiveReceiverName}\n`;
+                                if (effectiveContactPerson) text += `ผู้ติดต่อ: ${effectiveContactPerson}\n`;
+                                if (effectiveReceiverAddress) text += `${effectiveReceiverAddress}\n`;
+                                if (effectiveReceiverPhone) text += `โทร. ${effectiveReceiverPhone}\n`;
                                 if (cleanTrackingIds.length > 0) {
                                     text += `\n`;
                                     cleanTrackingIds.forEach(tid => {
