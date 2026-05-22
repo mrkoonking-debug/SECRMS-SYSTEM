@@ -49,7 +49,8 @@ service cloud.firestore {
     match /distributors/{d} { allow read: if true; allow write: if isAdmin(); }
     match /settings/{d} { allow read: if true; allow write: if isAdmin(); }
     
-    // 4. Counters — authenticated only (used for sequential Job ID generation)
-    match /counters/{d} { allow read, write: if isAuth(); }
+    // 4. Counters — public access (used for sequential Job ID generation)
+    // Stores only { currentYear, sequence } — no sensitive data
+    match /counters/{d} { allow read, write: if true; }
   }
 }

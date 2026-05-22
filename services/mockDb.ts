@@ -572,12 +572,13 @@ export const MockDb = {
       }
     }
 
+    const isCustomerSubmit = c.createdBy?.includes('Web');
     const now = new Date().toISOString();
     const newRMAData = {
       ...c,
-      repairCosts: { warrantyStatus: 'IN_WARRANTY', ...(c.repairCosts || {}) },
+      ...(isCustomerSubmit ? {} : { repairCosts: { warrantyStatus: 'IN_WARRANTY', ...(c.repairCosts || {}) } }),
       status: RMAStatus.PENDING,
-      history: [{ id: `evt-${Date.now()}`, date: Timestamp.now(), type: 'SYSTEM', description: c.createdBy?.includes('Web') ? 'ลูกค้าลงทะเบียนล่วงหน้าผ่านหน้าเว็บ' : 'รับสินค้าเข้าเข้าระบบ', user: currentUser?.name || 'System' }],
+      history: [{ id: `evt-${Date.now()}`, date: Timestamp.now(), type: 'SYSTEM', description: isCustomerSubmit ? 'ลูกค้าลงทะเบียนล่วงหน้าผ่านหน้าเว็บ' : 'รับสินค้าเข้าเข้าระบบ', user: currentUser?.name || 'System' }],
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     };
@@ -631,22 +632,6 @@ export const MockDb = {
     const counterRef = doc(db, 'counters', 'jobCounter');
 
     try {
-      // Scan existing RMAs to find the actual highest sequence for this year
-      const prefix = `SECRMA-${year}-`;
-      const rmasSnap = await getDocs(collection(db, 'rmas'));
-      let maxSeqFromDocs = 0;
-      rmasSnap.docs.forEach(d => {
-        const data = d.data();
-        const gid = data.groupRequestId as string | undefined;
-        if (gid && gid.startsWith(prefix)) {
-          const seqPart = gid.substring(prefix.length);
-          const seqNum = parseInt(seqPart, 10);
-          if (!isNaN(seqNum) && seqNum > maxSeqFromDocs) {
-            maxSeqFromDocs = seqNum;
-          }
-        }
-      });
-
       const newSeq = await runTransaction(db, async (transaction) => {
         const snap = await transaction.get(counterRef);
         let counterSeq = 0;
@@ -659,11 +644,9 @@ export const MockDb = {
           // If different year, counterSeq stays 0 (will be reset)
         }
 
-        // Use whichever is higher: counter or actual max from documents
-        const trueMax = Math.max(counterSeq, maxSeqFromDocs);
-        const nextSequence = trueMax + 1;
+        const nextSequence = counterSeq + 1;
 
-        // Atomic update with the corrected value
+        // Atomic update
         transaction.set(counterRef, {
           currentYear: year,
           sequence: nextSequence
