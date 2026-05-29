@@ -57,7 +57,7 @@ const getImagesHTML = (rma: RMA) => {
 };
 
 /* ─────────────────────────────────────────────
-   SHARED STYLES
+   SHARED STYLES (ORIGINAL PREMIUM VERSION)
 ───────────────────────────────────────────── */
 const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
   const isOrange = theme === 'orange';
@@ -94,30 +94,6 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
       position: relative;
     }
 
-    /* ── COMBINED HEADER ── */
-    .doc-header-wrapper {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      margin-bottom: 24px;
-      padding-bottom: 24px;
-      border-bottom: 3px solid #1d1d1f;
-    }
-    .doc-header-left {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
-      flex: 1;
-    }
-    .doc-header-logo {
-      height: 48px;
-      width: auto;
-      object-fit: contain;
-    }
-    .doc-header-company {
-      margin-top: 4px;
-    }
     .co-name {
       font-size: 11px;
       font-weight: 700;
@@ -141,49 +117,8 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
       gap: 2px;
       margin-bottom: 24px;
     }
-    .doc-header-subtitle {
-      font-size: 11px;
-      color: #9ca3af;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-top: 2px;
-    }
 
-    .doc-header-right {
-      text-align: right;
-      flex: 1;
-      padding-bottom: 8px;
-    }
-    .doc-ref-label {
-      font-size: 11px;
-      color: #9ca3af;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-weight: 700;
-    }
-    .doc-ref-no {
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      font-family: 'Inter', sans-serif;
-      color: #1d1d1f;
-      margin: 4px 0 8px;
-      line-height: 1;
-    }
-    .doc-ref-date {
-      font-size: 12px;
-      color: #555;
-      font-weight: 500;
-      margin-top: 4px;
-    }
 
-    .parties-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
     .party-box {
       border: 1px solid #e5e5ea;
       border-radius: 8px;
@@ -211,10 +146,6 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
     }
     .party-name { font-size: 14px; font-weight: 700; color: #1d1d1f; margin-bottom: 2px; }
     .party-detail { font-size: 10px; color: #666; line-height: 1.6; }
-    .party-divider {
-      margin: 12px 0;
-      border-top: 1px dashed #e5e5ea;
-    }
 
     /* ── SECTION TITLE ── */
     .section-title {
@@ -282,22 +213,12 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
     }
     .item-sn {
       display: inline-block;
-      font-family: 'Inter', 'SF Mono', monospace;
+      font-family: 'Inter', monospace;
       font-size: 10px; color: #1d1d1f;
       background: #f3f4f6; 
       padding: 3px 10px; border-radius: 4px;
       margin-top: 8px;
       border: 1px solid #e5e7eb;
-      letter-spacing: 0.01em;
-    }
-    .item-sn-new {
-      display: inline-block;
-      font-family: 'Inter', 'SF Mono', monospace;
-      font-size: 10px; color: #166534;
-      background: #f0fdf4;
-      padding: 3px 10px; border-radius: 4px;
-      margin-top: 4px; margin-left: 4px;
-      border: 1px solid #bbf7d0;
       letter-spacing: 0.01em;
     }
 
@@ -348,7 +269,6 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 20px;
-      page-break-inside: avoid;
     }
     .sig-box {
       border: 1px solid #e5e7eb;
@@ -378,7 +298,12 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
     @media print {
       @page { size: A4; margin: 0; }
       body { background: white; }
-      .print-doc { width: 210mm; min-height: 297mm; padding: 10mm 12mm; }
+      .print-doc { width: 210mm; min-height: auto; padding: 10mm 12mm; margin: 0; box-shadow: none; }
+      .items-table tr           { page-break-inside: avoid; }
+      .items-table tbody tr     { page-break-inside: avoid; }
+      .document-footer-row      { page-break-inside: avoid; }
+      .remarks-card             { page-break-inside: avoid; }
+      .footer-section           { page-break-inside: avoid; }
     }
   </style>
 `;
@@ -439,79 +364,84 @@ export const getImporterFormHTML = async (rmas: RMA[]): Promise<string> => {
   return `
     ${getCommonStyles('blue')}
     <div class="print-doc">
-
-      <!-- HEADER BAR -->
-      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px;">
-        <img src="${settings.logoUrl || '/logo.png'}" style="height: 60px; width: auto;" alt="logo" />
-        <div style="text-align: right; display: flex; flex-direction: column; justify-content: center;">
-          <div style="font-size: 20px; font-weight: 700; color: #333;">${settings.nameTh}</div>
-          <div style="font-size: 11px; color: #666; margin-top: 6px; line-height: 1.5;">
-            ${settings.address} | TAX ID: ${settings.taxId}<br/>
-            Tel: ${settings.tel} | Web: www.sectechnology.co.th
-          </div>
-        </div>
-      </div>
-      
-      <div style="height: 2px; background-color: #2563eb; margin-bottom: 14px;"></div>
-      
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
-        <div>
-          <div style="font-size: 24px; font-weight: 700; color: #2563eb;">ใบส่งเคลมสินค้า</div>
-          <div style="font-size: 14px; color: #555; margin-top: 4px; text-transform: uppercase;">DISTRIBUTOR RMA REQUEST FORM</div>
-        </div>
-        <div style="text-align: right;">
-          <div style="font-size: 10px; font-weight: 700; color: #555; letter-spacing: 0.5px;">REFERENCE NO.</div>
-          <div style="font-size: 18px; font-weight: 700; color: #1d1d1f; margin-top: 4px;">${escapeHtml(rma.groupRequestId || rma.quotationNumber || rma.id)}</div>
-          <div style="font-size: 11px; color: #555; margin-top: 2px;">Date: ${today}</div>
-        </div>
-      </div>
-
-      <!-- PARTIES -->
-      <div class="parties-grid">
-        <div class="party-box">
-          <div class="party-box-label">TO: DISTRIBUTOR (เรียน ผู้นำเข้า)</div>
-          <div class="party-name">${escapeHtml(rma.distributor)}</div>
-          ${distInfo.label ? `<div class="party-detail">${escapeHtml(distInfo.label)}</div>` : ''}
-          ${distInfo.contactPerson ? `<div class="party-detail">ผู้ติดต่อ: ${escapeHtml(distInfo.contactPerson)}</div>` : ''}
-          ${distInfo.phone ? `<div class="party-detail">โทร: ${escapeHtml(distInfo.phone)}</div>` : ''}
-          ${distInfo.address ? `<div class="party-detail" style="margin-top: 4px;">${escapeHtml(distInfo.address)}</div>` : ''}
-          ${!distInfo.label && !distInfo.address ? `<div class="party-detail">RMA / Service Department</div>` : ''}
-        </div>
-        <div class="party-box">
-          <div class="party-box-label">FROM: OUR COMPANY (จาก)</div>
-          <div class="party-name">${settings.nameEn}</div>
-          <div class="party-detail">Attn: Technical Support Dept.</div>
-        </div>
-      </div>
-
-      <!-- ITEMS TABLE -->
-      <div class="section-title">
-        PRODUCT INFORMATION <span class="count-badge">${rmas.length} ITEMS</span>
-      </div>
-
       <table class="items-table">
         <thead>
+          <tr>
+            <td colspan="2" style="border:none; padding:0; background:none; text-align:left;">
+              <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 16px;">
+                <tr>
+                  <td style="width: 35%; border: none; padding: 0; vertical-align: middle;">
+                    <img src="${settings.logoUrl || '/logo.png'}" style="height: 60px; width: auto; display: block;" alt="logo" />
+                  </td>
+                  <td style="width: 65%; border: none; padding: 0; text-align: right; vertical-align: middle;">
+                    <div style="font-size: 20px; font-weight: 700; color: #333;">${settings.nameTh}</div>
+                    <div style="font-size: 11px; color: #666; margin-top: 6px; line-height: 1.5;">
+                      ${settings.address} | TAX ID: ${settings.taxId}<br/>
+                      Tel: ${settings.tel} | Web: www.sectechnology.co.th
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              <div style="height: 2px; background-color: #2563eb; margin-bottom: 14px;"></div>
+              <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 16px;">
+                <tr>
+                  <td style="width: 60%; border: none; padding: 0; vertical-align: top;">
+                    <div style="font-size: 24px; font-weight: 700; color: #2563eb;">ใบส่งเคลมสินค้า</div>
+                    <div style="font-size: 14px; color: #555; margin-top: 4px; text-transform: uppercase;">DISTRIBUTOR RMA REQUEST FORM</div>
+                  </td>
+                  <td style="width: 40%; border: none; padding: 0; text-align: right; vertical-align: top;">
+                    <div style="font-size: 10px; font-weight: 700; color: #555; letter-spacing: 0.5px;">REFERENCE NO.</div>
+                    <div style="font-size: 18px; font-weight: 700; color: #1d1d1f; margin-top: 4px;">${escapeHtml(rma.groupRequestId || rma.quotationNumber || rma.id)}</div>
+                    <div style="font-size: 11px; color: #555; margin-top: 2px;">Date: ${today}</div>
+                  </td>
+                </tr>
+              </table>
+              <table style="width: 100%; border-collapse: separate; border-spacing: 16px 0; margin-left: -16px; width: calc(100% + 32px); margin-bottom: 24px; border: none;">
+                <tr>
+                  <td style="width: 50%; border: none; padding: 0; vertical-align: top;">
+                    <div class="party-box" style="height: 100%;">
+                      <div class="party-box-label">TO: DISTRIBUTOR (เรียน ผู้นำเข้า)</div>
+                      <div class="party-name">${escapeHtml(rma.distributor)}</div>
+                      ${distInfo.label ? `<div class="party-detail">${escapeHtml(distInfo.label)}</div>` : ''}
+                      ${distInfo.contactPerson ? `<div class="party-detail">ผู้ติดต่อ: ${escapeHtml(distInfo.contactPerson)}</div>` : ''}
+                      ${distInfo.phone ? `<div class="party-detail">โทร: ${escapeHtml(distInfo.phone)}</div>` : ''}
+                      ${distInfo.address ? `<div class="party-detail" style="margin-top: 4px;">${escapeHtml(distInfo.address)}</div>` : ''}
+                      ${!distInfo.label && !distInfo.address ? `<div class="party-detail">RMA / Service Department</div>` : ''}
+                    </div>
+                  </td>
+                  <td style="width: 50%; border: none; padding: 0; vertical-align: top;">
+                    <div class="party-box" style="height: 100%;">
+                      <div class="party-box-label">FROM: OUR COMPANY (จาก)</div>
+                      <div class="party-name">${settings.nameEn}</div>
+                      <div class="party-detail">Attn: Technical Support Dept.</div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              <div class="section-title">
+                PRODUCT INFORMATION <span class="count-badge">${rmas.length} ITEMS</span>
+              </div>
+            </td>
+          </tr>
           <tr>
             <th style="width: 5%;">#</th>
             <th class="align-left" style="width: 95%; padding-left: 12px;">รายละเอียดชิ้นส่วน/สินค้า</th>
           </tr>
         </thead>
-        <tbody>${tableRows}</tbody>
-      </table>
-
-      <div class="table-summary-bar">
-        <span class="summary-label">รวมจำนวนสินค้าเคลม</span>
-        <span class="summary-value">${rmas.length} ชิ้น</span>
-      </div>
-      
-      <div class="remarks-card">
-        <div class="remarks-card-title">หมายเหตุ / Remarks</div>
-        <div>1. กรุณาตรวจสอบสภาพสินค้าและอุปกรณ์ที่ส่งเคลมตามรายการด้านบน</div>
-        <div style="margin-top: 4px;">2. เมื่อดำเนินการเสร็จสิ้น กรุณาส่งคืนสินค้าพร้อมอุปกรณ์ที่แนบมาตามรายการด้านบนให้ครบถ้วน</div>
-      </div>
-
-      <!-- SIGNATURES -->
-      <div class="footer-section">
+        <tbody>
+          ${tableRows}
+          <tr class="document-footer-row">
+            <td colspan="2" style="border:none; padding:0; background:none;">
+              <div class="table-summary-bar">
+                <span class="summary-label">รวมจำนวนสินค้าเคลม</span>
+                <span class="summary-value">${rmas.length} ชิ้น</span>
+              </div>
+              <div class="remarks-card">
+                <div class="remarks-card-title">หมายเหตุ / Remarks</div>
+                <div>1. กรุณาตรวจสอบสภาพสินค้าและอุปกรณ์ที่ส่งเคลมตามรายการด้านบน</div>
+                <div style="margin-top: 4px;">2. เมื่อดำเนินการเสร็จสิ้น กรุณาส่งคืนสินค้าพร้อมอุปกรณ์ที่แนบมาตามรายการด้านบนให้ครบถ้วน</div>
+              </div>
+              <div class="footer-section">
         <div class="sig-box">
           <div class="sig-title">ผู้ส่ง / SENT BY</div>
           <div style="display: flex; gap: 24px; margin-top: 8px; align-items: flex-end;">
@@ -596,100 +526,102 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
   return `
     ${getCommonStyles('blue')}
     <div class="print-doc">
-
-      <!-- HEADER BAR -->
-      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px;">
-        <img src="${settings.logoUrl || '/logo.png'}" style="height: 60px; width: auto;" alt="logo" />
-        <div style="text-align: right; display: flex; flex-direction: column; justify-content: center;">
-          <div style="font-size: 20px; font-weight: 700; color: #333;">${settings.nameTh}</div>
-          <div style="font-size: 11px; color: #666; margin-top: 6px; line-height: 1.5;">
-            ${settings.address} | TAX ID: ${settings.taxId}<br/>
-            Tel: ${settings.tel} | Web: www.sectechnology.co.th
-          </div>
-        </div>
-      </div>
-      
-      <div style="height: 2px; background-color: #2563eb; margin-bottom: 14px;"></div>
-      
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
-        <div>
-          <div style="font-size: 24px; font-weight: 700; color: #2563eb;">ใบส่งคืนสินค้าเคลม</div>
-          <div style="font-size: 14px; color: #555; margin-top: 4px;">Product Return Note</div>
-        </div>
-        <div style="text-align: right;">
-          <div style="font-size: 10px; font-weight: 700; color: #555; letter-spacing: 0.5px;">JOB REFERENCE</div>
-          <div style="font-size: 18px; font-weight: 700; color: #1d1d1f; margin-top: 4px;">${escapeHtml(rma.groupRequestId || rma.quotationNumber || rma.id)}</div>
-          <div style="font-size: 11px; color: #555; margin-top: 2px;">Date: ${today}</div>
-        </div>
-      </div>
-
-      <!-- CUSTOMER INFO -->
-      <div class="party-box" style="margin-bottom: 14px;">
-        <div class="party-box-label">CUSTOMER DETAILS (ลูกค้า)</div>
-        <div class="party-name">${escapeHtml(rma.customerName)}</div>
-        <div class="party-detail" style="margin-top: 4px;">
-          ${rma.customerPhone ? `Tel: ${escapeHtml(rma.customerPhone)}` : ''}
-          ${rma.customerPhone && rma.customerEmail ? ' · ' : ''}
-          ${rma.customerEmail ? `Email: ${escapeHtml(rma.customerEmail)}` : ''}
-        </div>
-      </div>
-
-      <!-- ITEMS TABLE -->
-      <div class="section-title">
-        SERVICE ITEM DETAILS <span class="count-badge">${rmas.length} ITEMS</span>
-      </div>
-
       <table class="items-table">
         <thead>
+          <tr>
+            <td colspan="2" style="border:none; padding:0; background:none; text-align:left;">
+              <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 16px;">
+                <tr>
+                  <td style="width: 35%; border: none; padding: 0; vertical-align: middle;">
+                    <img src="${settings.logoUrl || '/logo.png'}" style="height: 60px; width: auto; display: block;" alt="logo" />
+                  </td>
+                  <td style="width: 65%; border: none; padding: 0; text-align: right; vertical-align: middle;">
+                    <div style="font-size: 20px; font-weight: 700; color: #333;">${settings.nameTh}</div>
+                    <div style="font-size: 11px; color: #666; margin-top: 6px; line-height: 1.5;">
+                      ${settings.address} | TAX ID: ${settings.taxId}<br/>
+                      Tel: ${settings.tel} | Web: www.sectechnology.co.th
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              <div style="height: 2px; background-color: #2563eb; margin-bottom: 14px;"></div>
+              <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 16px;">
+                <tr>
+                  <td style="width: 60%; border: none; padding: 0; vertical-align: top;">
+                    <div style="font-size: 24px; font-weight: 700; color: #2563eb;">ใบส่งคืนสินค้าเคลม</div>
+                    <div style="font-size: 14px; color: #555; margin-top: 4px;">Product Return Note</div>
+                  </td>
+                  <td style="width: 40%; border: none; padding: 0; text-align: right; vertical-align: top;">
+                    <div style="font-size: 10px; font-weight: 700; color: #555; letter-spacing: 0.5px;">JOB REFERENCE</div>
+                    <div style="font-size: 18px; font-weight: 700; color: #1d1d1f; margin-top: 4px;">${escapeHtml(rma.groupRequestId || rma.quotationNumber || rma.id)}</div>
+                    <div style="font-size: 11px; color: #555; margin-top: 2px;">Date: ${today}</div>
+                  </td>
+                </tr>
+              </table>
+              <div class="party-box" style="margin-bottom: 14px;">
+                <div class="party-box-label">CUSTOMER DETAILS (ลูกค้า)</div>
+                <div class="party-name">${escapeHtml(rma.customerName)}</div>
+                <div class="party-detail" style="margin-top: 4px;">
+                  ${rma.customerPhone ? `Tel: ${escapeHtml(rma.customerPhone)}` : ''}
+                  ${rma.customerPhone && rma.customerEmail ? ' · ' : ''}
+                  ${rma.customerEmail ? `Email: ${escapeHtml(rma.customerEmail)}` : ''}
+                </div>
+              </div>
+              <div class="section-title">
+                SERVICE ITEM DETAILS <span class="count-badge">${rmas.length} ITEMS</span>
+              </div>
+            </td>
+          </tr>
           <tr>
             <th style="width: 5%;">#</th>
             <th class="align-left" style="width: 95%; padding-left: 12px;">รายละเอียดชิ้นส่วน/สินค้า</th>
           </tr>
         </thead>
-        <tbody>${tableRows}</tbody>
+        <tbody>
+          ${tableRows}
+          <tr class="document-footer-row">
+            <td colspan="2" style="border:none; padding:0; background:none;">
+              <div class="table-summary-bar">
+                <span class="summary-label">รวมจำนวนสินค้า</span>
+                <span class="summary-value">${rmas.length} ชิ้น</span>
+              </div>
+              <div class="remarks-card">
+                <div class="remarks-card-title">หมายเหตุ / Remarks</div>
+                <div>1. ได้รับสินค้าข้างบนนี้เรียบร้อยแล้ว</div>
+                <div style="margin-top: 6px;">2. สินค้าตามใบส่งของนี้ หากมีการเสียหายหรือไม่ครบจำนวน โปรดแจ้งทางบริษัทฯทราบภายใน 7 วัน มิฉะนั้นบริษัทฯจะไม่รับผิดชอบความเสียหายใดๆทั้งสิ้น (ไม่มีใบรับประกันทางบริษัทจะไม่รับเคลมสินค้า)</div>
+              </div>
+              <div class="footer-section">
+                <div class="sig-box">
+                  <div class="sig-title">ผู้ส่ง / SENT BY</div>
+                  <div style="display: flex; gap: 24px; margin-top: 8px; align-items: flex-end;">
+                    <div style="flex: 1;">
+                      <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">ลงชื่อ / Signature</div>
+                      <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
+                    </div>
+                    <div style="width: 40%;">
+                      <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">วันที่ / Date</div>
+                      <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="sig-box">
+                  <div class="sig-title">ผู้รับ / RECEIVED BY</div>
+                  <div style="display: flex; gap: 24px; margin-top: 8px; align-items: flex-end;">
+                    <div style="flex: 1;">
+                      <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">ลงชื่อ / Signature</div>
+                      <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
+                    </div>
+                    <div style="width: 40%;">
+                      <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">วันที่ / Date</div>
+                      <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
       </table>
-
-      <div class="table-summary-bar">
-        <span class="summary-label">รวมจำนวนสินค้า</span>
-        <span class="summary-value">${rmas.length} ชิ้น</span>
-      </div>
-
-      <div class="remarks-card">
-        <div class="remarks-card-title">หมายเหตุ / Remarks</div>
-        <div>1. ได้รับสินค้าข้างบนนี้เรียบร้อยแล้ว</div>
-        <div style="margin-top: 6px;">2. สินค้าตามใบส่งของนี้ หากมีการเสียหายหรือไม่ครบจำนวน โปรดแจ้งทางบริษัทฯทราบภายใน 7 วัน มิฉะนั้นบริษัทฯจะไม่รับผิดชอบความเสียหายใดๆทั้งสิ้น (ไม่มีใบรับประกันทางบริษัทจะไม่รับเคลมสินค้า)</div>
-      </div>
-
-      <!-- SIGNATURES -->
-      <div class="footer-section">
-        <div class="sig-box">
-          <div class="sig-title">ผู้ส่ง / SENT BY</div>
-          <div style="display: flex; gap: 24px; margin-top: 8px; align-items: flex-end;">
-            <div style="flex: 1;">
-              <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">ลงชื่อ / Signature</div>
-              <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
-            </div>
-            <div style="width: 40%;">
-              <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">วันที่ / Date</div>
-              <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
-            </div>
-          </div>
-        </div>
-        <div class="sig-box">
-          <div class="sig-title">ผู้รับ / RECEIVED BY</div>
-          <div style="display: flex; gap: 24px; margin-top: 8px; align-items: flex-end;">
-            <div style="flex: 1;">
-              <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">ลงชื่อ / Signature</div>
-              <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
-            </div>
-            <div style="width: 40%;">
-              <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">วันที่ / Date</div>
-              <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
   `;
 };
