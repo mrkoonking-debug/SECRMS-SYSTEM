@@ -55,7 +55,7 @@ export const JobDetail: React.FC = () => {
     const [bulkDistOptions, setBulkDistOptions] = useState<any[]>([]);
     const [bulkBrandOptions, setBulkBrandOptions] = useState<any[]>([]);
     const [bulkCustomBrand, setBulkCustomBrand] = useState('');
-    const [bulkEditForm, setBulkEditForm] = useState({ brand: '', productModel: '', serialNumber: '', distributor: '', issueDescription: '', rootCause: '', technicalNotes: '', warrantyStatus: '' });
+    const [bulkEditForm, setBulkEditForm] = useState({ brand: '', productModel: '', serialNumber: '', distributor: '', issueDescription: '', rootCause: '', actionTaken: '', actionDetails: '', replacedSerialNumber: '', vendorTicketRef: '', warrantyStatus: '' });
     const [showManualStatusInBulk, setShowManualStatusInBulk] = useState(false);
     const [isBulkEditLocked, setIsBulkEditLocked] = useState(false);
     const [showBulkVendorPopup, setShowBulkVendorPopup] = useState(false);
@@ -551,10 +551,35 @@ export const JobDetail: React.FC = () => {
                                                 <div className="text-sm text-gray-700 dark:text-gray-200 flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" /><span className="line-clamp-2">{item.resolution.rootCause}</span></div>
                                             </div>
                                         )}
-                                        {item.resolution?.technicalNotes && (
-                                            <div className="mt-2">
-                                                <div className="text-xs font-bold text-gray-400 uppercase mb-1 flex items-center gap-1">อาการหลังส่งศูนย์ (ศูนย์แจ้งกลับมา)</div>
-                                                <div className="text-sm text-gray-700 dark:text-gray-200 flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" /><span className="line-clamp-2">{item.resolution.technicalNotes}</span></div>
+                                        {item.resolution?.actionTaken && (
+                                            <div className="mt-2 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-100 dark:border-white/10 space-y-1.5">
+                                                <div className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                                    <ClipboardCheck className="w-3.5 h-3.5 text-blue-500" /> ผลการดำเนินการที่ศูนย์ส่งกลับมา
+                                                </div>
+                                                <div className="text-sm text-gray-700 dark:text-gray-200">
+                                                    <span className="text-gray-400 font-medium">วิธีดำเนินการ: </span>
+                                                    <strong className="text-gray-800 dark:text-gray-100">
+                                                        {t(`actions.${item.resolution.actionTaken.toLowerCase().replace(/ /g, '_')}`) || item.resolution.actionTaken}
+                                                    </strong>
+                                                </div>
+                                                {item.resolution.actionDetails && (
+                                                    <div className="text-sm text-gray-700 dark:text-gray-200">
+                                                        <span className="text-gray-400 font-medium">รายละเอียด: </span>
+                                                        <span>{item.resolution.actionDetails}</span>
+                                                    </div>
+                                                )}
+                                                {item.resolution.replacedSerialNumber && (
+                                                    <div className="text-sm text-gray-700 dark:text-gray-200 flex items-center gap-1.5">
+                                                        <span className="text-gray-400 font-medium">S/N ใหม่: </span>
+                                                        <span className="font-mono bg-green-500/10 text-green-600 dark:text-green-400 px-2 py-0.5 rounded text-xs font-bold">{item.resolution.replacedSerialNumber}</span>
+                                                    </div>
+                                                )}
+                                                {item.resolution.vendorTicketRef && (
+                                                    <div className="text-sm text-gray-700 dark:text-gray-200">
+                                                        <span className="text-gray-400 font-medium">เลข RMA Vendor: </span>
+                                                        <span className="font-mono text-xs bg-gray-200/50 dark:bg-white/10 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300">{item.resolution.vendorTicketRef}</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                         <div className="mt-2 text-xs text-gray-400 flex items-center gap-1">
@@ -1197,7 +1222,10 @@ export const JobDetail: React.FC = () => {
                                         distributor: first?.distributor || '',
                                         issueDescription: first?.issueDescription || '',
                                         rootCause: first?.resolution?.rootCause || '',
-                                        technicalNotes: first?.resolution?.technicalNotes || '',
+                                        actionTaken: first?.resolution?.actionTaken || '',
+                                        actionDetails: first?.resolution?.actionDetails || '',
+                                        replacedSerialNumber: first?.resolution?.replacedSerialNumber || '',
+                                        vendorTicketRef: first?.resolution?.vendorTicketRef || '',
                                         warrantyStatus: first?.repairCosts?.warrantyStatus || ''
                                     });
                                     setShowBulkEditModal(true);
@@ -1640,15 +1668,59 @@ export const JobDetail: React.FC = () => {
                                     placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">อาการหลังส่งศูนย์ (ศูนย์แจ้งกลับมา)</label>
-                                <textarea
-                                    value={bulkEditForm.technicalNotes}
-                                    onChange={e => setBulkEditForm(p => ({ ...p, technicalNotes: e.target.value }))}
-                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
-                                    rows={2}
-                                    placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน"
-                                />
+                            <div className="border-t border-gray-100 dark:border-gray-800/50 pt-4">
+                                <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">ผลการดำเนินการที่ศูนย์ส่งกลับมา</h4>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-[11px] font-semibold text-gray-500 mb-1.5 ml-1">วิธีดำเนินการ</label>
+                                        <select
+                                            value={bulkEditForm.actionTaken}
+                                            onChange={e => setBulkEditForm(p => ({ ...p, actionTaken: e.target.value }))}
+                                            className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                        >
+                                            <option value="">— ไม่เปลี่ยน / ไม่ระบุ —</option>
+                                            <option value="Replaced Component">เปลี่ยนอะไหล่ (Replaced Component)</option>
+                                            <option value="Swapped Unit">เปลี่ยนตัวใหม่ (Swapped Unit)</option>
+                                            <option value="Software Update">อัปเดตซอฟต์แวร์ (Software Update)</option>
+                                            <option value="No Fault Found">ไม่พบอาการเสีย (No Fault Found)</option>
+                                            <option value="Other">อื่นๆ (Other)</option>
+                                        </select>
+                                    </div>
+                                    {(bulkEditForm.actionTaken === 'Replaced Component' || bulkEditForm.actionTaken === 'Other') && (
+                                        <div>
+                                            <label className="block text-[11px] font-semibold text-gray-500 mb-1.5 ml-1">รายละเอียดการดำเนินการ</label>
+                                            <input
+                                                type="text"
+                                                value={bulkEditForm.actionDetails}
+                                                onChange={e => setBulkEditForm(p => ({ ...p, actionDetails: e.target.value }))}
+                                                className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                                placeholder="เช่น เปลี่ยน Mainboard"
+                                            />
+                                        </div>
+                                    )}
+                                    {bulkEditForm.actionTaken === 'Swapped Unit' && (
+                                        <div>
+                                            <label className="block text-[11px] font-semibold text-gray-500 mb-1.5 ml-1">S/N สินค้าตัวใหม่</label>
+                                            <input
+                                                type="text"
+                                                value={bulkEditForm.replacedSerialNumber}
+                                                onChange={e => setBulkEditForm(p => ({ ...p, replacedSerialNumber: e.target.value.toUpperCase() }))}
+                                                className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                                placeholder="ระบุ S/N สินค้าตัวใหม่"
+                                            />
+                                        </div>
+                                    )}
+                                    <div>
+                                        <label className="block text-[11px] font-semibold text-gray-500 mb-1.5 ml-1">เลข RMA (Vendor)</label>
+                                        <input
+                                            type="text"
+                                            value={bulkEditForm.vendorTicketRef}
+                                            onChange={e => setBulkEditForm(p => ({ ...p, vendorTicketRef: e.target.value }))}
+                                            className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                            placeholder="ระบุเลข RMA ของศูนย์ เช่น Synnex"
+                                        />
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-gray-400 uppercase mb-2">สถานะประกัน</label>
@@ -1679,11 +1751,27 @@ export const JobDetail: React.FC = () => {
                                         if (bulkEditForm.serialNumber.trim()) updates.serialNumber = bulkEditForm.serialNumber.trim();
                                         if (bulkEditForm.distributor.trim()) updates.distributor = bulkEditForm.distributor.trim();
                                         if (bulkEditForm.issueDescription.trim()) updates.issueDescription = bulkEditForm.issueDescription.trim();
-                                        if (bulkEditForm.rootCause.trim() || bulkEditForm.technicalNotes.trim()) {
-                                            (updates as any).resolution = {
-                                                ...(bulkEditForm.rootCause.trim() ? { rootCause: bulkEditForm.rootCause.trim() } : {}),
-                                                ...(bulkEditForm.technicalNotes.trim() ? { technicalNotes: bulkEditForm.technicalNotes.trim() } : {})
-                                            };
+                                        // Prepare resolution updates
+                                        const resolutionUpdates: any = {};
+                                        if (bulkEditForm.rootCause.trim()) resolutionUpdates.rootCause = bulkEditForm.rootCause.trim();
+                                        if (bulkEditForm.actionTaken) {
+                                            resolutionUpdates.actionTaken = bulkEditForm.actionTaken;
+                                            if (bulkEditForm.actionTaken === 'Replaced Component' || bulkEditForm.actionTaken === 'Other') {
+                                                resolutionUpdates.actionDetails = bulkEditForm.actionDetails.trim();
+                                                resolutionUpdates.replacedSerialNumber = '';
+                                            } else if (bulkEditForm.actionTaken === 'Swapped Unit') {
+                                                resolutionUpdates.replacedSerialNumber = bulkEditForm.replacedSerialNumber.trim();
+                                                resolutionUpdates.actionDetails = '';
+                                            } else {
+                                                resolutionUpdates.actionDetails = '';
+                                                resolutionUpdates.replacedSerialNumber = '';
+                                            }
+                                        }
+                                        if (bulkEditForm.vendorTicketRef.trim()) {
+                                            resolutionUpdates.vendorTicketRef = bulkEditForm.vendorTicketRef.trim();
+                                        }
+                                        if (Object.keys(resolutionUpdates).length > 0) {
+                                            updates.resolution = resolutionUpdates;
                                         }
                                         if (bulkEditForm.warrantyStatus) {
                                             updates.repairCosts = { warrantyStatus: bulkEditForm.warrantyStatus as any } as any;

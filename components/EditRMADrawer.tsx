@@ -233,9 +233,6 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
         if (formData.resolution?.rootCause !== rma.resolution?.rootCause) {
             newDiffs.push({ field: t('track.rootCause'), old: fmt(rma.resolution?.rootCause), new: fmt(formData.resolution?.rootCause) });
         }
-        if (formData.resolution?.technicalNotes !== rma.resolution?.technicalNotes) {
-            newDiffs.push({ field: 'อาการหลังส่งศูนย์', old: fmt(rma.resolution?.technicalNotes), new: fmt(formData.resolution?.technicalNotes) });
-        }
         if (formData.resolution?.vendorTicketRef !== rma.resolution?.vendorTicketRef) {
             newDiffs.push({ field: t('track.vendorRef'), old: fmt(rma.resolution?.vendorTicketRef), new: fmt(formData.resolution?.vendorTicketRef) });
         }
@@ -1011,15 +1008,11 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                     </div>
 
                     {/* ROW 2: Resolution Fields */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className={`block text-xs font-semibold uppercase mb-2 ml-2 ${rootCauseError ? 'text-red-500' : 'text-gray-500'}`}>{t('track.rootCause')} {rootCauseError && <span className="normal-case">* ต้องกรอก</span>}</label>
                             <input id="rootCauseInput" type="text" value={formData.resolution?.rootCause || ''} onChange={(e) => { handleResolutionChange('rootCause', e.target.value); if (e.target.value.trim()) setRootCauseError(false); }} className={`w-full rounded-2xl px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border outline-none transition-colors ${rootCauseError ? 'border-red-500 ring-2 ring-red-500/20' : 'border-gray-200 dark:border-[#424245]'}`} placeholder="e.g. Power Surge (ถ้ายังไม่รู้ให้ใส่ N/A)" />
                             {rootCauseError && <p className="text-xs text-red-500 mt-1.5 ml-2 animate-fade-in">❌ กรุณากรอกอาการที่พบก่อนดำเนินการขั้นต่อไป (ถ้ายังไม่รู้ให้ใส่ N/A)</p>}
-                        </div>
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">อาการหลังส่งศูนย์ (ศูนย์แจ้งกลับมา)</label>
-                            <input type="text" value={formData.resolution?.technicalNotes || ''} onChange={(e) => handleResolutionChange('technicalNotes', e.target.value)} className="w-full rounded-2xl px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none" placeholder="ระบุอาการหลังจากได้รับกลับจากศูนย์..." />
                         </div>
                         <div>
                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('track.vendorRef')}</label>
@@ -1322,9 +1315,6 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                 <div className="flex justify-between"><span className="text-gray-500">S/N</span><span className="font-mono text-[#1d1d1f] dark:text-white">{formData.serialNumber}</span></div>
                                 <div className="flex justify-between"><span className="text-gray-500">อาการที่ลูกค้าแจ้ง</span><span className="text-[#1d1d1f] dark:text-white">{formData.issueDescription || '-'}</span></div>
                                 <div className="flex justify-between"><span className="text-gray-500">อาการที่พบ</span><span className="text-[#1d1d1f] dark:text-white">{formData.resolution?.rootCause || '-'}</span></div>
-                                {formData.resolution?.technicalNotes && (
-                                    <div className="flex justify-between"><span className="text-gray-500">อาการหลังส่งศูนย์</span><span className="text-[#1d1d1f] dark:text-white">{formData.resolution.technicalNotes}</span></div>
-                                )}
                                 <hr className="border-gray-200 dark:border-gray-700" />
                                 <div className="flex justify-between"><span className="text-gray-500">วิธีดำเนินการ</span><strong className="text-[#1d1d1f] dark:text-white">{actionOptions.find(o => o.value === formData.resolution?.actionTaken)?.label || formData.resolution?.actionTaken || '-'}</strong></div>
                                 {formData.resolution?.actionDetails && (

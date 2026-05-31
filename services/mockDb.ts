@@ -703,6 +703,21 @@ export const MockDb = {
           if (updates.resolution.technicalNotes !== undefined) {
             flatUpdates["resolution.technicalNotes"] = updates.resolution.technicalNotes;
           }
+          if (updates.resolution.actionTaken !== undefined) {
+            flatUpdates["resolution.actionTaken"] = updates.resolution.actionTaken;
+          }
+          if (updates.resolution.actionDetails !== undefined) {
+            flatUpdates["resolution.actionDetails"] = updates.resolution.actionDetails;
+          }
+          if (updates.resolution.replacedSerialNumber !== undefined) {
+            flatUpdates["resolution.replacedSerialNumber"] = updates.resolution.replacedSerialNumber;
+          }
+          if (updates.resolution.vendorTicketRef !== undefined) {
+            flatUpdates["resolution.vendorTicketRef"] = updates.resolution.vendorTicketRef;
+          }
+          if (updates.resolution.restockCondition !== undefined) {
+            flatUpdates["resolution.restockCondition"] = updates.resolution.restockCondition;
+          }
         }
         
         if (updates.repairCosts) {
