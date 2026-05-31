@@ -551,6 +551,12 @@ export const JobDetail: React.FC = () => {
                                                 <div className="text-sm text-gray-700 dark:text-gray-200 flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" /><span className="line-clamp-2">{item.resolution.rootCause}</span></div>
                                             </div>
                                         )}
+                                        {item.resolution?.technicalNotes && (
+                                            <div className="mt-2">
+                                                <div className="text-xs font-bold text-gray-400 uppercase mb-1 flex items-center gap-1">อาการหลังส่งศูนย์ (ศูนย์แจ้งกลับมา)</div>
+                                                <div className="text-sm text-gray-700 dark:text-gray-200 flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" /><span className="line-clamp-2">{item.resolution.technicalNotes}</span></div>
+                                            </div>
+                                        )}
                                         <div className="mt-2 text-xs text-gray-400 flex items-center gap-1">
                                             <Truck className="w-3 h-3" /> {t('submit.distributor')}:{' '}
                                             <span className="inline-flex items-center gap-1 ml-1">
