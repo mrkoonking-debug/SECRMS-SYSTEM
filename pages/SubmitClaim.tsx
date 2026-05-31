@@ -27,7 +27,7 @@ export const SubmitClaim: React.FC = () => {
   const [step, setStep] = useState<'form' | 'success'>('form');
   const [submittedRef, setSubmittedRef] = useState('');
 
-  const handleAddItem = (item: any) => setBasket([...basket, { ...item, id: Date.now().toString(), attachments: [] }]);
+  const handleAddItem = (item: any) => setBasket(prev => [...prev, { ...item, id: Date.now().toString() + Math.random().toString(36).slice(2, 6), attachments: [] }]);
   const handleRemoveItem = (id: string) => setBasket(prev => prev.filter(item => item.id !== id));
 
   const validateField = (name: string, value: any) => {

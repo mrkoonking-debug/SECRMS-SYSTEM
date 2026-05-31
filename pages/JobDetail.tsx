@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef, lazy, Suspense } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { RMA, RMAStatus, ProductType } from '../types';
-import { ArrowLeft, Package, User, Clock, Edit2, AlertCircle, CheckCircle2, History, Trash2, Truck, ShieldCheck, FileText, Edit3, Save, Loader2, Plus } from 'lucide-react';
+import { ArrowLeft, Package, User, Clock, Edit2, AlertCircle, CheckCircle2, History, Trash2, Truck, ShieldCheck, FileText, Edit3, Save, Loader2, Plus, CheckSquare, Square, Zap, X as XClose } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { StatusBadge } from '../components/StatusBadge';
 
@@ -14,6 +14,7 @@ import { ShipmentTagModal } from '../components/ShipmentTagModal';
 import { renderHtmlToBlob } from '../services/renderToImage';
 import { showToast } from '../services/toast';
 const ProductEntryForm = lazy(() => import('../components/ProductEntryForm').then(m => ({ default: m.ProductEntryForm })));
+import { EditRMADrawer } from '../components/EditRMADrawer';
 
 
 export const JobDetail: React.FC = () => {
@@ -43,6 +44,14 @@ export const JobDetail: React.FC = () => {
     // Add item modal
     const [showAddItemModal, setShowAddItemModal] = useState(false);
     const [isAddingItem, setIsAddingItem] = useState(false);
+
+    // Bulk actions state
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [showBulkStatusModal, setShowBulkStatusModal] = useState(false);
+    const [showBulkEditModal, setShowBulkEditModal] = useState(false);
+    const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+    const [bulkDistOptions, setBulkDistOptions] = useState<any[]>([]);
+    const [bulkEditForm, setBulkEditForm] = useState({ distributor: '', issueDescription: '', rootCause: '', technicalNotes: '', warrantyStatus: '' });
 
     // Customer edit state
     const [isEditingCustomer, setIsEditingCustomer] = useState(false);
@@ -470,7 +479,24 @@ export const JobDetail: React.FC = () => {
 
             <div className="space-y-4">
                 <div className="flex items-center justify-between ml-2 mr-2 mb-4">
-                    <h2 className="text-lg font-bold text-[#1d1d1f] dark:text-white">{t('claimsList.items')}</h2>
+                    <div className="flex items-center gap-3">
+                        {rmas.length > 1 && (
+                            <button
+                                onClick={() => {
+                                    if (selectedIds.size === rmas.length) {
+                                        setSelectedIds(new Set());
+                                    } else {
+                                        setSelectedIds(new Set(rmas.map(r => r.id)));
+                                    }
+                                }}
+                                className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#0071e3] transition-colors"
+                            >
+                                {selectedIds.size === rmas.length ? <CheckSquare className="w-4 h-4 text-[#0071e3]" /> : <Square className="w-4 h-4" />}
+                                เลือกทั้งหมด
+                            </button>
+                        )}
+                        <h2 className="text-lg font-bold text-[#1d1d1f] dark:text-white">{t('claimsList.items')}</h2>
+                    </div>
                     <button
                         onClick={() => setShowAddItemModal(true)}
                         className="flex items-center gap-2 px-4 py-2 bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold rounded-full shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-95 transition-all"
@@ -482,14 +508,22 @@ export const JobDetail: React.FC = () => {
                 {rmas.map((item, index) => {
                     const isClosed = [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REJECTED].includes(item.status);
                     const isExpanded = expandedRMAs.has(item.id);
+                    const isSelected = selectedIds.has(item.id);
 
                     // เรียงลำดับประวัติให้ล่าสุดอยู่บนสุด
                     const sortedHistory = item.history ? [...item.history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) : [];
 
                     return (
-                        <div key={item.id} className="bg-white dark:bg-[#1c1c1e] rounded-2xl p-6 transition-all hover:bg-gray-50 dark:hover:bg-[#2c2c2e] border border-gray-100 dark:border-[#333]">
+                        <div key={item.id} className={`bg-white dark:bg-[#1c1c1e] rounded-2xl p-6 transition-all hover:bg-gray-50 dark:hover:bg-[#2c2c2e] border-2 ${isSelected ? 'border-[#0071e3] ring-2 ring-[#0071e3]/20' : 'border-gray-100 dark:border-[#333]'}`}>
                             <div className="flex flex-col md:flex-row items-center gap-6">
-                                <div className="flex-shrink-0">{isClosed ? <div className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center"><CheckCircle2 className="w-5 h-5" /></div> : <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold">{index + 1}</div>}</div>
+                                <div className="flex-shrink-0 flex items-center gap-3">
+                                    {rmas.length > 1 && (
+                                        <button onClick={() => { const n = new Set(selectedIds); isSelected ? n.delete(item.id) : n.add(item.id); setSelectedIds(n); }} className="transition-transform hover:scale-110">
+                                            {isSelected ? <CheckSquare className="w-5 h-5 text-[#0071e3]" /> : <Square className="w-5 h-5 text-gray-300 dark:text-gray-600" />}
+                                        </button>
+                                    )}
+                                    {isClosed ? <div className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center"><CheckCircle2 className="w-5 h-5" /></div> : <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold">{index + 1}</div>}
+                                </div>
                                 <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                                     <div><div className="font-bold text-lg text-[#1d1d1f] dark:text-white">{item.productModel}</div><div className="text-sm text-gray-500">{item.brand}</div><div className="mt-1 inline-block text-xs font-mono bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">S/N: {item.serialNumber}</div></div>
                                     <div>
@@ -1096,6 +1130,221 @@ export const JobDetail: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            {/* ═══ FLOATING BULK ACTIONS BAR ═══ */}
+            <div className={`fixed bottom-0 left-0 right-0 z-[50] transition-all duration-300 ease-out ${selectedIds.size > 0 ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}`}>
+                <div className="max-w-3xl mx-auto px-4 pb-6">
+                    <div className="bg-[#1d1d1f] dark:bg-[#2c2c2e] text-white rounded-2xl px-6 py-4 shadow-2xl shadow-black/30 border border-white/10 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-[#0071e3] flex items-center justify-center text-sm font-bold">{selectedIds.size}</div>
+                            <span className="text-sm font-medium">รายการที่เลือก</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setShowBulkStatusModal(true)}
+                                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 rounded-xl text-sm font-bold flex items-center gap-1.5 transition-all active:scale-95"
+                            >
+                                <Zap className="w-3.5 h-3.5" /> เปลี่ยนสถานะ
+                            </button>
+                            {rmas.some(r => r.serialNumber?.startsWith('N/A-')) && (
+                                <button
+                                    onClick={async () => {
+                                        const first = rmas.find(r => selectedIds.has(r.id));
+                                        const dists = await MockDb.getDistributors();
+                                        setBulkDistOptions(dists);
+                                        setBulkEditForm({
+                                            distributor: first?.distributor || '',
+                                            issueDescription: first?.issueDescription || '',
+                                            rootCause: first?.resolution?.rootCause || '',
+                                            technicalNotes: first?.resolution?.technicalNotes || '',
+                                            warrantyStatus: first?.repairCosts?.warrantyStatus || ''
+                                        });
+                                        setShowBulkEditModal(true);
+                                    }}
+                                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-xl text-sm font-bold flex items-center gap-1.5 transition-all active:scale-95"
+                                >
+                                    <Edit3 className="w-3.5 h-3.5" /> แก้ไขรายละเอียด
+                                </button>
+                            )}
+                            <button
+                                onClick={() => setSelectedIds(new Set())}
+                                className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+                                title="ยกเลิกการเลือก"
+                            >
+                                <XClose className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* ═══ BULK STATUS CHANGE MODAL ═══ */}
+            {showBulkStatusModal && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => !isBulkUpdating && setShowBulkStatusModal(false)}>
+                    <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl w-full max-w-md shadow-2xl border border-gray-200 dark:border-[#333]" onClick={e => e.stopPropagation()}>
+                        <div className="px-6 py-5 border-b border-gray-100 dark:border-[#333]">
+                            <h3 className="text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2">
+                                <Zap className="w-5 h-5 text-orange-500" /> เปลี่ยนสถานะ {selectedIds.size} รายการ
+                            </h3>
+                            <p className="text-xs text-gray-500 mt-1">เลือกสถานะใหม่ที่ต้องการ</p>
+                        </div>
+                        <div className="p-6 grid grid-cols-1 gap-2">
+                            {[
+                                { status: RMAStatus.PENDING, label: 'รับเรื่องแล้ว', color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300' },
+                                { status: RMAStatus.DIAGNOSING, label: 'กำลังตรวจสอบ', color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' },
+                                { status: RMAStatus.WAITING_PARTS, label: 'ส่งเคลมศูนย์แล้ว', color: 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300' },
+                                { status: RMAStatus.REPLACED_FROM_STOCK, label: 'สลับของให้แล้ว (รอศูนย์)', color: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300' },
+                                { status: RMAStatus.RETURNED_FROM_VENDOR, label: 'ของเคลมกลับมาแล้ว', color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300' },
+                                { status: RMAStatus.REPAIRED, label: 'ซ่อมเสร็จ / พร้อมคืน', color: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' },
+                                { status: RMAStatus.CLOSED, label: 'ปิดงาน (ลูกค้ารับของแล้ว)', color: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300' },
+                            ].map(opt => (
+                                <button
+                                    key={opt.status}
+                                    disabled={isBulkUpdating}
+                                    onClick={async () => {
+                                        setIsBulkUpdating(true);
+                                        try {
+                                            const user = MockDb.getCurrentUser()?.name || 'Admin';
+                                            const count = await MockDb.bulkUpdateStatus(Array.from(selectedIds), opt.status, user);
+                                            showToast(`อัปเดตสถานะ ${count} รายการสำเร็จ!`, 'success');
+                                            await refreshRMAs();
+                                            setShowBulkStatusModal(false);
+                                            setSelectedIds(new Set());
+                                        } catch (err) {
+                                            showToast('เกิดข้อผิดพลาด', 'error');
+                                        } finally {
+                                            setIsBulkUpdating(false);
+                                        }
+                                    }}
+                                    className={`w-full text-left px-4 py-3 rounded-xl font-medium text-sm transition-all hover:scale-[1.01] active:scale-[0.99] border border-transparent hover:border-gray-200 dark:hover:border-[#424245] ${opt.color}`}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                        {isBulkUpdating && (
+                            <div className="px-6 pb-4 flex items-center gap-2 text-sm text-gray-500">
+                                <Loader2 className="w-4 h-4 animate-spin" /> กำลังอัปเดต...
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* ═══ BULK EDIT FIELDS MODAL ═══ */}
+            {showBulkEditModal && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => !isBulkUpdating && setShowBulkEditModal(false)}>
+                    <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl w-full max-w-lg shadow-2xl border border-gray-200 dark:border-[#333]" onClick={e => e.stopPropagation()}>
+                        <div className="px-6 py-5 border-b border-gray-100 dark:border-[#333]">
+                            <h3 className="text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2">
+                                <Edit3 className="w-5 h-5 text-blue-500" /> แก้ไขรายละเอียด {selectedIds.size} รายการ
+                            </h3>
+                            <p className="text-xs text-gray-500 mt-1">ข้อมูลที่กรอกจะถูกอัปเดตให้ทุกรายการที่เลือก</p>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">ผู้นำเข้า / ประกันศูนย์</label>
+                                <select
+                                    value={bulkEditForm.distributor}
+                                    onChange={e => setBulkEditForm(p => ({ ...p, distributor: e.target.value }))}
+                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                >
+                                    <option value="">— ไม่เปลี่ยน —</option>
+                                    {bulkDistOptions.map((d: any) => (
+                                        <option key={d.value} value={d.value}>{d.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">อาการที่แจ้ง (ลูกค้าแจ้งมา)</label>
+                                <textarea
+                                    value={bulkEditForm.issueDescription}
+                                    onChange={e => setBulkEditForm(p => ({ ...p, issueDescription: e.target.value }))}
+                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                    rows={2}
+                                    placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">อาการที่พบ (พนักงานตรวจ)</label>
+                                <textarea
+                                    value={bulkEditForm.rootCause}
+                                    onChange={e => setBulkEditForm(p => ({ ...p, rootCause: e.target.value }))}
+                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                    rows={2}
+                                    placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">อาการหลังส่งศูนย์ (ศูนย์แจ้งกลับมา)</label>
+                                <textarea
+                                    value={bulkEditForm.technicalNotes}
+                                    onChange={e => setBulkEditForm(p => ({ ...p, technicalNotes: e.target.value }))}
+                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                    rows={2}
+                                    placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">สถานะประกัน</label>
+                                <select
+                                    value={bulkEditForm.warrantyStatus}
+                                    onChange={e => setBulkEditForm(p => ({ ...p, warrantyStatus: e.target.value }))}
+                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                >
+                                    <option value="">— ไม่เปลี่ยน —</option>
+                                    <option value="IN_WARRANTY">อยู่ในประกัน (In Warranty)</option>
+                                    <option value="OUT_OF_WARRANTY">หมดประกัน (Out of Warranty)</option>
+                                    <option value="VOID">ประกัน Void</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="px-6 pb-6 flex justify-end gap-2">
+                            <button onClick={() => setShowBulkEditModal(false)} className="px-5 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors">ยกเลิก</button>
+                            <button
+                                disabled={isBulkUpdating}
+                                onClick={async () => {
+                                    setIsBulkUpdating(true);
+                                    try {
+                                        const updates: Partial<RMA> = {};
+                                        if (bulkEditForm.distributor.trim()) updates.distributor = bulkEditForm.distributor.trim();
+                                        if (bulkEditForm.issueDescription.trim()) updates.issueDescription = bulkEditForm.issueDescription.trim();
+                                        if (bulkEditForm.rootCause.trim() || bulkEditForm.technicalNotes.trim()) {
+                                            (updates as any).resolution = {
+                                                ...(bulkEditForm.rootCause.trim() ? { rootCause: bulkEditForm.rootCause.trim() } : {}),
+                                                ...(bulkEditForm.technicalNotes.trim() ? { technicalNotes: bulkEditForm.technicalNotes.trim() } : {})
+                                            };
+                                        }
+                                        if (bulkEditForm.warrantyStatus) {
+                                            updates.repairCosts = { warrantyStatus: bulkEditForm.warrantyStatus as any } as any;
+                                        }
+                                        if (Object.keys(updates).length === 0) {
+                                            showToast('กรุณากรอกข้อมูลที่ต้องการเปลี่ยน', 'error');
+                                            setIsBulkUpdating(false);
+                                            return;
+                                        }
+                                        const user = MockDb.getCurrentUser()?.name || 'Admin';
+                                        const count = await MockDb.bulkUpdateFields(Array.from(selectedIds), updates, user);
+                                        showToast(`อัปเดต ${count} รายการสำเร็จ!`, 'success');
+                                        await refreshRMAs();
+                                        setShowBulkEditModal(false);
+                                        setSelectedIds(new Set());
+                                    } catch (err) {
+                                        showToast('เกิดข้อผิดพลาด', 'error');
+                                    } finally {
+                                        setIsBulkUpdating(false);
+                                    }
+                                }}
+                                className="px-6 py-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+                            >
+                                {isBulkUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                {isBulkUpdating ? 'กำลังบันทึก...' : `บันทึก (${selectedIds.size} รายการ)`}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
+

@@ -618,88 +618,218 @@ export const MockDb = {
     }
   },
 
+  // Bulk update status for multiple RMAs at once
+  bulkUpdateStatus: async (ids: string[], newStatus: RMAStatus, userName: string): Promise<number> => {
+    if (!isConfigured || !db) throw new Error("Firebase Disconnected");
+    let updated = 0;
+    for (const id of ids) {
+      try {
+        const snap = await getDoc(doc(db, 'rmas', id));
+        if (!snap.exists()) continue;
+        const oldStatus = snap.data().status || '';
+        const currentHistory = snap.data().history || [];
+        await updateDoc(doc(db, 'rmas', id), {
+          status: newStatus,
+          history: [...currentHistory, {
+            id: `evt-${Date.now()}-${updated}`,
+            date: Timestamp.now(),
+            type: 'STATUS_CHANGE',
+            description: `Bulk: ${oldStatus} → ${newStatus}`,
+            user: userName
+          }],
+          updatedAt: serverTimestamp()
+        });
+        updated++;
+      } catch (e) {
+        console.error(`bulkUpdateStatus failed for ${id}:`, e);
+      }
+    }
+    return updated;
+  },
+
+  // Bulk update fields for multiple RMAs at once
+  bulkUpdateFields: async (ids: string[], updates: Partial<RMA>, userName: string): Promise<number> => {
+    if (!isConfigured || !db) throw new Error("Firebase Disconnected");
+    const fieldNames = Object.keys(updates).join(', ');
+    let updated = 0;
+    for (const id of ids) {
+      try {
+        const snap = await getDoc(doc(db, 'rmas', id));
+        if (!snap.exists()) continue;
+        
+        // Flatten the updates to dot notation to prevent overwriting nested objects
+        const flatUpdates: any = {};
+        if (updates.distributor !== undefined) flatUpdates.distributor = updates.distributor;
+        if (updates.issueDescription !== undefined) flatUpdates.issueDescription = updates.issueDescription;
+        
+        if (updates.resolution) {
+          if (updates.resolution.rootCause !== undefined) {
+            flatUpdates["resolution.rootCause"] = updates.resolution.rootCause;
+          }
+          if (updates.resolution.technicalNotes !== undefined) {
+            flatUpdates["resolution.technicalNotes"] = updates.resolution.technicalNotes;
+          }
+        }
+        
+        if (updates.repairCosts) {
+          if (updates.repairCosts.warrantyStatus !== undefined) {
+            flatUpdates["repairCosts.warrantyStatus"] = updates.repairCosts.warrantyStatus;
+          }
+        }
+
+        const currentHistory = snap.data().history || [];
+        await updateDoc(doc(db, 'rmas', id), {
+          ...flatUpdates,
+          history: [...currentHistory, {
+            id: `evt-${Date.now()}-${updated}`,
+            date: Timestamp.now(),
+            type: 'SYSTEM',
+            description: `Bulk edit: ${fieldNames}`,
+            user: userName
+          }],
+          updatedAt: serverTimestamp()
+        });
+        updated++;
+      } catch (e) {
+        console.error(`bulkUpdateFields failed for ${id}:`, e);
+      }
+    }
+    return updated;
+  },
+
   // --- Dynamic Sequential Job ID ---
   generateNextGroupRequestId: async (): Promise<string> => {
     const now = new Date();
     const year = String(now.getFullYear()); // e.g., "2026"
 
     if (!isConfigured || !db) {
-      // Offline fallback: use timestamp to keep rough order
       const ts = Date.now().toString().slice(-4);
       return `SECRMA-${year}-${ts}`;
     }
 
     const counterRef = doc(db, 'counters', 'jobCounter');
 
-    try {
-      const newSeq = await runTransaction(db, async (transaction) => {
-        const snap = await transaction.get(counterRef);
+    // Helper: read counter, increment, write back
+    const incrementCounter = async (useTransaction: boolean): Promise<number> => {
+      if (useTransaction) {
+        return await runTransaction(db, async (transaction) => {
+          const snap = await transaction.get(counterRef);
+          let counterSeq = 0;
+          if (snap.exists()) {
+            const data = snap.data();
+            if (data.currentYear === year) counterSeq = data.sequence || 0;
+          }
+          const nextSequence = counterSeq + 1;
+          transaction.set(counterRef, { currentYear: year, sequence: nextSequence }, { merge: true });
+          return nextSequence;
+        });
+      } else {
+        // Direct read/write fallback (not atomic, but sequential)
+        const snap = await getDoc(counterRef);
         let counterSeq = 0;
-
         if (snap.exists()) {
           const data = snap.data();
-          if (data.currentYear === year) {
-            counterSeq = data.sequence || 0;
-          }
-          // If different year, counterSeq stays 0 (will be reset)
+          if (data.currentYear === year) counterSeq = data.sequence || 0;
         }
-
         const nextSequence = counterSeq + 1;
-
-        // Atomic update
-        transaction.set(counterRef, {
-          currentYear: year,
-          sequence: nextSequence
-        }, { merge: true });
-
+        await setDoc(counterRef, { currentYear: year, sequence: nextSequence }, { merge: true });
         return nextSequence;
-      });
+      }
+    };
 
-      const formattedSeq = String(newSeq).padStart(4, '0');
-      return `SECRMA-${year}-${formattedSeq}`;
-
-    } catch (e) {
-      console.error("Failed to generate sequence ID, falling back:", e);
-      // Fallback: timestamp-based to keep rough order
-      const ts = Date.now().toString().slice(-4);
-      return `SECRMA-${year}-${ts}`;
+    // Strategy 1: Transaction (atomic, best)
+    try {
+      const seq = await incrementCounter(true);
+      return `SECRMA-${year}-${String(seq).padStart(4, '0')}`;
+    } catch (e: any) {
+      console.warn("Transaction failed, trying direct read/write:", e);
     }
+
+    // Strategy 2: Direct read/write (not atomic but still sequential)
+    try {
+      const seq = await incrementCounter(false);
+      return `SECRMA-${year}-${String(seq).padStart(4, '0')}`;
+    } catch (e2: any) {
+      console.error("Direct fallback also failed:", e2);
+    }
+
+    // Strategy 3: Last resort — timestamp (loses sequential order)
+    const ts = Date.now().toString().slice(-4);
+    return `SECRMA-${year}-${ts}`;
+  },
+
+  // --- One-time counter fix ---
+  resetJobCounter: async (newSequence: number): Promise<string> => {
+    if (!isConfigured || !db) throw new Error("Firebase Disconnected");
+    const year = String(new Date().getFullYear());
+    const counterRef = doc(db, 'counters', 'jobCounter');
+    await setDoc(counterRef, { currentYear: year, sequence: newSequence });
+    return `Counter reset to ${newSequence}. Next ID will be SECRMA-${year}-${String(newSequence + 1).padStart(4, '0')}`;
+  },
+
+  // --- One-time migration: fix all fallback groupRequestIds ---
+  fixGroupRequestIds: async (): Promise<string> => {
+    if (!isConfigured || !db) throw new Error("Firebase Disconnected");
+    const year = String(new Date().getFullYear());
+    const prefix = `SECRMA-${year}-`;
+
+    // 1. Read ALL RMAs
+    const rmasSnap = await getDocs(collection(db, 'rmas'));
+
+    // 2. Group by groupRequestId and find valid max
+    const groupMap = new Map<string, string[]>(); // groupRequestId -> [docIds]
+    let validMax = 0;
+
+    rmasSnap.docs.forEach(d => {
+      const gid = d.data().groupRequestId as string;
+      if (!gid || !gid.startsWith(prefix)) return;
+      if (!groupMap.has(gid)) groupMap.set(gid, []);
+      groupMap.get(gid)!.push(d.id);
+
+      const seq = parseInt(gid.substring(prefix.length), 10);
+      if (!isNaN(seq) && seq <= 100 && seq > validMax) validMax = seq;
+    });
+
+    // 3. Find groups that need fixing (sequence > 100 = fallback IDs)
+    const badGroups: string[] = [];
+    groupMap.forEach((_, gid) => {
+      const seq = parseInt(gid.substring(prefix.length), 10);
+      if (!isNaN(seq) && seq > 100) badGroups.push(gid);
+    });
+
+    // Sort bad groups by their creation order
+    badGroups.sort();
+
+    // 4. Remap each bad group to next sequential number
+    let nextSeq = validMax;
+    const changes: string[] = [];
+
+    for (const oldGid of badGroups) {
+      nextSeq++;
+      const newGid = `${prefix}${String(nextSeq).padStart(4, '0')}`;
+      const docIds = groupMap.get(oldGid) || [];
+
+      for (const docId of docIds) {
+        await updateDoc(doc(db, 'rmas', docId), { groupRequestId: newGid });
+      }
+      changes.push(`${oldGid} → ${newGid} (${docIds.length} docs)`);
+    }
+
+    // 5. Update counter
+    const counterRef = doc(db, 'counters', 'jobCounter');
+    await setDoc(counterRef, { currentYear: year, sequence: nextSeq });
+
+    return `Fixed ${changes.length} groups. Counter set to ${nextSeq}.\n` + changes.join('\n');
   },
 
   // --- Delete Functions ---
   deleteRMA: async (id: string) => {
     if (!isConfigured || !db) throw new Error("Firebase Disconnected");
     try {
-      // Delete the document first
       await deleteDoc(doc(db, 'rmas', id));
-
-      // After deletion, recalculate the counter based on remaining documents
-      const now = new Date();
-      const year = String(now.getFullYear());
-      const prefix = `SECRMA-${year}-`;
-
-      // Scan remaining RMAs to find new highest sequence
-      const rmasSnap = await getDocs(collection(db, 'rmas'));
-      let maxSeq = 0;
-      rmasSnap.docs.forEach(d => {
-        const data = d.data();
-        const gid = data.groupRequestId as string | undefined;
-        if (gid && gid.startsWith(prefix)) {
-          const seqPart = gid.substring(prefix.length);
-          const seqNum = parseInt(seqPart, 10);
-          if (!isNaN(seqNum) && seqNum > maxSeq) {
-            maxSeq = seqNum;
-          }
-        }
-      });
-
-      // Update counter to reflect actual max
-      const counterRef = doc(db, 'counters', 'jobCounter');
-      await setDoc(counterRef, {
-        currentYear: year,
-        sequence: maxSeq
-      }, { merge: true });
-      console.log(`Job counter synced to ${maxSeq} after deleting ${id}`);
+      // Counter is NOT recalculated — it only goes up, never down.
+      // This prevents accidental counter corruption from old/fallback IDs.
+      console.log(`Deleted RMA: ${id}`);
     }
     catch (e) {
       console.error("deleteRMA failed", e);

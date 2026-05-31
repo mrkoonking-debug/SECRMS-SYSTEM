@@ -56,7 +56,7 @@ export const CustomerSubmit: React.FC = () => {
         }
     };
 
-    const handleAddItem = (item: any) => setBasket([...basket, { ...item, id: Date.now().toString() }]);
+    const handleAddItem = (item: any) => setBasket(prev => [...prev, { ...item, id: Date.now().toString() + Math.random().toString(36).slice(2, 6) }]);
     const handleRemoveItem = (id: string) => setBasket(basket.filter(i => i.id !== id));
 
     const formatAccessory = (acc: string) => {

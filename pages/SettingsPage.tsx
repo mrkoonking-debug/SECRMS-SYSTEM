@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
-import { Settings, Save, Check, Loader2, Globe, Building, Zap, Trash2, AlertTriangle, Archive, X, Search } from 'lucide-react';
+import { Settings, Save, Check, Loader2, Globe, Building, Zap, Trash2, AlertTriangle, Archive, X, Search, Wrench } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { showToast } from '../services/toast';
 
@@ -18,6 +18,8 @@ export const SettingsPage: React.FC = () => {
   const [success, setSuccess] = useState('');
   const [isDeletingOld, setIsDeletingOld] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [isFixingIds, setIsFixingIds] = useState(false);
+  const [fixResult, setFixResult] = useState('');
   const [oldRmaList, setOldRmaList] = useState<OldRmaItem[]>([]);
   const [showOldRmaModal, setShowOldRmaModal] = useState(false);
   const navigate = useNavigate();
@@ -95,6 +97,21 @@ export const SettingsPage: React.FC = () => {
       showToast(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด', 'error');
     } finally {
       setIsDeletingOld(false);
+    }
+  };
+
+  const handleFixJobIds = async () => {
+    if (!confirm('ต้องการแก้ไขเลข Job ID ที่ผิดปกติ (เลขสุ่มจาก fallback) ให้เรียงลำดับถูกต้องหรือไม่?')) return;
+    setIsFixingIds(true);
+    setFixResult('');
+    try {
+      const result = await MockDb.fixGroupRequestIds();
+      setFixResult(result);
+      showToast('แก้ไขเลข Job ID สำเร็จ!', 'success');
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด', 'error');
+    } finally {
+      setIsFixingIds(false);
     }
   };
 
@@ -211,6 +228,32 @@ export const SettingsPage: React.FC = () => {
               <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
               <p className="text-[11px] text-amber-700 dark:text-amber-400">การลบข้อมูลจะไม่สามารถกู้คืนได้ กรุณาตรวจสอบให้แน่ใจก่อนดำเนินการ</p>
             </div>
+          </div>
+
+          {/* Fix Job ID Section */}
+          <div className="p-4 bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl mt-4">
+            <div className="flex items-start justify-between flex-wrap gap-4">
+              <div className="flex-1">
+                <h4 className="font-bold text-sm text-[#1d1d1f] dark:text-white mb-1 flex items-center gap-2">
+                  <Wrench className="w-4 h-4 text-blue-500" /> แก้ไขเลข Job ID ที่ผิดปกติ
+                </h4>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  สแกนและแก้ไข Job ID ที่เป็นเลขสุ่ม (เช่น 4745, 8501) ให้กลับมาเรียงลำดับถูกต้อง เช่น 0039, 0040...
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleFixJobIds}
+                disabled={isFixingIds}
+                className="px-5 py-2.5 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-all active:scale-95 shadow-sm"
+              >
+                {isFixingIds ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wrench className="w-4 h-4" />}
+                {isFixingIds ? 'กำลังแก้ไข...' : 'แก้ไข Job ID'}
+              </button>
+            </div>
+            {fixResult && (
+              <pre className="mt-3 p-3 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/30 rounded-lg text-xs text-green-700 dark:text-green-400 whitespace-pre-wrap">{fixResult}</pre>
+            )}
           </div>
         </div>
 

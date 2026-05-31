@@ -49,6 +49,8 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
     const [customAccessory, setCustomAccessory] = useState('');
     const [customDistributor, setCustomDistributor] = useState('');
     const [customBrand, setCustomBrand] = useState('');
+    const [noSerial, setNoSerial] = useState(false);
+    const [quantity, setQuantity] = useState(1);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     // Modals State
@@ -76,7 +78,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
 
     const validate = () => {
         const newErrors: Record<string, string> = {};
-        const required = ['brand', 'model', 'serial', 'issue'];
+        const required = noSerial ? ['brand', 'model', 'issue'] : ['brand', 'model', 'serial', 'issue'];
         if (mode === 'admin') required.push('team', 'distributor');
 
         required.forEach(f => {
@@ -99,7 +101,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
         let finalAcc = [...currentItem.accessories];
         if (customAccessory.trim() && !finalAcc.includes(customAccessory.trim())) finalAcc.push(customAccessory.trim());
 
-        onAddItem({
+        const baseItem = {
             ...currentItem,
             brand: currentItem.brand === 'Other' ? customBrand.trim() : currentItem.brand,
             distributor: mode === 'customer' ? 'Customer' : (currentItem.distributor === 'Other' ? customDistributor.trim() : currentItem.distributor),
@@ -107,11 +109,22 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
             team: mode === 'customer' ? Team.TEAM_C : currentItem.team,
             deviceUsername: currentItem.deviceUsername.trim(),
             devicePassword: currentItem.devicePassword.trim(),
-        });
+        };
+
+        if (noSerial && quantity > 1) {
+            for (let i = 1; i <= quantity; i++) {
+                onAddItem({ ...baseItem, serial: `N/A-${String(i).padStart(3, '0')}` });
+            }
+        } else if (noSerial) {
+            onAddItem({ ...baseItem, serial: 'N/A' });
+        } else {
+            onAddItem(baseItem);
+        }
 
         // Reset Form
         setCurrentItem({ brand: '', model: '', serial: '', type: ProductType.CCTV_CAMERA, distributor: '', issue: '', accessories: [], team: '', deviceUsername: '', devicePassword: '' });
         setSelectedMainTeam(''); setCustomDistributor(''); setCustomBrand(''); setCustomAccessory(''); setErrors({});
+        setNoSerial(false); setQuantity(1);
     };
 
     const toggleAccessory = (acc: string) => {
@@ -144,13 +157,45 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                 </div>
 
                 <div className="relative">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.serial')}</label>
-                    <div className="relative">
-                        <input value={currentItem.serial} onChange={e => setCurrentItem({ ...currentItem, serial: e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase() })} className={`${getInputClass(!!errors.serial)} pr-10 uppercase`} placeholder={t('submit.enterSn')} style={{ textTransform: 'uppercase' }} />
-                        <button type="button" onClick={() => { setScanTarget('serial'); setShowScanner(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 transition-colors"><ScanBarcode className="w-5 h-5" /></button>
-                    </div>
-                    {mode === 'customer' && <p className="text-[11px] text-blue-500/70 mt-1 ml-2 flex items-center gap-1">💡 หมายเลข S/N อยู่บนสติกเกอร์ด้านหลังเครื่อง</p>}
-                    {mode !== 'customer' && <p className="text-[11px] text-gray-400 mt-1 ml-2">{t('submit.serialHint')}</p>}
+                    {noSerial ? (
+                        <>
+                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">จำนวน (Quantity)</label>
+                            <div className="flex items-center gap-4 px-4 py-2.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-[#333] rounded-2xl">
+                                <button type="button" onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] flex items-center justify-center hover:bg-gray-200 dark:hover:bg-[#3a3a3c] transition-all active:scale-95">
+                                    <Minus className="w-4 h-4 text-gray-500" />
+                                </button>
+                                <span className="text-2xl font-black text-[#1d1d1f] dark:text-white tabular-nums min-w-[2ch] text-center">{quantity}</span>
+                                <button type="button" onClick={() => setQuantity(q => Math.min(20, q + 1))} className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 flex items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all active:scale-95">
+                                    <Plus className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                </button>
+                                <span className="text-xs text-gray-400 ml-1">ชิ้น (สูงสุด 20)</span>
+                            </div>
+                            <p className="text-[11px] text-amber-500 mt-1.5 ml-2 flex items-center gap-1">{`⚡ ระบบจะสร้าง S/N อัตโนมัติ: N/A-001 ถึง N/A-${String(quantity).padStart(3, '0')}`}</p>
+                        </>
+                    ) : (
+                        <>
+                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.serial')}</label>
+                            <div className="relative">
+                                <input value={currentItem.serial} onChange={e => setCurrentItem({ ...currentItem, serial: e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase() })} className={`${getInputClass(!!errors.serial)} pr-10 uppercase`} placeholder={t('submit.enterSn')} style={{ textTransform: 'uppercase' }} />
+                                <button type="button" onClick={() => { setScanTarget('serial'); setShowScanner(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 transition-colors"><ScanBarcode className="w-5 h-5" /></button>
+                            </div>
+                            {mode === 'customer' && <p className="text-[11px] text-blue-500/70 mt-1 ml-2 flex items-center gap-1">💡 หมายเลข S/N อยู่บนสติกเกอร์ด้านหลังเครื่อง</p>}
+                            {mode !== 'customer' && <p className="text-[11px] text-gray-400 mt-1 ml-2">{t('submit.serialHint')}</p>}
+                        </>
+                    )}
+                    <button
+                        type="button"
+                        onClick={() => { setNoSerial(!noSerial); if (!noSerial) { setCurrentItem(p => ({ ...p, serial: '' })); setQuantity(1); } }}
+                        className={`mt-2 flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${noSerial
+                            ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700'
+                            : 'bg-gray-50 dark:bg-[#2c2c2e] text-gray-500 dark:text-gray-400 border-gray-200 dark:border-[#424245] hover:border-amber-400 hover:text-amber-500'
+                        }`}
+                    >
+                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${noSerial ? 'bg-amber-500 border-amber-500' : 'border-gray-300 dark:border-gray-600'}`}>
+                            {noSerial && <Check className="w-3 h-3 text-white" />}
+                        </div>
+                        ไม่มี S/N (เช่น บัตร, อุปกรณ์เล็ก)
+                    </button>
                 </div>
             </div>
 
@@ -238,7 +283,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
             </div>
 
             <button data-tour="tour-add-button" onClick={handleAddClick} className="w-full py-4 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-[0.98]">
-                <Plus className="w-5 h-5" /> {t(mode === 'customer' ? 'publicSubmit.addAnother' : 'submit.addToJob')}
+                <Plus className="w-5 h-5" /> {noSerial && quantity > 1 ? `เพิ่ม ${quantity} รายการ` : t(mode === 'customer' ? 'publicSubmit.addAnother' : 'submit.addToJob')}
             </button>
 
             {showScanner && <ScannerModal onClose={() => setShowScanner(false)} onScan={(val) => { setCurrentItem(p => ({ ...p, [scanTarget]: val })); setShowScanner(false); }} />}
