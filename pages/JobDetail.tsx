@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef, lazy, Suspense } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { RMA, RMAStatus, ProductType } from '../types';
-import { ArrowLeft, Package, User, Clock, Edit2, AlertCircle, CheckCircle2, History, Trash2, Truck, ShieldCheck, FileText, Edit3, Save, Loader2, Plus, CheckSquare, Square, Zap, X as XClose } from 'lucide-react';
+import { ArrowLeft, Package, User, Clock, Edit2, AlertCircle, CheckCircle2, History, Trash2, Truck, ShieldCheck, FileText, Edit3, Save, Loader2, Plus, CheckSquare, Square, Zap, X as XClose, Search, Wrench, Undo2, RefreshCw, ClipboardCheck, Settings2, PackageCheck } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { StatusBadge } from '../components/StatusBadge';
 
@@ -52,6 +52,7 @@ export const JobDetail: React.FC = () => {
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);
     const [bulkDistOptions, setBulkDistOptions] = useState<any[]>([]);
     const [bulkEditForm, setBulkEditForm] = useState({ distributor: '', issueDescription: '', rootCause: '', technicalNotes: '', warrantyStatus: '' });
+    const [showManualStatusInBulk, setShowManualStatusInBulk] = useState(false);
 
     // Customer edit state
     const [isEditingCustomer, setIsEditingCustomer] = useState(false);
@@ -1179,57 +1180,213 @@ export const JobDetail: React.FC = () => {
             </div>
 
             {/* ═══ BULK STATUS CHANGE MODAL ═══ */}
-            {showBulkStatusModal && (
-                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => !isBulkUpdating && setShowBulkStatusModal(false)}>
-                    <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl w-full max-w-md shadow-2xl border border-gray-200 dark:border-[#333]" onClick={e => e.stopPropagation()}>
-                        <div className="px-6 py-5 border-b border-gray-100 dark:border-[#333]">
-                            <h3 className="text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2">
-                                <Zap className="w-5 h-5 text-orange-500" /> เปลี่ยนสถานะ {selectedIds.size} รายการ
-                            </h3>
-                            <p className="text-xs text-gray-500 mt-1">เลือกสถานะใหม่ที่ต้องการ</p>
-                        </div>
-                        <div className="p-6 grid grid-cols-1 gap-2">
-                            {[
-                                { status: RMAStatus.PENDING, label: 'รับเรื่องแล้ว', color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300' },
-                                { status: RMAStatus.DIAGNOSING, label: 'กำลังตรวจสอบ', color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' },
-                                { status: RMAStatus.WAITING_PARTS, label: 'ส่งเคลมศูนย์แล้ว', color: 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300' },
-                                { status: RMAStatus.REPLACED_FROM_STOCK, label: 'สลับของให้แล้ว (รอศูนย์)', color: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300' },
-                                { status: RMAStatus.RETURNED_FROM_VENDOR, label: 'ของเคลมกลับมาแล้ว', color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300' },
-                                { status: RMAStatus.REPAIRED, label: 'ซ่อมเสร็จ / พร้อมคืน', color: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' },
-                                { status: RMAStatus.CLOSED, label: 'ปิดงาน (ลูกค้ารับของแล้ว)', color: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300' },
-                            ].map(opt => (
-                                <button
-                                    key={opt.status}
-                                    disabled={isBulkUpdating}
-                                    onClick={async () => {
-                                        setIsBulkUpdating(true);
-                                        try {
-                                            const user = MockDb.getCurrentUser()?.name || 'Admin';
-                                            const count = await MockDb.bulkUpdateStatus(Array.from(selectedIds), opt.status, user);
-                                            showToast(`อัปเดตสถานะ ${count} รายการสำเร็จ!`, 'success');
-                                            await refreshRMAs();
-                                            setShowBulkStatusModal(false);
-                                            setSelectedIds(new Set());
-                                        } catch (err) {
-                                            showToast('เกิดข้อผิดพลาด', 'error');
-                                        } finally {
-                                            setIsBulkUpdating(false);
-                                        }
-                                    }}
-                                    className={`w-full text-left px-4 py-3 rounded-xl font-medium text-sm transition-all hover:scale-[1.01] active:scale-[0.99] border border-transparent hover:border-gray-200 dark:hover:border-[#424245] ${opt.color}`}
+            {showBulkStatusModal && (() => {
+                const selectedRMAs = rmas.filter(r => selectedIds.has(r.id));
+                const allSameStatus = selectedRMAs.length > 0 && selectedRMAs.every(r => r.status === selectedRMAs[0].status);
+                const commonStatus = allSameStatus ? selectedRMAs[0].status : null;
+
+                const handleExecuteStatusChange = async (newStatus: RMAStatus, additionalUpdates?: Partial<RMA>) => {
+                    setIsBulkUpdating(true);
+                    try {
+                        const user = MockDb.getCurrentUser()?.name || 'Admin';
+                        const count = await MockDb.bulkUpdateStatus(Array.from(selectedIds), newStatus, user, additionalUpdates);
+                        showToast(`อัปเดตสถานะ ${count} รายการสำเร็จ!`, 'success');
+                        await refreshRMAs();
+                        setShowBulkStatusModal(false);
+                        setShowManualStatusInBulk(false);
+                        setSelectedIds(new Set());
+                    } catch (err) {
+                        showToast('เกิดข้อผิดพลาด', 'error');
+                    } finally {
+                        setIsBulkUpdating(false);
+                    }
+                };
+
+                return (
+                    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => {
+                        if (!isBulkUpdating) {
+                            setShowBulkStatusModal(false);
+                            setShowManualStatusInBulk(false);
+                        }
+                    }}>
+                        <div className="bg-white dark:bg-[#1c1c1e] rounded-3xl w-full max-w-md shadow-2xl border border-gray-200 dark:border-[#333] overflow-hidden" onClick={e => e.stopPropagation()}>
+                            <div className="px-6 py-5 border-b border-gray-100 dark:border-[#333] flex justify-between items-center bg-gray-50/50 dark:bg-white/[0.02]">
+                                <div>
+                                    <h3 className="text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2">
+                                        <Zap className="w-5 h-5 text-orange-500" /> เปลี่ยนสถานะ {selectedIds.size} รายการ
+                                    </h3>
+                                    {commonStatus ? (
+                                        <div className="flex items-center gap-1.5 mt-1">
+                                            <span className="text-[11px] text-gray-500">สถานะปัจจุบัน:</span>
+                                            <span className="text-[11px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full">
+                                                {t(`status.${commonStatus}`)}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <p className="text-xs text-gray-500 mt-1">รายการที่เลือกมีสถานะที่แตกต่างกัน</p>
+                                    )}
+                                </div>
+                                <button 
+                                    onClick={() => { setShowBulkStatusModal(false); setShowManualStatusInBulk(false); }}
+                                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
                                 >
-                                    {opt.label}
+                                    <XClose className="w-5 h-5" />
                                 </button>
-                            ))}
-                        </div>
-                        {isBulkUpdating && (
-                            <div className="px-6 pb-4 flex items-center gap-2 text-sm text-gray-500">
-                                <Loader2 className="w-4 h-4 animate-spin" /> กำลังอัปเดต...
                             </div>
-                        )}
+                            
+                            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+                                {commonStatus && !showManualStatusInBulk ? (
+                                    <div className="space-y-4">
+                                        <div className="bg-blue-50/30 dark:bg-blue-900/5 border border-blue-100/50 dark:border-blue-900/10 rounded-2xl p-4">
+                                            <h4 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-3">ขั้นตอนถัดไป (แนะนำ)</h4>
+                                            
+                                            {commonStatus === RMAStatus.PENDING && (
+                                                <div className="space-y-2">
+                                                    <p className="text-xs text-gray-400 mb-1">กดเพื่อเริ่มทำการตรวจสอบอาการสินค้าทั้งกลุ่ม</p>
+                                                    <button
+                                                        disabled={isBulkUpdating}
+                                                        onClick={() => handleExecuteStatusChange(RMAStatus.DIAGNOSING)}
+                                                        className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100/75 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
+                                                    >
+                                                        <Search className="w-4 h-4" /> เริ่มตรวจสอบ ({selectedIds.size} รายการ)
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {commonStatus === RMAStatus.DIAGNOSING && (
+                                                <div className="space-y-3">
+                                                    <p className="text-xs text-gray-400 mb-1">กรุณาเลือกขั้นตอนที่เหมาะสมหลังการตรวจเช็คอาการ</p>
+                                                    <button
+                                                        disabled={isBulkUpdating}
+                                                        onClick={() => handleExecuteStatusChange(RMAStatus.WAITING_PARTS, { serviceType: 'EXTERNAL' })}
+                                                        className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-orange-300 dark:border-orange-600/40 bg-orange-50 dark:bg-orange-900/10 hover:bg-orange-100/75 dark:hover:bg-orange-900/20 text-orange-700 dark:text-orange-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
+                                                    >
+                                                        <Package className="w-4 h-4" /> ส่งเคลมศูนย์
+                                                    </button>
+                                                    <button
+                                                        disabled={isBulkUpdating}
+                                                        onClick={() => handleExecuteStatusChange(RMAStatus.REPAIRED, { serviceType: 'INTERNAL', resolution: { actionTaken: 'Software Update' } as any })}
+                                                        className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-green-300 dark:border-green-600/40 bg-green-50 dark:bg-green-900/10 hover:bg-green-100/75 dark:hover:bg-green-900/20 text-green-700 dark:text-green-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
+                                                    >
+                                                        <Wrench className="w-4 h-4" /> แก้ไข Config/Firmware (จบที่ร้าน)
+                                                    </button>
+                                                    <button
+                                                        disabled={isBulkUpdating}
+                                                        onClick={() => handleExecuteStatusChange(RMAStatus.REPAIRED, { serviceType: 'INTERNAL', resolution: { actionTaken: 'No Fault Found' } as any })}
+                                                        className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600/40 bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-700/30 text-gray-600 dark:text-gray-400 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
+                                                    >
+                                                        <Undo2 className="w-4 h-4" /> ไม่พบอาการเสีย (ส่งคืน)
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {commonStatus === RMAStatus.WAITING_PARTS && (
+                                                <div className="space-y-3">
+                                                    <p className="text-xs text-gray-400 mb-1">สถานะปัจจุบัน: รอศูนย์ สามารถสลับสต็อกให้ลูกค้าก่อนได้</p>
+                                                    <button
+                                                        disabled={isBulkUpdating}
+                                                        onClick={() => handleExecuteStatusChange(RMAStatus.REPLACED_FROM_STOCK)}
+                                                        className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-purple-300 dark:border-purple-600/40 bg-purple-50 dark:bg-purple-900/10 hover:bg-purple-100/75 dark:hover:bg-purple-900/20 text-purple-700 dark:text-purple-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
+                                                    >
+                                                        <RefreshCw className="w-4 h-4" /> สลับของสต็อกให้ลูกค้าเลย (Advance Replacement)
+                                                    </button>
+                                                    <p className="text-xs text-gray-400 mb-1">ของกลับจากศูนย์แล้ว กดเพื่อลงข้อมูลผลจากศูนย์</p>
+                                                    <button
+                                                        disabled={isBulkUpdating}
+                                                        onClick={() => handleExecuteStatusChange(RMAStatus.RETURNED_FROM_VENDOR)}
+                                                        className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100/75 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
+                                                    >
+                                                        <PackageCheck className="w-4 h-4" /> รับของคืนจากศูนย์
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {commonStatus === RMAStatus.REPLACED_FROM_STOCK && (
+                                                <div className="space-y-2">
+                                                    <p className="text-xs text-gray-400 mb-1">ของกลับจากศูนย์แล้ว นำของที่ได้กลับเข้าสต๊อกคืน</p>
+                                                    <button
+                                                        disabled={isBulkUpdating}
+                                                        onClick={() => handleExecuteStatusChange(RMAStatus.RETURNED_FROM_VENDOR)}
+                                                        className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100/75 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
+                                                    >
+                                                        <PackageCheck className="w-4 h-4" /> รับของคืนจากศูนย์ (เข้าคลัง)
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {(commonStatus === RMAStatus.REPAIRED || commonStatus === RMAStatus.RETURNED_FROM_VENDOR) && (
+                                                <div className="space-y-2">
+                                                    <p className="text-xs text-gray-400 mb-1">ตรวจสอบข้อมูลทั้งหมดก่อนปิดงาน กดเพื่อดูสรุปและยืนยัน</p>
+                                                    <button
+                                                        disabled={isBulkUpdating}
+                                                        onClick={() => handleExecuteStatusChange(RMAStatus.CLOSED)}
+                                                        className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm font-bold shadow-lg shadow-green-500/20 transition-all transform active:scale-[0.98] disabled:opacity-50"
+                                                    >
+                                                        <ClipboardCheck className="w-4 h-4" /> ตรวจสอบและปิดงาน
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {commonStatus === RMAStatus.CLOSED && (
+                                                <p className="text-xs text-gray-400 text-center py-2">งานนี้ปิดเรียบร้อยแล้ว ไม่แนะนำให้เปลี่ยนสถานะต่อ</p>
+                                            )}
+                                        </div>
+
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setShowManualStatusInBulk(true)}
+                                            className="w-full py-2.5 border border-gray-200 dark:border-[#333] hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl text-xs font-bold text-gray-500 hover:text-blue-500 flex items-center justify-center gap-1.5 transition-colors"
+                                        >
+                                            <Settings2 className="w-3.5 h-3.5" /> เปลี่ยนสถานะด้วยตนเอง
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-center mb-1">
+                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">เลือกสถานะที่ต้องการเปลี่ยน:</p>
+                                            {commonStatus && (
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => setShowManualStatusInBulk(false)}
+                                                    className="text-[11px] font-bold text-blue-500 hover:underline"
+                                                >
+                                                    กลับไปขั้นตอนแนะนำ
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {[
+                                                { status: RMAStatus.PENDING, label: 'รับเรื่องแล้ว', color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200/75 dark:hover:bg-gray-700/50' },
+                                                { status: RMAStatus.DIAGNOSING, label: 'กำลังตรวจสอบ', color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100/50 dark:hover:bg-blue-900/30' },
+                                                { status: RMAStatus.WAITING_PARTS, label: 'ส่งเคลมศูนย์แล้ว', color: 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 hover:bg-purple-100/50 dark:hover:bg-purple-900/30' },
+                                                { status: RMAStatus.REPLACED_FROM_STOCK, label: 'สลับของให้แล้ว (รอศูนย์)', color: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 hover:bg-amber-100/50 dark:hover:bg-amber-900/30' },
+                                                { status: RMAStatus.RETURNED_FROM_VENDOR, label: 'ของเคลมกลับมาแล้ว', color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 hover:bg-teal-100/50 dark:hover:bg-teal-900/30' },
+                                                { status: RMAStatus.REPAIRED, label: 'ซ่อมเสร็จ / พร้อมคืน', color: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:bg-green-100/50 dark:hover:bg-green-900/30' },
+                                                { status: RMAStatus.CLOSED, label: 'ปิดงาน (ลูกค้ารับของแล้ว)', color: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100/50 dark:hover:bg-emerald-900/30' },
+                                            ].map(opt => (
+                                                <button
+                                                    key={opt.status}
+                                                    disabled={isBulkUpdating}
+                                                    onClick={() => handleExecuteStatusChange(opt.status)}
+                                                    className={`w-full text-left px-4 py-3 rounded-xl font-semibold text-sm transition-all hover:scale-[1.01] active:scale-[0.99] border border-transparent hover:border-gray-200 dark:hover:border-[#424245] ${opt.color}`}
+                                                >
+                                                    {opt.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {isBulkUpdating && (
+                                <div className="px-6 py-4 bg-gray-50/50 dark:bg-white/[0.01] border-t border-gray-100 dark:border-[#333] flex items-center gap-2.5 text-sm text-gray-500 justify-center">
+                                    <Loader2 className="w-4 h-4 animate-spin text-blue-500" /> กำลังดำเนินการอัปเดตสถานะ...
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
-            )}
+                );
+            })()}
 
             {/* ═══ BULK EDIT FIELDS MODAL ═══ */}
             {showBulkEditModal && (

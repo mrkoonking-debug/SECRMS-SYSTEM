@@ -619,7 +619,7 @@ export const MockDb = {
   },
 
   // Bulk update status for multiple RMAs at once
-  bulkUpdateStatus: async (ids: string[], newStatus: RMAStatus, userName: string): Promise<number> => {
+  bulkUpdateStatus: async (ids: string[], newStatus: RMAStatus, userName: string, additionalUpdates?: Partial<RMA>): Promise<number> => {
     if (!isConfigured || !db) throw new Error("Firebase Disconnected");
     let updated = 0;
     for (const id of ids) {
@@ -628,7 +628,8 @@ export const MockDb = {
         if (!snap.exists()) continue;
         const oldStatus = snap.data().status || '';
         const currentHistory = snap.data().history || [];
-        await updateDoc(doc(db, 'rmas', id), {
+        
+        const flatUpdates: any = {
           status: newStatus,
           history: [...currentHistory, {
             id: `evt-${Date.now()}-${updated}`,
@@ -638,7 +639,21 @@ export const MockDb = {
             user: userName
           }],
           updatedAt: serverTimestamp()
-        });
+        };
+
+        if (additionalUpdates) {
+          if (additionalUpdates.serviceType !== undefined) flatUpdates.serviceType = additionalUpdates.serviceType;
+          if (additionalUpdates.resolution) {
+            if (additionalUpdates.resolution.actionTaken !== undefined) {
+              flatUpdates["resolution.actionTaken"] = additionalUpdates.resolution.actionTaken;
+            }
+            if (additionalUpdates.resolution.rootCause !== undefined) {
+              flatUpdates["resolution.rootCause"] = additionalUpdates.resolution.rootCause;
+            }
+          }
+        }
+
+        await updateDoc(doc(db, 'rmas', id), flatUpdates);
         updated++;
       } catch (e) {
         console.error(`bulkUpdateStatus failed for ${id}:`, e);
