@@ -51,7 +51,9 @@ export const JobDetail: React.FC = () => {
     const [showBulkEditModal, setShowBulkEditModal] = useState(false);
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);
     const [bulkDistOptions, setBulkDistOptions] = useState<any[]>([]);
-    const [bulkEditForm, setBulkEditForm] = useState({ distributor: '', issueDescription: '', rootCause: '', technicalNotes: '', warrantyStatus: '' });
+    const [bulkBrandOptions, setBulkBrandOptions] = useState<any[]>([]);
+    const [bulkCustomBrand, setBulkCustomBrand] = useState('');
+    const [bulkEditForm, setBulkEditForm] = useState({ brand: '', productModel: '', serialNumber: '', distributor: '', issueDescription: '', rootCause: '', technicalNotes: '', warrantyStatus: '' });
     const [showManualStatusInBulk, setShowManualStatusInBulk] = useState(false);
     const [isBulkEditLocked, setIsBulkEditLocked] = useState(false);
 
@@ -1148,30 +1150,45 @@ export const JobDetail: React.FC = () => {
                             >
                                 <Zap className="w-3.5 h-3.5" /> เปลี่ยนสถานะ
                             </button>
-                            {rmas.some(r => r.serialNumber?.startsWith('N/A-')) && (
-                                <button
-                                    onClick={async () => {
-                                        const selectedRMAs = rmas.filter(r => selectedIds.has(r.id));
-                                        const hasClosed = selectedRMAs.some(r => r.status === RMAStatus.CLOSED);
-                                        setIsBulkEditLocked(hasClosed);
+                            <button
+                                onClick={async () => {
+                                    const selectedRMAs = rmas.filter(r => selectedIds.has(r.id));
+                                    const hasClosed = selectedRMAs.some(r => r.status === RMAStatus.CLOSED);
+                                    setIsBulkEditLocked(hasClosed);
 
-                                        const first = selectedRMAs[0];
-                                        const dists = await MockDb.getDistributors();
-                                        setBulkDistOptions(dists);
-                                        setBulkEditForm({
-                                            distributor: first?.distributor || '',
-                                            issueDescription: first?.issueDescription || '',
-                                            rootCause: first?.resolution?.rootCause || '',
-                                            technicalNotes: first?.resolution?.technicalNotes || '',
-                                            warrantyStatus: first?.repairCosts?.warrantyStatus || ''
-                                        });
-                                        setShowBulkEditModal(true);
-                                    }}
-                                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-xl text-sm font-bold flex items-center gap-1.5 transition-all active:scale-95"
-                                >
-                                    <Edit3 className="w-3.5 h-3.5" /> แก้ไขรายละเอียด
-                                </button>
-                            )}
+                                    const first = selectedRMAs[0];
+                                    const [dists, brands] = await Promise.all([
+                                        MockDb.getDistributors(),
+                                        MockDb.getBrands()
+                                    ]);
+                                    setBulkDistOptions(dists);
+                                    setBulkBrandOptions([...brands, { value: 'Other', label: t('submit.other') || 'อื่นๆ' }]);
+
+                                    const brandValues = brands.map((b: any) => b.value);
+                                    let initialBrand = first?.brand || '';
+                                    let initialCustomBrand = '';
+                                    if (initialBrand && !brandValues.includes(initialBrand)) {
+                                        initialCustomBrand = initialBrand;
+                                        initialBrand = 'Other';
+                                    }
+                                    setBulkCustomBrand(initialCustomBrand);
+
+                                    setBulkEditForm({
+                                        brand: initialBrand,
+                                        productModel: first?.productModel || '',
+                                        serialNumber: first?.serialNumber || '',
+                                        distributor: first?.distributor || '',
+                                        issueDescription: first?.issueDescription || '',
+                                        rootCause: first?.resolution?.rootCause || '',
+                                        technicalNotes: first?.resolution?.technicalNotes || '',
+                                        warrantyStatus: first?.repairCosts?.warrantyStatus || ''
+                                    });
+                                    setShowBulkEditModal(true);
+                                }}
+                                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-xl text-sm font-bold flex items-center gap-1.5 transition-all active:scale-95"
+                            >
+                                <Edit3 className="w-3.5 h-3.5" /> แก้ไขรายละเอียด
+                            </button>
                             <button
                                 onClick={() => setSelectedIds(new Set())}
                                 className="p-2 hover:bg-white/10 rounded-xl transition-colors"
@@ -1420,6 +1437,53 @@ export const JobDetail: React.FC = () => {
                         <div className="p-6 space-y-4">
                             <fieldset disabled={isBulkEditLocked} className={`space-y-4 ${isBulkEditLocked ? 'opacity-65 pointer-events-none' : ''}`}>
                             <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">ยี่ห้อ (Brand)</label>
+                                <select
+                                    value={bulkEditForm.brand}
+                                    onChange={e => setBulkEditForm(p => ({ ...p, brand: e.target.value }))}
+                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                >
+                                    <option value="">— ไม่เปลี่ยน —</option>
+                                    {bulkBrandOptions.map((b: any) => (
+                                        <option key={b.value} value={b.value}>{b.label}</option>
+                                    ))}
+                                </select>
+                                {bulkEditForm.brand === 'Other' && (
+                                    <input
+                                        type="text"
+                                        value={bulkCustomBrand}
+                                        onChange={e => setBulkCustomBrand(e.target.value)}
+                                        className="mt-2 w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                        placeholder="ระบุยี่ห้ออื่น ๆ..."
+                                    />
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">รุ่น (Model)</label>
+                                <input
+                                    type="text"
+                                    value={bulkEditForm.productModel}
+                                    onChange={e => setBulkEditForm(p => ({ ...p, productModel: e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase() }))}
+                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm uppercase"
+                                    placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">S/N (Serial Number)</label>
+                                <input
+                                    type="text"
+                                    value={bulkEditForm.serialNumber}
+                                    onChange={e => setBulkEditForm(p => ({ ...p, serialNumber: e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase() }))}
+                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm font-mono uppercase"
+                                    placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน"
+                                />
+                                {selectedIds.size > 1 && (
+                                    <p className="text-[10px] text-amber-500 mt-1">
+                                        ⚠️ เลือก {selectedIds.size} รายการ: หากระบุ S/N จะเปลี่ยนทุกรายการเป็น S/N เดียวกันทั้งหมด
+                                    </p>
+                                )}
+                            </div>
+                            <div>
                                 <label className="block text-xs font-bold text-gray-400 uppercase mb-2">ผู้นำเข้า / ประกันศูนย์</label>
                                 <select
                                     value={bulkEditForm.distributor}
@@ -1485,6 +1549,10 @@ export const JobDetail: React.FC = () => {
                                     setIsBulkUpdating(true);
                                     try {
                                         const updates: Partial<RMA> = {};
+                                        const finalBrand = bulkEditForm.brand === 'Other' ? bulkCustomBrand : bulkEditForm.brand;
+                                        if (finalBrand.trim()) updates.brand = finalBrand.trim();
+                                        if (bulkEditForm.productModel.trim()) updates.productModel = bulkEditForm.productModel.trim();
+                                        if (bulkEditForm.serialNumber.trim()) updates.serialNumber = bulkEditForm.serialNumber.trim();
                                         if (bulkEditForm.distributor.trim()) updates.distributor = bulkEditForm.distributor.trim();
                                         if (bulkEditForm.issueDescription.trim()) updates.issueDescription = bulkEditForm.issueDescription.trim();
                                         if (bulkEditForm.rootCause.trim() || bulkEditForm.technicalNotes.trim()) {

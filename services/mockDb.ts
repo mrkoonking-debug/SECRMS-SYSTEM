@@ -674,6 +674,9 @@ export const MockDb = {
         
         // Flatten the updates to dot notation to prevent overwriting nested objects
         const flatUpdates: any = {};
+        if (updates.brand !== undefined) flatUpdates.brand = updates.brand;
+        if (updates.productModel !== undefined) flatUpdates.productModel = updates.productModel;
+        if (updates.serialNumber !== undefined) flatUpdates.serialNumber = updates.serialNumber;
         if (updates.distributor !== undefined) flatUpdates.distributor = updates.distributor;
         if (updates.issueDescription !== undefined) flatUpdates.issueDescription = updates.issueDescription;
         
