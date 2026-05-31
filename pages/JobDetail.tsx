@@ -3,9 +3,11 @@ import React, { useEffect, useState, useRef, lazy, Suspense } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { RMA, RMAStatus, ProductType } from '../types';
-import { ArrowLeft, Package, User, Clock, Edit2, AlertCircle, CheckCircle2, History, Trash2, Truck, ShieldCheck, FileText, Edit3, Save, Loader2, Plus, CheckSquare, Square, Zap, X as XClose, Search, Wrench, Undo2, RefreshCw, ClipboardCheck, Settings2, PackageCheck } from 'lucide-react';
+import { ArrowLeft, Package, User, Clock, Edit2, AlertCircle, CheckCircle2, History, Trash2, Truck, ShieldCheck, FileText, Edit3, Save, Loader2, Plus, CheckSquare, Square, Zap, X as XClose, Search, Wrench, Undo2, RefreshCw, ClipboardCheck, Settings2, PackageCheck, Check } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { StatusBadge } from '../components/StatusBadge';
+import { GlassSelect } from '../components/GlassSelect';
+import { createPortal } from 'react-dom';
 
 import { printDistributorDocuments, printCustomerDocuments, getDistributorDocumentsHTML, getCustomerDocumentsHTML } from '../services/printService';
 import { Printer, Copy, X as XIcon } from 'lucide-react';
@@ -56,6 +58,15 @@ export const JobDetail: React.FC = () => {
     const [bulkEditForm, setBulkEditForm] = useState({ brand: '', productModel: '', serialNumber: '', distributor: '', issueDescription: '', rootCause: '', technicalNotes: '', warrantyStatus: '' });
     const [showManualStatusInBulk, setShowManualStatusInBulk] = useState(false);
     const [isBulkEditLocked, setIsBulkEditLocked] = useState(false);
+    const [showBulkVendorPopup, setShowBulkVendorPopup] = useState(false);
+    const [bulkVendorForm, setBulkVendorForm] = useState({
+        actionTaken: '',
+        actionDetails: '',
+        replacedSerialNumber: '',
+        vendorTicketRef: '',
+        restockCondition: '' as '' | 'NEW' | 'REFURBISHED'
+    });
+    const [bulkVendorTargetStatus, setBulkVendorTargetStatus] = useState<RMAStatus>(RMAStatus.RETURNED_FROM_VENDOR);
 
     // Customer edit state
     const [isEditingCustomer, setIsEditingCustomer] = useState(false);
@@ -1207,7 +1218,20 @@ export const JobDetail: React.FC = () => {
                 const allSameStatus = selectedRMAs.length > 0 && selectedRMAs.every(r => r.status === selectedRMAs[0].status);
                 const commonStatus = allSameStatus ? selectedRMAs[0].status : null;
 
-                const handleExecuteStatusChange = async (newStatus: RMAStatus, additionalUpdates?: Partial<RMA>) => {
+                const handleExecuteStatusChange = async (newStatus: RMAStatus, additionalUpdates?: Partial<RMA>, skipPopup = false) => {
+                    if (newStatus === RMAStatus.RETURNED_FROM_VENDOR && !skipPopup) {
+                        const first = selectedRMAs[0];
+                        setBulkVendorForm({
+                            actionTaken: '',
+                            actionDetails: '',
+                            replacedSerialNumber: '',
+                            vendorTicketRef: first?.resolution?.vendorTicketRef || '',
+                            restockCondition: ''
+                        });
+                        setBulkVendorTargetStatus(newStatus);
+                        setShowBulkVendorPopup(true);
+                        return;
+                    }
                     setIsBulkUpdating(true);
                     try {
                         const user = MockDb.getCurrentUser()?.name || 'Admin';
@@ -1225,188 +1249,282 @@ export const JobDetail: React.FC = () => {
                 };
 
                 return (
-                    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => {
-                        if (!isBulkUpdating) {
-                            setShowBulkStatusModal(false);
-                            setShowManualStatusInBulk(false);
-                        }
-                    }}>
-                        <div className="bg-white dark:bg-[#1c1c1e] rounded-3xl w-full max-w-md shadow-2xl border border-gray-200 dark:border-[#333] overflow-hidden" onClick={e => e.stopPropagation()}>
-                            <div className="px-6 py-5 border-b border-gray-100 dark:border-[#333] flex justify-between items-center bg-gray-50/50 dark:bg-white/[0.02]">
-                                <div>
-                                    <h3 className="text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2">
-                                        <Zap className="w-5 h-5 text-orange-500" /> เปลี่ยนสถานะ {selectedIds.size} รายการ
-                                    </h3>
-                                    {commonStatus ? (
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                            <span className="text-[11px] text-gray-500">สถานะปัจจุบัน:</span>
-                                            <span className="text-[11px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full">
-                                                {t(`status.${commonStatus}`)}
-                                            </span>
+                    <>
+                        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => {
+                            if (!isBulkUpdating) {
+                                setShowBulkStatusModal(false);
+                                setShowManualStatusInBulk(false);
+                            }
+                        }}>
+                            <div className="bg-white dark:bg-[#1c1c1e] rounded-3xl w-full max-w-md shadow-2xl border border-gray-200 dark:border-[#333] overflow-hidden" onClick={e => e.stopPropagation()}>
+                                <div className="px-6 py-5 border-b border-gray-100 dark:border-[#333] flex justify-between items-center bg-gray-50/50 dark:bg-white/[0.02]">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2">
+                                            <Zap className="w-5 h-5 text-orange-500" /> เปลี่ยนสถานะ {selectedIds.size} รายการ
+                                        </h3>
+                                        {commonStatus ? (
+                                            <div className="flex items-center gap-1.5 mt-1">
+                                                <span className="text-[11px] text-gray-500">สถานะปัจจุบัน:</span>
+                                                <span className="text-[11px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full">
+                                                    {t(`status.${commonStatus}`)}
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <p className="text-xs text-gray-500 mt-1">รายการที่เลือกมีสถานะที่แตกต่างกัน</p>
+                                        )}
+                                    </div>
+                                    <button 
+                                        onClick={() => { setShowBulkStatusModal(false); setShowManualStatusInBulk(false); }}
+                                        className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+                                    >
+                                        <XClose className="w-5 h-5" />
+                                    </button>
+                                </div>
+                                
+                                <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+                                    {commonStatus && !showManualStatusInBulk ? (
+                                        <div className="space-y-4">
+                                            <div className="bg-blue-50/30 dark:bg-blue-900/5 border border-blue-100/50 dark:border-blue-900/10 rounded-2xl p-4">
+                                                <h4 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-3">ขั้นตอนถัดไป (แนะนำ)</h4>
+                                                
+                                                {commonStatus === RMAStatus.PENDING && (
+                                                    <div className="space-y-2">
+                                                        <p className="text-xs text-gray-400 mb-1">กดเพื่อเริ่มทำการตรวจสอบอาการสินค้าทั้งกลุ่ม</p>
+                                                        <button
+                                                            disabled={isBulkUpdating}
+                                                            onClick={() => handleExecuteStatusChange(RMAStatus.DIAGNOSING)}
+                                                            className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100/75 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
+                                                        >
+                                                            <Search className="w-4 h-4" /> เริ่มตรวจสอบ ({selectedIds.size} รายการ)
+                                                        </button>
+                                                    </div>
+                                                )}
+
+                                                {commonStatus === RMAStatus.DIAGNOSING && (
+                                                    <div className="space-y-3">
+                                                        <p className="text-xs text-gray-400 mb-1">กรุณาเลือกขั้นตอนที่เหมาะสมหลังการตรวจเช็คอาการ</p>
+                                                        <button
+                                                            disabled={isBulkUpdating}
+                                                            onClick={() => handleExecuteStatusChange(RMAStatus.WAITING_PARTS, { serviceType: 'EXTERNAL' })}
+                                                            className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-orange-300 dark:border-orange-600/40 bg-orange-50 dark:bg-orange-900/10 hover:bg-orange-100/75 dark:hover:bg-orange-900/20 text-orange-700 dark:text-orange-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
+                                                        >
+                                                            <Package className="w-4 h-4" /> ส่งเคลมศูนย์
+                                                        </button>
+                                                        <button
+                                                            disabled={isBulkUpdating}
+                                                            onClick={() => handleExecuteStatusChange(RMAStatus.REPAIRED, { serviceType: 'INTERNAL', resolution: { actionTaken: 'Software Update' } as any })}
+                                                            className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-green-300 dark:border-green-600/40 bg-green-50 dark:bg-green-900/10 hover:bg-green-100/75 dark:hover:bg-blue-900/20 text-green-700 dark:text-green-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
+                                                        >
+                                                            <Wrench className="w-4 h-4" /> แก้ไข Config/Firmware (จบที่ร้าน)
+                                                        </button>
+                                                        <button
+                                                            disabled={isBulkUpdating}
+                                                            onClick={() => handleExecuteStatusChange(RMAStatus.REPAIRED, { serviceType: 'INTERNAL', resolution: { actionTaken: 'No Fault Found' } as any })}
+                                                            className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600/40 bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-700/30 text-gray-600 dark:text-gray-400 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
+                                                        >
+                                                            <Undo2 className="w-4 h-4" /> ไม่พบอาการเสีย (ส่งคืน)
+                                                        </button>
+                                                    </div>
+                                                )}
+
+                                                {commonStatus === RMAStatus.WAITING_PARTS && (
+                                                    <div className="space-y-3">
+                                                        <p className="text-xs text-gray-400 mb-1">สถานะปัจจุบัน: รอศูนย์ สามารถสลับสต็อกให้ลูกค้าก่อนได้</p>
+                                                        <button
+                                                            disabled={isBulkUpdating}
+                                                            onClick={() => handleExecuteStatusChange(RMAStatus.REPLACED_FROM_STOCK)}
+                                                            className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-purple-300 dark:border-purple-600/40 bg-purple-50 dark:bg-purple-900/10 hover:bg-purple-100/75 dark:hover:bg-purple-900/20 text-purple-700 dark:text-purple-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
+                                                        >
+                                                            <RefreshCw className="w-4 h-4" /> สลับของสต็อกให้ลูกค้าเลย (Advance Replacement)
+                                                        </button>
+                                                        <p className="text-xs text-gray-400 mb-1">ของกลับจากศูนย์แล้ว กดเพื่อลงข้อมูลผลจากศูนย์</p>
+                                                        <button
+                                                            disabled={isBulkUpdating}
+                                                            onClick={() => handleExecuteStatusChange(RMAStatus.RETURNED_FROM_VENDOR)}
+                                                            className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100/75 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
+                                                        >
+                                                            <PackageCheck className="w-4 h-4" /> รับของคืนจากศูนย์
+                                                        </button>
+                                                    </div>
+                                                )}
+
+                                                {commonStatus === RMAStatus.REPLACED_FROM_STOCK && (
+                                                    <div className="space-y-2">
+                                                        <p className="text-xs text-gray-400 mb-1">ของกลับจากศูนย์แล้ว นำของที่ได้กลับเข้าสต๊อกคืน</p>
+                                                        <button
+                                                            disabled={isBulkUpdating}
+                                                            onClick={() => handleExecuteStatusChange(RMAStatus.RETURNED_FROM_VENDOR)}
+                                                            className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100/75 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
+                                                        >
+                                                            <PackageCheck className="w-4 h-4" /> รับของคืนจากศูนย์ (เข้าคลัง)
+                                                        </button>
+                                                    </div>
+                                                )}
+
+                                                {(commonStatus === RMAStatus.REPAIRED || commonStatus === RMAStatus.RETURNED_FROM_VENDOR) && (
+                                                    <div className="space-y-2">
+                                                        <p className="text-xs text-gray-400 mb-1">ตรวจสอบข้อมูลทั้งหมดก่อนปิดงาน กดเพื่อดูสรุปและยืนยัน</p>
+                                                        <button
+                                                            disabled={isBulkUpdating}
+                                                            onClick={() => handleExecuteStatusChange(RMAStatus.CLOSED)}
+                                                            className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm font-bold shadow-lg shadow-green-500/20 transition-all transform active:scale-[0.98] disabled:opacity-50"
+                                                        >
+                                                            <ClipboardCheck className="w-4 h-4" /> ตรวจสอบและปิดงาน
+                                                        </button>
+                                                    </div>
+                                                )}
+
+                                                {commonStatus === RMAStatus.CLOSED && (
+                                                    <p className="text-xs text-gray-400 text-center py-2">งานนี้ปิดเรียบร้อยแล้ว ไม่แนะนำให้เปลี่ยนสถานะต่อ</p>
+                                                )}
+                                            </div>
+
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setShowManualStatusInBulk(true)}
+                                                className="w-full py-2.5 border border-gray-200 dark:border-[#333] hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl text-xs font-bold text-gray-500 hover:text-blue-500 flex items-center justify-center gap-1.5 transition-colors"
+                                            >
+                                                <Settings2 className="w-3.5 h-3.5" /> เปลี่ยนสถานะด้วยตนเอง
+                                            </button>
                                         </div>
                                     ) : (
-                                        <p className="text-xs text-gray-500 mt-1">รายการที่เลือกมีสถานะที่แตกต่างกัน</p>
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between items-center mb-1">
+                                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">เลือกสถานะที่ต้องการเปลี่ยน:</p>
+                                                {commonStatus && (
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={() => setShowManualStatusInBulk(false)}
+                                                        className="text-[11px] font-bold text-blue-500 hover:underline"
+                                                    >
+                                                        กลับไปขั้นตอนแนะนำ
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div className="grid grid-cols-1 gap-2">
+                                                {[
+                                                    { status: RMAStatus.PENDING, label: 'รับเรื่องแล้ว', color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200/75 dark:hover:bg-gray-700/50' },
+                                                    { status: RMAStatus.DIAGNOSING, label: 'กำลังตรวจสอบ', color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100/50 dark:hover:bg-blue-900/30' },
+                                                    { status: RMAStatus.WAITING_PARTS, label: 'ส่งเคลมศูนย์แล้ว', color: 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 hover:bg-purple-100/50 dark:hover:bg-purple-900/30' },
+                                                    { status: RMAStatus.REPLACED_FROM_STOCK, label: 'สลับของให้แล้ว (รอศูนย์)', color: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 hover:bg-amber-100/50 dark:hover:bg-amber-900/30' },
+                                                    { status: RMAStatus.RETURNED_FROM_VENDOR, label: 'ของเคลมกลับมาแล้ว', color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 hover:bg-teal-100/50 dark:hover:bg-teal-900/30' },
+                                                    { status: RMAStatus.REPAIRED, label: 'ซ่อมเสร็จ / พร้อมคืน', color: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:bg-green-100/50 dark:hover:bg-green-900/30' },
+                                                    { status: RMAStatus.CLOSED, label: 'ปิดงาน (ลูกค้ารับของแล้ว)', color: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100/50 dark:hover:bg-emerald-900/30' },
+                                                ].map(opt => (
+                                                    <button
+                                                        key={opt.status}
+                                                        disabled={isBulkUpdating}
+                                                        onClick={() => handleExecuteStatusChange(opt.status)}
+                                                        className={`w-full text-left px-4 py-3 rounded-xl font-semibold text-sm transition-all hover:scale-[1.01] active:scale-[0.99] border border-transparent hover:border-gray-200 dark:hover:border-[#424245] ${opt.color}`}
+                                                    >
+                                                        {opt.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
-                                <button 
-                                    onClick={() => { setShowBulkStatusModal(false); setShowManualStatusInBulk(false); }}
-                                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
-                                >
-                                    <XClose className="w-5 h-5" />
-                                </button>
-                            </div>
-                            
-                            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
-                                {commonStatus && !showManualStatusInBulk ? (
-                                    <div className="space-y-4">
-                                        <div className="bg-blue-50/30 dark:bg-blue-900/5 border border-blue-100/50 dark:border-blue-900/10 rounded-2xl p-4">
-                                            <h4 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-3">ขั้นตอนถัดไป (แนะนำ)</h4>
-                                            
-                                            {commonStatus === RMAStatus.PENDING && (
-                                                <div className="space-y-2">
-                                                    <p className="text-xs text-gray-400 mb-1">กดเพื่อเริ่มทำการตรวจสอบอาการสินค้าทั้งกลุ่ม</p>
-                                                    <button
-                                                        disabled={isBulkUpdating}
-                                                        onClick={() => handleExecuteStatusChange(RMAStatus.DIAGNOSING)}
-                                                        className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100/75 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
-                                                    >
-                                                        <Search className="w-4 h-4" /> เริ่มตรวจสอบ ({selectedIds.size} รายการ)
-                                                    </button>
-                                                </div>
-                                            )}
-
-                                            {commonStatus === RMAStatus.DIAGNOSING && (
-                                                <div className="space-y-3">
-                                                    <p className="text-xs text-gray-400 mb-1">กรุณาเลือกขั้นตอนที่เหมาะสมหลังการตรวจเช็คอาการ</p>
-                                                    <button
-                                                        disabled={isBulkUpdating}
-                                                        onClick={() => handleExecuteStatusChange(RMAStatus.WAITING_PARTS, { serviceType: 'EXTERNAL' })}
-                                                        className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-orange-300 dark:border-orange-600/40 bg-orange-50 dark:bg-orange-900/10 hover:bg-orange-100/75 dark:hover:bg-orange-900/20 text-orange-700 dark:text-orange-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
-                                                    >
-                                                        <Package className="w-4 h-4" /> ส่งเคลมศูนย์
-                                                    </button>
-                                                    <button
-                                                        disabled={isBulkUpdating}
-                                                        onClick={() => handleExecuteStatusChange(RMAStatus.REPAIRED, { serviceType: 'INTERNAL', resolution: { actionTaken: 'Software Update' } as any })}
-                                                        className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-green-300 dark:border-green-600/40 bg-green-50 dark:bg-green-900/10 hover:bg-green-100/75 dark:hover:bg-green-900/20 text-green-700 dark:text-green-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
-                                                    >
-                                                        <Wrench className="w-4 h-4" /> แก้ไข Config/Firmware (จบที่ร้าน)
-                                                    </button>
-                                                    <button
-                                                        disabled={isBulkUpdating}
-                                                        onClick={() => handleExecuteStatusChange(RMAStatus.REPAIRED, { serviceType: 'INTERNAL', resolution: { actionTaken: 'No Fault Found' } as any })}
-                                                        className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600/40 bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-700/30 text-gray-600 dark:text-gray-400 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
-                                                    >
-                                                        <Undo2 className="w-4 h-4" /> ไม่พบอาการเสีย (ส่งคืน)
-                                                    </button>
-                                                </div>
-                                            )}
-
-                                            {commonStatus === RMAStatus.WAITING_PARTS && (
-                                                <div className="space-y-3">
-                                                    <p className="text-xs text-gray-400 mb-1">สถานะปัจจุบัน: รอศูนย์ สามารถสลับสต็อกให้ลูกค้าก่อนได้</p>
-                                                    <button
-                                                        disabled={isBulkUpdating}
-                                                        onClick={() => handleExecuteStatusChange(RMAStatus.REPLACED_FROM_STOCK)}
-                                                        className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-purple-300 dark:border-purple-600/40 bg-purple-50 dark:bg-purple-900/10 hover:bg-purple-100/75 dark:hover:bg-purple-900/20 text-purple-700 dark:text-purple-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
-                                                    >
-                                                        <RefreshCw className="w-4 h-4" /> สลับของสต็อกให้ลูกค้าเลย (Advance Replacement)
-                                                    </button>
-                                                    <p className="text-xs text-gray-400 mb-1">ของกลับจากศูนย์แล้ว กดเพื่อลงข้อมูลผลจากศูนย์</p>
-                                                    <button
-                                                        disabled={isBulkUpdating}
-                                                        onClick={() => handleExecuteStatusChange(RMAStatus.RETURNED_FROM_VENDOR)}
-                                                        className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100/75 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
-                                                    >
-                                                        <PackageCheck className="w-4 h-4" /> รับของคืนจากศูนย์
-                                                    </button>
-                                                </div>
-                                            )}
-
-                                            {commonStatus === RMAStatus.REPLACED_FROM_STOCK && (
-                                                <div className="space-y-2">
-                                                    <p className="text-xs text-gray-400 mb-1">ของกลับจากศูนย์แล้ว นำของที่ได้กลับเข้าสต๊อกคืน</p>
-                                                    <button
-                                                        disabled={isBulkUpdating}
-                                                        onClick={() => handleExecuteStatusChange(RMAStatus.RETURNED_FROM_VENDOR)}
-                                                        className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100/75 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-bold transition-all transform active:scale-[0.99] disabled:opacity-50"
-                                                    >
-                                                        <PackageCheck className="w-4 h-4" /> รับของคืนจากศูนย์ (เข้าคลัง)
-                                                    </button>
-                                                </div>
-                                            )}
-
-                                            {(commonStatus === RMAStatus.REPAIRED || commonStatus === RMAStatus.RETURNED_FROM_VENDOR) && (
-                                                <div className="space-y-2">
-                                                    <p className="text-xs text-gray-400 mb-1">ตรวจสอบข้อมูลทั้งหมดก่อนปิดงาน กดเพื่อดูสรุปและยืนยัน</p>
-                                                    <button
-                                                        disabled={isBulkUpdating}
-                                                        onClick={() => handleExecuteStatusChange(RMAStatus.CLOSED)}
-                                                        className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm font-bold shadow-lg shadow-green-500/20 transition-all transform active:scale-[0.98] disabled:opacity-50"
-                                                    >
-                                                        <ClipboardCheck className="w-4 h-4" /> ตรวจสอบและปิดงาน
-                                                    </button>
-                                                </div>
-                                            )}
-
-                                            {commonStatus === RMAStatus.CLOSED && (
-                                                <p className="text-xs text-gray-400 text-center py-2">งานนี้ปิดเรียบร้อยแล้ว ไม่แนะนำให้เปลี่ยนสถานะต่อ</p>
-                                            )}
-                                        </div>
-
-                                        <button 
-                                            type="button" 
-                                            onClick={() => setShowManualStatusInBulk(true)}
-                                            className="w-full py-2.5 border border-gray-200 dark:border-[#333] hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl text-xs font-bold text-gray-500 hover:text-blue-500 flex items-center justify-center gap-1.5 transition-colors"
-                                        >
-                                            <Settings2 className="w-3.5 h-3.5" /> เปลี่ยนสถานะด้วยตนเอง
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3">
-                                        <div className="flex justify-between items-center mb-1">
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">เลือกสถานะที่ต้องการเปลี่ยน:</p>
-                                            {commonStatus && (
-                                                <button 
-                                                    type="button" 
-                                                    onClick={() => setShowManualStatusInBulk(false)}
-                                                    className="text-[11px] font-bold text-blue-500 hover:underline"
-                                                >
-                                                    กลับไปขั้นตอนแนะนำ
-                                                </button>
-                                            )}
-                                        </div>
-                                        <div className="grid grid-cols-1 gap-2">
-                                            {[
-                                                { status: RMAStatus.PENDING, label: 'รับเรื่องแล้ว', color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200/75 dark:hover:bg-gray-700/50' },
-                                                { status: RMAStatus.DIAGNOSING, label: 'กำลังตรวจสอบ', color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100/50 dark:hover:bg-blue-900/30' },
-                                                { status: RMAStatus.WAITING_PARTS, label: 'ส่งเคลมศูนย์แล้ว', color: 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 hover:bg-purple-100/50 dark:hover:bg-purple-900/30' },
-                                                { status: RMAStatus.REPLACED_FROM_STOCK, label: 'สลับของให้แล้ว (รอศูนย์)', color: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 hover:bg-amber-100/50 dark:hover:bg-amber-900/30' },
-                                                { status: RMAStatus.RETURNED_FROM_VENDOR, label: 'ของเคลมกลับมาแล้ว', color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 hover:bg-teal-100/50 dark:hover:bg-teal-900/30' },
-                                                { status: RMAStatus.REPAIRED, label: 'ซ่อมเสร็จ / พร้อมคืน', color: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:bg-green-100/50 dark:hover:bg-green-900/30' },
-                                                { status: RMAStatus.CLOSED, label: 'ปิดงาน (ลูกค้ารับของแล้ว)', color: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100/50 dark:hover:bg-emerald-900/30' },
-                                            ].map(opt => (
-                                                <button
-                                                    key={opt.status}
-                                                    disabled={isBulkUpdating}
-                                                    onClick={() => handleExecuteStatusChange(opt.status)}
-                                                    className={`w-full text-left px-4 py-3 rounded-xl font-semibold text-sm transition-all hover:scale-[1.01] active:scale-[0.99] border border-transparent hover:border-gray-200 dark:hover:border-[#424245] ${opt.color}`}
-                                                >
-                                                    {opt.label}
-                                                </button>
-                                            ))}
-                                        </div>
+                                
+                                {isBulkUpdating && (
+                                    <div className="px-6 py-4 bg-gray-50/50 dark:bg-white/[0.01] border-t border-gray-100 dark:border-[#333] flex items-center gap-2.5 text-sm text-gray-500 justify-center">
+                                        <Loader2 className="w-4 h-4 animate-spin text-blue-500" /> กำลังดำเนินการอัปเดตสถานะ...
                                     </div>
                                 )}
                             </div>
-                            
-                            {isBulkUpdating && (
-                                <div className="px-6 py-4 bg-gray-50/50 dark:bg-white/[0.01] border-t border-gray-100 dark:border-[#333] flex items-center gap-2.5 text-sm text-gray-500 justify-center">
-                                    <Loader2 className="w-4 h-4 animate-spin text-blue-500" /> กำลังดำเนินการอัปเดตสถานะ...
-                                </div>
-                            )}
                         </div>
-                    </div>
+
+                        {/* BULK VENDOR RESULT POPUP */}
+                        {showBulkVendorPopup && createPortal(
+                            <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-4 animate-fade-in font-sans" onClick={() => setShowBulkVendorPopup(false)}>
+                                <div className="bg-white dark:bg-[#1e1e20] w-full max-w-lg rounded-[2rem] shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
+                                    <div className="px-8 py-6 border-b border-gray-100 dark:border-gray-800 bg-blue-50/50 dark:bg-blue-900/10">
+                                        <h3 className="text-xl font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2">
+                                            <PackageCheck className="w-6 h-6 text-blue-500" /> 📥 ลงผลจากศูนย์ (กลุ่ม {selectedIds.size} รายการ)
+                                        </h3>
+                                        <p className="text-sm text-gray-500 mt-1">กรอกรายละเอียดผลการเคลมสำหรับทุกรายการที่เลือก</p>
+                                    </div>
+                                    <div className="p-8 space-y-5 overflow-y-auto">
+                                        <div className="relative z-[90]">
+                                            <GlassSelect 
+                                                label="วิธีดำเนินการ" 
+                                                value={bulkVendorForm.actionTaken} 
+                                                onChange={val => setBulkVendorForm(p => ({ ...p, actionTaken: val }))} 
+                                                options={[
+                                                    { value: "Replaced Component", label: t('actions.replaced_component') || "เปลี่ยนอะไหล่" },
+                                                    { value: "Swapped Unit", label: t('actions.swapped_unit') || "เปลี่ยนตัวใหม่" },
+                                                    { value: "Software Update", label: t('actions.software_update') || "อัปเดตซอฟต์แวร์" },
+                                                    { value: "No Fault Found", label: t('actions.no_fault_found') || "ไม่พบอาการเสีย" },
+                                                    { value: "Other", label: t('submit.other') || "อื่นๆ" }
+                                                ]} 
+                                                placeholder="เลือกวิธีดำเนินการ" 
+                                                searchable 
+                                            />
+                                        </div>
+                                        {bulkVendorForm.actionTaken === 'Replaced Component' && (
+                                            <div>
+                                                <label className="block text-xs font-semibold text-orange-500 uppercase mb-1.5 ml-2">รายละเอียดการเปลี่ยนอะไหล่</label>
+                                                <input type="text" value={bulkVendorForm.actionDetails} onChange={e => setBulkVendorForm(p => ({ ...p, actionDetails: e.target.value }))} className="w-full px-4 py-3.5 text-sm rounded-2xl outline-none bg-white dark:bg-[#2c2c2e] border border-orange-300 dark:border-orange-500/30 text-[#1d1d1f] dark:text-white" placeholder="เช่น เปลี่ยน Mainboard" />
+                                            </div>
+                                        )}
+                                        {bulkVendorForm.actionTaken === 'Swapped Unit' && (
+                                            <div>
+                                                <label className="block text-xs font-semibold text-green-500 uppercase mb-1.5 ml-2 flex items-center gap-1"><RefreshCw className="w-3.5 h-3.5" /> S/N สินค้าตัวใหม่</label>
+                                                <input type="text" value={bulkVendorForm.replacedSerialNumber} onChange={e => setBulkVendorForm(p => ({ ...p, replacedSerialNumber: e.target.value }))} className="w-full px-4 py-3.5 text-sm rounded-2xl outline-none bg-white dark:bg-[#2c2c2e] border border-green-300 dark:border-green-500/30 text-[#1d1d1f] dark:text-white" placeholder="ระบุ S/N สินค้าตัวใหม่" />
+                                                <p className="text-[11px] text-orange-500 mt-1 ml-2 font-medium">⚠️ คำเตือน: ทุกรายการจะถูกแก้ไขเป็น S/N เดียวกันนี้</p>
+                                            </div>
+                                        )}
+                                        {bulkVendorForm.actionTaken === 'Other' && (
+                                            <div>
+                                                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5 ml-2">ระบุวิธีดำเนินการ</label>
+                                                <input type="text" value={bulkVendorForm.actionDetails} onChange={e => setBulkVendorForm(p => ({ ...p, actionDetails: e.target.value }))} className="w-full px-4 py-3.5 text-sm rounded-2xl outline-none bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] text-[#1d1d1f] dark:text-white" placeholder="ระบุ..." />
+                                            </div>
+                                        )}
+                                        {selectedRMAs.some(r => r.status === RMAStatus.REPLACED_FROM_STOCK) && (
+                                            <div>
+                                                <label className="block text-xs font-semibold text-teal-500 uppercase mb-1.5 ml-2 flex items-center gap-1"><PackageCheck className="w-3.5 h-3.5" /> สภาพสินค้าที่ส่งกลับมา (เข้าคลัง)</label>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <button type="button" onClick={() => setBulkVendorForm(p => ({ ...p, restockCondition: 'NEW' }))} className={`px-4 py-3 rounded-2xl text-sm font-medium border transition-colors ${bulkVendorForm.restockCondition === 'NEW' ? 'bg-teal-50 dark:bg-teal-900/20 border-teal-500 text-teal-700 dark:text-teal-300' : 'bg-white dark:bg-[#2c2c2e] border-gray-200 dark:border-[#424245] text-gray-500 hover:border-teal-300'}`}>
+                                                        ของใหม่แกะกล่อง (New)
+                                                    </button>
+                                                    <button type="button" onClick={() => setBulkVendorForm(p => ({ ...p, restockCondition: 'REFURBISHED' }))} className={`px-4 py-3 rounded-2xl text-sm font-medium border transition-colors ${bulkVendorForm.restockCondition === 'REFURBISHED' ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-500 text-orange-700 dark:text-orange-300' : 'bg-white dark:bg-[#2c2c2e] border-gray-200 dark:border-[#424245] text-gray-500 hover:border-orange-300'}`}>
+                                                        ซ่อมแล้ว (Refurbished)
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5 ml-2">เลข RMA Vendor</label>
+                                            <input type="text" value={bulkVendorForm.vendorTicketRef} onChange={e => setBulkVendorForm(p => ({ ...p, vendorTicketRef: e.target.value }))} className="w-full px-4 py-3.5 text-sm rounded-2xl outline-none bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] text-[#1d1d1f] dark:text-white" placeholder="เช่น RMA-SYN-9988" />
+                                        </div>
+                                    </div>
+                                    <div className="p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#2c2c2e] flex justify-end gap-3">
+                                        <button type="button" onClick={() => setShowBulkVendorPopup(false)} className="px-6 py-2.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">ยกเลิก</button>
+                                        <button type="button" onClick={async () => {
+                                            if (!bulkVendorForm.actionTaken) { showToast('⚠️ กรุณาเลือกวิธีดำเนินการ', 'error'); return; }
+                                            if (selectedRMAs.some(r => r.status === RMAStatus.REPLACED_FROM_STOCK) && !bulkVendorForm.restockCondition) { showToast('⚠️ กรุณาเลือกสภาพสินค้าที่ส่งกลับมา', 'error'); return; }
+                                            
+                                            // Apply bulk vendor form to updates
+                                            const updates: Partial<RMA> = {
+                                                resolution: {
+                                                    actionTaken: bulkVendorForm.actionTaken === 'Other' ? bulkVendorForm.actionDetails : bulkVendorForm.actionTaken,
+                                                    actionDetails: bulkVendorForm.actionTaken === 'Replaced Component' ? bulkVendorForm.actionDetails : '',
+                                                    replacedSerialNumber: bulkVendorForm.replacedSerialNumber || '',
+                                                    vendorTicketRef: bulkVendorForm.vendorTicketRef || '',
+                                                    restockCondition: bulkVendorForm.restockCondition || undefined
+                                                } as any
+                                            };
+                                            
+                                            setShowBulkVendorPopup(false);
+                                            await handleExecuteStatusChange(bulkVendorTargetStatus, updates, true);
+                                        }} className="px-8 py-2.5 rounded-full text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2">
+                                            <Check className="w-4 h-4" /> บันทึกผล
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>,
+                            document.body
+                        )}
+                    </>
                 );
             })()}
 

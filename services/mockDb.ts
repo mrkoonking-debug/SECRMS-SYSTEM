@@ -629,13 +629,17 @@ export const MockDb = {
         const oldStatus = snap.data().status || '';
         const currentHistory = snap.data().history || [];
         
+        const targetStatus = newStatus === RMAStatus.RETURNED_FROM_VENDOR
+          ? (oldStatus === RMAStatus.REPLACED_FROM_STOCK ? RMAStatus.RETURNED_FROM_VENDOR : RMAStatus.REPAIRED)
+          : newStatus;
+
         const flatUpdates: any = {
-          status: newStatus,
+          status: targetStatus,
           history: [...currentHistory, {
             id: `evt-${Date.now()}-${updated}`,
             date: Timestamp.now(),
             type: 'STATUS_CHANGE',
-            description: `Bulk: ${oldStatus} → ${newStatus}`,
+            description: `Bulk: ${oldStatus} → ${targetStatus}`,
             user: userName
           }],
           updatedAt: serverTimestamp()
@@ -646,6 +650,18 @@ export const MockDb = {
           if (additionalUpdates.resolution) {
             if (additionalUpdates.resolution.actionTaken !== undefined) {
               flatUpdates["resolution.actionTaken"] = additionalUpdates.resolution.actionTaken;
+            }
+            if (additionalUpdates.resolution.actionDetails !== undefined) {
+              flatUpdates["resolution.actionDetails"] = additionalUpdates.resolution.actionDetails;
+            }
+            if (additionalUpdates.resolution.replacedSerialNumber !== undefined) {
+              flatUpdates["resolution.replacedSerialNumber"] = additionalUpdates.resolution.replacedSerialNumber;
+            }
+            if (additionalUpdates.resolution.vendorTicketRef !== undefined) {
+              flatUpdates["resolution.vendorTicketRef"] = additionalUpdates.resolution.vendorTicketRef;
+            }
+            if (additionalUpdates.resolution.restockCondition !== undefined) {
+              flatUpdates["resolution.restockCondition"] = additionalUpdates.resolution.restockCondition;
             }
             if (additionalUpdates.resolution.rootCause !== undefined) {
               flatUpdates["resolution.rootCause"] = additionalUpdates.resolution.rootCause;
