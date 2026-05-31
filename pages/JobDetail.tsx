@@ -53,6 +53,7 @@ export const JobDetail: React.FC = () => {
     const [bulkDistOptions, setBulkDistOptions] = useState<any[]>([]);
     const [bulkEditForm, setBulkEditForm] = useState({ distributor: '', issueDescription: '', rootCause: '', technicalNotes: '', warrantyStatus: '' });
     const [showManualStatusInBulk, setShowManualStatusInBulk] = useState(false);
+    const [isBulkEditLocked, setIsBulkEditLocked] = useState(false);
 
     // Customer edit state
     const [isEditingCustomer, setIsEditingCustomer] = useState(false);
@@ -1150,7 +1151,11 @@ export const JobDetail: React.FC = () => {
                             {rmas.some(r => r.serialNumber?.startsWith('N/A-')) && (
                                 <button
                                     onClick={async () => {
-                                        const first = rmas.find(r => selectedIds.has(r.id));
+                                        const selectedRMAs = rmas.filter(r => selectedIds.has(r.id));
+                                        const hasClosed = selectedRMAs.some(r => r.status === RMAStatus.CLOSED);
+                                        setIsBulkEditLocked(hasClosed);
+
+                                        const first = selectedRMAs[0];
                                         const dists = await MockDb.getDistributors();
                                         setBulkDistOptions(dists);
                                         setBulkEditForm({
@@ -1391,14 +1396,29 @@ export const JobDetail: React.FC = () => {
             {/* ═══ BULK EDIT FIELDS MODAL ═══ */}
             {showBulkEditModal && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => !isBulkUpdating && setShowBulkEditModal(false)}>
-                    <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl w-full max-w-lg shadow-2xl border border-gray-200 dark:border-[#333]" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl w-full max-w-lg shadow-2xl border border-gray-200 dark:border-[#333] overflow-hidden" onClick={e => e.stopPropagation()}>
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-[#333]">
                             <h3 className="text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2">
                                 <Edit3 className="w-5 h-5 text-blue-500" /> แก้ไขรายละเอียด {selectedIds.size} รายการ
                             </h3>
                             <p className="text-xs text-gray-500 mt-1">ข้อมูลที่กรอกจะถูกอัปเดตให้ทุกรายการที่เลือก</p>
                         </div>
+                        {isBulkEditLocked && (
+                            <div className="mx-6 mt-4 flex items-center justify-between gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-600/40 rounded-2xl px-5 py-3">
+                                <div className="flex items-center gap-2.5">
+                                    <span className="text-lg">⚠️</span>
+                                    <div>
+                                        <p className="font-semibold text-amber-800 dark:text-amber-300 text-xs">มีรายการที่ปิดงานแล้วเลือกอยู่ — ข้อมูลถูกล็อค</p>
+                                        <p className="text-amber-600 dark:text-amber-400 text-[10px] mt-0.5">กดปลดล็อคเพื่อแก้ไขข้อมูล</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setIsBulkEditLocked(false)} className="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-xs flex items-center gap-1 transition-colors whitespace-nowrap">
+                                    🔓 ปลดล็อค
+                                </button>
+                            </div>
+                        )}
                         <div className="p-6 space-y-4">
+                            <fieldset disabled={isBulkEditLocked} className={`space-y-4 ${isBulkEditLocked ? 'opacity-65 pointer-events-none' : ''}`}>
                             <div>
                                 <label className="block text-xs font-bold text-gray-400 uppercase mb-2">ผู้นำเข้า / ประกันศูนย์</label>
                                 <select
@@ -1455,11 +1475,12 @@ export const JobDetail: React.FC = () => {
                                     <option value="VOID">ประกัน Void</option>
                                 </select>
                             </div>
+                            </fieldset>
                         </div>
                         <div className="px-6 pb-6 flex justify-end gap-2">
                             <button onClick={() => setShowBulkEditModal(false)} className="px-5 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors">ยกเลิก</button>
                             <button
-                                disabled={isBulkUpdating}
+                                disabled={isBulkUpdating || isBulkEditLocked}
                                 onClick={async () => {
                                     setIsBulkUpdating(true);
                                     try {
