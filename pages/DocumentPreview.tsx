@@ -40,21 +40,21 @@ export const DocumentPreview: React.FC = () => {
 
     const handlePrint = () => {
         const iframe = document.createElement('iframe');
-        iframe.style.position = 'fixed';
-        iframe.style.right = '0';
-        iframe.style.bottom = '0';
-        iframe.style.width = '0';
-        iframe.style.height = '0';
-        iframe.style.border = '0';
+        iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1123px;border:0;visibility:hidden;';
         document.body.appendChild(iframe);
 
         const doc = iframe.contentWindow?.document;
         if (doc) {
             doc.open();
-            doc.write(`<html><head><title>Print</title></head><body><div id="print-content">${htmlContent}</div></body></html>`);
+            doc.write(`<!DOCTYPE html><html><head><title>Print</title><meta name="viewport" content="width=794"><style>@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff;width:100%}</style></head><body style="margin:0;padding:0;">${htmlContent}</body></html>`);
             doc.close();
             iframe.contentWindow?.focus();
-            setTimeout(() => { iframe.contentWindow?.print(); document.body.removeChild(iframe); }, 500);
+            setTimeout(() => {
+                iframe.contentWindow?.print();
+                setTimeout(() => {
+                    if (document.body.contains(iframe)) document.body.removeChild(iframe);
+                }, 1000);
+            }, 800);
         }
     };
 

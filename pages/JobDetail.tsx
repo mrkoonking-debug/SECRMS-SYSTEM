@@ -40,8 +40,31 @@ export const JobDetail: React.FC = () => {
     const [docPreviewHtml, setDocPreviewHtml] = useState<string | null>(null);
     const [docPreviewType, setDocPreviewType] = useState<'DISTRIBUTOR' | 'CUSTOMER'>('DISTRIBUTOR');
     const [docPreviewRmas, setDocPreviewRmas] = useState<RMA[]>([]);
+    const [isDocPreviewOpen, setIsDocPreviewOpen] = useState(false);
+    const [selectedDistTab, setSelectedDistTab] = useState<string>('ALL');
     const docPreviewRenderRef = useRef<HTMLDivElement>(null);
     const [isCopyingImage, setIsCopyingImage] = useState(false);
+
+    useEffect(() => {
+        const updateHtml = async () => {
+            if (docPreviewRmas.length === 0) {
+                setDocPreviewHtml(null);
+                return;
+            }
+            if (docPreviewType === 'DISTRIBUTOR') {
+                const filtered = selectedDistTab === 'ALL'
+                    ? docPreviewRmas
+                    : docPreviewRmas.filter(r => (r.distributor || 'Unknown') === selectedDistTab);
+                
+                const html = await getDistributorDocumentsHTML(filtered);
+                setDocPreviewHtml(html);
+            } else {
+                const html = await getCustomerDocumentsHTML(docPreviewRmas);
+                setDocPreviewHtml(html);
+            }
+        };
+        updateHtml();
+    }, [selectedDistTab, docPreviewRmas, docPreviewType]);
 
     // Add item modal
     const [showAddItemModal, setShowAddItemModal] = useState(false);
@@ -329,9 +352,11 @@ export const JobDetail: React.FC = () => {
                     <div className="grid grid-cols-2 gap-2 w-full md:w-auto md:min-w-[340px] md:max-w-[400px]">
                         {/* Top-Left: ใบส่งเคลม */}
                         <button
-                            onClick={async () => {
-                                const html = await getDistributorDocumentsHTML(rmas);
-                                if (html) { setDocPreviewHtml(html); setDocPreviewType('DISTRIBUTOR'); setDocPreviewRmas(rmas); }
+                            onClick={() => {
+                                setSelectedDistTab('ALL');
+                                setDocPreviewType('DISTRIBUTOR');
+                                setDocPreviewRmas(rmas);
+                                setIsDocPreviewOpen(true);
                             }}
                             disabled={!allHaveDistributor}
                             className={`h-11 flex items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-all ${allHaveDistributor
@@ -345,9 +370,11 @@ export const JobDetail: React.FC = () => {
 
                         {/* Top-Right: ใบส่งคืน */}
                         <button
-                            onClick={async () => {
-                                const html = await getCustomerDocumentsHTML(closedRMAs);
-                                if (html) { setDocPreviewHtml(html); setDocPreviewType('CUSTOMER'); setDocPreviewRmas(closedRMAs); }
+                            onClick={() => {
+                                setSelectedDistTab('ALL');
+                                setDocPreviewType('CUSTOMER');
+                                setDocPreviewRmas(closedRMAs);
+                                setIsDocPreviewOpen(true);
                             }}
                             disabled={!hasClosedRMAs}
                             className={`h-11 flex items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-all ${hasClosedRMAs
@@ -1121,7 +1148,7 @@ export const JobDetail: React.FC = () => {
                         <div className="origin-top flex justify-center" style={{ zoom: 'min(0.8, calc(100vw / 850))' }}>
                             <iframe
                                 id="doc-preview-iframe"
-                                srcDoc={`<html><head><title>Preview</title></head><body style="margin:0;padding:0;background:#f5f5f5;">${docPreviewHtml}</body></html>`}
+                                srcDoc={`<!DOCTYPE html><html><head><title>Preview</title><meta name="viewport" content="width=794"><style>@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff;width:100%}</style></head><body style="margin:0;padding:0;">${docPreviewHtml}</body></html>`}
                                 className="border-0 shadow-2xl bg-white"
                                 style={{
                                     width: '794px',
