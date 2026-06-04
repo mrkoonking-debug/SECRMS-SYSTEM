@@ -44,6 +44,27 @@ export const JobDetail: React.FC = () => {
     const [selectedDistTab, setSelectedDistTab] = useState<string>('ALL');
     const docPreviewRenderRef = useRef<HTMLDivElement>(null);
     const [isCopyingImage, setIsCopyingImage] = useState(false);
+    const [previewScale, setPreviewScale] = useState(0.8);
+
+    useEffect(() => {
+        if (!docPreviewHtml) return;
+        const handleResize = () => {
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const availableHeight = vh - 140; // Subtract toolbar height and vertical padding
+            const availableWidth = vw - 60;   // Subtract horizontal margin/padding
+
+            const scaleW = availableWidth / 794;
+            const scaleH = availableHeight / 1123;
+            
+            // Limit maximum scale to 0.85 and scale down for smaller screen heights
+            setPreviewScale(Math.min(0.85, scaleW, scaleH));
+        };
+
+        window.addEventListener('resize', handleResize);
+        handleResize();
+        return () => window.removeEventListener('resize', handleResize);
+    }, [docPreviewHtml]);
 
     useEffect(() => {
         const updateHtml = async () => {
@@ -79,6 +100,8 @@ export const JobDetail: React.FC = () => {
     const [bulkBrandOptions, setBulkBrandOptions] = useState<any[]>([]);
     const [bulkCustomBrand, setBulkCustomBrand] = useState('');
     const [bulkEditForm, setBulkEditForm] = useState({ brand: '', productModel: '', serialNumber: '', distributor: '', issueDescription: '', rootCause: '', actionTaken: '', actionDetails: '', replacedSerialNumber: '', vendorTicketRef: '', warrantyStatus: '' });
+    const [bulkIndividualSns, setBulkIndividualSns] = useState<Record<string, { serialNumber: string; replacedSerialNumber: string }>>({});
+    const [bulkDirtyFields, setBulkDirtyFields] = useState<Record<string, boolean>>({});
     const [showManualStatusInBulk, setShowManualStatusInBulk] = useState(false);
     const [isBulkEditLocked, setIsBulkEditLocked] = useState(false);
     const [showBulkVendorPopup, setShowBulkVendorPopup] = useState(false);
@@ -843,179 +866,62 @@ export const JobDetail: React.FC = () => {
             )}
 
             {/* Document Preview Popup */}
-            {docPreviewHtml && (
-                <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex flex-col animate-in fade-in duration-200">
-                    {/* Toolbar */}
-                    <div className="flex-shrink-0 flex flex-wrap items-center gap-2 md:gap-3 px-4 md:px-6 py-3 bg-white/90 dark:bg-[#1c1c1e]/95 backdrop-blur border-b border-gray-200 dark:border-white/10 shadow-sm">
-                        <h2 className="text-gray-800 dark:text-white font-semibold text-base w-full sm:w-auto flex-1 mb-1 sm:mb-0">📋 Preview เอกสาร</h2>
-                        {/* Copy Text Only (Facebook friendly) */}
-                        <button
-                            onClick={() => {
-                                const rma0 = docPreviewRmas[0];
-                                const jobIdVal = rma0?.groupRequestId || rma0?.id || '-';
-                                const quotationVal = rma0?.quotationNumber || '-';
-                                let textLines: string[] = [];
-                                textLines.push(`เลขที่งานเคลม (Job ID): ${jobIdVal}`);
-                                textLines.push(`เลขอ้างอิง/ใบเสนอราคา: ${quotationVal}`);
-                                const actionMap: Record<string, string> = {
-                                    'Replaced Component': 'ศูนย์เปลี่ยนอะไหล่',
-                                    'Swapped Unit': 'เปลี่ยนเครื่อง (Swap)',
-                                    'Software Update': 'อัพเดทซอฟต์แวร์',
-                                    'No Fault Found': 'ไม่พบอาการเสีย(ส่งคืน)'
-                                };
-                                const formatAction = (action?: string) => action ? (actionMap[action] || action) : '-';
-                                if (docPreviewType === 'CUSTOMER') {
-                                    textLines.push(`ลูกค้า: ${rma0?.customerName || '-'}`);
-                                    textLines.push('');
-                                    textLines.push(`รายการสินค้า (${docPreviewRmas.length} ชิ้น):`);
-                                    docPreviewRmas.forEach((r, i) => {
-                                        textLines.push(`รายการ ${i + 1}:`);
-                                        textLines.push(`   ${r.brand} รุ่น: ${r.productModel}`);
-                                        textLines.push(`   S/N: ${r.serialNumber}`);
-                                        textLines.push(`   อาการที่พบ: ${r.resolution?.rootCause || '-'}`);
-                                        if (r.resolution?.actionTaken) {
-                                            textLines.push(`   การดำเนินการ: ${formatAction(r.resolution.actionTaken)}`);
-                                            if (r.resolution.actionDetails) textLines.push(`   รายละเอียด: ${r.resolution.actionDetails}`);
-                                            if (r.resolution.replacedSerialNumber) textLines.push(`   S/N ใหม่: ${r.resolution.replacedSerialNumber}`);
-                                        }
-                                        if (i < docPreviewRmas.length - 1) textLines.push('');
-                                    });
-                                } else {
-                                    // Group by distributor
-                                    const distGrouped: Record<string, typeof docPreviewRmas> = {};
-                                    for (const r of docPreviewRmas) {
-                                        const key = r.distributor || 'Unknown';
-                                        if (!distGrouped[key]) distGrouped[key] = [];
-                                        distGrouped[key].push(r);
-                                    }
-                                    const distEntries = Object.entries(distGrouped);
+            {docPreviewHtml && (() => {
+                const filteredRmas = docPreviewType === 'DISTRIBUTOR'
+                    ? (selectedDistTab === 'ALL'
+                        ? docPreviewRmas
+                        : docPreviewRmas.filter(r => (r.distributor || 'Unknown') === selectedDistTab))
+                    : docPreviewRmas;
 
-                                    distEntries.forEach(([distName, items], groupIdx) => {
-                                        if (groupIdx > 0) {
-                                            textLines.push('');
-                                            textLines.push('━━━━━━━━━━━━━━━━━━━━');
-                                            textLines.push('');
-                                            textLines.push(`เลขที่งานเคลม (Job ID): ${jobIdVal}`);
-                                            textLines.push(`เลขอ้างอิง/ใบเสนอราคา: ${quotationVal}`);
-                                        }
-                                        textLines.push(`ผู้นำเข้า: ${distName}`);
-                                        textLines.push('');
-                                        textLines.push(`รายการสินค้า (${items.length} ชิ้น):`);
-                                        items.forEach((r, i) => {
-                                            textLines.push(`รายการ ${i + 1}:`);
-                                            textLines.push(`   ${r.brand} รุ่น: ${r.productModel}`);
-                                            textLines.push(`   S/N: ${r.serialNumber}`);
-                                            textLines.push(`   อาการที่ลูกค้าแจ้ง: ${r.issueDescription || '-'}`);
-                                            textLines.push(`   อาการที่พบ: ${r.resolution?.rootCause || '-'}`);
-                                            if (r.resolution?.actionTaken) {
-                                                textLines.push(`   การดำเนินการ: ${formatAction(r.resolution.actionTaken)}`);
-                                                if (r.resolution.actionDetails) textLines.push(`   รายละเอียด: ${r.resolution.actionDetails}`);
-                                                if (r.resolution.replacedSerialNumber) textLines.push(`   S/N ใหม่: ${r.resolution.replacedSerialNumber}`);
-                                            }
-                                            if (i < items.length - 1) textLines.push('');
-                                        });
-                                    });
-                                }
-                                navigator.clipboard.writeText(textLines.join('\n')).then(() => {
-                                    showToast('คัดลอกข้อความแล้ว!', 'success');
-                                }).catch(() => showToast('ไม่สามารถคัดลอกได้', 'error'));
-                            }}
-                            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors"
-                            title="คัดลอกเฉพาะข้อความ (ใช้กับ Facebook ได้)"
-                        >
-                            <Copy className="w-4 h-4" /> ข้อความ
-                        </button>
-                        {/* Copy Image — per-page buttons when multiple distributor pages */}
-                        {(() => {
-                            // Calculate distributor groups for DISTRIBUTOR type
-                            const distGroups = docPreviewType === 'DISTRIBUTOR'
-                                ? Object.entries(docPreviewRmas.reduce<Record<string, RMA[]>>((acc, r) => {
+                return (
+                    <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex flex-col animate-in fade-in duration-200">
+                        {/* Toolbar */}
+                        <div className="flex-shrink-0 flex flex-wrap items-center gap-2 md:gap-3 px-4 md:px-6 py-3 bg-white/90 dark:bg-[#1c1c1e]/95 backdrop-blur border-b border-gray-200 dark:border-white/10 shadow-sm">
+                            <h2 className="text-gray-800 dark:text-white font-semibold text-base w-full sm:w-auto flex-1 mb-1 sm:mb-0">📋 Preview เอกสาร</h2>
+                            
+                            {/* Distributor Selector Tabs */}
+                            {docPreviewType === 'DISTRIBUTOR' && (() => {
+                                const distGroups = Object.entries(docPreviewRmas.reduce<Record<string, number>>((acc, r) => {
                                     const key = r.distributor || 'Unknown';
-                                    if (!acc[key]) acc[key] = [];
-                                    acc[key].push(r);
+                                    acc[key] = (acc[key] || 0) + 1;
                                     return acc;
-                                }, {}))
-                                : [];
-                            const hasMultiplePages = distGroups.length > 1;
+                                }, {}));
 
-                            if (hasMultiplePages) {
-                                return distGroups.map(([distName], pageIdx) => (
-                                    <button
-                                        key={distName}
-                                        onClick={async () => {
-                                            if (!docPreviewHtml || isCopyingImage) return;
-                                            setIsCopyingImage(true);
-                                            try {
-                                                const blob = await renderHtmlToBlob(docPreviewHtml, pageIdx);
-                                                try {
-                                                    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-                                                    showToast(`คัดลอกรูป "${distName}" แล้ว!`, 'success');
-                                                } catch {
-                                                    const url = URL.createObjectURL(blob);
-                                                    const a = document.createElement('a');
-                                                    a.href = url; a.download = `rma-${jobId}-${distName}.png`; a.click();
-                                                    URL.revokeObjectURL(url);
-                                                    showToast(`ดาวน์โหลดรูป "${distName}" แล้ว`, 'info');
-                                                }
-                                            } catch (err) {
-                                                console.error('Copy image failed:', err);
-                                                showToast('ไม่สามารถสร้างรูปภาพได้ ลองปิดแล้วเปิดใหม่', 'error');
-                                            } finally {
-                                                setIsCopyingImage(false);
-                                            }
-                                        }}
-                                        disabled={isCopyingImage}
-                                        className={`px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors ${isCopyingImage ? 'opacity-60 cursor-wait' : ''}`}
-                                        title={`คัดลอกรูปภาพ - ${distName}`}
-                                    >
-                                        {isCopyingImage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Copy className="w-3.5 h-3.5" />}
-                                        📋 {distName}
-                                    </button>
-                                ));
-                            }
+                                if (distGroups.length <= 1) return null;
 
-                            // Single page — original button
-                            return (
-                                <button
-                                    onClick={async () => {
-                                        if (!docPreviewHtml || isCopyingImage) return;
-                                        setIsCopyingImage(true);
-                                        try {
-                                            const blob = await renderHtmlToBlob(docPreviewHtml);
-                                            try {
-                                                await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-                                                showToast('คัดลอกรูปภาพแล้ว!', 'success');
-                                            } catch {
-                                                const url = URL.createObjectURL(blob);
-                                                const a = document.createElement('a');
-                                                a.href = url; a.download = `rma-doc-${jobId}.png`; a.click();
-                                                URL.revokeObjectURL(url);
-                                                showToast('ดาวน์โหลดรูปภาพแล้ว', 'info');
-                                            }
-                                        } catch (err) {
-                                            console.error('Copy image failed:', err);
-                                            showToast('ไม่สามารถสร้างรูปภาพได้ ลองปิดแล้วเปิดใหม่', 'error');
-                                        } finally {
-                                            setIsCopyingImage(false);
-                                        }
-                                    }}
-                                    disabled={isCopyingImage}
-                                    className={`px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors ${isCopyingImage ? 'opacity-60 cursor-wait' : ''}`}
-                                    title="คัดลอกเฉพาะรูปภาพ"
-                                >
-                                    {isCopyingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />} รูปภาพ
-                                </button>
-                            );
-                        })()}
-                        {/* Copy Both (LINE friendly) */}
-                        <button
-                            onClick={async () => {
-                                if (!docPreviewHtml || isCopyingImage) return;
-                                setIsCopyingImage(true);
-                                try {
-                                    const blob = await renderHtmlToBlob(docPreviewHtml);
-                                    // Build text summary
-                                    const rma0 = docPreviewRmas[0];
+                                return (
+                                    <div className="flex bg-gray-100 dark:bg-white/5 p-1 rounded-xl gap-1 text-xs font-semibold mr-auto">
+                                        <button
+                                            onClick={() => setSelectedDistTab('ALL')}
+                                            className={`px-3 py-1.5 rounded-lg transition-all ${
+                                                selectedDistTab === 'ALL'
+                                                    ? 'bg-white dark:bg-white/15 text-gray-800 dark:text-white shadow-sm'
+                                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
+                                            }`}
+                                        >
+                                            ทั้งหมด ({docPreviewRmas.length})
+                                        </button>
+                                        {distGroups.map(([distName, count]) => (
+                                            <button
+                                                key={distName}
+                                                onClick={() => setSelectedDistTab(distName)}
+                                                className={`px-3 py-1.5 rounded-lg transition-all ${
+                                                    selectedDistTab === distName
+                                                        ? 'bg-white dark:bg-white/15 text-gray-800 dark:text-white shadow-sm'
+                                                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
+                                                }`}
+                                            >
+                                                {distName} ({count})
+                                            </button>
+                                        ))}
+                                    </div>
+                                );
+                            })()}
+
+                            {/* Copy Text Only (Facebook friendly) */}
+                            <button
+                                onClick={() => {
+                                    const rma0 = filteredRmas[0];
                                     const jobIdVal = rma0?.groupRequestId || rma0?.id || '-';
                                     const quotationVal = rma0?.quotationNumber || '-';
                                     let textLines: string[] = [];
@@ -1031,8 +937,8 @@ export const JobDetail: React.FC = () => {
                                     if (docPreviewType === 'CUSTOMER') {
                                         textLines.push(`ลูกค้า: ${rma0?.customerName || '-'}`);
                                         textLines.push('');
-                                        textLines.push(`รายการสินค้า (${docPreviewRmas.length} ชิ้น):`);
-                                        docPreviewRmas.forEach((r, i) => {
+                                        textLines.push(`รายการสินค้า (${filteredRmas.length} ชิ้น):`);
+                                        filteredRmas.forEach((r, i) => {
                                             textLines.push(`รายการ ${i + 1}:`);
                                             textLines.push(`   ${r.brand} รุ่น: ${r.productModel}`);
                                             textLines.push(`   S/N: ${r.serialNumber}`);
@@ -1042,19 +948,19 @@ export const JobDetail: React.FC = () => {
                                                 if (r.resolution.actionDetails) textLines.push(`   รายละเอียด: ${r.resolution.actionDetails}`);
                                                 if (r.resolution.replacedSerialNumber) textLines.push(`   S/N ใหม่: ${r.resolution.replacedSerialNumber}`);
                                             }
-                                            if (i < docPreviewRmas.length - 1) textLines.push('');
+                                            if (i < filteredRmas.length - 1) textLines.push('');
                                         });
                                     } else {
                                         // Group by distributor
-                                        const distGrouped2: Record<string, typeof docPreviewRmas> = {};
-                                        for (const r of docPreviewRmas) {
+                                        const distGrouped: Record<string, typeof filteredRmas> = {};
+                                        for (const r of filteredRmas) {
                                             const key = r.distributor || 'Unknown';
-                                            if (!distGrouped2[key]) distGrouped2[key] = [];
-                                            distGrouped2[key].push(r);
+                                            if (!distGrouped[key]) distGrouped[key] = [];
+                                            distGrouped[key].push(r);
                                         }
-                                        const distEntries2 = Object.entries(distGrouped2);
+                                        const distEntries = Object.entries(distGrouped);
 
-                                        distEntries2.forEach(([distName, items], groupIdx) => {
+                                        distEntries.forEach(([distName, items], groupIdx) => {
                                             if (groupIdx > 0) {
                                                 textLines.push('');
                                                 textLines.push('━━━━━━━━━━━━━━━━━━━━');
@@ -1080,92 +986,259 @@ export const JobDetail: React.FC = () => {
                                             });
                                         });
                                     }
-                                    const copyText = textLines.join('\n');
-                                    try {
-                                        await navigator.clipboard.write([
-                                            new ClipboardItem({
-                                                'image/png': blob,
-                                                'text/plain': new Blob([copyText], { type: 'text/plain' })
-                                            })
-                                        ]);
-                                        showToast('คัดลอกรูป + ข้อความแล้ว! วางใน LINE ได้เลย', 'success');
-                                    } catch {
-                                        await navigator.clipboard.writeText(copyText);
-                                        const url = URL.createObjectURL(blob);
-                                        const a = document.createElement('a');
-                                        a.href = url; a.download = `rma-doc-${jobId}.png`; a.click();
-                                        URL.revokeObjectURL(url);
-                                        showToast('คัดลอกข้อความแล้ว + ดาวน์โหลดรูปแยก', 'info');
-                                    }
-                                } catch (err) {
-                                    console.error('Copy failed:', err);
-                                    showToast('ไม่สามารถสร้างรูปภาพได้ ลองปิดแล้วเปิดใหม่', 'error');
-                                } finally {
-                                    setIsCopyingImage(false);
-                                }
-                            }}
-                            disabled={isCopyingImage || (docPreviewType === 'DISTRIBUTOR' && new Set(docPreviewRmas.map(r => r.distributor || 'Unknown')).size > 1)}
-                            className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition-colors ${
-                                (docPreviewType === 'DISTRIBUTOR' && new Set(docPreviewRmas.map(r => r.distributor || 'Unknown')).size > 1)
-                                    ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                                    : `bg-emerald-500 hover:bg-emerald-600 text-white ${isCopyingImage ? 'opacity-60 cursor-wait' : ''}`
-                            }`}
-                            title={
-                                (docPreviewType === 'DISTRIBUTOR' && new Set(docPreviewRmas.map(r => r.distributor || 'Unknown')).size > 1)
-                                    ? 'มีหลายผู้นำเข้า — ใช้ปุ่มคัดลอกรูปแยกแต่ละใบแทน'
-                                    : 'คัดลอกทั้งรูปภาพและข้อความ (สำหรับ LINE)'
-                            }
-                        >
-                            {isCopyingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />} ทั้งหมด (LINE)
-                        </button>
-                        <button
-                            onClick={() => {
-                                const iframe = document.getElementById('doc-preview-iframe') as HTMLIFrameElement;
-                                iframe?.contentWindow?.print();
-                            }}
-                            className="px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors"
-                        >
-                            🖨️ พิมพ์เอกสาร
-                        </button>
-                        <button
-                            onClick={() => setDocPreviewHtml(null)}
-                            className="px-5 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors"
-                        >
-                            <XIcon className="w-4 h-4" /> ปิด
-                        </button>
-                    </div>
-                    {/* Warning banner for partial customer documents */}
-                    {docPreviewType === 'CUSTOMER' && docPreviewRmas.length < rmas.length && (
-                        <div className="flex-shrink-0 flex items-center gap-2 px-6 py-2 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800/40">
-                            <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                            <span className="text-sm text-amber-700 dark:text-amber-300">
-                                แสดงเฉพาะงานที่ปิดแล้ว <strong>{docPreviewRmas.length}</strong> จาก <strong>{rmas.length}</strong> รายการ — อีก <strong>{rmas.length - docPreviewRmas.length}</strong> รายการยังไม่ได้ปิดงาน ไม่แสดงในเอกสาร
-                            </span>
-                        </div>
-                    )}
-                    {/* Preview Content - A4 */}
-                    <div className="flex-1 overflow-auto flex justify-start lg:justify-center py-8 px-4 md:px-12 bg-gray-100/50 dark:bg-black/50">
-                        <div className="origin-top flex justify-center" style={{ zoom: 'min(0.8, calc(100vw / 850))' }}>
-                            <iframe
-                                id="doc-preview-iframe"
-                                srcDoc={`<!DOCTYPE html><html><head><title>Preview</title><meta name="viewport" content="width=794"><style>@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff;width:100%}</style></head><body style="margin:0;padding:0;">${docPreviewHtml}</body></html>`}
-                                className="border-0 shadow-2xl bg-white"
-                                style={{
-                                    width: '794px',
-                                    minWidth: '794px',
-                                    height: (() => {
-                                        if (docPreviewType === 'DISTRIBUTOR') {
-                                            const distCount = new Set(docPreviewRmas.map(r => r.distributor || 'Unknown')).size;
-                                            return `${Math.max(1, distCount) * 1123}px`;
-                                        }
-                                        return '1123px';
-                                    })()
+                                    navigator.clipboard.writeText(textLines.join('\n')).then(() => {
+                                        showToast('คัดลอกข้อความแล้ว!', 'success');
+                                    }).catch(() => showToast('ไม่สามารถคัดลอกได้', 'error'));
                                 }}
-                            />
+                                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors"
+                                title="คัดลอกเฉพาะข้อความ (ใช้กับ Facebook ได้)"
+                            >
+                                <Copy className="w-4 h-4" /> ข้อความ
+                            </button>
+                            
+                            {/* Copy Image — per-page buttons when multiple distributor pages */}
+                            {(() => {
+                                // Calculate distributor groups for DISTRIBUTOR type
+                                const distGroups = docPreviewType === 'DISTRIBUTOR'
+                                    ? Object.entries(filteredRmas.reduce<Record<string, RMA[]>>((acc, r) => {
+                                        const key = r.distributor || 'Unknown';
+                                        if (!acc[key]) acc[key] = [];
+                                        acc[key].push(r);
+                                        return acc;
+                                    }, {}))
+                                    : [];
+                                const hasMultiplePages = distGroups.length > 1;
+
+                                if (hasMultiplePages) {
+                                    return distGroups.map(([distName], pageIdx) => (
+                                        <button
+                                            key={distName}
+                                            onClick={async () => {
+                                                if (!docPreviewHtml || isCopyingImage) return;
+                                                setIsCopyingImage(true);
+                                                try {
+                                                    const blob = await renderHtmlToBlob(docPreviewHtml, pageIdx);
+                                                    try {
+                                                        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                                                        showToast(`คัดลอกรูป "${distName}" แล้ว!`, 'success');
+                                                    } catch {
+                                                        const url = URL.createObjectURL(blob);
+                                                        const a = document.createElement('a');
+                                                        a.href = url; a.download = `rma-${jobId}-${distName}.png`; a.click();
+                                                        URL.revokeObjectURL(url);
+                                                        showToast(`ดาวน์โหลดรูป "${distName}" แล้ว`, 'info');
+                                                    }
+                                                } catch (err) {
+                                                    console.error('Copy image failed:', err);
+                                                    showToast('ไม่สามารถสร้างรูปภาพได้ ลองปิดแล้วเปิดใหม่', 'error');
+                                                } finally {
+                                                    setIsCopyingImage(false);
+                                                }
+                                            }}
+                                            disabled={isCopyingImage}
+                                            className={`px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors ${isCopyingImage ? 'opacity-60 cursor-wait' : ''}`}
+                                            title={`คัดลอกรูปภาพ - ${distName}`}
+                                        >
+                                            {isCopyingImage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Copy className="w-3.5 h-3.5" />}
+                                            📋 {distName}
+                                        </button>
+                                    ));
+                                }
+
+                                // Single page — original button
+                                return (
+                                    <button
+                                        onClick={async () => {
+                                            if (!docPreviewHtml || isCopyingImage) return;
+                                            setIsCopyingImage(true);
+                                            try {
+                                                const blob = await renderHtmlToBlob(docPreviewHtml);
+                                                try {
+                                                    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                                                    showToast('คัดลอกรูปภาพแล้ว!', 'success');
+                                                } catch {
+                                                    const url = URL.createObjectURL(blob);
+                                                    const a = document.createElement('a');
+                                                    a.href = url; a.download = `rma-doc-${jobId}.png`; a.click();
+                                                    URL.revokeObjectURL(url);
+                                                    showToast('ดาวน์โหลดรูปภาพแล้ว', 'info');
+                                                }
+                                            } catch (err) {
+                                                console.error('Copy image failed:', err);
+                                                showToast('ไม่สามารถสร้างรูปภาพได้ ลองปิดแล้วเปิดใหม่', 'error');
+                                            } finally {
+                                                setIsCopyingImage(false);
+                                            }
+                                        }}
+                                        disabled={isCopyingImage}
+                                        className={`px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors ${isCopyingImage ? 'opacity-60 cursor-wait' : ''}`}
+                                        title="คัดลอกเฉพาะรูปภาพ"
+                                    >
+                                        {isCopyingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />} รูปภาพ
+                                    </button>
+                                );
+                            })()}
+
+                            {/* Copy Both (LINE friendly) */}
+                            <button
+                                onClick={async () => {
+                                    if (!docPreviewHtml || isCopyingImage) return;
+                                    setIsCopyingImage(true);
+                                    try {
+                                        const blob = await renderHtmlToBlob(docPreviewHtml);
+                                        // Build text summary
+                                        const rma0 = filteredRmas[0];
+                                        const jobIdVal = rma0?.groupRequestId || rma0?.id || '-';
+                                        const quotationVal = rma0?.quotationNumber || '-';
+                                        let textLines: string[] = [];
+                                        textLines.push(`เลขที่งานเคลม (Job ID): ${jobIdVal}`);
+                                        textLines.push(`เลขอ้างอิง/ใบเสนอราคา: ${quotationVal}`);
+                                        const actionMap: Record<string, string> = {
+                                            'Replaced Component': 'ศูนย์เปลี่ยนอะไหล่',
+                                            'Swapped Unit': 'เปลี่ยนเครื่อง (Swap)',
+                                            'Software Update': 'อัพเดทซอฟต์แวร์',
+                                            'No Fault Found': 'ไม่พบอาการเสีย(ส่งคืน)'
+                                        };
+                                        const formatAction = (action?: string) => action ? (actionMap[action] || action) : '-';
+                                        if (docPreviewType === 'CUSTOMER') {
+                                            textLines.push(`ลูกค้า: ${rma0?.customerName || '-'}`);
+                                            textLines.push('');
+                                            textLines.push(`รายการสินค้า (${filteredRmas.length} ชิ้น):`);
+                                            filteredRmas.forEach((r, i) => {
+                                                textLines.push(`รายการ ${i + 1}:`);
+                                                textLines.push(`   ${r.brand} รุ่น: ${r.productModel}`);
+                                                textLines.push(`   S/N: ${r.serialNumber}`);
+                                                textLines.push(`   อาการที่พบ: ${r.resolution?.rootCause || '-'}`);
+                                                if (r.resolution?.actionTaken) {
+                                                    textLines.push(`   การดำเนินการ: ${formatAction(r.resolution.actionTaken)}`);
+                                                    if (r.resolution.actionDetails) textLines.push(`   รายละเอียด: ${r.resolution.actionDetails}`);
+                                                    if (r.resolution.replacedSerialNumber) textLines.push(`   S/N ใหม่: ${r.resolution.replacedSerialNumber}`);
+                                                }
+                                                if (i < filteredRmas.length - 1) textLines.push('');
+                                            });
+                                        } else {
+                                            // Group by distributor
+                                            const distGrouped2: Record<string, typeof filteredRmas> = {};
+                                            for (const r of filteredRmas) {
+                                                const key = r.distributor || 'Unknown';
+                                                if (!distGrouped2[key]) distGrouped2[key] = [];
+                                                distGrouped2[key].push(r);
+                                            }
+                                            const distEntries2 = Object.entries(distGrouped2);
+
+                                            distEntries2.forEach(([distName, items], groupIdx) => {
+                                                if (groupIdx > 0) {
+                                                    textLines.push('');
+                                                    textLines.push('━━━━━━━━━━━━━━━━━━━━');
+                                                    textLines.push('');
+                                                    textLines.push(`เลขที่งานเคลม (Job ID): ${jobIdVal}`);
+                                                    textLines.push(`เลขอ้างอิง/ใบเสนอราคา: ${quotationVal}`);
+                                                }
+                                                textLines.push(`ผู้นำเข้า: ${distName}`);
+                                                textLines.push('');
+                                                textLines.push(`รายการสินค้า (${items.length} ชิ้น):`);
+                                                items.forEach((r, i) => {
+                                                    textLines.push(`รายการ ${i + 1}:`);
+                                                    textLines.push(`   ${r.brand} รุ่น: ${r.productModel}`);
+                                                    textLines.push(`   S/N: ${r.serialNumber}`);
+                                                    textLines.push(`   อาการที่ลูกค้าแจ้ง: ${r.issueDescription || '-'}`);
+                                                    textLines.push(`   อาการที่พบ: ${r.resolution?.rootCause || '-'}`);
+                                                    if (r.resolution?.actionTaken) {
+                                                        textLines.push(`   การดำเนินการ: ${formatAction(r.resolution.actionTaken)}`);
+                                                        if (r.resolution.actionDetails) textLines.push(`   รายละเอียด: ${r.resolution.actionDetails}`);
+                                                        if (r.resolution.replacedSerialNumber) textLines.push(`   S/N ใหม่: ${r.resolution.replacedSerialNumber}`);
+                                                    }
+                                                    if (i < items.length - 1) textLines.push('');
+                                                });
+                                            });
+                                        }
+                                        const copyText = textLines.join('\n');
+                                        try {
+                                            await navigator.clipboard.write([
+                                                new ClipboardItem({
+                                                    'image/png': blob,
+                                                    'text/plain': new Blob([copyText], { type: 'text/plain' })
+                                                })
+                                            ]);
+                                            showToast('คัดลอกรูป + ข้อความแล้ว! วางใน LINE ได้เลย', 'success');
+                                        } catch {
+                                            await navigator.clipboard.writeText(copyText);
+                                            const url = URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.href = url; a.download = `rma-doc-${jobId}.png`; a.click();
+                                            URL.revokeObjectURL(url);
+                                            showToast('คัดลอกข้อความแล้ว + ดาวน์โหลดรูปแยก', 'info');
+                                        }
+                                    } catch (err) {
+                                        console.error('Copy failed:', err);
+                                        showToast('ไม่สามารถสร้างรูปภาพได้ ลองปิดแล้วเปิดใหม่', 'error');
+                                    } finally {
+                                        setIsCopyingImage(false);
+                                    }
+                                }}
+                                disabled={isCopyingImage || (docPreviewType === 'DISTRIBUTOR' && new Set(filteredRmas.map(r => r.distributor || 'Unknown')).size > 1)}
+                                className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition-colors ${
+                                    (docPreviewType === 'DISTRIBUTOR' && new Set(filteredRmas.map(r => r.distributor || 'Unknown')).size > 1)
+                                        ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                                        : `bg-emerald-500 hover:bg-emerald-600 text-white ${isCopyingImage ? 'opacity-60 cursor-wait' : ''}`
+                                }`}
+                                title={
+                                    (docPreviewType === 'DISTRIBUTOR' && new Set(filteredRmas.map(r => r.distributor || 'Unknown')).size > 1)
+                                        ? 'มีหลายผู้นำเข้า — ใช้ปุ่มคัดลอกรูปแยกแต่ละใบแทน'
+                                        : 'คัดลอกทั้งรูปภาพและข้อความ (สำหรับ LINE)'
+                                }
+                            >
+                                {isCopyingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />} ทั้งหมด (LINE)
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const iframe = document.getElementById('doc-preview-iframe') as HTMLIFrameElement;
+                                    iframe?.contentWindow?.print();
+                                }}
+                                className="px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors"
+                            >
+                                🖨️ พิมพ์เอกสาร
+                            </button>
+                            <button
+                                onClick={() => setDocPreviewHtml(null)}
+                                className="px-5 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors"
+                            >
+                                <XIcon className="w-4 h-4" /> ปิด
+                            </button>
+                        </div>
+                        {/* Warning banner for partial customer documents */}
+                        {docPreviewType === 'CUSTOMER' && filteredRmas.length < rmas.length && (
+                            <div className="flex-shrink-0 flex items-center gap-2 px-6 py-2 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800/40">
+                                <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                                <span className="text-sm text-amber-700 dark:text-amber-300">
+                                    แสดงเฉพาะงานที่ปิดแล้ว <strong>{filteredRmas.length}</strong> จาก <strong>{rmas.length}</strong> รายการ — อีก <strong>{rmas.length - filteredRmas.length}</strong> รายการยังไม่ได้ปิดงาน ไม่แสดงในเอกสาร
+                                </span>
+                            </div>
+                        )}
+                        {/* Preview Content - A4 */}
+                        <div className="flex-1 overflow-auto flex justify-start lg:justify-center py-8 px-4 md:px-12 bg-gray-100/50 dark:bg-black/50">
+                            <div className="origin-top flex justify-center" style={{ zoom: previewScale }}>
+                                <iframe
+                                    id="doc-preview-iframe"
+                                    srcDoc={`<!DOCTYPE html><html><head><title>Preview</title><meta name="viewport" content="width=794"><style>@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff;width:100%}</style></head><body style="margin:0;padding:0;">${docPreviewHtml}</body></html>`}
+                                    className="border-0 shadow-2xl bg-white"
+                                    style={{
+                                        width: '794px',
+                                        minWidth: '794px',
+                                        height: (() => {
+                                            if (docPreviewType === 'DISTRIBUTOR') {
+                                                const distCount = new Set(filteredRmas.map(r => r.distributor || 'Unknown')).size;
+                                                return `${Math.max(1, distCount) * 1123}px`;
+                                            }
+                                            return '1123px';
+                                        })()
+                                    }}
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                );
+            })()}
 
             {/* Add Item Modal */}
             {showAddItemModal && (
@@ -1241,6 +1314,15 @@ export const JobDetail: React.FC = () => {
                                         initialBrand = 'Other';
                                     }
                                     setBulkCustomBrand(initialCustomBrand);
+
+                                    const indSns: Record<string, { serialNumber: string; replacedSerialNumber: string }> = {};
+                                    selectedRMAs.forEach(r => {
+                                        indSns[r.id] = {
+                                            serialNumber: r.serialNumber || '',
+                                            replacedSerialNumber: r.resolution?.replacedSerialNumber || ''
+                                        };
+                                    });
+                                    setBulkIndividualSns(indSns);
 
                                     setBulkEditForm({
                                         brand: initialBrand,
@@ -1592,8 +1674,8 @@ export const JobDetail: React.FC = () => {
             {/* ═══ BULK EDIT FIELDS MODAL ═══ */}
             {showBulkEditModal && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => !isBulkUpdating && setShowBulkEditModal(false)}>
-                    <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl w-full max-w-lg shadow-2xl border border-gray-200 dark:border-[#333] overflow-hidden" onClick={e => e.stopPropagation()}>
-                        <div className="px-6 py-5 border-b border-gray-100 dark:border-[#333]">
+                    <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl w-full max-w-lg max-h-[90vh] md:max-h-[85vh] shadow-2xl border border-gray-200 dark:border-[#333] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+                        <div className="px-6 py-5 border-b border-gray-100 dark:border-[#333] shrink-0">
                             <h3 className="text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2">
                                 <Edit3 className="w-5 h-5 text-blue-500" /> แก้ไขรายละเอียด {selectedIds.size} รายการ
                             </h3>
@@ -1613,13 +1695,13 @@ export const JobDetail: React.FC = () => {
                                 </button>
                             </div>
                         )}
-                        <div className="p-6 space-y-4">
+                        <div className="p-6 space-y-4 overflow-y-auto flex-1">
                             <fieldset disabled={isBulkEditLocked} className={`space-y-4 ${isBulkEditLocked ? 'opacity-65 pointer-events-none' : ''}`}>
                             <div>
                                 <label className="block text-xs font-bold text-gray-400 uppercase mb-2">ยี่ห้อ (Brand)</label>
                                 <select
                                     value={bulkEditForm.brand}
-                                    onChange={e => setBulkEditForm(p => ({ ...p, brand: e.target.value }))}
+                                    onChange={e => { setBulkEditForm(p => ({ ...p, brand: e.target.value })); setBulkDirtyFields(p => ({ ...p, brand: true })); }}
                                     className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
                                 >
                                     <option value="">— ไม่เปลี่ยน —</option>
@@ -1631,7 +1713,7 @@ export const JobDetail: React.FC = () => {
                                     <input
                                         type="text"
                                         value={bulkCustomBrand}
-                                        onChange={e => setBulkCustomBrand(e.target.value)}
+                                        onChange={e => { setBulkCustomBrand(e.target.value); setBulkDirtyFields(p => ({ ...p, brand: true })); }}
                                         className="mt-2 w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
                                         placeholder="ระบุยี่ห้ออื่น ๆ..."
                                     />
@@ -1642,31 +1724,17 @@ export const JobDetail: React.FC = () => {
                                 <input
                                     type="text"
                                     value={bulkEditForm.productModel}
-                                    onChange={e => setBulkEditForm(p => ({ ...p, productModel: e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase() }))}
+                                    onChange={e => { setBulkEditForm(p => ({ ...p, productModel: e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase() })); setBulkDirtyFields(p => ({ ...p, productModel: true })); }}
                                     className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm uppercase"
                                     placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">S/N (Serial Number)</label>
-                                <input
-                                    type="text"
-                                    value={bulkEditForm.serialNumber}
-                                    onChange={e => setBulkEditForm(p => ({ ...p, serialNumber: e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase() }))}
-                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm font-mono uppercase"
-                                    placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน"
-                                />
-                                {selectedIds.size > 1 && (
-                                    <p className="text-[10px] text-amber-500 mt-1">
-                                        ⚠️ เลือก {selectedIds.size} รายการ: หากระบุ S/N จะเปลี่ยนทุกรายการเป็น S/N เดียวกันทั้งหมด
-                                    </p>
-                                )}
-                            </div>
+
                             <div>
                                 <label className="block text-xs font-bold text-gray-400 uppercase mb-2">ผู้นำเข้า / ประกันศูนย์</label>
                                 <select
                                     value={bulkEditForm.distributor}
-                                    onChange={e => setBulkEditForm(p => ({ ...p, distributor: e.target.value }))}
+                                    onChange={e => { setBulkEditForm(p => ({ ...p, distributor: e.target.value })); setBulkDirtyFields(p => ({ ...p, distributor: true })); }}
                                     className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
                                 >
                                     <option value="">— ไม่เปลี่ยน —</option>
@@ -1679,7 +1747,7 @@ export const JobDetail: React.FC = () => {
                                 <label className="block text-xs font-bold text-gray-400 uppercase mb-2">อาการที่แจ้ง (ลูกค้าแจ้งมา)</label>
                                 <textarea
                                     value={bulkEditForm.issueDescription}
-                                    onChange={e => setBulkEditForm(p => ({ ...p, issueDescription: e.target.value }))}
+                                    onChange={e => { setBulkEditForm(p => ({ ...p, issueDescription: e.target.value })); setBulkDirtyFields(p => ({ ...p, issueDescription: true })); }}
                                     className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
                                     rows={2}
                                     placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน"
@@ -1689,7 +1757,7 @@ export const JobDetail: React.FC = () => {
                                 <label className="block text-xs font-bold text-gray-400 uppercase mb-2">อาการที่พบ (พนักงานตรวจ)</label>
                                 <textarea
                                     value={bulkEditForm.rootCause}
-                                    onChange={e => setBulkEditForm(p => ({ ...p, rootCause: e.target.value }))}
+                                    onChange={e => { setBulkEditForm(p => ({ ...p, rootCause: e.target.value })); setBulkDirtyFields(p => ({ ...p, rootCause: true })); }}
                                     className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
                                     rows={2}
                                     placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน"
@@ -1702,7 +1770,7 @@ export const JobDetail: React.FC = () => {
                                         <label className="block text-[11px] font-semibold text-gray-500 mb-1.5 ml-1">วิธีดำเนินการ</label>
                                         <select
                                             value={bulkEditForm.actionTaken}
-                                            onChange={e => setBulkEditForm(p => ({ ...p, actionTaken: e.target.value }))}
+                                            onChange={e => { setBulkEditForm(p => ({ ...p, actionTaken: e.target.value })); setBulkDirtyFields(p => ({ ...p, actionTaken: true })); }}
                                             className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
                                         >
                                             <option value="">— ไม่เปลี่ยน / ไม่ระบุ —</option>
@@ -1719,30 +1787,19 @@ export const JobDetail: React.FC = () => {
                                             <input
                                                 type="text"
                                                 value={bulkEditForm.actionDetails}
-                                                onChange={e => setBulkEditForm(p => ({ ...p, actionDetails: e.target.value }))}
+                                                onChange={e => { setBulkEditForm(p => ({ ...p, actionDetails: e.target.value })); setBulkDirtyFields(p => ({ ...p, actionDetails: true })); }}
                                                 className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
                                                 placeholder="เช่น เปลี่ยน Mainboard"
                                             />
                                         </div>
                                     )}
-                                    {bulkEditForm.actionTaken === 'Swapped Unit' && (
-                                        <div>
-                                            <label className="block text-[11px] font-semibold text-gray-500 mb-1.5 ml-1">S/N สินค้าตัวใหม่</label>
-                                            <input
-                                                type="text"
-                                                value={bulkEditForm.replacedSerialNumber}
-                                                onChange={e => setBulkEditForm(p => ({ ...p, replacedSerialNumber: e.target.value.toUpperCase() }))}
-                                                className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
-                                                placeholder="ระบุ S/N สินค้าตัวใหม่"
-                                            />
-                                        </div>
-                                    )}
+
                                     <div>
                                         <label className="block text-[11px] font-semibold text-gray-500 mb-1.5 ml-1">เลข RMA (Vendor)</label>
                                         <input
                                             type="text"
                                             value={bulkEditForm.vendorTicketRef}
-                                            onChange={e => setBulkEditForm(p => ({ ...p, vendorTicketRef: e.target.value }))}
+                                            onChange={e => { setBulkEditForm(p => ({ ...p, vendorTicketRef: e.target.value })); setBulkDirtyFields(p => ({ ...p, vendorTicketRef: true })); }}
                                             className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
                                             placeholder="ระบุเลข RMA ของศูนย์ เช่น Synnex"
                                         />
@@ -1753,7 +1810,7 @@ export const JobDetail: React.FC = () => {
                                 <label className="block text-xs font-bold text-gray-400 uppercase mb-2">สถานะประกัน</label>
                                 <select
                                     value={bulkEditForm.warrantyStatus}
-                                    onChange={e => setBulkEditForm(p => ({ ...p, warrantyStatus: e.target.value }))}
+                                    onChange={e => { setBulkEditForm(p => ({ ...p, warrantyStatus: e.target.value })); setBulkDirtyFields(p => ({ ...p, warrantyStatus: true })); }}
                                     className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
                                 >
                                     <option value="">— ไม่เปลี่ยน —</option>
@@ -1762,54 +1819,130 @@ export const JobDetail: React.FC = () => {
                                     <option value="VOID">ประกัน Void</option>
                                 </select>
                             </div>
+
+                            <div className="border-t border-gray-100 dark:border-gray-800/50 pt-4">
+                                <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider flex items-center gap-1.5">
+                                    <ShieldCheck className="w-4 h-4 text-blue-500" /> ข้อมูลเฉพาะรายเครื่อง (Unique Details)
+                                </h4>
+                                <div className="space-y-4">
+                                    {rmas.filter(r => selectedIds.has(r.id)).map(r => (
+                                        <div key={r.id} className="bg-gray-50/50 dark:bg-white/[0.02] border border-gray-100 dark:border-[#333] rounded-2xl p-4 space-y-3">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{r.id}</span>
+                                                <span className="text-[11px] font-semibold bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md text-gray-600 dark:text-gray-400 max-w-[200px] truncate">{r.productModel}</span>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                <div>
+                                                    <label className="block text-[10px] font-semibold text-gray-500 uppercase mb-1 ml-1">S/N (Serial Number)</label>
+                                                    <input
+                                                        type="text"
+                                                        value={bulkIndividualSns[r.id]?.serialNumber || ''}
+                                                        onChange={e => {
+                                                            const val = e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase();
+                                                            setBulkIndividualSns(p => ({
+                                                                ...p,
+                                                                [r.id]: { ...(p[r.id] || { serialNumber: '', replacedSerialNumber: '' }), serialNumber: val }
+                                                            }));
+                                                        }}
+                                                        className="w-full bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-3 py-2 text-xs font-mono uppercase"
+                                                        placeholder="S/N ของเครื่อง"
+                                                    />
+                                                </div>
+                                                {bulkEditForm.actionTaken === 'Swapped Unit' && (
+                                                    <div>
+                                                        <label className="block text-[10px] font-semibold text-amber-500 uppercase mb-1 ml-1">S/N สินค้าตัวใหม่</label>
+                                                        <input
+                                                            type="text"
+                                                            value={bulkIndividualSns[r.id]?.replacedSerialNumber || ''}
+                                                            onChange={e => {
+                                                                const val = e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase();
+                                                                setBulkIndividualSns(p => ({
+                                                                  ...p,
+                                                                  [r.id]: { ...(p[r.id] || { serialNumber: '', replacedSerialNumber: '' }), replacedSerialNumber: val }
+                                                                }));
+                                                            }}
+                                                            className="w-full bg-white dark:bg-[#2c2c2e] border border-amber-200 dark:border-amber-500/20 rounded-xl px-3 py-2 text-xs font-mono uppercase"
+                                                            placeholder="S/N เครื่องใหม่ที่เปลี่ยน"
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                             </fieldset>
                         </div>
-                        <div className="px-6 pb-6 flex justify-end gap-2">
+                        <div className="px-6 py-4 border-t border-gray-100 dark:border-[#333] flex justify-end gap-2 shrink-0 bg-gray-50/20 dark:bg-black/10">
                             <button onClick={() => setShowBulkEditModal(false)} className="px-5 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors">ยกเลิก</button>
                             <button
                                 disabled={isBulkUpdating || isBulkEditLocked}
                                 onClick={async () => {
                                     setIsBulkUpdating(true);
                                     try {
+                                                                                const selectedRMAs = rmas.filter(r => selectedIds.has(r.id));
                                         const updates: Partial<RMA> = {};
-                                        const finalBrand = bulkEditForm.brand === 'Other' ? bulkCustomBrand : bulkEditForm.brand;
-                                        if (finalBrand.trim()) updates.brand = finalBrand.trim();
-                                        if (bulkEditForm.productModel.trim()) updates.productModel = bulkEditForm.productModel.trim();
-                                        if (bulkEditForm.serialNumber.trim()) updates.serialNumber = bulkEditForm.serialNumber.trim();
-                                        if (bulkEditForm.distributor.trim()) updates.distributor = bulkEditForm.distributor.trim();
-                                        if (bulkEditForm.issueDescription.trim()) updates.issueDescription = bulkEditForm.issueDescription.trim();
-                                        // Prepare resolution updates
+                                        
+                                        if (bulkDirtyFields.brand) {
+                                            const finalBrand = bulkEditForm.brand === 'Other' ? bulkCustomBrand : bulkEditForm.brand;
+                                            updates.brand = finalBrand.trim();
+                                        }
+                                        if (bulkDirtyFields.productModel) {
+                                            updates.productModel = bulkEditForm.productModel.trim();
+                                        }
+                                        if (bulkDirtyFields.distributor) {
+                                            updates.distributor = bulkEditForm.distributor.trim();
+                                        }
+                                        if (bulkDirtyFields.issueDescription) {
+                                            updates.issueDescription = bulkEditForm.issueDescription.trim();
+                                        }
+                                        
                                         const resolutionUpdates: any = {};
-                                        if (bulkEditForm.rootCause.trim()) resolutionUpdates.rootCause = bulkEditForm.rootCause.trim();
-                                        if (bulkEditForm.actionTaken) {
+                                        if (bulkDirtyFields.rootCause) {
+                                            resolutionUpdates.rootCause = bulkEditForm.rootCause.trim();
+                                        }
+                                        if (bulkDirtyFields.actionTaken) {
                                             resolutionUpdates.actionTaken = bulkEditForm.actionTaken;
                                             if (bulkEditForm.actionTaken === 'Replaced Component' || bulkEditForm.actionTaken === 'Other') {
                                                 resolutionUpdates.actionDetails = bulkEditForm.actionDetails.trim();
-                                                resolutionUpdates.replacedSerialNumber = '';
-                                            } else if (bulkEditForm.actionTaken === 'Swapped Unit') {
-                                                resolutionUpdates.replacedSerialNumber = bulkEditForm.replacedSerialNumber.trim();
-                                                resolutionUpdates.actionDetails = '';
                                             } else {
                                                 resolutionUpdates.actionDetails = '';
-                                                resolutionUpdates.replacedSerialNumber = '';
                                             }
+                                        } else if (bulkDirtyFields.actionDetails) {
+                                            resolutionUpdates.actionDetails = bulkEditForm.actionDetails.trim();
                                         }
-                                        if (bulkEditForm.vendorTicketRef.trim()) {
+                                        if (bulkDirtyFields.vendorTicketRef) {
                                             resolutionUpdates.vendorTicketRef = bulkEditForm.vendorTicketRef.trim();
                                         }
+                                        
                                         if (Object.keys(resolutionUpdates).length > 0) {
                                             updates.resolution = resolutionUpdates;
                                         }
-                                        if (bulkEditForm.warrantyStatus) {
+                                        
+                                        if (bulkDirtyFields.warrantyStatus) {
                                             updates.repairCosts = { warrantyStatus: bulkEditForm.warrantyStatus as any } as any;
                                         }
-                                        if (Object.keys(updates).length === 0) {
+
+                                        // Check if individual S/Ns actually changed
+                                        let hasIndividualChanges = false;
+                                        selectedRMAs.forEach(r => {
+                                            const originalSn = r.serialNumber || '';
+                                            const originalReplacedSn = r.resolution?.replacedSerialNumber || '';
+                                            const newSn = (bulkIndividualSns[r.id]?.serialNumber || '').trim();
+                                            const newReplacedSn = (bulkIndividualSns[r.id]?.replacedSerialNumber || '').trim();
+                                            if (newSn !== originalSn || newReplacedSn !== originalReplacedSn) {
+                                                hasIndividualChanges = true;
+                                            }
+                                        });
+
+                                        if (Object.keys(updates).length === 0 && !hasIndividualChanges) {
                                             showToast('กรุณากรอกข้อมูลที่ต้องการเปลี่ยน', 'error');
                                             setIsBulkUpdating(false);
                                             return;
                                         }
+
                                         const user = MockDb.getCurrentUser()?.name || 'Admin';
-                                        const count = await MockDb.bulkUpdateFields(Array.from(selectedIds), updates, user);
+                                        const count = await MockDb.bulkUpdateFieldsIndividual(Array.from(selectedIds), updates, bulkIndividualSns, user);
                                         showToast(`อัปเดต ${count} รายการสำเร็จ!`, 'success');
                                         await refreshRMAs();
                                         setShowBulkEditModal(false);

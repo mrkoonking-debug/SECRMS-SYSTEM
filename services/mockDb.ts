@@ -746,6 +746,92 @@ export const MockDb = {
     return updated;
   },
 
+  // Bulk update fields with individual Serial Numbers for multiple RMAs at once
+  bulkUpdateFieldsIndividual: async (
+    ids: string[],
+    commonUpdates: Partial<RMA>,
+    individualSns: Record<string, { serialNumber: string; replacedSerialNumber: string }>,
+    userName: string
+  ): Promise<number> => {
+    if (!isConfigured || !db) throw new Error("Firebase Disconnected");
+    
+    const fields = new Set<string>();
+    Object.keys(commonUpdates).forEach(k => fields.add(k));
+    fields.add('serialNumber');
+    fields.add('replacedSerialNumber');
+    const fieldNames = Array.from(fields).join(', ');
+
+    let updated = 0;
+    for (const id of ids) {
+      try {
+        const snap = await getDoc(doc(db, 'rmas', id));
+        if (!snap.exists()) continue;
+        
+        // Flatten the updates to dot notation to prevent overwriting nested objects
+        const flatUpdates: any = {};
+        if (commonUpdates.brand !== undefined) flatUpdates.brand = commonUpdates.brand;
+        if (commonUpdates.productModel !== undefined) flatUpdates.productModel = commonUpdates.productModel;
+        if (commonUpdates.distributor !== undefined) flatUpdates.distributor = commonUpdates.distributor;
+        if (commonUpdates.issueDescription !== undefined) flatUpdates.issueDescription = commonUpdates.issueDescription;
+        
+        if (commonUpdates.resolution) {
+          if (commonUpdates.resolution.rootCause !== undefined) {
+            flatUpdates["resolution.rootCause"] = commonUpdates.resolution.rootCause;
+          }
+          if (commonUpdates.resolution.technicalNotes !== undefined) {
+            flatUpdates["resolution.technicalNotes"] = commonUpdates.resolution.technicalNotes;
+          }
+          if (commonUpdates.resolution.actionTaken !== undefined) {
+            flatUpdates["resolution.actionTaken"] = commonUpdates.resolution.actionTaken;
+          }
+          if (commonUpdates.resolution.actionDetails !== undefined) {
+            flatUpdates["resolution.actionDetails"] = commonUpdates.resolution.actionDetails;
+          }
+          if (commonUpdates.resolution.vendorTicketRef !== undefined) {
+            flatUpdates["resolution.vendorTicketRef"] = commonUpdates.resolution.vendorTicketRef;
+          }
+          if (commonUpdates.resolution.restockCondition !== undefined) {
+            flatUpdates["resolution.restockCondition"] = commonUpdates.resolution.restockCondition;
+          }
+        }
+        
+        if (commonUpdates.repairCosts) {
+          if (commonUpdates.repairCosts.warrantyStatus !== undefined) {
+            flatUpdates["repairCosts.warrantyStatus"] = commonUpdates.repairCosts.warrantyStatus;
+          }
+        }
+
+        // Apply individual serial numbers if present
+        const ind = individualSns[id];
+        if (ind) {
+          if (ind.serialNumber !== undefined) {
+            flatUpdates.serialNumber = ind.serialNumber.trim();
+          }
+          if (ind.replacedSerialNumber !== undefined) {
+            flatUpdates["resolution.replacedSerialNumber"] = ind.replacedSerialNumber.trim();
+          }
+        }
+
+        const currentHistory = snap.data().history || [];
+        await updateDoc(doc(db, 'rmas', id), {
+          ...flatUpdates,
+          history: [...currentHistory, {
+            id: `evt-${Date.now()}-${updated}`,
+            date: Timestamp.now(),
+            type: 'SYSTEM',
+            description: `Bulk edit: ${fieldNames}`,
+            user: userName
+          }],
+          updatedAt: serverTimestamp()
+        });
+        updated++;
+      } catch (e) {
+        console.error(`bulkUpdateFieldsIndividual failed for ${id}:`, e);
+      }
+    }
+    return updated;
+  },
+
   // --- Dynamic Sequential Job ID ---
   generateNextGroupRequestId: async (): Promise<string> => {
     const now = new Date();
