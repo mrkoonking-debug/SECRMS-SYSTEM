@@ -432,8 +432,13 @@ export const getImporterFormHTML = async (rmas: RMA[]): Promise<string> => {
           <div class="party-box-label">TO: DISTRIBUTOR (เรียน ผู้นำเข้า)</div>
           <div class="party-name">${escapeHtml(rma.distributor)}</div>
           ${distInfo.label ? `<div class="party-detail">${escapeHtml(distInfo.label)}</div>` : ''}
-          ${distInfo.contactPerson ? `<div class="party-detail">ผู้ติดต่อ: ${escapeHtml(distInfo.contactPerson)}</div>` : ''}
-          ${distInfo.phone ? `<div class="party-detail">โทร: ${escapeHtml(distInfo.phone)}</div>` : ''}
+          ${distInfo.contactPerson || distInfo.phone ? `
+            <div class="party-detail">
+              ${distInfo.contactPerson ? `ผู้ติดต่อ: ${escapeHtml(distInfo.contactPerson)}` : ''}
+              ${distInfo.contactPerson && distInfo.phone ? ' | ' : ''}
+              ${distInfo.phone ? `โทร: ${escapeHtml(distInfo.phone)}` : ''}
+            </div>
+          ` : ''}
           ${distInfo.address ? `<div class="party-detail" style="margin-top: 4px;">${escapeHtml(distInfo.address)}</div>` : ''}
           ${!distInfo.label && !distInfo.address ? `<div class="party-detail">RMA / Service Department</div>` : ''}
         </div>
