@@ -309,32 +309,50 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
         width: 100% !important; 
         max-width: 100% !important;
         min-height: auto; 
-        padding: 8mm 10mm; 
+        padding: 6mm 10mm; 
         margin: 0; 
         box-shadow: none;
         overflow: hidden;
       }
+      /* Compact logo and margins */
+      .print-doc img { height: 45px !important; width: auto !important; }
+      .print-doc .header-divider { margin-bottom: 8px !important; }
+      .print-doc > table { margin-bottom: 8px !important; }
+      
+      /* Compact party boxes */
+      .party-box                { padding: 6px 10px !important; margin-bottom: 8px !important; }
+      .party-box-label          { margin-bottom: 4px !important; font-size: 9.5px !important; }
+      .party-name               { font-size: 12px !important; margin-bottom: 1px !important; }
+      .party-detail             { font-size: 9.5px !important; line-height: 1.4 !important; }
+
+      /* Compact section title */
+      .section-title            { margin-bottom: 6px !important; font-size: 10px !important; }
+      
       /* Compact table */
       .items-table              { width: 100% !important; table-layout: fixed; }
-      .items-table th           { padding: 6px 8px; font-size: 9px; }
-      .items-table td           { padding: 8px 8px; }
+      .items-table th           { padding: 5px 8px !important; font-size: 9.5px !important; }
+      .items-table td           { padding: 5px 8px !important; }
       .items-table tr           { page-break-inside: avoid; }
       .items-table tbody tr     { page-break-inside: avoid; }
+      
+      .item-brand-model         { font-size: 11px !important; margin-bottom: 3px !important; }
+      .item-desc                { font-size: 9.5px !important; line-height: 1.3 !important; }
+      .item-sn                  { font-size: 9.5px !important; padding: 2px 6px !important; margin-top: 0px !important; }
+      
       /* Compact summary bar */
-      .table-summary-bar        { padding: 6px 12px; margin-bottom: 16px; font-size: 11px; }
-      .table-summary-bar .summary-value { font-size: 13px; }
+      .table-summary-bar        { padding: 4px 12px !important; margin-bottom: 8px !important; font-size: 10px !important; }
+      .table-summary-bar .summary-value { font-size: 12px !important; }
+      
       /* Compact remarks */
-      .remarks-card             { padding: 10px 14px; margin-bottom: 16px; page-break-inside: avoid; }
-      .remarks-card-title       { margin-bottom: 4px; }
+      .remarks-card             { padding: 6px 12px !important; margin-bottom: 8px !important; font-size: 9.5px !important; line-height: 1.4 !important; page-break-inside: avoid; }
+      .remarks-card-title       { margin-bottom: 2px !important; }
+      
       /* Compact signatures */
-      .footer-section           { margin-top: 8px; gap: 12px; page-break-inside: avoid; }
-      .sig-box                  { padding: 10px 14px 12px; min-height: 60px; }
-      .sig-title                { margin-bottom: 8px; }
-      /* Compact party boxes */
-      .party-box                { padding: 10px 12px; }
-      .party-box-label          { margin-bottom: 6px; }
-      /* Compact section title */
-      .section-title            { margin-bottom: 8px; }
+      .footer-section           { margin-top: 6px !important; gap: 10px !important; page-break-inside: avoid; }
+      .sig-box                  { padding: 8px 12px !important; min-height: 50px !important; }
+      .sig-title                { margin-bottom: 4px !important; font-size: 9.5px !important; }
+      .sig-underline            { height: 20px !important; }
+      
       .document-footer-row      { page-break-inside: avoid; }
     }
   </style>
@@ -411,7 +429,7 @@ export const getImporterFormHTML = async (rmas: RMA[]): Promise<string> => {
           </td>
         </tr>
       </table>
-      <div style="height: 2px; background-color: #2563eb; margin-bottom: 10px;"></div>
+      <div class="header-divider" style="height: 2px; background-color: #2563eb; margin-bottom: 10px;"></div>
 
       <!-- Title + Reference -->
       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
@@ -434,7 +452,7 @@ export const getImporterFormHTML = async (rmas: RMA[]): Promise<string> => {
           ${distInfo.label ? `<div class="party-detail">${escapeHtml(distInfo.label)}</div>` : ''}
           ${distInfo.contactPerson || distInfo.phone ? `
             <div class="party-detail">
-              ${distInfo.contactPerson ? `ผู้ติดต่อ: ${escapeHtml(distInfo.contactPerson)}` : ''}
+               ${distInfo.contactPerson ? `ผู้ติดต่อ: ${escapeHtml(distInfo.contactPerson)}` : ''}
               ${distInfo.contactPerson && distInfo.phone ? ` | โทร: ${escapeHtml(distInfo.phone)}` : distInfo.phone ? `โทร: ${escapeHtml(distInfo.phone)}` : ''}
             </div>
           ` : ''}
@@ -486,11 +504,11 @@ export const getImporterFormHTML = async (rmas: RMA[]): Promise<string> => {
           <div style="display: flex; gap: 20px; margin-top: 6px; align-items: flex-end;">
             <div style="flex: 1;">
               <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">ลงชื่อ / Signature</div>
-              <div style="border-bottom: 1px dotted #999; height: 24px;"></div>
+              <div class="sig-underline" style="border-bottom: 1px dotted #999; height: 24px;"></div>
             </div>
             <div style="width: 40%;">
               <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">วันที่ / Date</div>
-              <div style="border-bottom: 1px dotted #999; height: 24px;"></div>
+              <div class="sig-underline" style="border-bottom: 1px dotted #999; height: 24px;"></div>
             </div>
           </div>
         </div>
@@ -499,11 +517,11 @@ export const getImporterFormHTML = async (rmas: RMA[]): Promise<string> => {
           <div style="display: flex; gap: 20px; margin-top: 6px; align-items: flex-end;">
             <div style="flex: 1;">
               <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">ลงชื่อ / Signature</div>
-              <div style="border-bottom: 1px dotted #999; height: 24px;"></div>
+              <div class="sig-underline" style="border-bottom: 1px dotted #999; height: 24px;"></div>
             </div>
             <div style="width: 40%;">
               <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">วันที่ / Date</div>
-              <div style="border-bottom: 1px dotted #999; height: 24px;"></div>
+              <div class="sig-underline" style="border-bottom: 1px dotted #999; height: 24px;"></div>
             </div>
           </div>
         </div>
@@ -579,7 +597,7 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
           </td>
         </tr>
       </table>
-      <div style="height: 2px; background-color: #2563eb; margin-bottom: 14px;"></div>
+      <div class="header-divider" style="height: 2px; background-color: #2563eb; margin-bottom: 14px;"></div>
       
       <!-- Title + Job Reference -->
       <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 16px;">
@@ -645,11 +663,11 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
           <div style="display: flex; gap: 24px; margin-top: 8px; align-items: flex-end;">
             <div style="flex: 1;">
               <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">ลงชื่อ / Signature</div>
-              <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
+              <div class="sig-underline" style="border-bottom: 1px dotted #999; height: 24px;"></div>
             </div>
             <div style="width: 40%;">
               <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">วันที่ / Date</div>
-              <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
+              <div class="sig-underline" style="border-bottom: 1px dotted #999; height: 24px;"></div>
             </div>
           </div>
         </div>
@@ -658,11 +676,11 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
           <div style="display: flex; gap: 24px; margin-top: 8px; align-items: flex-end;">
             <div style="flex: 1;">
               <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">ลงชื่อ / Signature</div>
-              <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
+              <div class="sig-underline" style="border-bottom: 1px dotted #999; height: 24px;"></div>
             </div>
             <div style="width: 40%;">
               <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">วันที่ / Date</div>
-              <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
+              <div class="sig-underline" style="border-bottom: 1px dotted #999; height: 24px;"></div>
             </div>
           </div>
         </div>
