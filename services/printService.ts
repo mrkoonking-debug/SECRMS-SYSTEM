@@ -564,52 +564,57 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
   return `
     ${getCommonStyles('blue')}
     <div class="print-doc">
+      <!-- Header: Logo + Company Info -->
+      <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 16px;">
+        <tr>
+          <td style="width: 35%; border: none; padding: 0; vertical-align: middle;">
+            <img src="${settings.logoUrl || '/logo.png'}" style="height: 60px; width: auto; display: block;" alt="logo" />
+          </td>
+          <td style="width: 65%; border: none; padding: 0; text-align: right; vertical-align: middle;">
+            <div style="font-size: 20px; font-weight: 700; color: #333;">${settings.nameTh}</div>
+            <div style="font-size: 11px; color: #666; margin-top: 6px; line-height: 1.5;">
+              ${settings.address} | TAX ID: ${settings.taxId}<br/>
+              Tel: ${settings.tel} | Web: www.sectechnology.co.th
+            </div>
+          </td>
+        </tr>
+      </table>
+      <div style="height: 2px; background-color: #2563eb; margin-bottom: 14px;"></div>
+      
+      <!-- Title + Job Reference -->
+      <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 16px;">
+        <tr>
+          <td style="width: 60%; border: none; padding: 0; vertical-align: top;">
+            <div style="font-size: 24px; font-weight: 700; color: #2563eb;">ใบส่งคืนสินค้าเคลม</div>
+            <div style="font-size: 14px; color: #555; margin-top: 4px;">Product Return Note</div>
+          </td>
+          <td style="width: 40%; border: none; padding: 0; text-align: right; vertical-align: top;">
+            <div style="font-size: 10px; font-weight: 700; color: #555; letter-spacing: 0.5px;">JOB REFERENCE</div>
+            <div style="font-size: 18px; font-weight: 700; color: #1d1d1f; margin-top: 4px;">${escapeHtml(rma.groupRequestId || rma.quotationNumber || rma.id)}</div>
+            <div style="font-size: 11px; color: #555; margin-top: 2px;">Date: ${today}</div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Customer Details -->
+      <div class="party-box" style="margin-bottom: 14px;">
+        <div class="party-box-label">CUSTOMER DETAILS (ลูกค้า)</div>
+        <div class="party-name">${escapeHtml(rma.customerName)}</div>
+        <div class="party-detail" style="margin-top: 4px;">
+          ${rma.customerPhone ? `Tel: ${escapeHtml(rma.customerPhone)}` : ''}
+          ${rma.customerPhone && rma.customerEmail ? ' · ' : ''}
+          ${rma.customerEmail ? `Email: ${escapeHtml(rma.customerEmail)}` : ''}
+        </div>
+      </div>
+
+      <!-- Section Title -->
+      <div class="section-title">
+        SERVICE ITEM DETAILS <span class="count-badge">${rmas.length} ITEMS</span>
+      </div>
+
+      <!-- Items Table -->
       <table class="items-table">
         <thead>
-          <tr>
-            <td colspan="2" style="border:none; padding:0; background:none; text-align:left;">
-              <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 16px;">
-                <tr>
-                  <td style="width: 35%; border: none; padding: 0; vertical-align: middle;">
-                    <img src="${settings.logoUrl || '/logo.png'}" style="height: 60px; width: auto; display: block;" alt="logo" />
-                  </td>
-                  <td style="width: 65%; border: none; padding: 0; text-align: right; vertical-align: middle;">
-                    <div style="font-size: 20px; font-weight: 700; color: #333;">${settings.nameTh}</div>
-                    <div style="font-size: 11px; color: #666; margin-top: 6px; line-height: 1.5;">
-                      ${settings.address} | TAX ID: ${settings.taxId}<br/>
-                      Tel: ${settings.tel} | Web: www.sectechnology.co.th
-                    </div>
-                  </td>
-                </tr>
-              </table>
-              <div style="height: 2px; background-color: #2563eb; margin-bottom: 14px;"></div>
-              <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 16px;">
-                <tr>
-                  <td style="width: 60%; border: none; padding: 0; vertical-align: top;">
-                    <div style="font-size: 24px; font-weight: 700; color: #2563eb;">ใบส่งคืนสินค้าเคลม</div>
-                    <div style="font-size: 14px; color: #555; margin-top: 4px;">Product Return Note</div>
-                  </td>
-                  <td style="width: 40%; border: none; padding: 0; text-align: right; vertical-align: top;">
-                    <div style="font-size: 10px; font-weight: 700; color: #555; letter-spacing: 0.5px;">JOB REFERENCE</div>
-                    <div style="font-size: 18px; font-weight: 700; color: #1d1d1f; margin-top: 4px;">${escapeHtml(rma.groupRequestId || rma.quotationNumber || rma.id)}</div>
-                    <div style="font-size: 11px; color: #555; margin-top: 2px;">Date: ${today}</div>
-                  </td>
-                </tr>
-              </table>
-              <div class="party-box" style="margin-bottom: 14px;">
-                <div class="party-box-label">CUSTOMER DETAILS (ลูกค้า)</div>
-                <div class="party-name">${escapeHtml(rma.customerName)}</div>
-                <div class="party-detail" style="margin-top: 4px;">
-                  ${rma.customerPhone ? `Tel: ${escapeHtml(rma.customerPhone)}` : ''}
-                  ${rma.customerPhone && rma.customerEmail ? ' · ' : ''}
-                  ${rma.customerEmail ? `Email: ${escapeHtml(rma.customerEmail)}` : ''}
-                </div>
-              </div>
-              <div class="section-title">
-                SERVICE ITEM DETAILS <span class="count-badge">${rmas.length} ITEMS</span>
-              </div>
-            </td>
-          </tr>
           <tr>
             <th style="width: 5%;">#</th>
             <th class="align-left" style="width: 95%; padding-left: 12px;">รายละเอียดชิ้นส่วน/สินค้า</th>
@@ -617,49 +622,51 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
         </thead>
         <tbody>
           ${tableRows}
-          <tr class="document-footer-row">
-            <td colspan="2" style="border:none; padding:0; background:none;">
-              <div class="table-summary-bar">
-                <span class="summary-label">รวมจำนวนสินค้า</span>
-                <span class="summary-value">${rmas.length} ชิ้น</span>
-              </div>
-              <div class="remarks-card">
-                <div class="remarks-card-title">หมายเหตุ / Remarks</div>
-                <div>1. ได้รับสินค้าข้างบนนี้เรียบร้อยแล้ว</div>
-                <div style="margin-top: 6px;">2. สินค้าตามใบส่งของนี้ หากมีการเสียหายหรือไม่ครบจำนวน โปรดแจ้งทางบริษัทฯทราบภายใน 7 วัน มิฉะนั้นบริษัทฯจะไม่รับผิดชอบความเสียหายใดๆทั้งสิ้น (ไม่มีใบรับประกันทางบริษัทจะไม่รับเคลมสินค้า)</div>
-              </div>
-              <div class="footer-section">
-                <div class="sig-box">
-                  <div class="sig-title">ผู้ส่ง / SENT BY</div>
-                  <div style="display: flex; gap: 24px; margin-top: 8px; align-items: flex-end;">
-                    <div style="flex: 1;">
-                      <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">ลงชื่อ / Signature</div>
-                      <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
-                    </div>
-                    <div style="width: 40%;">
-                      <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">วันที่ / Date</div>
-                      <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="sig-box">
-                  <div class="sig-title">ผู้รับ / RECEIVED BY</div>
-                  <div style="display: flex; gap: 24px; margin-top: 8px; align-items: flex-end;">
-                    <div style="flex: 1;">
-                      <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">ลงชื่อ / Signature</div>
-                      <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
-                    </div>
-                    <div style="width: 40%;">
-                      <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">วันที่ / Date</div>
-                      <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </td>
-          </tr>
         </tbody>
       </table>
+
+      <!-- Summary -->
+      <div class="table-summary-bar">
+        <span class="summary-label">รวมจำนวนสินค้า</span>
+        <span class="summary-value">${rmas.length} ชิ้น</span>
+      </div>
+
+      <!-- Remarks -->
+      <div class="remarks-card">
+        <div class="remarks-card-title">หมายเหตุ / Remarks</div>
+        <div>1. ได้รับสินค้าข้างบนนี้เรียบร้อยแล้ว</div>
+        <div style="margin-top: 6px;">2. สินค้าตามใบส่งของนี้ หากมีการเสียหายหรือไม่ครบจำนวน โปรดแจ้งทางบริษัทฯทราบภายใน 7 วัน มิฉะนั้นบริษัทฯจะไม่รับผิดชอบความเสียหายใดๆทั้งสิ้น (ไม่มีใบรับประกันทางบริษัทจะไม่รับเคลมสินค้า)</div>
+      </div>
+
+      <!-- Signatures -->
+      <div class="footer-section">
+        <div class="sig-box">
+          <div class="sig-title">ผู้ส่ง / SENT BY</div>
+          <div style="display: flex; gap: 24px; margin-top: 8px; align-items: flex-end;">
+            <div style="flex: 1;">
+              <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">ลงชื่อ / Signature</div>
+              <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
+            </div>
+            <div style="width: 40%;">
+              <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">วันที่ / Date</div>
+              <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="sig-box">
+          <div class="sig-title">ผู้รับ / RECEIVED BY</div>
+          <div style="display: flex; gap: 24px; margin-top: 8px; align-items: flex-end;">
+            <div style="flex: 1;">
+              <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">ลงชื่อ / Signature</div>
+              <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
+            </div>
+            <div style="width: 40%;">
+              <div style="font-size: 9px; color: #86868b; margin-bottom: 4px;">วันที่ / Date</div>
+              <div style="border-bottom: 1px dotted #999; height: 36px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 };
