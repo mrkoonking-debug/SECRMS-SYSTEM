@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { MockDb } from '../services/mockDb';
 import { RMA, RMAStatus, Team } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
-import { Search, Plus, ChevronRight, ChevronDown, Box, Layers, Wifi, Zap, ShoppingBag, Package, User, ChevronsUpDown, Loader2, AlertTriangle, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { Search, Plus, ChevronRight, ChevronDown, Box, Layers, Wifi, Zap, ShoppingBag, Package, User, ChevronsUpDown, AlertTriangle, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -11,9 +11,6 @@ const PAGE_SIZE = 50;
 export const ClaimsList: React.FC = () => {
     const [rmas, setRMAs] = useState<RMA[]>([]);
     const [loading, setLoading] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
-    const [hasMore, setHasMore] = useState(false);
-    const [lastDoc, setLastDoc] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -33,13 +30,28 @@ export const ClaimsList: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        const fetch = async () => {
+        const fetchAll = async () => {
             try {
-                const result = await MockDb.getRMAsPaginated(PAGE_SIZE);
-                const assignedRMAs = result.rmas.filter(c => c && c.id && c.team && (c.team as any) !== 'UNASSIGNED');
-                setRMAs(assignedRMAs);
-                setLastDoc(result.lastDoc);
-                setHasMore(result.hasMore);
+                let allRMAs: RMA[] = [];
+                let cursor: any = null;
+                let more = true;
+
+                // Load all pages automatically
+                while (more) {
+                    const result = await MockDb.getRMAsPaginated(PAGE_SIZE, cursor);
+                    const assignedRMAs = result.rmas.filter(c => c && c.id && c.team && (c.team as any) !== 'UNASSIGNED');
+                    allRMAs = [...allRMAs, ...assignedRMAs];
+                    cursor = result.lastDoc;
+                    more = result.hasMore;
+
+                    // Update state progressively so user sees data appearing
+                    setRMAs([...allRMAs]);
+
+                    // Show content after first batch loads
+                    if (allRMAs.length > 0) {
+                        setLoading(false);
+                    }
+                }
             } catch (err: unknown) {
                 console.error('ClaimsList fetch failed:', err);
                 setError(err instanceof Error ? err.message : 'ไม่สามารถโหลดข้อมูลได้');
@@ -47,19 +59,8 @@ export const ClaimsList: React.FC = () => {
                 setLoading(false);
             }
         };
-        fetch();
+        fetchAll();
     }, []);
-
-    const loadMore = async () => {
-        if (!hasMore || loadingMore) return;
-        setLoadingMore(true);
-        const result = await MockDb.getRMAsPaginated(PAGE_SIZE, lastDoc);
-        const assignedRMAs = result.rmas.filter(c => c && c.id && c.team && (c.team as any) !== 'UNASSIGNED');
-        setRMAs(prev => [...prev, ...assignedRMAs]);
-        setLastDoc(result.lastDoc);
-        setHasMore(result.hasMore);
-        setLoadingMore(false);
-    };
 
 
     const toggleDateGroup = (dateLabel: string) => {
@@ -267,19 +268,7 @@ export const ClaimsList: React.FC = () => {
                 )}
             </div>
 
-            {/* Load More */}
-            {hasMore && (
-                <div className="flex justify-center mt-8">
-                    <button
-                        onClick={loadMore}
-                        disabled={loadingMore}
-                        className="px-8 py-3 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-[#333] rounded-full text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#2c2c2e] transition-all flex items-center gap-2 disabled:opacity-50"
-                    >
-                        {loadingMore ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                        {loadingMore ? 'กำลังโหลด...' : `โหลดเพิ่ม (แสดง ${rmas.length} รายการ)`}
-                    </button>
-                </div>
-            )}
+
         </div>
     );
 };
