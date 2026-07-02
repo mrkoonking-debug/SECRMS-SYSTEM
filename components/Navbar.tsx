@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { ShieldCheck, LogOut, Globe, LayoutGrid, List, PlusCircle, Plus, User, Users, Menu, X, Truck, Settings, BarChart3, Tag, Building2, Bell, History } from 'lucide-react';
+import { ShieldCheck, LogOut, Globe, LayoutGrid, List, PlusCircle, Plus, User, Users, Menu, X, Truck, Settings, BarChart3, Tag, Building2, Bell, History, RefreshCw } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -113,6 +113,23 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
           <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
           <span className="font-bold text-[15px] text-[#1d1d1f] dark:text-white tracking-tight">SEC RMS</span>
         </Link>
+        <button
+          onClick={async () => {
+            if ('serviceWorker' in navigator) {
+              const regs = await navigator.serviceWorker.getRegistrations();
+              for (const r of regs) await r.unregister();
+            }
+            if ('caches' in window) {
+              const keys = await caches.keys();
+              for (const k of keys) await caches.delete(k);
+            }
+            window.location.reload();
+          }}
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#0071e3] hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all active:scale-90"
+          title="ล้างแคช & รีเฟรช"
+        >
+          <RefreshCw className="w-4 h-4" />
+        </button>
       </div>
 
       {/* ===== Mobile Bottom Tab Bar (Premium) ===== */}
@@ -225,7 +242,18 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
         <div className="p-6 mt-auto">
           <div className="flex items-center justify-between mb-6 bg-white dark:bg-[#1c1c1e] p-2 rounded-full shadow-sm border border-gray-100 dark:border-[#333]">
             <div className="flex gap-1"><ThemeToggle /><LanguageToggle /></div>
-            {user && <Link to="/" title="Go to Website" className="p-2 rounded-full text-[#86868b] hover:text-[#0071e3] transition-colors"><Globe className="h-4 w-4" /></Link>}
+            <div className="flex gap-1">
+              <button
+                onClick={async () => {
+                  if ('serviceWorker' in navigator) { const regs = await navigator.serviceWorker.getRegistrations(); for (const r of regs) await r.unregister(); }
+                  if ('caches' in window) { const keys = await caches.keys(); for (const k of keys) await caches.delete(k); }
+                  window.location.reload();
+                }}
+                className="p-2 rounded-full text-[#86868b] hover:text-[#0071e3] transition-colors"
+                title="ล้างแคช & รีเฟรช"
+              ><RefreshCw className="h-4 w-4" /></button>
+              {user && <Link to="/" title="Go to Website" className="p-2 rounded-full text-[#86868b] hover:text-[#0071e3] transition-colors"><Globe className="h-4 w-4" /></Link>}
+            </div>
           </div>
 
           {user && (
