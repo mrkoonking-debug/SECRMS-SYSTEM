@@ -77,7 +77,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
         else setCurrentItem(prev => ({ ...prev, team: '' }));
     }, [selectedMainTeam, mode]);
 
-    const validate = () => {
+    const validate = (): Record<string, string> => {
         const newErrors: Record<string, string> = {};
         const required = noSerial ? ['brand', 'model', 'issue'] : ['brand', 'model', 'serial', 'issue'];
         if (mode === 'admin') required.push('team', 'distributor');
@@ -93,11 +93,12 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
         if (currentItem.accessories.length === 0) newErrors.accessories = t('validation.accessoriesRequired');
 
         setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        return newErrors;
     };
 
     const handleAddClick = () => {
-        if (!validate()) {
+        const validationErrors = validate();
+        if (Object.keys(validationErrors).length > 0) {
             // แจ้ง popup บอกว่าข้อมูลสินค้าไม่ครบ
             const fieldNames: Record<string, string> = {
                 brand: 'ยี่ห้อ',
@@ -108,7 +109,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                 distributor: 'ตัวแทนจำหน่าย',
                 accessories: 'อุปกรณ์เสริม'
             };
-            const missing = Object.keys(errors)
+            const missing = Object.keys(validationErrors)
                 .map(k => fieldNames[k] || k)
                 .join(', ');
             showToast(`กรุณากรอก: ${missing}`, 'error', 4000);

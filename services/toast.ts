@@ -41,7 +41,8 @@ export function showToast(message: string, type: ToastType = 'success', duration
     opacity: 0; transform: translateY(-16px) scale(0.96);
     transition: opacity 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1);
     max-width: min(420px, 88vw);
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-word;
   `;
 
   // Minimal icon dot
