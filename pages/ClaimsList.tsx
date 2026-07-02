@@ -234,22 +234,35 @@ export const ClaimsList: React.FC = () => {
                                                             <div className="min-w-0 flex-1">
                                                                 <h3 className="text-sm md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-1.5 md:gap-2 flex-wrap">
                                                                     <span className="truncate">{jobKey}</span>
-                                                                    {isJobDone && <span className="bg-green-500/10 text-green-600 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-green-500/20 font-bold flex items-center gap-0.5 flex-shrink-0"><CheckCircle2 className="w-3 h-3" /> เสร็จ</span>}
-                                                                    {!isJobDone && jobItems.some(i => isRMAOverdue(i)) && <span className="bg-red-500/10 text-red-600 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-red-500/20 flex-shrink-0">⚠️</span>}
+                                                                    {/* Desktop: Ref badge */}
+                                                                    <span className={`hidden md:inline-flex text-[10px] px-2 py-0.5 rounded-md border ${quotationNumber ? 'bg-gray-100 dark:bg-[#2c2c2e] text-gray-600 dark:text-gray-300 border-gray-200 dark:border-[#424245]' : 'bg-gray-50 dark:bg-[#2c2c2e]/50 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-[#424245]/50 italic'}`}>{quotationNumber ? `Ref: ${quotationNumber}` : 'ไม่มี Ref'}</span>
+                                                                    {/* Desktop: Full badge / Mobile: Compact badge */}
+                                                                    {isJobDone && <span className="bg-green-500/10 text-green-600 text-[9px] md:text-[10px] px-1.5 md:px-2 py-0.5 rounded-full border border-green-500/20 font-bold flex items-center gap-0.5 md:gap-1 flex-shrink-0"><CheckCircle2 className="w-3 h-3" /> <span className="hidden md:inline">เสร็จสิ้น</span><span className="md:hidden">เสร็จ</span></span>}
+                                                                    {!isJobDone && jobItems.some(i => isRMAOverdue(i)) && <>
+                                                                        <span className="hidden md:inline-flex bg-red-500/10 text-red-600 text-[10px] px-2 py-0.5 rounded-full border border-red-500/20">{t('claimsList.attentionNeeded')}</span>
+                                                                        <span className="md:hidden bg-red-500/10 text-red-600 text-[9px] px-1.5 py-0.5 rounded-full border border-red-500/20">⚠️</span>
+                                                                    </>}
                                                                 </h3>
-                                                                <div className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5 mt-0.5">
-                                                                    <User className="w-3 h-3 flex-shrink-0" /> <span className="truncate">{customerName}</span> <span className="text-gray-400 flex-shrink-0">· {jobItems.length} {t('claimsList.items')}</span>
+                                                                <div className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5 md:gap-2 mt-0.5">
+                                                                    <User className="w-3 h-3 flex-shrink-0" /> <span className="truncate">{customerName}</span> <span className="hidden md:inline w-1 h-1 bg-gray-300 rounded-full"></span><span className="text-gray-400 md:text-gray-500 flex-shrink-0">· {jobItems.length} {t('claimsList.items')}</span>
                                                                 </div>
-                                                                <div className="flex flex-wrap gap-1 mt-1.5">
-                                                                    {jobItems.slice(0, 4).map((item) => (
+                                                                <div className="flex flex-wrap gap-1 md:gap-1.5 mt-1.5">
+                                                                    {jobItems.slice(0, 5).map((item) => (
                                                                         <StatusBadge key={item.id} status={item.status} isOverdue={isRMAOverdue(item)} />
                                                                     ))}
-                                                                    {jobItems.length > 4 && <span className="text-[10px] text-gray-400 font-medium self-center">+{jobItems.length - 4}</span>}
+                                                                    {jobItems.length > 5 && <span className="text-[10px] text-gray-400 font-medium self-center">+{jobItems.length - 5}</span>}
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div className="flex items-center justify-end gap-2 ml-12 md:ml-0">
-                                                            <div className="text-[11px] text-gray-400 group-hover:text-[#0071e3] flex items-center gap-0.5">Details <ChevronRight className="w-3.5 h-3.5" /></div>
+                                                        <div className="flex items-center gap-3 justify-end ml-12 md:ml-0">
+                                                            {/* Desktop: Brand avatars */}
+                                                            <div className="hidden md:flex -space-x-2">
+                                                                {jobItems.slice(0, 3).map((item) => (
+                                                                    <div key={item.id} className={`w-8 h-8 rounded-full border-2 border-white dark:border-[#1c1c1e] flex items-center justify-center text-[10px] font-bold text-white ${item.team === Team.HIKVISION ? 'bg-red-500' : 'bg-blue-500'}`}>{item.brand.substring(0, 1)}</div>
+                                                                ))}
+                                                                {jobItems.length > 3 && <div className="w-8 h-8 rounded-full border-2 border-white dark:border-[#1c1c1e] bg-gray-200 dark:bg-[#333] text-gray-500 text-[10px] flex items-center justify-center">+{jobItems.length - 3}</div>}
+                                                            </div>
+                                                            <div className="text-[11px] md:text-xs text-gray-400 group-hover:text-[#0071e3] flex items-center gap-0.5 md:gap-1">Details <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4" /></div>
                                                         </div>
                                                     </div>
                                                 </div>
