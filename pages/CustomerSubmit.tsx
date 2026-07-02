@@ -79,7 +79,7 @@ export const CustomerSubmit: React.FC = () => {
             // แจ้ง popup ใหญ่ บอกว่ากรอกไม่ครบตรงไหน
             const missingFields: string[] = [];
             if (newErrors.lineAccount) missingFields.push('LINE Account');
-            if (newErrors.companyName) missingFields.push('ชื่อบริษัท / ชื่อลูกค้า');
+            if (newErrors.companyName) missingFields.push('ชื่อบริษัท / ร้านค้าของท่าน');
             if (newErrors.contactName) missingFields.push('ชื่อผู้ติดต่อ');
             if (newErrors.phone) missingFields.push('เบอร์โทรศัพท์');
             if (newErrors.returnAddress) missingFields.push('ที่อยู่จัดส่งคืน');
