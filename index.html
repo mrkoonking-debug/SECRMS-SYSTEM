@@ -144,6 +144,56 @@
       /* Nuke all heavy tailwind blurs outright */
       --tw-backdrop-blur: blur(0) !important;
     }
+
+    /* ===== Mobile UX Enhancements ===== */
+
+    /* Better touch targets — all interactive elements min 44px */
+    @media (max-width: 768px) {
+      button, a, input, select, textarea {
+        min-height: 44px;
+      }
+      
+      /* Compact padding on mobile */
+      .rounded-\[2rem\] { border-radius: 1.25rem !important; }
+      .rounded-\[2\.5rem\] { border-radius: 1.25rem !important; }
+      .rounded-\[3rem\] { border-radius: 1.5rem !important; }
+      
+      /* Smooth touch feedback */
+      button:active, a:active {
+        transform: scale(0.97);
+        transition: transform 0.1s ease;
+      }
+      
+      /* Remove tap highlight on mobile */
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      /* Better text rendering on mobile */
+      body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+      }
+
+      /* Compact headings on mobile */
+      h1 { font-size: 1.5rem !important; }
+
+      /* Smoother scrolling */
+      main, .overflow-y-auto {
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+      }
+    }
+
+    /* Touch-friendly card press effect */
+    @media (hover: none) {
+      .hover\:shadow-md:active {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+        transform: scale(0.98);
+        transition: all 0.15s ease;
+      }
+    }
   </style>
 
   <link rel="stylesheet" href="/index.css">

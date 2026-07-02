@@ -97,7 +97,7 @@ export function showValidationError(missingFields: string[], title?: string) {
   overlay.style.cssText = `
     position: fixed; inset: 0; z-index: 99999;
     display: flex; align-items: flex-start; justify-content: center;
-    padding-top: 80px;
+    padding-top: min(80px, 15vh);
     background: rgba(0,0,0,0.3);
     backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
     opacity: 0;
@@ -108,8 +108,8 @@ export function showValidationError(missingFields: string[], title?: string) {
   card.style.cssText = `
     background: white;
     border-radius: 20px;
-    padding: 28px 32px;
-    max-width: min(400px, 90vw);
+    padding: 24px 24px;
+    max-width: min(380px, calc(100vw - 32px));
     width: 100%;
     box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05);
     transform: translateY(-20px) scale(0.95);

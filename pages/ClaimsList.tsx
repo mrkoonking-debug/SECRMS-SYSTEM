@@ -159,35 +159,35 @@ export const ClaimsList: React.FC = () => {
     );
 
     return (
-        <div className="max-w-6xl mx-auto px-2 md:px-6 pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-                <div><h1 className="text-3xl font-bold text-[#1d1d1f] dark:text-white tracking-tight mb-1">{t('claimsList.title')}</h1><p className="text-gray-500 text-sm">{t('claimsList.subtitle')}</p></div>
-                <Link to="/admin/submit" className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-6 py-3 rounded-full text-sm font-semibold flex items-center gap-2 shadow-lg shadow-blue-500/30 transition-all transform hover:scale-105"><Plus className="h-4 w-4" /> {t('nav.newRequest')}</Link>
+        <div className="max-w-6xl mx-auto px-3 md:px-6 pb-24 md:pb-8">
+            <div className="flex items-center justify-between gap-4 mb-5">
+                <div><h1 className="text-xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white tracking-tight mb-0.5">{t('claimsList.title')}</h1><p className="text-gray-500 text-xs md:text-sm hidden md:block">{t('claimsList.subtitle')}</p></div>
+                <Link to="/admin/submit" className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-4 md:px-6 py-2.5 md:py-3 rounded-full text-xs md:text-sm font-semibold flex items-center gap-1.5 shadow-lg shadow-blue-500/30 transition-all whitespace-nowrap"><Plus className="h-4 w-4" /> <span className="hidden md:inline">{t('nav.newRequest')}</span><span className="md:hidden">เพิ่ม</span></Link>
             </div>
 
-            <div className="mb-8 space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <button onClick={() => { setTeamFilter('ALL'); setIsTeamCExpanded(false); }} className={`rounded-2xl p-4 text-left transition-all border border-gray-100 dark:border-[#333] ${teamFilter === 'ALL' ? 'ring-2 ring-[#0071e3] bg-white dark:bg-[#1c1c1e]' : 'bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-[#2c2c2e]'}`}><div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">{t('claimsList.active')}</div><div className="text-2xl font-bold text-[#1d1d1f] dark:text-white">{rmas.filter(c => c.status !== RMAStatus.CLOSED).length}</div></button>
-                    <button onClick={() => { setTeamFilter(Team.HIKVISION); setIsTeamCExpanded(false); }} className={`rounded-2xl p-4 text-left transition-all border border-gray-100 dark:border-[#333] ${teamFilter === Team.HIKVISION ? 'ring-2 ring-red-500 bg-white dark:bg-[#1c1c1e]' : 'bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-[#2c2c2e]'}`}><div className="text-[10px] font-bold text-red-500 uppercase tracking-wider mb-2">Hikvision</div><div className="text-2xl font-bold text-[#1d1d1f] dark:text-white">{getTeamCount(Team.HIKVISION)}</div></button>
-                    <button onClick={() => { setTeamFilter(Team.DAHUA); setIsTeamCExpanded(false); }} className={`rounded-2xl p-4 text-left transition-all border border-gray-100 dark:border-[#333] ${teamFilter === Team.DAHUA ? 'ring-2 ring-orange-500 bg-white dark:bg-[#1c1c1e]' : 'bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-[#2c2c2e]'}`}><div className="text-[10px] font-bold text-orange-500 uppercase tracking-wider mb-2">Dahua</div><div className="text-2xl font-bold text-[#1d1d1f] dark:text-white">{getTeamCount(Team.DAHUA)}</div></button>
-                    <button onClick={handleGroupCClick} className={`rounded-2xl p-4 text-left transition-all border border-gray-100 dark:border-[#333] ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-[#1c1c1e]' : 'bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-[#2c2c2e]'}`}><div className="text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-2">Team C Group</div><div className="text-2xl font-bold text-[#1d1d1f] dark:text-white">{getGroupCCount()}</div></button>
+            <div className="mb-5 space-y-3">
+                <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1">
+                    <button onClick={() => { setTeamFilter('ALL'); setIsTeamCExpanded(false); }} className={`rounded-xl p-3 md:p-4 text-left transition-all border border-gray-100 dark:border-[#333] min-w-[120px] md:min-w-0 flex-shrink-0 md:flex-1 ${teamFilter === 'ALL' ? 'ring-2 ring-[#0071e3] bg-white dark:bg-[#1c1c1e]' : 'bg-white dark:bg-[#1c1c1e]'}`}><div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">{t('claimsList.active')}</div><div className="text-xl md:text-2xl font-bold text-[#1d1d1f] dark:text-white">{rmas.filter(c => c.status !== RMAStatus.CLOSED).length}</div></button>
+                    <button onClick={() => { setTeamFilter(Team.HIKVISION); setIsTeamCExpanded(false); }} className={`rounded-xl p-3 md:p-4 text-left transition-all border border-gray-100 dark:border-[#333] min-w-[120px] md:min-w-0 flex-shrink-0 md:flex-1 ${teamFilter === Team.HIKVISION ? 'ring-2 ring-red-500 bg-white dark:bg-[#1c1c1e]' : 'bg-white dark:bg-[#1c1c1e]'}`}><div className="text-[10px] font-bold text-red-500 uppercase tracking-wider mb-1">Hikvision</div><div className="text-xl md:text-2xl font-bold text-[#1d1d1f] dark:text-white">{getTeamCount(Team.HIKVISION)}</div></button>
+                    <button onClick={() => { setTeamFilter(Team.DAHUA); setIsTeamCExpanded(false); }} className={`rounded-xl p-3 md:p-4 text-left transition-all border border-gray-100 dark:border-[#333] min-w-[120px] md:min-w-0 flex-shrink-0 md:flex-1 ${teamFilter === Team.DAHUA ? 'ring-2 ring-orange-500 bg-white dark:bg-[#1c1c1e]' : 'bg-white dark:bg-[#1c1c1e]'}`}><div className="text-[10px] font-bold text-orange-500 uppercase tracking-wider mb-1">Dahua</div><div className="text-xl md:text-2xl font-bold text-[#1d1d1f] dark:text-white">{getTeamCount(Team.DAHUA)}</div></button>
+                    <button onClick={handleGroupCClick} className={`rounded-xl p-3 md:p-4 text-left transition-all border border-gray-100 dark:border-[#333] min-w-[120px] md:min-w-0 flex-shrink-0 md:flex-1 ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-[#1c1c1e]' : 'bg-white dark:bg-[#1c1c1e]'}`}><div className="text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-1">Team C</div><div className="text-xl md:text-2xl font-bold text-[#1d1d1f] dark:text-white">{getGroupCCount()}</div></button>
                 </div>
                 {isTeamCExpanded && (
-                    <div className="grid grid-cols-3 gap-4 animate-fade-in pl-4 border-l-2 border-blue-500/30">
-                        <button onClick={() => setTeamFilter(Team.TEAM_C)} className={`rounded-xl p-3 bg-white dark:bg-[#1c1c1e] border ${teamFilter === Team.TEAM_C ? 'border-cyan-500' : 'border-gray-100 dark:border-[#333]'} dark:text-white`}>Network ({getTeamCount(Team.TEAM_C)})</button>
-                        <button onClick={() => setTeamFilter(Team.TEAM_E)} className={`rounded-xl p-3 bg-white dark:bg-[#1c1c1e] border ${teamFilter === Team.TEAM_E ? 'border-yellow-500' : 'border-gray-100 dark:border-[#333]'} dark:text-white`}>UPS ({getTeamCount(Team.TEAM_E)})</button>
-                        <button onClick={() => setTeamFilter(Team.TEAM_G)} className={`rounded-xl p-3 bg-white dark:bg-[#1c1c1e] border ${teamFilter === Team.TEAM_G ? 'border-fuchsia-500' : 'border-gray-100 dark:border-[#333]'} dark:text-white`}>Online ({getTeamCount(Team.TEAM_G)})</button>
+                    <div className="flex gap-2 overflow-x-auto scrollbar-hide animate-fade-in pl-2 border-l-2 border-blue-500/30">
+                        <button onClick={() => setTeamFilter(Team.TEAM_C)} className={`rounded-xl px-4 py-2.5 bg-white dark:bg-[#1c1c1e] border whitespace-nowrap text-sm ${teamFilter === Team.TEAM_C ? 'border-cyan-500' : 'border-gray-100 dark:border-[#333]'} dark:text-white`}>Network ({getTeamCount(Team.TEAM_C)})</button>
+                        <button onClick={() => setTeamFilter(Team.TEAM_E)} className={`rounded-xl px-4 py-2.5 bg-white dark:bg-[#1c1c1e] border whitespace-nowrap text-sm ${teamFilter === Team.TEAM_E ? 'border-yellow-500' : 'border-gray-100 dark:border-[#333]'} dark:text-white`}>UPS ({getTeamCount(Team.TEAM_E)})</button>
+                        <button onClick={() => setTeamFilter(Team.TEAM_G)} className={`rounded-xl px-4 py-2.5 bg-white dark:bg-[#1c1c1e] border whitespace-nowrap text-sm ${teamFilter === Team.TEAM_G ? 'border-fuchsia-500' : 'border-gray-100 dark:border-[#333]'} dark:text-white`}>Online ({getTeamCount(Team.TEAM_G)})</button>
                     </div>
                 )}
             </div>
 
-            <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] shadow-sm border border-gray-200 dark:border-[#333] p-1 mb-8 sticky top-24 z-30 flex flex-col md:flex-row md:items-center gap-2">
-                <div className="relative flex-grow group"><Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" /><input type="text" placeholder={t('claimsList.searchPlaceholder')} value={search} onChange={(e) => handleSearchChange(e.target.value)} className="w-full bg-transparent border-none rounded-2xl py-3 pl-11 pr-4 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-500 focus:ring-0" /></div>
-                <div className="flex items-center gap-1 md:gap-2 overflow-x-auto scrollbar-hide px-2 md:px-0">
+            <div className="bg-white dark:bg-[#1c1c1e] rounded-xl md:rounded-[2rem] shadow-sm border border-gray-200 dark:border-[#333] p-1 mb-5 md:mb-8 sticky top-14 md:top-24 z-30 flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
+                <div className="relative flex-grow group"><Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" /><input type="text" placeholder={t('claimsList.searchPlaceholder')} value={search} onChange={(e) => handleSearchChange(e.target.value)} className="w-full bg-transparent border-none rounded-xl md:rounded-2xl py-2.5 md:py-3 pl-9 md:pl-11 pr-4 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-500 focus:ring-0" /></div>
+                <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-1 md:px-0 pb-0.5 md:pb-0">
                     <button onClick={handleExpandAll} className="p-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-[#2c2c2e] flex-shrink-0"><ChevronsUpDown className="w-4 h-4" /></button>
-                    <div className="h-6 w-px bg-gray-200 dark:bg-white/10 flex-shrink-0"></div>
+                    <div className="h-5 w-px bg-gray-200 dark:bg-white/10 flex-shrink-0"></div>
                     {['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].map((s) => (
-                        <button key={s} onClick={() => setStatusFilter(s as typeof statusFilter)} className={`px-3 py-2 text-xs font-medium rounded-xl transition-all whitespace-nowrap flex-shrink-0 ${statusFilter === s ? 'bg-gray-100 dark:bg-[#333] text-black dark:text-white' : 'text-gray-500 hover:text-black dark:hover:text-white'}`}>{s === 'ALL' ? t('claimsList.filterStatus') : t(`status.${s}`)}</button>
+                        <button key={s} onClick={() => setStatusFilter(s as typeof statusFilter)} className={`px-2.5 md:px-3 py-1.5 md:py-2 text-[11px] md:text-xs font-medium rounded-lg md:rounded-xl transition-all whitespace-nowrap flex-shrink-0 ${statusFilter === s ? 'bg-gray-100 dark:bg-[#333] text-black dark:text-white' : 'text-gray-500 hover:text-black dark:hover:text-white'}`}>{s === 'ALL' ? t('claimsList.filterStatus') : t(`status.${s}`)}</button>
                     ))}
                 </div>
             </div>
@@ -225,36 +225,31 @@ export const ClaimsList: React.FC = () => {
                                             const isJobDone = jobItems.every(i => [RMAStatus.CLOSED, RMAStatus.REPAIRED].includes(i.status));
 
                                             return (
-                                                <div key={jobKey} onClick={() => handleJobClick(jobKey)} className={`bg-white dark:bg-[#1c1c1e] rounded-2xl overflow-hidden border cursor-pointer transition-shadow group will-change-transform ${isJobDone ? 'border-green-200 dark:border-green-800/30' : 'border-gray-100 dark:border-[#333]'} hover:shadow-md`}>
-                                                    <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isJobDone ? 'bg-green-500/10 text-green-600' : 'bg-blue-500/10 text-blue-600'}`}>
-                                                                {isJobDone ? <CheckCircle2 className="w-5 h-5" /> : <Package className="w-5 h-5" />}
+                                                <div key={jobKey} onClick={() => handleJobClick(jobKey)} className={`bg-white dark:bg-[#1c1c1e] rounded-xl md:rounded-2xl overflow-hidden border cursor-pointer transition-shadow group will-change-transform ${isJobDone ? 'border-green-200 dark:border-green-800/30' : 'border-gray-100 dark:border-[#333]'} hover:shadow-md active:scale-[0.99]`}>
+                                                    <div className="p-4 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
+                                                        <div className="flex items-start md:items-center gap-3 md:gap-4">
+                                                            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isJobDone ? 'bg-green-500/10 text-green-600' : 'bg-blue-500/10 text-blue-600'}`}>
+                                                                {isJobDone ? <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5" /> : <Package className="w-4 h-4 md:w-5 md:h-5" />}
                                                             </div>
-                                                            <div>
-                                                                <h3 className="text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2 flex-wrap">
-                                                                    {jobKey}
-                                                                    <span className={`text-[10px] px-2 py-0.5 rounded-md border ${quotationNumber ? 'bg-gray-100 dark:bg-[#2c2c2e] text-gray-600 dark:text-gray-300 border-gray-200 dark:border-[#424245]' : 'bg-gray-50 dark:bg-[#2c2c2e]/50 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-[#424245]/50 italic'}`}>{quotationNumber ? `Ref: ${quotationNumber}` : 'ไม่มี Ref'}</span>
-                                                                    {isJobDone && <span className="bg-green-500/10 text-green-600 text-[10px] px-2 py-0.5 rounded-full border border-green-500/20 font-bold flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> เสร็จสิ้น</span>}
-                                                                    {!isJobDone && jobItems.some(i => isRMAOverdue(i)) && <span className="bg-red-500/10 text-red-600 text-[10px] px-2 py-0.5 rounded-full border border-red-500/20">{t('claimsList.attentionNeeded')}</span>}
+                                                            <div className="min-w-0 flex-1">
+                                                                <h3 className="text-sm md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-1.5 md:gap-2 flex-wrap">
+                                                                    <span className="truncate">{jobKey}</span>
+                                                                    {isJobDone && <span className="bg-green-500/10 text-green-600 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-green-500/20 font-bold flex items-center gap-0.5 flex-shrink-0"><CheckCircle2 className="w-3 h-3" /> เสร็จ</span>}
+                                                                    {!isJobDone && jobItems.some(i => isRMAOverdue(i)) && <span className="bg-red-500/10 text-red-600 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-red-500/20 flex-shrink-0">⚠️</span>}
                                                                 </h3>
-                                                                <div className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2"><User className="w-3 h-3" /> {customerName} <span className="w-1 h-1 bg-gray-300 rounded-full"></span> <span className="text-gray-500 font-normal">{jobItems.length} {t('claimsList.items')}</span></div>
-                                                                <div className="flex flex-wrap gap-1.5 mt-1.5">
-                                                                    {jobItems.slice(0, 5).map((item) => (
+                                                                <div className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5 mt-0.5">
+                                                                    <User className="w-3 h-3 flex-shrink-0" /> <span className="truncate">{customerName}</span> <span className="text-gray-400 flex-shrink-0">· {jobItems.length} {t('claimsList.items')}</span>
+                                                                </div>
+                                                                <div className="flex flex-wrap gap-1 mt-1.5">
+                                                                    {jobItems.slice(0, 4).map((item) => (
                                                                         <StatusBadge key={item.id} status={item.status} isOverdue={isRMAOverdue(item)} />
                                                                     ))}
-                                                                    {jobItems.length > 5 && <span className="text-[10px] text-gray-400 font-medium self-center">+{jobItems.length - 5}</span>}
+                                                                    {jobItems.length > 4 && <span className="text-[10px] text-gray-400 font-medium self-center">+{jobItems.length - 4}</span>}
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div className="flex items-center gap-3 justify-between md:justify-end">
-                                                            <div className="flex -space-x-2">
-                                                                {jobItems.slice(0, 3).map((item) => (
-                                                                    <div key={item.id} className={`w-8 h-8 rounded-full border-2 border-white dark:border-[#1c1c1e] flex items-center justify-center text-[10px] font-bold text-white ${item.team === Team.HIKVISION ? 'bg-red-500' : 'bg-blue-500'}`}>{item.brand.substring(0, 1)}</div>
-                                                                ))}
-                                                                {jobItems.length > 3 && <div className="w-8 h-8 rounded-full border-2 border-white dark:border-[#1c1c1e] bg-gray-200 dark:bg-[#333] text-gray-500 text-[10px] flex items-center justify-center">+{jobItems.length - 3}</div>}
-                                                            </div>
-                                                            <div className="text-xs text-gray-400 group-hover:text-[#0071e3] flex items-center gap-1">Details <ChevronRight className="w-4 h-4" /></div>
+                                                        <div className="flex items-center justify-end gap-2 ml-12 md:ml-0">
+                                                            <div className="text-[11px] text-gray-400 group-hover:text-[#0071e3] flex items-center gap-0.5">Details <ChevronRight className="w-3.5 h-3.5" /></div>
                                                         </div>
                                                     </div>
                                                 </div>

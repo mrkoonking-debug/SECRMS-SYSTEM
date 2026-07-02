@@ -119,7 +119,7 @@ export const SubmitClaim: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-6 px-4">
+    <div className="max-w-4xl mx-auto py-4 md:py-6 px-3 md:px-4 pb-28 md:pb-6">
       {step === 'success' ? (
         <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
           <div className="bg-white dark:bg-[#1c1c1e] rounded-[3rem] p-12 max-w-2xl w-full shadow-xl border border-gray-100 dark:border-[#333]">
@@ -159,13 +159,13 @@ export const SubmitClaim: React.FC = () => {
         </div>
       ) : (
         <>
-          <div className="flex justify-between items-end mb-8 px-2">
-            <div><h1 className="text-3xl font-bold text-[#1d1d1f] dark:text-white mb-1">{t('submit.title')}</h1><p className="text-gray-500 dark:text-gray-400">{t('submit.subtitle')}</p></div>
-            {basket.length > 0 && (<div className="text-right"><div className="text-3xl font-bold text-[#0071e3]">{basket.length}</div><div className="text-xs text-gray-500 uppercase font-semibold">{t('submit.itemsInJob')}</div></div>)}
+          <div className="flex items-center justify-between gap-4 mb-5 md:mb-8 px-1">
+                <div><h1 className="text-xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white mb-0.5">{t('submit.title')}</h1><p className="text-gray-500 dark:text-gray-400 text-xs md:text-base">{t('submit.subtitle')}</p></div>
+                {basket.length > 0 && (<div className="text-right"><div className="text-2xl md:text-3xl font-bold text-[#0071e3]">{basket.length}</div><div className="text-[10px] md:text-xs text-gray-500 uppercase font-semibold">{t('submit.itemsInJob')}</div></div>)}
           </div>
 
-          <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] p-8 mb-8 border border-gray-100 dark:border-[#333]">
-            <h2 className="font-semibold text-lg flex items-center gap-3 mb-6 text-[#1d1d1f] dark:text-white"><span className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-sm font-bold">1</span>{t('submit.customerDetails')}</h2>
+          <div className="bg-white dark:bg-[#1c1c1e] rounded-xl md:rounded-[2rem] p-5 md:p-8 mb-5 md:mb-8 border border-gray-100 dark:border-[#333]">
+                <h2 className="font-semibold text-base md:text-lg flex items-center gap-2 md:gap-3 mb-4 md:mb-6 text-[#1d1d1f] dark:text-white"><span className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-xs md:text-sm font-bold">1</span>{t('submit.customerDetails')}</h2>
 
             {/* Row 1: Quotation (Ref) & Company Name */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
@@ -261,8 +261,8 @@ export const SubmitClaim: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] p-8 mb-8 border border-gray-100 dark:border-[#333] relative overflow-hidden">
-            <h2 className="font-semibold text-lg flex items-center gap-3 mb-6 text-[#1d1d1f] dark:text-white"><span className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-sm font-bold">2</span>{t('submit.addItem')}</h2>
+          <div className="bg-white dark:bg-[#1c1c1e] rounded-xl md:rounded-[2rem] p-5 md:p-8 mb-5 md:mb-8 border border-gray-100 dark:border-[#333] relative overflow-hidden">
+                <h2 className="font-semibold text-base md:text-lg flex items-center gap-2 md:gap-3 mb-4 md:mb-6 text-[#1d1d1f] dark:text-white"><span className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-xs md:text-sm font-bold">2</span>{t('submit.addItem')}</h2>
             <ProductEntryForm mode="admin" onAddItem={handleAddItem} />
           </div>
 
