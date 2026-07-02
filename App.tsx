@@ -58,7 +58,7 @@ const AppContent: React.FC = () => {
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden w-full h-full">
           <Navbar embedded={true} />
           <main className="flex-1 overflow-y-auto overflow-x-hidden relative bg-transparent custom-scrollbar pb-24 md:pb-0">
-            <div className="min-h-full p-4 md:p-8 mt-14 md:mt-0 pt-6 md:pt-8 bg-white/70 dark:bg-black/35 backdrop-blur-md rounded-t-[28px] md:rounded-tl-[32px] md:rounded-tr-none border-t md:border-l border-gray-200/40 dark:border-white/[0.06] shadow-sm">
+            <div className="min-h-full p-4 md:p-8 mt-14 md:mt-0 pt-6 md:pt-8 bg-white/70 dark:bg-black/35 backdrop-blur-md rounded-t-[28px] md:rounded-tl-[32px] md:rounded-tr-none border-t md:border-l border-gray-200/40 dark:border-white/[0.06] shadow-sm ios-squircle-t md:ios-squircle-tl">
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
