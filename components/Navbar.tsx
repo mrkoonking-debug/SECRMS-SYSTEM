@@ -107,64 +107,63 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
 
   return (
     <>
-      {/* ===== Mobile Top Bar ===== */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-[#f5f5f7] dark:bg-[#161617] border-b border-gray-200/50 dark:border-[#333] flex items-center justify-between px-4">
-        <Link to={user ? "/admin/dashboard" : "/"} className="flex items-center gap-2">
+      {/* ===== Mobile Top Bar — Glassmorphism ===== */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-white/70 dark:bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between px-4">
+        <Link to={user ? "/admin/dashboard" : "/"} className="flex items-center gap-2.5">
           <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
-          <span className="font-bold text-base text-[#1d1d1f] dark:text-white tracking-tighter">SEC RMS SYSTEM</span>
+          <span className="font-bold text-[15px] text-[#1d1d1f] dark:text-white tracking-tight">SEC RMS</span>
         </Link>
-        {/* Mobile notifications and menu buttons have been moved to the Bottom Tab Bar */}
       </div>
 
-      {/* ===== Mobile Bottom Tab Bar (Glassmorphism) ===== */}
+      {/* ===== Mobile Bottom Tab Bar (Premium) ===== */}
       {user && (
         <div
-          className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-4 pointer-events-none"
+          className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-3 pointer-events-none"
           style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
         >
-          {/* Floating '+' button — positioned from outer wrapper for perfect centering */}
-          <Link to="/admin/submit" className="absolute left-1/2 -translate-x-1/2 bottom-[calc(100%-1.25rem)] w-12 h-12 bg-gradient-to-b from-[#007aff] to-[#0055d4] text-white rounded-full shadow-[0_4px_14px_rgba(0,122,255,0.4)] flex items-center justify-center active:scale-90 transition-transform z-50 pointer-events-auto" style={{ bottom: 'calc(100% - 1.75rem)' }}>
+          {/* Floating '+' button — gradient with glow */}
+          <Link to="/admin/submit" className="absolute left-1/2 -translate-x-1/2 w-[52px] h-[52px] bg-gradient-to-br from-[#007aff] via-[#0066e0] to-[#0050b5] text-white rounded-[18px] shadow-[0_4px_20px_rgba(0,122,255,0.45),0_0_0_3px_rgba(0,122,255,0.15)] flex items-center justify-center active:scale-90 transition-all z-50 pointer-events-auto" style={{ bottom: 'calc(100% - 1.75rem)' }}>
             <Plus className="w-6 h-6" strokeWidth={2.5} />
           </Link>
 
           {/* Glass capsule bar */}
-          <div className="relative bg-white/75 dark:bg-[#1c1c1e]/80 backdrop-blur-2xl border border-black/[0.06] dark:border-white/[0.08] rounded-[22px] shadow-[0_2px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_20px_rgba(0,0,0,0.35)] grid grid-cols-5 items-center h-[52px] pointer-events-auto">
+          <div className="relative bg-white/80 dark:bg-[#1a1a1a]/85 backdrop-blur-2xl border border-black/[0.05] dark:border-white/[0.08] rounded-[20px] shadow-[0_-1px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-1px_30px_rgba(0,0,0,0.5)] grid grid-cols-5 items-center h-[56px] pointer-events-auto">
 
             {/* Dashboard */}
-            <Link to="/admin/dashboard" className={`flex flex-col items-center justify-center h-full relative transition-colors ${location.pathname === '/admin/dashboard' ? 'text-[#007aff]' : 'text-[#8e8e93]'}`}>
-              <LayoutGrid className="w-[20px] h-[20px]" />
-              <span className="text-[9px] font-semibold mt-0.5 leading-none">ภาพรวม</span>
+            <Link to="/admin/dashboard" className={`flex flex-col items-center justify-center h-full relative transition-all duration-200 ${location.pathname === '/admin/dashboard' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
+              <div className={`transition-all duration-200 ${location.pathname === '/admin/dashboard' ? 'scale-110' : ''}`}><LayoutGrid className="w-[21px] h-[21px]" strokeWidth={location.pathname === '/admin/dashboard' ? 2.2 : 1.8} /></div>
+              <span className={`text-[9px] font-semibold mt-0.5 leading-none transition-all ${location.pathname === '/admin/dashboard' ? 'font-bold' : ''}`}>ภาพรวม</span>
               {overdueCount > 0 && (
-                <span className="absolute top-1.5 right-[18%] w-[6px] h-[6px] rounded-full bg-red-500"></span>
+                <span className="absolute top-1.5 right-[18%] w-[6px] h-[6px] rounded-full bg-red-500 ring-2 ring-white dark:ring-[#1a1a1a]"></span>
               )}
             </Link>
 
             {/* Claims List */}
-            <Link to="/admin/rmas" className={`flex flex-col items-center justify-center h-full transition-colors ${location.pathname === '/admin/rmas' ? 'text-[#007aff]' : 'text-[#8e8e93]'}`}>
-              <List className="w-[20px] h-[20px]" />
-              <span className="text-[9px] font-semibold mt-0.5 leading-none">รายการ</span>
+            <Link to="/admin/rmas" className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${location.pathname === '/admin/rmas' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
+              <div className={`transition-all duration-200 ${location.pathname === '/admin/rmas' ? 'scale-110' : ''}`}><List className="w-[21px] h-[21px]" strokeWidth={location.pathname === '/admin/rmas' ? 2.2 : 1.8} /></div>
+              <span className={`text-[9px] font-semibold mt-0.5 leading-none ${location.pathname === '/admin/rmas' ? 'font-bold' : ''}`}>รายการ</span>
             </Link>
 
             {/* Center spacer for '+' button */}
-            <div className="flex flex-col items-center justify-end h-full pb-1">
+            <div className="flex flex-col items-center justify-end h-full pb-1.5">
               <span className="text-[9px] font-semibold text-[#8e8e93] leading-none">เพิ่มเคลม</span>
             </div>
 
             {/* Notifications */}
-            <Link to="/admin/incoming" className={`flex flex-col items-center justify-center h-full relative transition-colors ${location.pathname === '/admin/incoming' ? 'text-[#007aff]' : 'text-[#8e8e93]'}`}>
-              <Bell className="w-[20px] h-[20px]" />
-              <span className="text-[9px] font-semibold mt-0.5 leading-none">แจ้งเตือน</span>
+            <Link to="/admin/incoming" className={`flex flex-col items-center justify-center h-full relative transition-all duration-200 ${location.pathname === '/admin/incoming' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
+              <div className={`transition-all duration-200 ${location.pathname === '/admin/incoming' ? 'scale-110' : ''}`}><Bell className="w-[21px] h-[21px]" strokeWidth={location.pathname === '/admin/incoming' ? 2.2 : 1.8} /></div>
+              <span className={`text-[9px] font-semibold mt-0.5 leading-none ${location.pathname === '/admin/incoming' ? 'font-bold' : ''}`}>แจ้งเตือน</span>
               {unassignedCount > 0 && (
-                <span className="absolute top-1 right-[12%] min-w-[15px] h-[15px] flex items-center justify-center bg-red-500 text-white text-[8px] font-bold rounded-full px-0.5 leading-none">
+                <span className="absolute top-1 right-[10%] min-w-[16px] h-[16px] flex items-center justify-center bg-red-500 text-white text-[8px] font-bold rounded-full px-1 leading-none ring-2 ring-white dark:ring-[#1a1a1a]">
                   {unassignedCount > 99 ? '99+' : unassignedCount}
                 </span>
               )}
             </Link>
 
             {/* More Menu */}
-            <button onClick={() => setIsMobileOpen(true)} className={`flex flex-col items-center justify-center h-full transition-colors ${isMobileOpen ? 'text-[#007aff]' : 'text-[#8e8e93]'}`}>
-              <Menu className="w-[20px] h-[20px]" />
-              <span className="text-[9px] font-semibold mt-0.5 leading-none">อื่นๆ</span>
+            <button onClick={() => setIsMobileOpen(true)} className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${isMobileOpen ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
+              <div className={`transition-all duration-200 ${isMobileOpen ? 'scale-110' : ''}`}><Menu className="w-[21px] h-[21px]" strokeWidth={isMobileOpen ? 2.2 : 1.8} /></div>
+              <span className={`text-[9px] font-semibold mt-0.5 leading-none ${isMobileOpen ? 'font-bold' : ''}`}>อื่นๆ</span>
             </button>
           </div>
         </div>
