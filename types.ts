@@ -120,7 +120,12 @@ export interface RMA {
     labor: number; // ค่าแรง
     parts: number; // ค่าอะไหล่
     warrantyStatus: 'IN_WARRANTY' | 'OUT_OF_WARRANTY' | 'VOID'; // สถานะประกัน
-  }
+  };
+
+  // Soft Delete Support
+  isDeleted?: boolean;
+  deletedAt?: string;
+  deletedBy?: string;
 }
 
 // 10. โครงสร้างข้อมูลสำหรับ Dashboard (สถิติรวม)

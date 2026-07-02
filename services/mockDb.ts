@@ -374,7 +374,7 @@ export const MockDb = {
     try {
       const q = query(collection(db, 'rmas'), orderBy('createdAt', 'desc'), limit(500));
       const snap = await getDocs(q);
-      return snap.docs.map(mapDocToRMA);
+      return snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
     } catch (e) {
       console.error("getRMAs failed:", e);
       throw e;
@@ -392,7 +392,7 @@ export const MockDb = {
         q = query(collection(db, 'rmas'), orderBy('createdAt', 'desc'), limit(pageSize));
       }
       const snap = await getDocs(q);
-      const rmas = snap.docs.map(mapDocToRMA);
+      const rmas = snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
       const lastDoc = snap.docs.length > 0 ? snap.docs[snap.docs.length - 1] : null;
       return { rmas, lastDoc, hasMore: snap.docs.length === pageSize };
     } catch (e) {
@@ -408,16 +408,19 @@ export const MockDb = {
       // Try groupRequestId first
       let q = query(collection(db, 'rmas'), where('groupRequestId', '==', jobId));
       let snap = await getDocs(q);
-      if (snap.docs.length > 0) return snap.docs.map(mapDocToRMA);
+      if (snap.docs.length > 0) return snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
 
       // Try quotationNumber
       q = query(collection(db, 'rmas'), where('quotationNumber', '==', jobId));
       snap = await getDocs(q);
-      if (snap.docs.length > 0) return snap.docs.map(mapDocToRMA);
+      if (snap.docs.length > 0) return snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
 
       // Fallback: single RMA by document ID
       const docSnap = await getDoc(doc(db, 'rmas', jobId));
-      if (docSnap.exists()) return [mapDocToRMA(docSnap as any)];
+      if (docSnap.exists()) {
+        const rma = mapDocToRMA(docSnap as any);
+        return rma.isDeleted ? [] : [rma];
+      }
 
       return [];
     } catch (e) {
@@ -494,10 +497,17 @@ export const MockDb = {
     if (!isConfigured || !db) return undefined;
     try {
       const snap = await getDoc(doc(db, 'rmas', id));
-      if (snap.exists()) return mapDocToRMA(snap);
+      if (snap.exists()) {
+        const rma = mapDocToRMA(snap);
+        return rma.isDeleted ? undefined : rma;
+      }
       const q = query(collection(db, 'rmas'), where('quotationNumber', '==', id));
       const qSnap = await getDocs(q);
-      return !qSnap.empty ? mapDocToRMA(qSnap.docs[0]) : undefined;
+      if (!qSnap.empty) {
+        const rma = mapDocToRMA(qSnap.docs[0]);
+        return rma.isDeleted ? undefined : rma;
+      }
+      return undefined;
     } catch (e) {
       console.error("getRMAById failed:", e);
       throw e;
@@ -514,7 +524,8 @@ export const MockDb = {
       // 1. Try direct document get by RMA ID (e.g. "RMA-261234")
       const directSnap = await getDoc(doc(db, 'rmas', text.trim()));
       if (directSnap.exists()) {
-        resultsMap.set(directSnap.id, mapDocToRMA(directSnap));
+        const rma = mapDocToRMA(directSnap);
+        if (!rma.isDeleted) resultsMap.set(directSnap.id, rma);
       }
 
       // 2. Try exact match on quotationNumber (e.g. "SEC073880")
@@ -523,7 +534,10 @@ export const MockDb = {
         where('quotationNumber', '==', text.trim()),
         limit(5)
       ));
-      quoteSnap.docs.forEach(d => resultsMap.set(d.id, mapDocToRMA(d)));
+      quoteSnap.docs.forEach(d => {
+        const rma = mapDocToRMA(d);
+        if (!rma.isDeleted) resultsMap.set(d.id, rma);
+      });
 
       // 3. Try exact match on groupRequestId (e.g. "SECRMA-2026-0003")
       const groupSnap = await getDocs(query(
@@ -531,17 +545,21 @@ export const MockDb = {
         where('groupRequestId', '==', text.trim()),
         limit(5)
       ));
-      groupSnap.docs.forEach(d => resultsMap.set(d.id, mapDocToRMA(d)));
+      groupSnap.docs.forEach(d => {
+        const rma = mapDocToRMA(d);
+        if (!rma.isDeleted) resultsMap.set(d.id, rma);
+      });
 
-      // 4. Try case-insensitive match on serialNumber (get requires auth, skip for public)
-      // Serial numbers are handled: direct doc GET by ID covers RMA id searches,
-      // and serial numbers must be entered exactly as text
+      // 4. Try exact match on serialNumber
       const snSnap = await getDocs(query(
         collection(db, 'rmas'),
         where('serialNumber', '==', text.trim()),
         limit(5)
       ));
-      snSnap.docs.forEach(d => resultsMap.set(d.id, mapDocToRMA(d)));
+      snSnap.docs.forEach(d => {
+        const rma = mapDocToRMA(d);
+        if (!rma.isDeleted) resultsMap.set(d.id, rma);
+      });
 
     } catch (e) {
       console.error('searchRMAsPublic error:', e);
@@ -958,10 +976,14 @@ export const MockDb = {
     // Admin only — ข้อมูลห้ามหาย ต้องเป็น admin เท่านั้นถึงลบได้
     if (currentUser?.role !== 'admin') throw new Error('Unauthorized: ต้องเป็น admin เท่านั้นถึงจะลบข้อมูลได้');
     try {
-      await deleteDoc(doc(db, 'rmas', id));
+      await updateDoc(doc(db, 'rmas', id), {
+        isDeleted: true,
+        deletedAt: new Date().toISOString(),
+        deletedBy: currentUser?.name || 'Admin'
+      });
       // Counter is NOT recalculated — it only goes up, never down.
       // This prevents accidental counter corruption from old/fallback IDs.
-      console.log(`Deleted RMA: ${id}`);
+      console.log(`Soft Deleted RMA: ${id}`);
     }
     catch (e) {
       console.error("deleteRMA failed", e);
@@ -1046,6 +1068,40 @@ export const MockDb = {
     } catch (e) { console.error("Clear DB Failed", e); }
   },
 
+  restoreDatabaseBackup: async (backup: any) => {
+    if (!isConfigured || !db) throw new Error("Firebase Not Configured");
+    if (currentUser?.role !== 'admin') throw new Error('Unauthorized: admin access required');
+    
+    const BATCH_SIZE = 500;
+    const { rmas, brands, distributors, settings } = backup;
+    
+    if (rmas && Array.isArray(rmas)) {
+      for (let i = 0; i < rmas.length; i += BATCH_SIZE) {
+        const batch = rmas.slice(i, i + BATCH_SIZE);
+        await Promise.all(batch.map(r => {
+          const { id, ...data } = r;
+          return setDoc(doc(db, 'rmas', id), {
+            ...data,
+            createdAt: data.createdAt ? Timestamp.fromDate(new Date(data.createdAt)) : serverTimestamp(),
+            updatedAt: data.updatedAt ? Timestamp.fromDate(new Date(data.updatedAt)) : serverTimestamp()
+          });
+        }));
+      }
+    }
+    
+    if (brands && Array.isArray(brands)) {
+      await Promise.all(brands.map(b => setDoc(doc(db, 'brands', b.id), b)));
+    }
+    
+    if (distributors && Array.isArray(distributors)) {
+      await Promise.all(distributors.map(d => setDoc(doc(db, 'distributors', d.id), d)));
+    }
+    
+    if (settings) {
+      await setDoc(doc(db, 'settings', 'companySettings'), settings);
+    }
+  },
+
   getStats: async (teamFilter?: Team | 'GROUP_C'): Promise<DashboardStats> => {
     const cacheKey = teamFilter || 'ALL';
     const cacheNow = Date.now();
@@ -1063,16 +1119,16 @@ export const MockDb = {
     try {
       if (teamFilter === 'GROUP_C') {
         const snap = await getDocs(query(rmasRef, where('team', 'in', [Team.TEAM_C, Team.TEAM_E, Team.TEAM_G])));
-        teamDocs = snap.docs.map(mapDocToRMA);
+        teamDocs = snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
         // @ts-ignore
       } else if (teamFilter && teamFilter !== 'ALL') {
         const snap = await getDocs(query(rmasRef, where('team', '==', teamFilter)));
-        teamDocs = snap.docs.map(mapDocToRMA);
+        teamDocs = snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
       } else {
         // Load all RMAs if no specific team is filtered, bypassing complex where clauses 
         // that could cause missing index errors or hang operations without composite indexes
         const snap = await getDocs(rmasRef);
-        teamDocs = snap.docs.map(mapDocToRMA);
+        teamDocs = snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
       }
     } catch (dbErr) {
       console.error("getStats query failed:", dbErr);

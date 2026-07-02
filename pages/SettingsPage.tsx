@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
-import { Settings, Save, Check, Loader2, Globe, Building, Zap, Trash2, AlertTriangle, Archive, X, Search, Wrench } from 'lucide-react';
+import { Settings, Save, Check, Loader2, Globe, Building, Zap, Trash2, AlertTriangle, Archive, X, Search, Wrench, Download, Upload } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { showToast } from '../services/toast';
 
@@ -113,6 +113,107 @@ export const SettingsPage: React.FC = () => {
     } finally {
       setIsFixingIds(false);
     }
+  };
+
+  const [isExportingCsv, setIsExportingCsv] = useState(false);
+  const [isBackingUpJson, setIsBackingUpJson] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+
+  const downloadFile = (content: string, filename: string, contentType: string) => {
+    const blob = new Blob([content], { type: contentType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportCSV = async () => {
+    setIsExportingCsv(true);
+    try {
+      const rmas = await MockDb.getRMAs();
+      const headers = ['RMA ID', 'Job ID', 'Quotation Ref', 'Brand', 'Model', 'Serial Number', 'Status', 'Customer Name', 'Phone', 'Created At', 'Updated At'];
+      const rows = rmas.map(r => [
+        r.id,
+        r.groupRequestId || '',
+        r.quotationNumber || '',
+        r.brand,
+        r.productModel,
+        r.serialNumber,
+        r.status,
+        r.customerName,
+        r.customerPhone || '',
+        r.createdAt,
+        r.updatedAt
+      ]);
+      
+      const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(row => row.map(val => `"${val.replace(/"/g, '""')}"`).join(','))].join('\n');
+      
+      downloadFile(csvContent, `sec-rmas-export-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
+      showToast('ดาวน์โหลด CSV สำเร็จ 📊', 'success');
+    } catch (err: any) {
+      showToast(err.message || 'เกิดข้อผิดพลาดในการส่งออก CSV', 'error');
+    } finally {
+      setIsExportingCsv(false);
+    }
+  };
+
+  const handleBackupJSON = async () => {
+    setIsBackingUpJson(true);
+    try {
+      const rmas = await MockDb.getRMAs();
+      const brands = await MockDb.getBrands();
+      const distributors = await MockDb.getDistributors();
+      const settingsData = await MockDb.getSettings();
+      
+      const backupData = {
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        rmas,
+        brands,
+        distributors,
+        settings: settingsData
+      };
+      
+      const jsonContent = JSON.stringify(backupData, null, 2);
+      downloadFile(jsonContent, `sec-db-backup-${new Date().toISOString().split('T')[0]}.json`, 'application/json');
+      showToast('สำรองข้อมูลฐานข้อมูลสำเร็จ 🔐', 'success');
+    } catch (err: any) {
+      showToast(err.message || 'เกิดข้อผิดพลาดในการสำรองข้อมูล', 'error');
+    } finally {
+      setIsBackingUpJson(false);
+    }
+  };
+
+  const handleRestoreBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (!confirm('⚠️ คำเตือน: การกู้คืนข้อมูลจะเขียนทับข้อมูลเดิมในระบบทั้งหมด ต้องการดำเนินการต่อหรือไม่?')) {
+      e.target.value = '';
+      return;
+    }
+
+    setIsRestoring(true);
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const backup = JSON.parse(event.target?.result as string);
+        if (!backup.rmas || !Array.isArray(backup.rmas)) {
+          throw new Error('รูปแบบไฟล์สำรองข้อมูลไม่ถูกต้อง');
+        }
+
+        await MockDb.restoreDatabaseBackup(backup);
+        showToast('กู้คืนข้อมูลสำเร็จเรียบร้อย! 🎉', 'success');
+      } catch (err: any) {
+        showToast(err.message || 'เกิดข้อผิดพลาดในการกู้คืนข้อมูล', 'error');
+      } finally {
+        setIsRestoring(false);
+        e.target.value = '';
+      }
+    };
+    reader.readAsText(file);
   };
 
   if (loading) return <div className="p-20 text-center"><Loader2 className="animate-spin mx-auto" /></div>;
@@ -254,6 +355,75 @@ export const SettingsPage: React.FC = () => {
             {fixResult && (
               <pre className="mt-3 p-3 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/30 rounded-lg text-xs text-green-700 dark:text-green-400 whitespace-pre-wrap">{fixResult}</pre>
             )}
+          </div>
+
+          {/* Export & Backup Section */}
+          <div className="p-4 bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl mt-4">
+            <div className="flex items-start justify-between flex-wrap gap-4">
+              <div className="flex-1">
+                <h4 className="font-bold text-sm text-[#1d1d1f] dark:text-white mb-1 flex items-center gap-2">
+                  <Download className="w-4 h-4 text-green-500" /> สำรองและส่งออกข้อมูล (Backup & Export)
+                </h4>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  ดาวน์โหลดข้อมูลทั้งหมดในระบบเป็นไฟล์สำรอง (JSON) หรือไฟล์สำหรับเปิดใน Excel (CSV)
+                </p>
+              </div>
+              <div className="flex gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleExportCSV}
+                  disabled={isExportingCsv}
+                  className="px-4 py-2.5 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95 shadow-sm"
+                >
+                  {isExportingCsv ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                  ส่งออก Excel (CSV)
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBackupJSON}
+                  disabled={isBackingUpJson}
+                  className="px-4 py-2.5 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95 shadow-sm"
+                >
+                  {isBackingUpJson ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Archive className="w-3.5 h-3.5" />}
+                  สำรองข้อมูล (JSON)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Restore Backup Section */}
+          <div className="p-4 bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl mt-4">
+            <div className="flex items-start justify-between flex-wrap gap-4">
+              <div className="flex-1">
+                <h4 className="font-bold text-sm text-[#1d1d1f] dark:text-white mb-1 flex items-center gap-2">
+                  <Upload className="w-4 h-4 text-purple-500" /> กู้คืนข้อมูล (Restore Database)
+                </h4>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  นำเข้าไฟล์สำรอง (JSON) ที่ดาวน์โหลดไว้เพื่อเขียนทับข้อมูลในระบบทั้งหมด (RMA, แบรนด์, ตัวแทนจำหน่าย)
+                </p>
+              </div>
+              <div className="relative">
+                <button
+                  type="button"
+                  disabled={isRestoring}
+                  className="px-4 py-2.5 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-400 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95 shadow-sm cursor-pointer"
+                >
+                  {isRestoring ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                  เลือกไฟล์กู้คืน (JSON)
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleRestoreBackup}
+                    disabled={isRestoring}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                </button>
+              </div>
+            </div>
+            <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 rounded-lg flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-[11px] text-red-700 dark:text-red-400">คำเตือน: การกู้คืนข้อมูลจะเขียนทับข้อมูลเก่าทั้งหมดทันทีและไม่สามารถย้อนกลับได้</p>
+            </div>
           </div>
         </div>
 
