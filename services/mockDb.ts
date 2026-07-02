@@ -960,6 +960,8 @@ export const MockDb = {
   // --- Delete Functions ---
   deleteRMA: async (id: string) => {
     if (!isConfigured || !db) throw new Error("Firebase Disconnected");
+    // Admin only — ข้อมูลห้ามหาย ต้องเป็น admin เท่านั้นถึงลบได้
+    if (currentUser?.role !== 'admin') throw new Error('Unauthorized: ต้องเป็น admin เท่านั้นถึงจะลบข้อมูลได้');
     try {
       await deleteDoc(doc(db, 'rmas', id));
       // Counter is NOT recalculated — it only goes up, never down.

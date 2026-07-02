@@ -21,19 +21,21 @@ service cloud.firestore {
     // 2. RMAs Collection
     match /rmas/{rmaId} {
       // Public: read a single document by ID (for customer tracking page)
-      // NOTE: This exposes all fields including PII. Consider moving
-      // sensitive fields (devicePassword, customerEmail) to a subcollection
-      // /rmas/{rmaId}/private/{doc} with isAuth() read rules in the future.
+      // ลูกค้าสามารถดูสถานะเคลมได้โดยไม่ต้อง login
       allow get: if true;
       
       // List: authenticated staff only, OR limited public queries (max 5 results)
-      // Public list is needed for searchRMAsPublic (where queries on quotationNumber, serialNumber, groupRequestId)
+      // ลูกค้าค้นหาด้วย S/N, เลข Ref, หรือ Group ID ได้ (จำกัด 5 ผลลัพธ์)
       allow list: if isAuth() || request.query.limit <= 5;
       
-      // Update and delete: authenticated staff only
-      allow update, delete: if isAuth();
+      // Update: authenticated staff only
+      allow update: if isAuth();
+
+      // Delete: ADMIN ONLY — ข้อมูลห้ามหาย ต้องเป็น admin เท่านั้นถึงลบได้
+      allow delete: if isAdmin();
       
       // Creation: Staff OR public guest submit (with strict restrictions)
+      // ลูกค้าสามารถลงทะเบียนเคลมได้โดยไม่ต้อง login
       allow create: if isAuth() || (
         request.resource.data.status == 'PENDING' &&
         request.resource.data.createdBy == 'Customer (Web)' &&
@@ -49,8 +51,8 @@ service cloud.firestore {
     match /distributors/{d} { allow read: if true; allow write: if isAdmin(); }
     match /settings/{d} { allow read: if true; allow write: if isAdmin(); }
     
-    // 4. Counters — public access (used for sequential Job ID generation)
-    // Stores only { currentYear, sequence } — no sensitive data
-    match /counters/{d} { allow read, write: if true; }
+    // 4. Counters — public read (ลูกค้าต้องอ่าน counter เพื่อสร้าง Job ID ตอนลงทะเบียน)
+    // Write: authenticated staff only — ป้องกันคนนอกมาแก้ counter
+    match /counters/{d} { allow read: if true; allow write: if isAuth(); }
   }
 }
