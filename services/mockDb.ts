@@ -12,6 +12,8 @@ import {
   createUserWithEmailAndPassword, getAuth
 } from 'firebase/auth';
 import { BRAND_OPTIONS, DISTRIBUTOR_OPTIONS } from '../constants/options';
+import { MAX_LOGIN_ATTEMPTS, LOGIN_LOCK_DURATION_MS, STATS_CACHE_TTL_MS, NAV_COUNTS_CACHE_TTL_MS, BATCH_SIZE, MAX_ID_RETRIES, OVERDUE_DAYS, AGING_BUCKET_1, AGING_BUCKET_2 } from '../constants/config';
+import { withRetry } from './retry';
 
 import { SEED_CLAIMS } from './seedData';
 
@@ -101,7 +103,7 @@ export const MockDb = {
     if (!isConfigured || !auth) {
       return { success: false, error: "Firebase Authentication not configured" };
     }
-    // Rate limit: block after 5 failed attempts for 30 seconds
+    // Rate limit: block after MAX_LOGIN_ATTEMPTS failed attempts for LOGIN_LOCK_DURATION_MS
     if (_loginLockUntil > Date.now()) {
       const waitSec = Math.ceil((_loginLockUntil - Date.now()) / 1000);
       return { success: false, error: `ลองใหม่อีกครั้งในอีก ${waitSec} วินาที` };
@@ -126,8 +128,8 @@ export const MockDb = {
       return { success: true };
     } catch (e: unknown) {
       _loginAttempts++;
-      if (_loginAttempts >= 5) {
-        _loginLockUntil = Date.now() + 30000; // Lock for 30 seconds
+      if (_loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+        _loginLockUntil = Date.now() + LOGIN_LOCK_DURATION_MS;
         _loginAttempts = 0;
       }
       return { success: false, error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" };
@@ -437,14 +439,14 @@ export const MockDb = {
     return all.filter(c => {
       if ([RMAStatus.CLOSED].includes(c.status)) return false;
       const daysOpen = Math.floor((now - new Date(c.createdAt).getTime()) / 86400000);
-      return daysOpen > 7;
+      return daysOpen > AGING_BUCKET_1;
     });
   },
 
   // Combined Navbar counts — single Firestore read for both badges (cached 30s)
   getNavCounts: async (): Promise<{ unassigned: number; overdue: number }> => {
     const cacheNow = Date.now();
-    if (_navCountsCache && cacheNow - _navCountsCache.ts < 30000) {
+    if (_navCountsCache && cacheNow - _navCountsCache.ts < NAV_COUNTS_CACHE_TTL_MS) {
       return _navCountsCache.data;
     }
     const all = await MockDb.getRMAs();
@@ -455,7 +457,7 @@ export const MockDb = {
       if (!c.team || (c.team as any) === 'UNASSIGNED') unassigned++;
       if (![RMAStatus.CLOSED].includes(c.status)) {
         const daysOpen = Math.floor((now - new Date(c.createdAt).getTime()) / 86400000);
-        if (daysOpen > 15) overdue++;
+        if (daysOpen > OVERDUE_DAYS) overdue++;
       }
     }
     const data = { unassigned, overdue };
@@ -555,14 +557,13 @@ export const MockDb = {
 
     if (!isConfigured || !db) throw new Error("Firebase Disconnected");
 
-    // Retry up to 5 times if ID collision occurs
-    const MAX_RETRIES = 5;
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    // Retry up to MAX_ID_RETRIES times if ID collision occurs
+    for (let attempt = 0; attempt < MAX_ID_RETRIES; attempt++) {
       try {
         const snap = await getDoc(doc(db, 'rmas', id));
         if (!snap.exists()) break; // ID is unique, proceed
-        if (attempt === MAX_RETRIES - 1) {
-          throw new Error(`RMA ID collision: failed to generate unique ID after ${MAX_RETRIES} attempts`);
+        if (attempt === MAX_ID_RETRIES - 1) {
+          throw new Error(`RMA ID collision: failed to generate unique ID after ${MAX_ID_RETRIES} attempts`);
         }
         id = generateId(); // Generate new ID and retry
       } catch (e: unknown) {
@@ -594,16 +595,13 @@ export const MockDb = {
   },
   updateRMA: async (id: string, updates: Partial<RMA>) => {
     if (!isConfigured || !db) throw new Error("Firebase Disconnected");
-    try {
+    await withRetry(async () => {
       await updateDoc(doc(db, 'rmas', id), { ...updates, updatedAt: serverTimestamp() });
-    } catch (e) {
-      console.error("updateRMA failed", e);
-      throw e;
-    }
+    });
   },
   addTimelineEvent: async (id: string, evt: any) => {
     if (!isConfigured || !db) throw new Error("Firebase Disconnected");
-    try {
+    await withRetry(async () => {
       const snap = await getDoc(doc(db, 'rmas', id));
       if (snap.exists()) {
         const currentHistory = snap.data().history || [];
@@ -612,10 +610,7 @@ export const MockDb = {
           updatedAt: serverTimestamp()
         });
       }
-    } catch (e) {
-      console.error("addTimelineEvent failed", e);
-      throw e;
-    }
+    });
   },
 
   // Bulk update status for multiple RMAs at once
@@ -1054,7 +1049,7 @@ export const MockDb = {
   getStats: async (teamFilter?: Team | 'GROUP_C'): Promise<DashboardStats> => {
     const cacheKey = teamFilter || 'ALL';
     const cacheNow = Date.now();
-    if (_statsCache && _statsCache.key === cacheKey && cacheNow - _statsCache.ts < 30000) {
+    if (_statsCache && _statsCache.key === cacheKey && cacheNow - _statsCache.ts < STATS_CACHE_TTL_MS) {
       return _statsCache.data;
     }
     if (!isConfigured || !db) throw new Error('Firebase Not Configured');
@@ -1100,7 +1095,7 @@ export const MockDb = {
           endTime = new Date(c.updatedAt).getTime();
       }
       const diff = Math.floor((endTime - new Date(c.createdAt).getTime()) / 86400000);
-      if (diff <= 7) aging.bucket0_7++; else if (diff <= 15) aging.bucket8_15++; else aging.bucket15plus++;
+      if (diff <= AGING_BUCKET_1) aging.bucket0_7++; else if (diff <= AGING_BUCKET_2) aging.bucket8_15++; else aging.bucket15plus++;
     });
 
     const urgentRMAs = activeDocs
