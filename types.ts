@@ -13,7 +13,8 @@ export enum RMAStatus {
   REPAIRED = 'REPAIRED',           // ซ่อมเสร็จแล้ว พร้อมคืน
   REJECTED = 'REJECTED',           // ปฏิเสธการเคลม (เช่น ผิดเงื่อนไข)
   CLOSED = 'CLOSED',               // ปิดงานสมบูรณ์ (ลูกค้าได้รับของแล้ว)
-  RETURNED_FROM_VENDOR = 'RETURNED_FROM_VENDOR' // ของเคลมกลับมาเข้าคลังแล้ว (จบงาน Advance Replacement)
+  RETURNED_FROM_VENDOR = 'RETURNED_FROM_VENDOR', // ของเคลมกลับมาเข้าคลังแล้ว (จบงาน Advance Replacement)
+  CANCELLED = 'CANCELLED'          // ยกเลิกรายการ (เช่น คีย์ข้อมูลผิด)
 }
 
 // 2. ประเภทสินค้า (Enum)
@@ -151,6 +152,7 @@ export interface DashboardStats {
     repaired: number;
     closed: number;
     returnedFromVendor: number;
+    cancelled?: number;
   };
   urgentRMAs: RMA[];      // รายการงานด่วนที่ต้องรีบดู
 }

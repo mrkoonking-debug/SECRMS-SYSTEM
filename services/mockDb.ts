@@ -440,7 +440,7 @@ export const MockDb = {
     const all = await MockDb.getRMAs();
     const now = Date.now();
     return all.filter(c => {
-      if ([RMAStatus.CLOSED].includes(c.status)) return false;
+      if ([RMAStatus.CLOSED, RMAStatus.CANCELLED].includes(c.status)) return false;
       const daysOpen = Math.floor((now - new Date(c.createdAt).getTime()) / 86400000);
       return daysOpen > AGING_BUCKET_1;
     });
@@ -458,7 +458,7 @@ export const MockDb = {
     let overdue = 0;
     for (const c of all) {
       if (!c.team || (c.team as any) === 'UNASSIGNED') unassigned++;
-      if (![RMAStatus.CLOSED].includes(c.status)) {
+      if (![RMAStatus.CLOSED, RMAStatus.CANCELLED].includes(c.status)) {
         const daysOpen = Math.floor((now - new Date(c.createdAt).getTime()) / 86400000);
         if (daysOpen > OVERDUE_DAYS) overdue++;
       }
@@ -973,17 +973,30 @@ export const MockDb = {
   // --- Delete Functions ---
   deleteRMA: async (id: string) => {
     if (!isConfigured || !db) throw new Error("Firebase Disconnected");
-    // Admin only — ข้อมูลห้ามหาย ต้องเป็น admin เท่านั้นถึงลบได้
-    if (currentUser?.role !== 'admin') throw new Error('Unauthorized: ต้องเป็น admin เท่านั้นถึงจะลบข้อมูลได้');
+    // Admin only — ต้องเป็น admin เท่านั้นถึงยกเลิกได้
+    if (currentUser?.role !== 'admin') throw new Error('Unauthorized: ต้องเป็น admin เท่านั้นถึงจะยกเลิกข้อมูลได้');
     try {
+      const event = {
+        id: `evt-${Date.now()}`,
+        date: Timestamp.now(),
+        type: 'STATUS_CHANGE',
+        description: 'ยกเลิกรายการเคลม (Cancelled)',
+        user: currentUser?.name || 'Admin'
+      };
+
+      const rmaSnap = await getDoc(doc(db, 'rmas', id));
+      let currentHistory = [];
+      if (rmaSnap.exists()) {
+        currentHistory = rmaSnap.data().history || [];
+      }
+
       await updateDoc(doc(db, 'rmas', id), {
-        isDeleted: true,
-        deletedAt: new Date().toISOString(),
-        deletedBy: currentUser?.name || 'Admin'
+        status: RMAStatus.CANCELLED,
+        updatedAt: serverTimestamp(),
+        history: [...currentHistory, event]
       });
       // Counter is NOT recalculated — it only goes up, never down.
-      // This prevents accidental counter corruption from old/fallback IDs.
-      console.log(`Soft Deleted RMA: ${id}`);
+      console.log(`Cancelled RMA: ${id}`);
     }
     catch (e) {
       console.error("deleteRMA failed", e);
@@ -1137,10 +1150,10 @@ export const MockDb = {
 
     // Client-side counting from loaded docs
     const now = new Date();
-    // activeDocs includes everything except CLOSED, REPAIRED, and RETURNED_FROM_VENDOR
+    // activeDocs includes everything except CLOSED, REPAIRED, RETURNED_FROM_VENDOR, and CANCELLED
     // if it's REPLACED_FROM_STOCK, the customer is already satisfied, so we should NOT count it as an active/overdue issue FOR THE CUSTOMER.
     // However, the admin still needs to track it. So we keep it in activeDocs but we calculate aging differently.
-    const activeDocs = teamDocs.filter(c => ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.RETURNED_FROM_VENDOR].includes(c.status));
+    const activeDocs = teamDocs.filter(c => ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.CANCELLED].includes(c.status));
     const aging = { bucket0_7: 0, bucket8_15: 0, bucket15plus: 0 };
     
     activeDocs.forEach(c => {
@@ -1202,6 +1215,7 @@ export const MockDb = {
         repaired: teamDocs.filter(c => c.status === RMAStatus.REPAIRED).length,
         closed: teamDocs.filter(c => c.status === RMAStatus.CLOSED).length,
         returnedFromVendor: teamDocs.filter(c => c.status === RMAStatus.RETURNED_FROM_VENDOR).length,
+        cancelled: teamDocs.filter(c => c.status === RMAStatus.CANCELLED).length
       },
       urgentRMAs
     };

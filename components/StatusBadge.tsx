@@ -12,7 +12,7 @@ export const StatusBadge: React.FC<Props> = React.memo(({ status, isOverdue }) =
   const { t } = useLanguage();
 
   const getStyles = () => {
-    if (isOverdue && ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REJECTED].includes(status)) {
+    if (isOverdue && ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REJECTED, RMAStatus.CANCELLED].includes(status)) {
       return 'bg-red-500 text-white shadow-md shadow-red-500/20';
     }
 
@@ -32,6 +32,8 @@ export const StatusBadge: React.FC<Props> = React.memo(({ status, isOverdue }) =
         return 'bg-green-500 text-white shadow-md shadow-green-500/20';
       case RMAStatus.REJECTED:
         return 'bg-gray-800 text-white';
+      case RMAStatus.CANCELLED:
+        return 'bg-gray-100 text-gray-500 border border-gray-200 dark:bg-white/5 dark:text-gray-400 dark:border-white/10 line-through';
       default:
         return 'bg-gray-100 text-[#86868b] dark:bg-white/10 dark:text-gray-300';
     }

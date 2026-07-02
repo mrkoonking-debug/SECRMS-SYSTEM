@@ -57,6 +57,7 @@ export const translations = {
       REJECTED: 'Rejected',
       CLOSED: 'Closed',
       RETURNED_FROM_VENDOR: 'Returned from Vendor (Restocked)',
+      CANCELLED: 'Cancelled',
       IN_PROGRESS: 'In Progress',
       DONE: 'Completed'
     },
@@ -450,6 +451,7 @@ export const translations = {
       REJECTED: 'ปฏิเสธการเคลม',
       CLOSED: 'ปิดงาน',
       RETURNED_FROM_VENDOR: 'ของเคลมกลับมาเข้าคลังแล้ว (จบงาน)',
+      CANCELLED: 'ยกเลิกรายการ',
       IN_PROGRESS: 'กำลังดำเนินการ',
       DONE: 'เสร็จสิ้น'
     },
