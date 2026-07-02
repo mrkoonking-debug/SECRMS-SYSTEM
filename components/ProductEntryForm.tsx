@@ -9,6 +9,7 @@ import { COMMON_ACCESSORIES } from '../constants/options';
 import { MockDb } from '../services/mockDb';
 import { HddBulkModal } from './HddBulkModal';
 import { ScannerModal } from './ScannerModal';
+import { showToast } from '../services/toast';
 
 const DEFAULT_ACCESSORIES = COMMON_ACCESSORIES.filter(a => a !== 'acc_hdd');
 
@@ -96,7 +97,23 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
     };
 
     const handleAddClick = () => {
-        if (!validate()) return;
+        if (!validate()) {
+            // แจ้ง popup บอกว่าข้อมูลสินค้าไม่ครบ
+            const fieldNames: Record<string, string> = {
+                brand: 'ยี่ห้อ',
+                model: 'รุ่นสินค้า',
+                serial: 'Serial Number',
+                issue: 'อาการเสีย',
+                team: 'Team',
+                distributor: 'ตัวแทนจำหน่าย',
+                accessories: 'อุปกรณ์เสริม'
+            };
+            const missing = Object.keys(errors)
+                .map(k => fieldNames[k] || k)
+                .join(', ');
+            showToast(`กรุณากรอก: ${missing}`, 'error', 4000);
+            return;
+        }
 
         let finalAcc = [...currentItem.accessories];
         if (customAccessory.trim() && !finalAcc.includes(customAccessory.trim())) finalAcc.push(customAccessory.trim());

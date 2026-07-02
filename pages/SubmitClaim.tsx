@@ -6,6 +6,7 @@ import { Team } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { MockDb } from '../services/mockDb';
 import { ProductEntryForm } from '../components/ProductEntryForm';
+import { showToast } from '../services/toast';
 
 const getInputClass = (hasError: boolean) => `
   liquid-input w-full rounded-2xl px-4 py-3.5 text-sm
@@ -57,10 +58,19 @@ export const SubmitClaim: React.FC = () => {
     if (!customer.phone) newErrors.phone = t('validation.phoneRequired');
     if (Object.keys(newErrors).length > 0) {
       setErrors(prev => ({ ...prev, ...newErrors }));
-      setTouched(prev => ({ ...prev, name: true }));
+      setTouched(prev => ({ ...prev, name: true, contactPerson: true, phone: true }));
+      // แจ้ง popup บอกว่าผิดตรงไหน
+      const missingFields: string[] = [];
+      if (newErrors.name) missingFields.push('ชื่อลูกค้า');
+      if (newErrors.contactPerson) missingFields.push('ชื่อผู้ติดต่อ');
+      if (newErrors.phone) missingFields.push('เบอร์โทร');
+      showToast(`กรุณากรอก: ${missingFields.join(', ')}`, 'error', 4000);
       return;
     }
-    if (basket.length === 0) return;
+    if (basket.length === 0) {
+      showToast('กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ', 'warning', 3500);
+      return;
+    }
 
     setIsSubmitting(true);
     const groupRequestId = await MockDb.generateNextGroupRequestId();
