@@ -8,7 +8,7 @@ import { ProductType, Team } from '../types';
 import { LINE_ACCOUNTS, SEC_ADDRESS, getLineAccountById } from '../lineConfig';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ProductEntryForm } from '../components/ProductEntryForm';
-import { showToast } from '../services/toast';
+import { showToast, showValidationError } from '../services/toast';
 
 
 const INPUT_CLASS = "w-full bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-[#2c2c2e] border border-gray-200 dark:border-[#333] hover:border-blue-400/50 dark:hover:border-white/30 rounded-2xl px-4 py-4 text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c1e] focus:ring-2 focus:ring-[#0071e3]/50 focus:border-[#0071e3] transition-all outline-none";
@@ -76,21 +76,21 @@ export const CustomerSubmit: React.FC = () => {
         if (!customer.returnAddress) newErrors.returnAddress = t('validation.addressRequired');
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
-            // แจ้ง popup บอกว่ากรอกไม่ครบตรงไหน
+            // แจ้ง popup ใหญ่ บอกว่ากรอกไม่ครบตรงไหน
             const missingFields: string[] = [];
             if (newErrors.lineAccount) missingFields.push('LINE Account');
-            if (newErrors.companyName) missingFields.push('ชื่อบริษัท/ชื่อลูกค้า');
+            if (newErrors.companyName) missingFields.push('ชื่อบริษัท / ชื่อลูกค้า');
             if (newErrors.contactName) missingFields.push('ชื่อผู้ติดต่อ');
-            if (newErrors.phone) missingFields.push('เบอร์โทร');
-            if (newErrors.returnAddress) missingFields.push('ที่อยู่จัดส่ง');
-            showToast(`กรุณากรอก: ${missingFields.join(', ')}`, 'error', 4000);
+            if (newErrors.phone) missingFields.push('เบอร์โทรศัพท์');
+            if (newErrors.returnAddress) missingFields.push('ที่อยู่จัดส่งคืน');
+            showValidationError(missingFields);
             window.scrollTo(0, 0);
             return;
         }
         if (basket.length > 0) {
             processSubmission(basket);
         } else {
-            showToast('กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ', 'warning', 3500);
+            showValidationError(['ยังไม่ได้เพิ่มสินค้า — กรุณาเพิ่มอย่างน้อย 1 รายการ'], 'ยังไม่มีสินค้าในรายการ');
         }
     };
 

@@ -19,6 +19,7 @@ interface GlassSelectProps {
   disabled?: boolean;
   searchable?: boolean;
   recentKey?: string;
+  required?: boolean;
 }
 
 export const GlassSelect: React.FC<GlassSelectProps> = ({
@@ -31,7 +32,8 @@ export const GlassSelect: React.FC<GlassSelectProps> = ({
   hasError = false,
   disabled = false,
   searchable = false,
-  recentKey
+  recentKey,
+  required = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -214,7 +216,7 @@ export const GlassSelect: React.FC<GlassSelectProps> = ({
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
-      {label && <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2 tracking-wide">{label}</label>}
+      {label && <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2 tracking-wide">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>}
 
       <button
         ref={buttonRef}

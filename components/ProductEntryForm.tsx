@@ -9,7 +9,7 @@ import { COMMON_ACCESSORIES } from '../constants/options';
 import { MockDb } from '../services/mockDb';
 import { HddBulkModal } from './HddBulkModal';
 import { ScannerModal } from './ScannerModal';
-import { showToast } from '../services/toast';
+import { showToast, showValidationError } from '../services/toast';
 
 const DEFAULT_ACCESSORIES = COMMON_ACCESSORIES.filter(a => a !== 'acc_hdd');
 
@@ -110,9 +110,8 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                 accessories: 'อุปกรณ์เสริม'
             };
             const missing = Object.keys(validationErrors)
-                .map(k => fieldNames[k] || k)
-                .join(', ');
-            showToast(`กรุณากรอก: ${missing}`, 'error', 4000);
+                .map(k => fieldNames[k] || k);
+            showValidationError(missing, 'ข้อมูลสินค้าไม่ครบ');
             return;
         }
 
@@ -160,13 +159,13 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
         <div className="space-y-6 animate-fade-in">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div data-tour="tour-brand">
-                    <GlassSelect label={t('submit.brand')} value={currentItem.brand} onChange={val => { setCurrentItem(p => ({ ...p, brand: val })); setErrors(p => ({ ...p, brand: '' })); }} options={brandOptions} searchable recentKey="brand" hasError={!!errors.brand} />
+                    <GlassSelect label={t('submit.brand')} value={currentItem.brand} onChange={val => { setCurrentItem(p => ({ ...p, brand: val })); setErrors(p => ({ ...p, brand: '' })); }} options={brandOptions} searchable recentKey="brand" hasError={!!errors.brand} required />
                     {mode === 'customer' && <p className="text-[11px] text-blue-500/70 mt-1 ml-2 flex items-center gap-1">💡 เช่น Hikvision, Dahua, Uniview</p>}
                     {currentItem.brand === 'Other' && <input value={customBrand} onChange={e => setCustomBrand(e.target.value)} className={`mt-2 ${getInputClass(!!errors.customBrand)}`} placeholder={t('placeholders.specifyBrand')} />}
                 </div>
 
                 <div className="relative" data-tour="tour-model-serial">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.model')}</label>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.model')} <span className="text-red-500">*</span></label>
                     <div className="relative">
                         <input value={currentItem.model} onChange={e => setCurrentItem({ ...currentItem, model: e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase() })} className={`${getInputClass(!!errors.model)} pr-10 uppercase`} placeholder={t('submit.enterModel')} style={{ textTransform: 'uppercase' }} />
                         <button type="button" onClick={() => { setScanTarget('model'); setShowScanner(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 transition-colors"><ScanBarcode className="w-5 h-5" /></button>
@@ -192,7 +191,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                         </>
                     ) : (
                         <>
-                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.serial')}</label>
+                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.serial')} <span className="text-red-500">*</span></label>
                             <div className="relative">
                                 <input value={currentItem.serial} onChange={e => setCurrentItem({ ...currentItem, serial: e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase() })} className={`${getInputClass(!!errors.serial)} pr-10 uppercase`} placeholder={t('submit.enterSn')} style={{ textTransform: 'uppercase' }} />
                                 <button type="button" onClick={() => { setScanTarget('serial'); setShowScanner(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 transition-colors"><ScanBarcode className="w-5 h-5" /></button>
@@ -224,13 +223,13 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {mode === 'admin' && (
                     <div>
-                        <GlassSelect label={t('submit.distributor')} value={currentItem.distributor} onChange={val => setCurrentItem(p => ({ ...p, distributor: val }))} options={distOptions} searchable recentKey="distributor" hasError={!!errors.distributor} />
+                        <GlassSelect label={t('submit.distributor')} value={currentItem.distributor} onChange={val => setCurrentItem(p => ({ ...p, distributor: val }))} options={distOptions} searchable recentKey="distributor" hasError={!!errors.distributor} required />
                         {currentItem.distributor === 'Other' && <input value={customDistributor} onChange={e => setCustomDistributor(e.target.value)} className={`mt-2 ${getInputClass(!!errors.customDistributor)}`} placeholder={t('placeholders.specifyDistributor')} />}
                     </div>
                 )}
 
                 <div className={mode === 'customer' ? 'col-span-2' : ''} data-tour="tour-accessories">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.accessories')}</label>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.accessories')} <span className="text-red-500">*</span></label>
                     {mode === 'customer' && <p className="text-[11px] text-blue-500/70 mb-2 ml-2 flex items-center gap-1">💡 เลือกสิ่งที่ส่งมาพร้อมเครื่อง (ไม่จำเป็นต้องเลือก ข้ามได้)</p>}
                     <div className="flex flex-wrap gap-2 mb-2">
                         <button
@@ -275,7 +274,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
             </div>
 
             <div data-tour="tour-issue">
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.issueDesc')}</label>
+                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.issueDesc')} <span className="text-red-500">*</span></label>
                 <textarea value={currentItem.issue} onChange={e => setCurrentItem({ ...currentItem, issue: e.target.value })} rows={3} className={getInputClass(!!errors.issue)} placeholder={mode === 'customer' ? t('placeholders.issueCustomer') : t('placeholders.issueAdmin')} />
                 {mode === 'customer'
                     ? <p className="text-[11px] text-blue-500/70 mt-1 ml-2 flex items-center gap-1">💡 เช่น &quot;ภาพมืด&quot;, &quot;เชื่อมต่อไม่ได้&quot;, &quot;มีเสียงดัง&quot;</p>

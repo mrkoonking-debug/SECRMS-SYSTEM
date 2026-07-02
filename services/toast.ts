@@ -82,3 +82,124 @@ export function showToast(message: string, type: ToastType = 'success', duration
     }, 400);
   }, duration);
 }
+
+/**
+ * Validation Error Popup — ใหญ่ เห็นชัด แสดงรายการ field ที่ขาด
+ * ใช้สำหรับ form validation เท่านั้น
+ */
+export function showValidationError(missingFields: string[], title?: string) {
+  // Remove existing validation popup if any
+  const existing = document.getElementById('validation-error-popup');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'validation-error-popup';
+  overlay.style.cssText = `
+    position: fixed; inset: 0; z-index: 99999;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding-top: 80px;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  `;
+
+  const card = document.createElement('div');
+  card.style.cssText = `
+    background: white;
+    border-radius: 20px;
+    padding: 28px 32px;
+    max-width: min(400px, 90vw);
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05);
+    transform: translateY(-20px) scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  `;
+
+  // Check dark mode
+  if (document.documentElement.classList.contains('dark')) {
+    card.style.background = '#1c1c1e';
+    card.style.boxShadow = '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)';
+  }
+
+  // Icon
+  const iconDiv = document.createElement('div');
+  iconDiv.style.cssText = `
+    width: 48px; height: 48px; border-radius: 14px;
+    background: #fee2e2; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  `;
+  iconDiv.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+
+  // Title
+  const titleEl = document.createElement('div');
+  titleEl.textContent = title || 'กรุณากรอกข้อมูลให้ครบ';
+  const isDark = document.documentElement.classList.contains('dark');
+  titleEl.style.cssText = `
+    font-size: 18px; font-weight: 700; margin-bottom: 12px;
+    color: ${isDark ? '#f5f5f7' : '#1d1d1f'};
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Sarabun', sans-serif;
+  `;
+
+  // List of missing fields
+  const list = document.createElement('ul');
+  list.style.cssText = `
+    list-style: none; padding: 0; margin: 0 0 20px 0;
+  `;
+  missingFields.forEach(field => {
+    const li = document.createElement('li');
+    li.style.cssText = `
+      padding: 8px 12px; margin-bottom: 6px;
+      background: ${isDark ? '#2c2c2e' : '#fef2f2'};
+      border-radius: 10px;
+      font-size: 14px; font-weight: 500;
+      color: ${isDark ? '#fca5a5' : '#dc2626'};
+      display: flex; align-items: center; gap: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Sarabun', sans-serif;
+    `;
+    li.innerHTML = `<span style="color:#ef4444;font-size:16px;font-weight:700;">✕</span> ${field}`;
+    list.appendChild(li);
+  });
+
+  // Close button
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = 'เข้าใจแล้ว';
+  closeBtn.style.cssText = `
+    width: 100%; padding: 12px;
+    background: #ef4444; color: white;
+    border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Sarabun', sans-serif;
+    transition: background 0.2s;
+  `;
+  closeBtn.onmouseenter = () => { closeBtn.style.background = '#dc2626'; };
+  closeBtn.onmouseleave = () => { closeBtn.style.background = '#ef4444'; };
+
+  const dismiss = () => {
+    overlay.style.opacity = '0';
+    card.style.transform = 'translateY(-20px) scale(0.95)';
+    setTimeout(() => overlay.remove(), 300);
+  };
+
+  closeBtn.onclick = dismiss;
+  overlay.onclick = (e) => { if (e.target === overlay) dismiss(); };
+
+  card.appendChild(iconDiv);
+  card.appendChild(titleEl);
+  card.appendChild(list);
+  card.appendChild(closeBtn);
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+
+  // Animate in
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+      card.style.transform = 'translateY(0) scale(1)';
+    });
+  });
+
+  // Auto dismiss after 8 seconds
+  setTimeout(dismiss, 8000);
+}

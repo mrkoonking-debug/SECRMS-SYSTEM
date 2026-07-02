@@ -6,7 +6,7 @@ import { Team } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { MockDb } from '../services/mockDb';
 import { ProductEntryForm } from '../components/ProductEntryForm';
-import { showToast } from '../services/toast';
+import { showToast, showValidationError } from '../services/toast';
 
 const getInputClass = (hasError: boolean) => `
   liquid-input w-full rounded-2xl px-4 py-3.5 text-sm
@@ -59,16 +59,16 @@ export const SubmitClaim: React.FC = () => {
     if (Object.keys(newErrors).length > 0) {
       setErrors(prev => ({ ...prev, ...newErrors }));
       setTouched(prev => ({ ...prev, name: true, contactPerson: true, phone: true }));
-      // แจ้ง popup บอกว่าผิดตรงไหน
+      // แจ้ง popup ใหญ่บอกว่าผิดตรงไหน
       const missingFields: string[] = [];
-      if (newErrors.name) missingFields.push('ชื่อลูกค้า');
+      if (newErrors.name) missingFields.push('ชื่อลูกค้า / บริษัท');
       if (newErrors.contactPerson) missingFields.push('ชื่อผู้ติดต่อ');
-      if (newErrors.phone) missingFields.push('เบอร์โทร');
-      showToast(`กรุณากรอก: ${missingFields.join(', ')}`, 'error', 4000);
+      if (newErrors.phone) missingFields.push('เบอร์โทรศัพท์');
+      showValidationError(missingFields);
       return;
     }
     if (basket.length === 0) {
-      showToast('กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ', 'warning', 3500);
+      showValidationError(['ยังไม่ได้เพิ่มสินค้า — กรุณาเพิ่มอย่างน้อย 1 รายการ'], 'ยังไม่มีสินค้าในรายการ');
       return;
     }
 
@@ -182,7 +182,7 @@ export const SubmitClaim: React.FC = () => {
                 {errors.quotationNumber && touched.quotationNumber && <p className="text-red-500 text-xs mt-1 ml-2">{errors.quotationNumber}</p>}
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('publicSubmit.companyName')}</label>
+                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('publicSubmit.companyName')} <span className="text-red-500">*</span></label>
                 <input
                   value={customer.name}
                   onChange={e => setCustomer({ ...customer, name: e.target.value })}
