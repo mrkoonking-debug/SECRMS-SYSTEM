@@ -259,15 +259,28 @@ export const ClaimsList: React.FC = () => {
             {/* ── Search + Filters ── */}
             <div className="bg-white dark:bg-[#16161a] rounded-xl md:rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-200/60 dark:border-white/[0.08] p-1.5 mb-5 md:mb-6 sticky top-14 md:top-0 z-30 flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
                 <div className="relative flex-grow group"><Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" /><input type="text" placeholder={t('claimsList.searchPlaceholder')} value={search} onChange={(e) => handleSearchChange(e.target.value)} className="w-full bg-transparent border-none rounded-xl md:rounded-2xl py-2.5 md:py-3 pl-9 md:pl-11 pr-4 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0" /></div>
-                <div className="flex items-center gap-1 flex-wrap md:flex-nowrap px-1 md:px-0 pb-0.5 md:pb-0">
+                <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide w-full md:w-auto px-1 pb-1 md:pb-0">
                     <button onClick={handleExpandAll} className="hidden md:flex p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06] flex-shrink-0 transition-colors"><ChevronsUpDown className="w-4 h-4" /></button>
-                    <div className="hidden md:block h-5 w-px bg-gray-200 dark:bg-white/10 flex-shrink-0"></div>
+                    <div className="hidden md:block h-5 w-px bg-gray-200 dark:bg-white/10 flex-shrink-0 animate-fade-in"></div>
                     {['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].map((s) => (
-                        <button key={s} onClick={() => setStatusFilter(s as typeof statusFilter)} className={`flex-1 md:flex-none px-2 md:px-3.5 py-1.5 md:py-2 text-[10px] md:text-xs font-medium rounded-lg md:rounded-xl transition-all whitespace-nowrap text-center ${statusFilter === s ? 'bg-[#1d1d1f] dark:bg-white text-white dark:text-[#1d1d1f] shadow-sm' : 'text-gray-500 hover:text-[#1d1d1f] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/[0.06]'}`}>{s === 'ALL' ? t('claimsList.filterStatus') : t(`status.${s}`)}</button>
+                        <button 
+                            key={s} 
+                            onClick={() => setStatusFilter(s as typeof statusFilter)} 
+                            className={`flex-shrink-0 px-3 py-1 md:px-3.5 md:py-1.5 text-[10px] md:text-xs font-semibold rounded-full transition-all whitespace-nowrap text-center ${
+                                statusFilter === s 
+                                    ? 'bg-[#0071e3] text-white shadow-sm' 
+                                    : 'text-gray-500 dark:text-gray-400 bg-gray-100/60 dark:bg-white/[0.04] hover:bg-gray-150 dark:hover:bg-white/[0.08]'
+                            }`}
+                        >
+                            {s === 'ALL' ? t('claimsList.filterStatus') : t(`status.${s}`)}
+                        </button>
                     ))}
                     {isAnyFilterActive && (
-                        <button onClick={handleClearFilters} className="flex-1 md:flex-none px-2 md:px-3.5 py-1.5 md:py-2 text-[10px] md:text-xs font-semibold rounded-lg md:rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 transition-all whitespace-nowrap flex items-center justify-center gap-1">
-                            <X className="w-3 h-3 md:w-3.5 md:h-3.5" /> {t('claimsList.clearFilters')}
+                        <button 
+                            onClick={handleClearFilters} 
+                            className="flex-shrink-0 px-3 py-1 md:px-3.5 md:py-1.5 text-[10px] md:text-xs font-bold rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 transition-all whitespace-nowrap flex items-center justify-center gap-1"
+                        >
+                            <X className="w-2.5 h-2.5" /> {t('claimsList.clearFilters')}
                         </button>
                     )}
                 </div>
