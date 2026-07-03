@@ -49,12 +49,15 @@ export const ClaimsList: React.FC = () => {
     const [rmas, setRMAs] = useState<RMA[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [search, setSearch] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'IN_PROGRESS' | 'DONE'>('ALL');
-    const [teamFilter, setTeamFilter] = useState<'ALL' | 'GROUP_C' | Team>('ALL');
-    const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set(['Today', 'Yesterday', 'This Week']));
-    const [isTeamCExpanded, setIsTeamCExpanded] = useState(false);
+    const [search, setSearch] = useState(() => sessionStorage.getItem('rmas_search') || '');
+    const [debouncedSearch, setDebouncedSearch] = useState(() => sessionStorage.getItem('rmas_search') || '');
+    const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'IN_PROGRESS' | 'DONE'>(() => (sessionStorage.getItem('rmas_statusFilter') as any) || 'ALL');
+    const [teamFilter, setTeamFilter] = useState<'ALL' | 'GROUP_C' | Team>(() => (sessionStorage.getItem('rmas_teamFilter') as any) || 'ALL');
+    const [expandedDates, setExpandedDates] = useState<Set<string>>(() => {
+        const saved = sessionStorage.getItem('rmas_expandedDates');
+        return saved ? new Set(JSON.parse(saved)) : new Set(['Today', 'Yesterday', 'This Week']);
+    });
+    const [isTeamCExpanded, setIsTeamCExpanded] = useState(() => sessionStorage.getItem('rmas_isTeamCExpanded') === 'true');
     const { t } = useLanguage();
     const navigate = useNavigate();
     const searchTimerRef = useRef<any>(null);
@@ -65,6 +68,27 @@ export const ClaimsList: React.FC = () => {
         if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
         searchTimerRef.current = setTimeout(() => setDebouncedSearch(value), 300);
     }, []);
+
+    // Save filters state to sessionStorage to preserve filters on back navigation
+    useEffect(() => {
+        sessionStorage.setItem('rmas_search', search);
+    }, [search]);
+
+    useEffect(() => {
+        sessionStorage.setItem('rmas_statusFilter', statusFilter);
+    }, [statusFilter]);
+
+    useEffect(() => {
+        sessionStorage.setItem('rmas_teamFilter', teamFilter);
+    }, [teamFilter]);
+
+    useEffect(() => {
+        sessionStorage.setItem('rmas_expandedDates', JSON.stringify(Array.from(expandedDates)));
+    }, [expandedDates]);
+
+    useEffect(() => {
+        sessionStorage.setItem('rmas_isTeamCExpanded', String(isTeamCExpanded));
+    }, [isTeamCExpanded]);
 
     useEffect(() => {
         const fetchAll = async () => {
