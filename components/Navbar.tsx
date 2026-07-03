@@ -173,7 +173,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
           </Link>
 
           {/* Glass capsule bar */}
-          <div className="relative bg-white/80 dark:bg-[#22222a]/88 backdrop-blur-2xl border border-black/[0.05] dark:border-white/[0.08] rounded-[20px] shadow-[0_-1px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-1px_30px_rgba(0,0,0,0.4)] grid grid-cols-5 items-center h-[50px] pointer-events-auto">
+          <div className="relative bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-2xl border border-black/[0.05] dark:border-white/[0.08] rounded-[20px] shadow-[0_-1px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-1px_30px_rgba(0,0,0,0.4)] grid grid-cols-5 items-center h-[50px] pointer-events-auto">
 
             {/* Dashboard */}
             <Link to="/admin/dashboard" className={`flex flex-col items-center justify-center h-full relative transition-all duration-200 ${location.pathname === '/admin/dashboard' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
@@ -215,7 +215,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
 
           {/* ===== Mobile Popover Menu (Premium Non-blocking macOS Style) ===== */}
           {isMobileOpen && (
-            <div id="mobile-more-popup" className="absolute bottom-[65px] right-3 w-[250px] bg-white/95 dark:bg-[#1a1a20]/95 backdrop-blur-2xl border border-gray-200/50 dark:border-white/[0.08] rounded-2xl shadow-xl z-50 pointer-events-auto flex flex-col overflow-hidden animate-slide-up">
+            <div id="mobile-more-popup" className="absolute bottom-[65px] right-3 w-[250px] bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-2xl border border-gray-200/50 dark:border-white/[0.08] rounded-2xl shadow-xl z-50 pointer-events-auto flex flex-col overflow-hidden animate-slide-up">
               {/* Quick Settings */}
               <div className="p-2 border-b border-gray-100/50 dark:border-white/[0.04]">
                 <div className="flex items-center justify-between bg-gray-50 dark:bg-white/[0.03] p-1 rounded-xl border border-gray-100 dark:border-white/[0.04]">
@@ -229,7 +229,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
               </div>
 
               {/* Navigation Options */}
-              <div className="p-2 max-h-[250px] overflow-y-auto custom-scrollbar space-y-1">
+              <div className="p-2 space-y-1">
                 {user?.role === 'admin' ? (
                   <>
                     <div className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-2 mb-1.5">การจัดการระบบ</div>
