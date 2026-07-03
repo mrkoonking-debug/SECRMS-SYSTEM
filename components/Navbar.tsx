@@ -214,8 +214,8 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
              {/* Glass capsule bar */}
              <div 
                className={`
-                 apple-fluid-transition relative bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-2xl border border-black/[0.05] dark:border-white/[0.08] shadow-[0_-4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_30px_rgba(0,0,0,0.4)] grid grid-cols-5 items-center pointer-events-auto px-1
-                 ${isScrollingDown ? 'h-[40px] rounded-full px-2 w-[190px]' : 'h-[56px] rounded-[20px] w-[calc(100%-3rem)] max-w-[320px]'}
+                 apple-fluid-transition relative bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-2xl border border-black/[0.05] dark:border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.4)] grid grid-cols-5 items-center pointer-events-auto px-1 rounded-full
+                 ${isScrollingDown ? 'h-[40px] px-2 w-[50%] max-w-[190px]' : 'h-[56px] w-[88%] max-w-[350px]'}
                `}
              >
   
