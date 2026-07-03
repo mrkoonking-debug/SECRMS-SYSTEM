@@ -158,7 +158,7 @@ export const IncomingClaims: React.FC = () => {
                                                 </div>
                                                 <div className="text-right flex-shrink-0">
                                                     <div className="text-[9px] md:text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">Ref ID</div>
-                                                    <div className="text-[11px] md:text-sm font-mono font-bold dark:text-gray-300 break-all">{job.groupId}</div>
+                                                    <div className="text-[11px] md:text-sm font-mono font-bold dark:text-gray-300 break-normal">{job.groupId}</div>
                                                 </div>
                                             </div>
 

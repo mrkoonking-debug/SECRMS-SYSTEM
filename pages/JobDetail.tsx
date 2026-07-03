@@ -346,7 +346,7 @@ export const JobDetail: React.FC = () => {
                         <div className="w-11 h-11 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center shadow-inner"><Package className="w-5 h-5 md:w-6 md:h-6" /></div>
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center flex-wrap gap-2 md:gap-3 mb-1 md:mb-2">
-                                <h1 className="text-base md:text-2xl font-bold text-[#1d1d1f] dark:text-white leading-tight break-all">
+                                <h1 className="text-base md:text-2xl font-bold text-[#1d1d1f] dark:text-white leading-tight break-normal">
                                     {jobInfo.id}
                                 </h1>
                                 <span className={`text-[10px] md:text-xs px-1.5 md:px-2.5 py-0.5 md:py-1 rounded border flex items-center gap-1 font-medium ${jobInfo.quotationNumber ? 'bg-gray-50 dark:bg-[#2c2c2e] text-gray-500 dark:text-gray-400 border-gray-200 dark:border-[#424245]' : 'bg-gray-50/50 dark:bg-[#2c2c2e]/50 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-[#424245]/50 italic'}`}>
