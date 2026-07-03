@@ -332,38 +332,38 @@ export const JobDetail: React.FC = () => {
     const missingDistributorCount = rmas.filter(rma => !rma.distributor || rma.distributor.trim() === '' || rma.distributor === 'Pending Staff Input').length;
 
     return (
-        <div className="max-w-5xl mx-auto px-4 py-8">
-            <div className="flex items-center justify-between mb-8">
-                <Link to="/admin/rmas" className="flex items-center text-sm font-medium text-gray-500 hover:text-[#0071e3] transition-colors"><ArrowLeft className="h-4 w-4 mr-1" /> {t('track.backToList')}</Link>
+        <div className="max-w-5xl mx-auto px-3 md:px-4 py-4 md:py-8 pb-24 md:pb-8">
+            <div className="flex items-center justify-between mb-4 md:mb-8">
+                <Link to="/admin/rmas" className="flex items-center text-xs md:text-sm font-medium text-gray-500 hover:text-[#0071e3] transition-colors"><ArrowLeft className="h-4 w-4 mr-1" /> {t('track.backToList')}</Link>
             </div>
 
             {/* Unified Job Header & Customer Info Card */}
-            <div className="bg-white dark:bg-[#1c1c1e] rounded-[24px] p-6 sm:p-8 mb-8 border border-gray-100 dark:border-[#333] shadow-sm">
+            <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl md:rounded-[24px] p-4 md:p-8 mb-4 md:mb-8 border border-gray-100 dark:border-[#333] shadow-sm">
 
                 {/* --- TOP HEADER SECTION --- */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
-                    <div className="flex items-center gap-5">
-                        <div className="w-16 h-16 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center text-2xl shadow-inner"><Package /></div>
-                        <div>
-                            <div className="flex items-center flex-wrap gap-3 mb-2">
-                                <h1 className="text-xl sm:text-2xl font-bold text-[#1d1d1f] dark:text-white leading-tight break-all">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 mb-4 md:mb-6">
+                    <div className="flex items-center gap-3 md:gap-5">
+                        <div className="w-11 h-11 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center shadow-inner"><Package className="w-5 h-5 md:w-6 md:h-6" /></div>
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center flex-wrap gap-2 md:gap-3 mb-1 md:mb-2">
+                                <h1 className="text-base md:text-2xl font-bold text-[#1d1d1f] dark:text-white leading-tight break-all">
                                     {jobInfo.id}
                                 </h1>
-                                <span className={`text-xs px-2.5 py-1 rounded border flex items-center gap-1 font-medium ${jobInfo.quotationNumber ? 'bg-gray-50 dark:bg-[#2c2c2e] text-gray-500 dark:text-gray-400 border-gray-200 dark:border-[#424245]' : 'bg-gray-50/50 dark:bg-[#2c2c2e]/50 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-[#424245]/50 italic'}`}>
-                                    <span className="uppercase text-[10px] font-bold opacity-60">Ref:</span>
+                                <span className={`text-[10px] md:text-xs px-1.5 md:px-2.5 py-0.5 md:py-1 rounded border flex items-center gap-1 font-medium ${jobInfo.quotationNumber ? 'bg-gray-50 dark:bg-[#2c2c2e] text-gray-500 dark:text-gray-400 border-gray-200 dark:border-[#424245]' : 'bg-gray-50/50 dark:bg-[#2c2c2e]/50 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-[#424245]/50 italic'}`}>
+                                    <span className="uppercase text-[9px] md:text-[10px] font-bold opacity-60">Ref:</span>
                                     {jobInfo.quotationNumber || 'ไม่มี Ref'}
                                 </span>
                             </div>
-                            <div className="flex flex-wrap items-center gap-2 md:gap-4 text-sm text-gray-500">
-                                <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {new Date(jobInfo.date).toLocaleDateString()}</span>
-                                <span className="bg-gray-100 dark:bg-white/10 px-2 py-0.5 rounded text-xs text-[#1d1d1f] dark:text-gray-300 font-medium">{jobInfo.count} {t('claimsList.items')}</span>
-                                <div className="flex gap-2">
-                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium border border-green-100 dark:border-green-900/30">
-                                        <CheckCircle2 className="w-3 h-3" />
+                            <div className="flex flex-wrap items-center gap-1.5 md:gap-4 text-[11px] md:text-sm text-gray-500">
+                                <span className="flex items-center gap-1"><Clock className="w-3 h-3 md:w-4 md:h-4" /> {new Date(jobInfo.date).toLocaleDateString()}</span>
+                                <span className="bg-gray-100 dark:bg-white/10 px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs text-[#1d1d1f] dark:text-gray-300 font-medium">{jobInfo.count} {t('claimsList.items')}</span>
+                                <div className="flex gap-1.5 md:gap-2">
+                                    <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium border border-green-100 dark:border-green-900/30">
+                                        <CheckCircle2 className="w-2.5 h-2.5 md:w-3 md:h-3" />
                                         {rmas.filter(c => c.status === RMAStatus.CLOSED || c.status === RMAStatus.REPAIRED || c.status === RMAStatus.REPLACED_FROM_STOCK || c.status === RMAStatus.RETURNED_FROM_VENDOR).length} {t('track.doneBadge')}
                                     </div>
-                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium border border-blue-100 dark:border-blue-900/30">
-                                        <Clock className="w-3 h-3" />
+                                    <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium border border-blue-100 dark:border-blue-900/30">
+                                        <Clock className="w-2.5 h-2.5 md:w-3 md:h-3" />
                                         {rmas.filter(c => c.status !== RMAStatus.CLOSED && c.status !== RMAStatus.REPAIRED && c.status !== RMAStatus.REPLACED_FROM_STOCK && c.status !== RMAStatus.RETURNED_FROM_VENDOR).length} {t('track.activeBadge')}
                                     </div>
                                 </div>
@@ -372,7 +372,7 @@ export const JobDetail: React.FC = () => {
                     </div>
 
                     {/* PRINT ACTION GROUPS — 2x2 Grid */}
-                    <div className="grid grid-cols-2 gap-2 w-full md:w-auto md:min-w-[340px] md:max-w-[400px]">
+                    <div className="grid grid-cols-2 gap-1.5 md:gap-2 w-full md:w-auto md:min-w-[340px] md:max-w-[400px]">
                         {/* Top-Left: ใบส่งเคลม */}
                         <button
                             onClick={() => {
@@ -382,7 +382,7 @@ export const JobDetail: React.FC = () => {
                                 setIsDocPreviewOpen(true);
                             }}
                             disabled={!allHaveDistributor}
-                            className={`h-11 flex items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-all ${allHaveDistributor
+                            className={`h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${allHaveDistributor
                                 ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-95'
                                 : 'bg-gray-100 dark:bg-[#2c2c2e] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
                             title={!allHaveDistributor ? `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)` : ''}
@@ -400,7 +400,7 @@ export const JobDetail: React.FC = () => {
                                 setIsDocPreviewOpen(true);
                             }}
                             disabled={!hasClosedRMAs}
-                            className={`h-11 flex items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-all ${hasClosedRMAs
+                            className={`h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${hasClosedRMAs
                                 ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-95'
                                 : 'bg-gray-100 dark:bg-[#2c2c2e] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
                             title={!hasClosedRMAs ? `ปิดงานก่อนถึงจะพิมพ์ได้ (${closedRMAs.length}/${rmas.length} ปิดแล้ว)` : ''}
@@ -425,7 +425,7 @@ export const JobDetail: React.FC = () => {
                                 }
                             }}
                             disabled={!allHaveDistributor}
-                            className={`h-11 flex items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-all ${allHaveDistributor
+                            className={`h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${allHaveDistributor
                                 ? 'border border-orange-300 dark:border-orange-500/30 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:scale-[1.02] active:scale-95'
                                 : 'border border-gray-200 dark:border-[#333] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
                             title={!allHaveDistributor ? `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)` : ''}
@@ -438,7 +438,7 @@ export const JobDetail: React.FC = () => {
                         <button
                             onClick={() => { setShipmentTagRmas(closedRMAs); setShipmentTagTarget('CUSTOMER'); setIsShipmentTagModalOpen(true); }}
                             disabled={!hasClosedRMAs}
-                            className={`h-11 flex items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-all ${hasClosedRMAs
+                            className={`h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${hasClosedRMAs
                                 ? 'border border-blue-300 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:scale-[1.02] active:scale-95'
                                 : 'border border-gray-200 dark:border-[#333] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
                             title={!hasClosedRMAs ? `ปิดงานก่อนถึงจะพิมพ์ได้ (${closedRMAs.length}/${rmas.length} ปิดแล้ว)` : ''}
@@ -450,12 +450,12 @@ export const JobDetail: React.FC = () => {
                 </div>
 
                 {/* SEC DIVIDER */}
-                <div className="w-full h-px bg-gray-200 dark:bg-[#333] mb-6"></div>
+                <div className="w-full h-px bg-gray-200 dark:bg-[#333] mb-4 md:mb-6"></div>
 
                 {/* --- CUSTOMER INFO SECTION --- */}
                 <div>
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="font-semibold text-base flex items-center gap-3 text-[#1d1d1f] dark:text-white">
+                    <div className="flex justify-between items-center mb-3 md:mb-6">
+                        <h2 className="font-semibold text-sm md:text-base flex items-center gap-2 md:gap-3 text-[#1d1d1f] dark:text-white">
                             <User className="w-5 h-5 text-gray-400" />
                             {t('submit.customerDetails')}
                         </h2>
@@ -510,7 +510,7 @@ export const JobDetail: React.FC = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 text-sm">
+                        <div className="grid grid-cols-2 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-3 md:gap-y-6 text-sm">
                             <div className="flex flex-col gap-1">
                                 <span className="text-gray-400 font-semibold text-[11px] tracking-wider uppercase">{t('publicSubmit.companyName')}</span>
                                 <span className="text-[#1d1d1f] dark:text-gray-200 font-medium">{customerForm.customerName || '-'}</span>
@@ -527,13 +527,13 @@ export const JobDetail: React.FC = () => {
                                 <span className="text-gray-400 font-semibold text-[11px] tracking-wider uppercase">{t('submit.lineId')}</span>
                                 <span className="text-[#1d1d1f] dark:text-gray-200 font-medium">{customerForm.customerLineId || '-'}</span>
                             </div>
-                            <div className="flex flex-col gap-1 md:col-span-2">
+                            <div className="flex flex-col gap-1 col-span-2">
                                 <span className="text-gray-400 font-semibold text-[11px] tracking-wider uppercase">Email</span>
                                 <span className="text-[#1d1d1f] dark:text-gray-200 font-medium">{customerForm.customerEmail || '-'}</span>
                             </div>
-                            <div className="flex flex-col gap-1 md:col-span-2">
+                            <div className="flex flex-col gap-1 col-span-2">
                                 <span className="text-gray-400 font-semibold text-[11px] tracking-wider uppercase">{t('submit.returnAddress')}</span>
-                                <div className="text-[#1d1d1f] dark:text-gray-200 font-medium leading-relaxed bg-gray-50 dark:bg-black/10 p-3 rounded-xl border border-gray-100 dark:border-white/5 whitespace-pre-line mt-1">
+                                <div className="text-[#1d1d1f] dark:text-gray-200 font-medium text-xs md:text-sm leading-relaxed bg-gray-50 dark:bg-black/10 p-2.5 md:p-3 rounded-lg md:rounded-xl border border-gray-100 dark:border-white/5 whitespace-pre-line mt-1">
                                     {customerForm.customerReturnAddress || '-'}
                                 </div>
                             </div>
@@ -543,7 +543,7 @@ export const JobDetail: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-                <div className="flex items-center justify-between ml-2 mr-2 mb-4">
+                <div className="flex items-center justify-between ml-1 md:ml-2 mr-1 md:mr-2 mb-3 md:mb-4">
                     <div className="flex items-center gap-3">
                         {rmas.length > 1 && (
                             <button
@@ -579,8 +579,8 @@ export const JobDetail: React.FC = () => {
                     const sortedHistory = item.history ? [...item.history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) : [];
 
                     return (
-                        <div key={item.id} className={`bg-white dark:bg-[#1c1c1e] rounded-[20px] p-6 transition-all hover:bg-gray-50 dark:hover:bg-[#2c2c2e] border-2 ${isSelected ? 'border-[#0071e3] ring-2 ring-[#0071e3]/20' : 'border-gray-100 dark:border-[#333]'}`}>
-                            <div className="flex flex-col md:flex-row items-center gap-6">
+                        <div key={item.id} className={`bg-white dark:bg-[#1c1c1e] rounded-2xl md:rounded-[20px] p-3.5 md:p-6 transition-all hover:bg-gray-50 dark:hover:bg-[#2c2c2e] border-2 ${isSelected ? 'border-[#0071e3] ring-2 ring-[#0071e3]/20' : 'border-gray-100 dark:border-[#333]'}`}>
+                            <div className="flex flex-col md:flex-row items-center gap-3 md:gap-6">
                                 <div className="flex-shrink-0 flex items-center gap-3">
                                     {rmas.length > 1 && (
                                         <button onClick={() => { const n = new Set(selectedIds); isSelected ? n.delete(item.id) : n.add(item.id); setSelectedIds(n); }} className="transition-transform hover:scale-110">
@@ -590,7 +590,7 @@ export const JobDetail: React.FC = () => {
                                     {isClosed ? <div className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center"><CheckCircle2 className="w-5 h-5" /></div> : <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold">{index + 1}</div>}
                                 </div>
                                 <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                                    <div><div className="font-bold text-lg text-[#1d1d1f] dark:text-white">{item.productModel}</div><div className="text-sm text-gray-500">{item.brand}</div><div className="mt-1 inline-block text-xs font-mono bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">S/N: {item.serialNumber}</div></div>
+                                    <div><div className="font-bold text-base md:text-lg text-[#1d1d1f] dark:text-white">{item.productModel}</div><div className="text-xs md:text-sm text-gray-500">{item.brand}</div><div className="mt-0.5 md:mt-1 inline-block text-[10px] md:text-xs font-mono bg-black/5 dark:bg-white/10 px-1.5 md:px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">S/N: {item.serialNumber}</div></div>
                                     <div>
                                         <div className="text-xs font-bold text-gray-400 uppercase mb-1 flex items-center gap-1">{t('track.issueReported')}
                                         </div>

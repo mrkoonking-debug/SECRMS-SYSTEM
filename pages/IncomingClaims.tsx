@@ -219,41 +219,41 @@ export const IncomingClaims: React.FC = () => {
 
                                     {/* Team Selection UI */}
                                     {isSelected && (
-                                        <div className="border-t border-gray-100 dark:border-white/5 pt-8 animate-slide-up">
-                                            <div className="mb-6">
-                                                <h4 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">{t('incoming.selectTeamTitle')}</h4>
-                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                                        <div className="border-t border-gray-100 dark:border-white/5 pt-4 md:pt-8 animate-slide-up">
+                                            <div className="mb-4 md:mb-6">
+                                                <h4 className="text-xs md:text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 md:mb-4">{t('incoming.selectTeamTitle')}</h4>
+                                                <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-4">
                                                     <button
                                                         onClick={() => handleMainGroupSelect('A')}
-                                                        className={`p-4 rounded-2xl border text-left transition-all flex items-center gap-4 ${selectedMainGroup === 'A' ? 'bg-white dark:bg-[#2c2c2e] border-red-500 ring-2 ring-red-500/20 shadow-lg' : 'bg-gray-50 dark:bg-white/5 border-transparent hover:bg-white dark:hover:bg-[#2c2c2e]'}`}
+                                                        className={`p-2.5 md:p-4 rounded-xl md:rounded-2xl border text-left transition-all flex flex-col md:flex-row items-center gap-2 md:gap-4 ${selectedMainGroup === 'A' ? 'bg-white dark:bg-[#2c2c2e] border-red-500 ring-2 ring-red-500/20 shadow-lg' : 'bg-gray-50 dark:bg-white/5 border-transparent hover:bg-white dark:hover:bg-[#2c2c2e]'}`}
                                                     >
-                                                        <div className={`p-3 rounded-xl ${selectedMainGroup === 'A' ? 'bg-red-500 text-white' : 'bg-gray-200 dark:bg-white/10 text-gray-400'}`}><Box className="w-6 h-6" /></div>
-                                                        <div><div className="font-bold text-[#1d1d1f] dark:text-white">{t('teams.hikvision')}</div><div className="text-[10px] text-gray-500">Team A</div></div>
+                                                        <div className={`p-2 md:p-3 rounded-lg md:rounded-xl ${selectedMainGroup === 'A' ? 'bg-red-500 text-white' : 'bg-gray-200 dark:bg-white/10 text-gray-400'}`}><Box className="w-4 h-4 md:w-6 md:h-6" /></div>
+                                                        <div className="text-center md:text-left"><div className="font-bold text-xs md:text-base text-[#1d1d1f] dark:text-white">HIK</div><div className="text-[9px] md:text-[10px] text-gray-500">Team A</div></div>
                                                     </button>
 
                                                     <button
                                                         onClick={() => handleMainGroupSelect('B')}
-                                                        className={`p-4 rounded-2xl border text-left transition-all flex items-center gap-4 ${selectedMainGroup === 'B' ? 'bg-white dark:bg-[#2c2c2e] border-orange-500 ring-2 ring-orange-500/20 shadow-lg' : 'bg-gray-50 dark:bg-white/5 border-transparent hover:bg-white dark:hover:bg-[#2c2c2e]'}`}
+                                                        className={`p-2.5 md:p-4 rounded-xl md:rounded-2xl border text-left transition-all flex flex-col md:flex-row items-center gap-2 md:gap-4 ${selectedMainGroup === 'B' ? 'bg-white dark:bg-[#2c2c2e] border-orange-500 ring-2 ring-orange-500/20 shadow-lg' : 'bg-gray-50 dark:bg-white/5 border-transparent hover:bg-white dark:hover:bg-[#2c2c2e]'}`}
                                                     >
-                                                        <div className={`p-3 rounded-xl ${selectedMainGroup === 'B' ? 'bg-orange-500 text-white' : 'bg-gray-200 dark:bg-white/10 text-gray-400'}`}><Layers className="w-6 h-6" /></div>
-                                                        <div><div className="font-bold text-[#1d1d1f] dark:text-white">{t('teams.dahua')}</div><div className="text-[10px] text-gray-500">Team B</div></div>
+                                                        <div className={`p-2 md:p-3 rounded-lg md:rounded-xl ${selectedMainGroup === 'B' ? 'bg-orange-500 text-white' : 'bg-gray-200 dark:bg-white/10 text-gray-400'}`}><Layers className="w-4 h-4 md:w-6 md:h-6" /></div>
+                                                        <div className="text-center md:text-left"><div className="font-bold text-xs md:text-base text-[#1d1d1f] dark:text-white">DAHUA</div><div className="text-[9px] md:text-[10px] text-gray-500">Team B</div></div>
                                                     </button>
 
                                                     <button
                                                         onClick={() => handleMainGroupSelect('C')}
-                                                        className={`p-4 rounded-2xl border text-left transition-all flex items-center gap-4 ${selectedMainGroup === 'C' ? 'bg-white dark:bg-[#2c2c2e] border-blue-500 ring-2 ring-blue-500/20 shadow-lg' : 'bg-gray-50 dark:bg-white/5 border-transparent hover:bg-white dark:hover:bg-[#2c2c2e]'}`}
+                                                        className={`p-2.5 md:p-4 rounded-xl md:rounded-2xl border text-left transition-all flex flex-col md:flex-row items-center gap-2 md:gap-4 ${selectedMainGroup === 'C' ? 'bg-white dark:bg-[#2c2c2e] border-blue-500 ring-2 ring-blue-500/20 shadow-lg' : 'bg-gray-50 dark:bg-white/5 border-transparent hover:bg-white dark:hover:bg-[#2c2c2e]'}`}
                                                     >
-                                                        <div className={`p-3 rounded-xl ${selectedMainGroup === 'C' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-white/10 text-gray-400'}`}><Wifi className="w-6 h-6" /></div>
-                                                        <div><div className="font-bold text-[#1d1d1f] dark:text-white">Network & UNV (Group)</div><div className="text-[10px] text-gray-500">Team C / E / G</div></div>
+                                                        <div className={`p-2 md:p-3 rounded-lg md:rounded-xl ${selectedMainGroup === 'C' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-white/10 text-gray-400'}`}><Wifi className="w-4 h-4 md:w-6 md:h-6" /></div>
+                                                        <div className="text-center md:text-left"><div className="font-bold text-xs md:text-base text-[#1d1d1f] dark:text-white">Network</div><div className="text-[9px] md:text-[10px] text-gray-500">C / E / G</div></div>
                                                     </button>
                                                 </div>
                                             </div>
 
                                             {/* Sub-Selection for Team C Group */}
                                             {selectedMainGroup === 'C' && (
-                                                <div className="animate-fade-in mb-8 pl-6 border-l-4 border-blue-500/20 py-2">
-                                                    <div className="text-xs font-black text-blue-500 uppercase mb-4 tracking-widest">Select Specific Sub-Team</div>
-                                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                                <div className="animate-fade-in mb-4 md:mb-8 pl-3 md:pl-6 border-l-4 border-blue-500/20 py-1 md:py-2">
+                                                    <div className="text-[10px] md:text-xs font-black text-blue-500 uppercase mb-2 md:mb-4 tracking-widest">Select Specific Sub-Team</div>
+                                                    <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-4">
                                                         {[
                                                             { val: Team.TEAM_C, label: t('teams.teamC'), icon: Wifi, color: 'cyan' },
                                                             { val: Team.TEAM_E, label: t('teams.teamE'), icon: Zap, color: 'yellow' },
@@ -262,10 +262,10 @@ export const IncomingClaims: React.FC = () => {
                                                             <button
                                                                 key={sub.val}
                                                                 onClick={() => setFinalTeam(sub.val)}
-                                                                className={`p-4 rounded-xl border text-left transition-all flex items-center gap-3 ${finalTeam === sub.val ? 'bg-white dark:bg-[#2c2c2e] border-[#0071e3] ring-1 ring-[#0071e3] shadow-md' : 'bg-white dark:bg-[#1c1c1e] border-transparent hover:border-gray-300 dark:hover:border-gray-600'}`}
+                                                                className={`p-2.5 md:p-4 rounded-lg md:rounded-xl border text-center md:text-left transition-all flex flex-col md:flex-row items-center gap-1.5 md:gap-3 ${finalTeam === sub.val ? 'bg-white dark:bg-[#2c2c2e] border-[#0071e3] ring-1 ring-[#0071e3] shadow-md' : 'bg-white dark:bg-[#1c1c1e] border-transparent hover:border-gray-300 dark:hover:border-gray-600'}`}
                                                             >
-                                                                <sub.icon className={`w-5 h-5 ${finalTeam === sub.val ? 'text-[#0071e3]' : 'text-gray-400'}`} />
-                                                                <span className={`text-sm font-bold ${finalTeam === sub.val ? 'text-[#1d1d1f] dark:text-white' : 'text-gray-500'}`}>{sub.label}</span>
+                                                                <sub.icon className={`w-4 h-4 md:w-5 md:h-5 ${finalTeam === sub.val ? 'text-[#0071e3]' : 'text-gray-400'}`} />
+                                                                <span className={`text-[11px] md:text-sm font-bold ${finalTeam === sub.val ? 'text-[#1d1d1f] dark:text-white' : 'text-gray-500'}`}>{sub.label}</span>
                                                             </button>
                                                         ))}
                                                     </div>
@@ -274,19 +274,19 @@ export const IncomingClaims: React.FC = () => {
 
 
 
-                                            <div className="flex flex-col sm:flex-row justify-end items-stretch sm:items-center gap-3 pt-4">
+                                            <div className="flex flex-row justify-end items-center gap-2 md:gap-3 pt-2 md:pt-4">
                                                 <button
                                                     onClick={resetSelection}
-                                                    className="px-8 py-3 bg-gray-100 dark:bg-white/10 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
+                                                    className="px-4 md:px-8 py-2 md:py-3 bg-gray-100 dark:bg-white/10 rounded-lg md:rounded-xl text-xs md:text-sm font-bold text-gray-500 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
                                                 >
                                                     Cancel
                                                 </button>
                                                 <button
                                                     disabled={!finalTeam || isAssigning}
                                                     onClick={() => handleAssignGroup(job)}
-                                                    className="flex-1 sm:flex-none px-8 sm:px-10 py-3 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-sm font-bold shadow-xl shadow-blue-500/30 flex items-center justify-center gap-3 disabled:opacity-50 disabled:shadow-none transition-all active:scale-95"
+                                                    className="flex-1 sm:flex-none px-4 md:px-10 py-2 md:py-3 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-lg md:rounded-xl text-xs md:text-sm font-bold shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 md:gap-3 disabled:opacity-50 disabled:shadow-none transition-all active:scale-95"
                                                 >
-                                                    {isAssigning ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Check className="w-5 h-5" /> {t('incoming.assignBtn')} ({job.rmas.length} items)</>}
+                                                    {isAssigning ? <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" /> : <><Check className="w-4 h-4 md:w-5 md:h-5" /> {t('incoming.assignBtn')} ({job.rmas.length} items)</>}
                                                 </button>
                                             </div>
                                         </div>
