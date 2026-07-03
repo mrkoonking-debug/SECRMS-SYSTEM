@@ -264,7 +264,7 @@ export const ClaimsList: React.FC = () => {
                                     <div className="space-y-3 md:space-y-4 pl-3 md:pl-0">
                                         {sortedJobKeys.map(jobKey => {
                                             const jobItems = jobsInDate[jobKey];
-                                            const uniqueTeams = Array.from(new Set(jobItems.map(i => i.team).filter(Boolean))) as Team[];
+                                            const jobTeam = jobItems[0]?.team;
                                             const customerName = jobItems[0]?.customerName || 'Unknown';
                                             const quotationNumber = jobItems[0]?.quotationNumber;
                                             const isJobDone = jobItems.every(i => [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(i.status));
@@ -281,8 +281,8 @@ export const ClaimsList: React.FC = () => {
                                                                     <span className="truncate">{jobKey}</span>
                                                                     {/* Desktop: Ref badge */}
                                                                     <span className={`hidden md:inline-flex text-[10px] px-2 py-0.5 rounded-md border ${quotationNumber ? 'bg-gray-100/80 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400 border-gray-200/60 dark:border-white/[0.06]' : 'bg-gray-50/80 dark:bg-white/[0.03] text-gray-400 dark:text-gray-500 border-gray-100 dark:border-white/[0.04] italic'}`}>{quotationNumber ? `Ref: ${quotationNumber}` : 'ไม่มี Ref'}</span>
-                                                                    {/* Unique Team Badges */}
-                                                                    {uniqueTeams.map(t => getTeamBadge(t))}
+                                                                    {/* Job Team Badge */}
+                                                                    {jobTeam && getTeamBadge(jobTeam)}
                                                                     {/* Desktop: Full badge / Mobile: Compact badge */}
                                                                     {isJobDone && <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] md:text-[10px] px-1.5 md:px-2 py-0.5 rounded-full border border-emerald-500/20 font-bold flex items-center gap-0.5 md:gap-1 flex-shrink-0"><CheckCircle2 className="w-3 h-3" /> <span className="hidden md:inline">เสร็จสิ้น</span><span className="md:hidden">เสร็จ</span></span>}
                                                                     {!isJobDone && jobItems.some(i => isRMAOverdue(i)) && <>
