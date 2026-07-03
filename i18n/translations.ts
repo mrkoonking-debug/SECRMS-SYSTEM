@@ -245,7 +245,8 @@ export const translations = {
       internalLab: 'In-House Inspection',
       pendingClass: 'Just Arrived',
       toDist: 'Sent to',
-      claimRef: 'Ref'
+      claimRef: 'Ref',
+      clearFilters: 'Clear Filters'
     },
     track: {
       backToList: 'Back to List',
@@ -641,7 +642,8 @@ export const translations = {
       internalLab: 'รอตรวจสอบ',
       pendingClass: 'เพิ่งรับเข้า',
       toDist: 'ส่งไป',
-      claimRef: 'เลขเคลม'
+      claimRef: 'เลขเคลม',
+      clearFilters: 'ล้างตัวกรอง'
     },
     track: {
       backToList: 'กลับหน้ารายการ',
