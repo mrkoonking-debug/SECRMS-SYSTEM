@@ -223,8 +223,8 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
         </div>
       )}
 
-      {/* ===== Desktop Sidebar (unchanged) ===== */}
-      <aside className={`hidden md:flex flex-col w-72 z-50 bg-white dark:bg-[#161617] ${embedded ? 'h-full border-r border-gray-200/50 dark:border-[#333]' : 'fixed left-0 top-0 bottom-0 border-r border-gray-200/50 dark:border-[#333]'
+      {/* ===== Desktop Sidebar (macOS Glassmorphism) ===== */}
+      <aside className={`hidden md:flex flex-col w-72 z-50 bg-white/45 dark:bg-black/20 backdrop-blur-3xl ${embedded ? 'h-full border-r border-gray-200/30 dark:border-white/[0.06]' : 'fixed left-0 top-0 bottom-0 border-r border-gray-200/30 dark:border-white/[0.06]'
         }`}>
         <div className="p-8 pb-4">
           <Link to={user ? "/admin/dashboard" : "/"} className="flex items-center gap-3 group">
@@ -240,7 +240,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
         </div>
 
         <div className="p-6 mt-auto">
-          <div className="flex items-center justify-between mb-6 bg-white dark:bg-[#1c1c1e] p-2 rounded-full shadow-sm border border-gray-100 dark:border-[#333]">
+          <div className="flex items-center justify-between mb-6 bg-white/50 dark:bg-white/[0.03] p-2 rounded-full shadow-sm border border-gray-200/30 dark:border-white/[0.06]">
             <div className="flex gap-1"><ThemeToggle /><LanguageToggle /></div>
             <div className="flex gap-1">
               <button
@@ -257,8 +257,8 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
           </div>
 
           {user && (
-            <div className="flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-[#2c2c2e] border border-gray-100 dark:border-[#333] shadow-sm">
-              <div className="w-10 h-10 rounded-full bg-[#f5f5f7] dark:bg-[#3a3a3c] flex items-center justify-center font-bold text-gray-400">{user.name.charAt(0)}</div>
+            <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/60 dark:bg-white/[0.04] border border-gray-200/30 dark:border-white/[0.06] shadow-sm">
+              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#3a3a3c] flex items-center justify-center font-bold text-gray-400">{user.name.charAt(0)}</div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-bold text-[#1d1d1f] dark:text-white truncate">{user.name}</div>
                 <div className="text-[10px] text-[#86868b] truncate uppercase tracking-wider">{user.role}</div>

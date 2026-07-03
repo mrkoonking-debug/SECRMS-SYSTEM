@@ -248,7 +248,7 @@ export const ClaimsList: React.FC = () => {
             </div>
 
             {/* ── Search + Filters ── */}
-            <div className="bg-white/80 dark:bg-white/[0.04] backdrop-blur-md rounded-xl md:rounded-2xl shadow-sm border border-gray-200/60 dark:border-white/[0.06] p-1.5 mb-5 md:mb-6 sticky top-14 md:top-24 z-30 flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
+            <div className="glass-panel rounded-xl md:rounded-2xl p-1.5 mb-5 md:mb-6 sticky top-14 md:top-24 z-30 flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
                 <div className="relative flex-grow group"><Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" /><input type="text" placeholder={t('claimsList.searchPlaceholder')} value={search} onChange={(e) => handleSearchChange(e.target.value)} className="w-full bg-transparent border-none rounded-xl md:rounded-2xl py-2.5 md:py-3 pl-9 md:pl-11 pr-4 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0" /></div>
                 <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-1 md:px-0 pb-0.5 md:pb-0">
                     <button onClick={handleExpandAll} className="p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06] flex-shrink-0 transition-colors"><ChevronsUpDown className="w-4 h-4" /></button>
@@ -294,7 +294,7 @@ export const ClaimsList: React.FC = () => {
                                             const isJobDone = jobItems.every(i => [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(i.status));
 
                                             return (
-                                                <div key={jobKey} onClick={() => handleJobClick(jobKey)} className={`bg-white/90 dark:bg-white/[0.04] backdrop-blur-sm rounded-[20px] md:rounded-[24px] overflow-hidden border cursor-pointer transition-all duration-200 group will-change-transform ${isJobDone ? 'border-green-200/60 dark:border-green-500/10' : 'border-gray-200/60 dark:border-white/[0.06]'} hover:shadow-lg hover:shadow-black/[0.04] dark:hover:shadow-black/30 hover:-translate-y-0.5 hover:border-blue-200 dark:hover:border-blue-500/20 active:scale-[0.99] active:translate-y-0`}>
+                                                <div key={jobKey} onClick={() => handleJobClick(jobKey)} className={`glass-panel glass-panel-hover rounded-[20px] md:rounded-[24px] overflow-hidden cursor-pointer group will-change-transform ${isJobDone ? 'border-green-300 dark:border-green-500/30' : ''} hover:-translate-y-0.5 active:scale-[0.99] active:translate-y-0`}>
                                                     <div className="p-3.5 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-4">
                                                         <div className="flex items-start md:items-center gap-3 md:gap-4">
                                                             <div className={`w-9 h-9 md:w-11 md:h-11 rounded-xl md:rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105 ${isJobDone ? 'bg-gradient-to-br from-emerald-400/20 to-green-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-gradient-to-br from-blue-400/20 to-blue-500/10 text-blue-600 dark:text-blue-400'}`}>
