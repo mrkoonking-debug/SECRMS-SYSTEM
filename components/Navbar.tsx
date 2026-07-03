@@ -27,41 +27,46 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
     let lastScrollTop = 0;
     let ticking = false;
 
-    const handleScroll = (e: Event) => {
+    const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const target = e.target as HTMLElement;
-          if (!target) {
-            ticking = false;
-            return;
-          }
-          const scrollTop = target.scrollTop ?? window.scrollY ?? 0;
+          const scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+          const diff = scrollTop - lastScrollTop;
           
           if (scrollTop < 10) {
             if (isScrollingDownRef.current) {
               isScrollingDownRef.current = false;
               setIsScrollingDown(false);
             }
-          } else if (scrollTop > lastScrollTop) {
+            lastScrollTop = scrollTop;
+          } else if (diff > 35) { // Scrolled down significantly
             if (!isScrollingDownRef.current) {
               isScrollingDownRef.current = true;
               setIsScrollingDown(true);
             }
-          } else if (scrollTop < lastScrollTop - 15) {
+            lastScrollTop = scrollTop;
+          } else if (diff < -35) { // Scrolled up significantly
             if (isScrollingDownRef.current) {
               isScrollingDownRef.current = false;
               setIsScrollingDown(false);
             }
+            lastScrollTop = scrollTop;
           }
-          lastScrollTop = scrollTop;
           ticking = false;
         });
         ticking = true;
       }
     };
-    window.addEventListener('scroll', handleScroll, true);
-    return () => window.removeEventListener('scroll', handleScroll, true);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Close mobile menu and expand bottom navigation on route change
+  useEffect(() => {
+    setIsMobileOpen(false);
+    isScrollingDownRef.current = false;
+    setIsScrollingDown(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     MockDb.waitForAuth().then(() => {
@@ -214,24 +219,24 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
              {/* Glass capsule bar */}
              <div 
                className={`
-                 apple-fluid-transition relative bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-2xl border border-black/[0.05] dark:border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.4)] grid grid-cols-5 items-center pointer-events-auto px-1 rounded-full
+                 apple-fluid-transition relative bg-white/70 dark:bg-[#121214]/75 backdrop-blur-xl border border-white/20 dark:border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.4)] grid grid-cols-5 items-center pointer-events-auto px-1 rounded-full
                  ${isScrollingDown ? 'h-[40px] px-2 w-[50%] max-w-[190px]' : 'h-[56px] w-[88%] max-w-[350px]'}
                `}
              >
   
                {/* Dashboard */}
-               <Link to="/admin/dashboard" className={`flex flex-col items-center justify-center h-full relative transition-all duration-200 ${location.pathname === '/admin/dashboard' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
+               <Link to="/admin/dashboard" onClick={() => { isScrollingDownRef.current = false; setIsScrollingDown(false); }} className={`flex flex-col items-center justify-center h-full relative transition-all duration-200 ${location.pathname === '/admin/dashboard' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
                  <div className={`transition-all duration-300 ${isScrollingDown ? 'scale-90' : 'scale-100'}`}>
                    <div className={`transition-all duration-200 ${location.pathname === '/admin/dashboard' ? 'scale-110' : ''}`}><LayoutGrid className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/dashboard' ? 2.2 : 1.8} /></div>
                  </div>
                  <span className={`text-[9px] font-semibold apple-fluid-item ${isScrollingDown ? 'opacity-0 scale-50 max-h-0 mt-0 overflow-hidden' : 'opacity-100 scale-100 max-h-4 mt-0.5 leading-none'} ${location.pathname === '/admin/dashboard' ? 'font-bold' : ''}`}>ภาพรวม</span>
-                 {overdueCount > 0 && (
-                   <span className={`absolute rounded-full bg-red-500 ring-2 ring-white dark:ring-[#22222a] transition-all duration-300 ${isScrollingDown ? 'top-1.5 right-[24%] w-[4px] h-[4px]' : 'top-1.5 right-[18%] w-[6px] h-[6px]'}`}></span>
+                 {!isScrollingDown && overdueCount > 0 && (
+                   <span className="absolute rounded-full bg-red-500 ring-2 ring-white dark:ring-[#22222a] top-1.5 right-[18%] w-[6px] h-[6px]"></span>
                  )}
                </Link>
   
                {/* Claims List */}
-               <Link to="/admin/rmas" className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${location.pathname === '/admin/rmas' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
+               <Link to="/admin/rmas" onClick={() => { isScrollingDownRef.current = false; setIsScrollingDown(false); }} className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${location.pathname === '/admin/rmas' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
                  <div className={`transition-all duration-300 ${isScrollingDown ? 'scale-90' : 'scale-100'}`}>
                    <div className={`transition-all duration-200 ${location.pathname === '/admin/rmas' ? 'scale-110' : ''}`}><List className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/rmas' ? 2.2 : 1.8} /></div>
                  </div>
@@ -239,7 +244,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
                </Link>
   
                {/* Submit Claim (Flat Standard Tab Option) */}
-               <Link to="/admin/submit" className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${location.pathname === '/admin/submit' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
+               <Link to="/admin/submit" onClick={() => { isScrollingDownRef.current = false; setIsScrollingDown(false); }} className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${location.pathname === '/admin/submit' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
                  <div className={`transition-all duration-300 ${isScrollingDown ? 'scale-90' : 'scale-100'}`}>
                    <div className={`transition-all duration-200 ${location.pathname === '/admin/submit' ? 'scale-110' : ''}`}><PlusCircle className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/submit' ? 2.2 : 1.8} /></div>
                  </div>
@@ -247,20 +252,20 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
                </Link>
   
                {/* Notifications */}
-               <Link to="/admin/incoming" className={`flex flex-col items-center justify-center h-full relative transition-all duration-200 ${location.pathname === '/admin/incoming' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
+               <Link to="/admin/incoming" onClick={() => { isScrollingDownRef.current = false; setIsScrollingDown(false); }} className={`flex flex-col items-center justify-center h-full relative transition-all duration-200 ${location.pathname === '/admin/incoming' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
                  <div className={`transition-all duration-300 ${isScrollingDown ? 'scale-90' : 'scale-100'}`}>
                    <div className={`transition-all duration-200 ${location.pathname === '/admin/incoming' ? 'scale-110' : ''}`}><Bell className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/incoming' ? 2.2 : 1.8} /></div>
                  </div>
                  <span className={`text-[9px] font-semibold apple-fluid-item ${isScrollingDown ? 'opacity-0 scale-50 max-h-0 mt-0 overflow-hidden' : 'opacity-100 scale-100 max-h-4 mt-0.5 leading-none'} ${location.pathname === '/admin/incoming' ? 'font-bold' : ''}`}>แจ้งเตือน</span>
-                 {unassignedCount > 0 && (
-                   <span className={`absolute flex items-center justify-center bg-red-500 text-white font-bold rounded-full px-1 leading-none ring-2 ring-white dark:ring-[#22222a] transition-all duration-300 ${isScrollingDown ? 'top-0.5 right-[20%] min-w-[11px] h-[11px] text-[6.5px]' : 'top-1 right-[10%] min-w-[16px] h-[16px] text-[8px]'}`}>
+                 {!isScrollingDown && unassignedCount > 0 && (
+                   <span className="absolute flex items-center justify-center bg-red-500 text-white font-bold rounded-full px-1 leading-none ring-2 ring-white dark:ring-[#22222a] top-1 right-[10%] min-w-[16px] h-[16px] text-[8px]">
                      {unassignedCount > 99 ? '99+' : unassignedCount}
                    </span>
                  )}
                </Link>
   
                {/* More Menu */}
-               <button id="mobile-more-trigger" onClick={() => setIsMobileOpen(!isMobileOpen)} className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${isMobileOpen ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
+               <button id="mobile-more-trigger" onClick={() => { setIsMobileOpen(!isMobileOpen); isScrollingDownRef.current = false; setIsScrollingDown(false); }} className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${isMobileOpen ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
                  <div className={`transition-all duration-300 ${isScrollingDown ? 'scale-90' : 'scale-100'}`}>
                    <div className={`transition-all duration-200 ${isMobileOpen ? 'scale-110' : ''}`}><Menu className="w-[19px] h-[19px]" strokeWidth={isMobileOpen ? 2.2 : 1.8} /></div>
                  </div>
