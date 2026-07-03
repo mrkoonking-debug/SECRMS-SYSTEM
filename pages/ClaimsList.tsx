@@ -45,6 +45,16 @@ const getTeamBadge = (team: Team) => {
     }
 };
 
+const getStatusColorClass = (s: string) => {
+    switch (s) {
+        case 'ALL': return 'bg-[#0071e3]';
+        case 'PENDING': return 'bg-amber-500';
+        case 'IN_PROGRESS': return 'bg-orange-500';
+        case 'DONE': return 'bg-emerald-500';
+        default: return 'bg-[#0071e3]';
+    }
+};
+
 export const ClaimsList: React.FC = () => {
     const [rmas, setRMAs] = useState<RMA[]>([]);
     const [loading, setLoading] = useState(true);
@@ -265,13 +275,12 @@ export const ClaimsList: React.FC = () => {
                     
                     {/* iOS Segmented Control style with Sliding Indicator */}
                     <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full flex items-center relative w-full max-w-[340px] md:max-w-[420px] flex-shrink-0">
-                        {/* Sliding Indicator */}
+                        {/* Sliding Indicator with Dynamic Colors */}
                         <div 
-                          className="absolute top-0.5 bottom-0.5 bg-white dark:bg-[#2c2c2e] rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                          className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform translate-z-0 ${getStatusColorClass(statusFilter)}`}
                           style={{
-                            width: 'calc(25% - 0.25rem)',
-                            transform: `translateX(${['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].indexOf(statusFilter) * 100}%)`,
-                            left: '0.125rem'
+                            width: 'calc(25% - 4px)',
+                            left: `calc(${['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].indexOf(statusFilter) * 25}% + 2px)`
                           }}
                         />
                         {['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].map((s) => (
@@ -280,7 +289,7 @@ export const ClaimsList: React.FC = () => {
                                 onClick={() => setStatusFilter(s as typeof statusFilter)} 
                                 className={`relative z-10 flex-1 px-3 py-1.5 md:px-3.5 md:py-2 text-[10px] md:text-xs font-semibold rounded-full transition-colors duration-200 whitespace-nowrap text-center ${
                                     statusFilter === s 
-                                        ? 'text-gray-900 dark:text-white' 
+                                        ? 'text-white' 
                                         : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                                 }`}
                             >
