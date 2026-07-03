@@ -338,7 +338,7 @@ export const JobDetail: React.FC = () => {
             </div>
 
             {/* Unified Job Header & Customer Info Card */}
-            <div className="glass-panel rounded-[24px] p-6 sm:p-8 mb-8 shadow-sm">
+            <div className="bg-white dark:bg-[#1c1c1e] rounded-[24px] p-6 sm:p-8 mb-8 border border-gray-100 dark:border-[#333] shadow-sm">
 
                 {/* --- TOP HEADER SECTION --- */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
@@ -579,7 +579,7 @@ export const JobDetail: React.FC = () => {
                     const sortedHistory = item.history ? [...item.history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) : [];
 
                     return (
-                        <div key={item.id} className={`glass-panel glass-panel-hover rounded-[20px] p-6 transition-all border-2 ${isSelected ? 'border-[#0071e3] ring-2 ring-[#0071e3]/20' : 'border-gray-100/50 dark:border-white/5'}`}>
+                        <div key={item.id} className={`bg-white dark:bg-[#1c1c1e] rounded-[20px] p-6 transition-all hover:bg-gray-50 dark:hover:bg-[#2c2c2e] border-2 ${isSelected ? 'border-[#0071e3] ring-2 ring-[#0071e3]/20' : 'border-gray-100 dark:border-[#333]'}`}>
                             <div className="flex flex-col md:flex-row items-center gap-6">
                                 <div className="flex-shrink-0 flex items-center gap-3">
                                     {rmas.length > 1 && (
