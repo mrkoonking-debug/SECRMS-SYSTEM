@@ -11,7 +11,7 @@ import { ProductEntryForm } from '../components/ProductEntryForm';
 import { showToast, showValidationError } from '../services/toast';
 
 
-const INPUT_CLASS = "w-full bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-[#2c2c2e] border border-gray-200 dark:border-[#333] hover:border-blue-400/50 dark:hover:border-white/30 rounded-xl md:rounded-2xl px-4 py-2.5 md:py-3.5 text-sm md:text-base text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c1e] focus:ring-2 focus:ring-[#0071e3]/50 focus:border-[#0071e3] transition-all outline-none";
+const INPUT_CLASS = "w-full bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-[#2c2c2e] border border-gray-200 dark:border-[#333] hover:border-blue-400/50 dark:hover:border-white/30 rounded-xl md:rounded-2xl px-3 py-2 md:px-4 md:py-3.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c1e] focus:ring-2 focus:ring-[#0071e3]/50 focus:border-[#0071e3] transition-all outline-none";
 
 export const CustomerSubmit: React.FC = () => {
     const navigate = useNavigate();
@@ -635,7 +635,7 @@ export const CustomerSubmit: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen py-6 md:py-12 px-4">
+        <div className="min-h-screen py-6 md:py-12 px-5 sm:px-6 md:px-8">
             <div className="max-w-4xl mx-auto">
                 <div className="mb-6 md:mb-8 flex items-center gap-3 md:gap-4"><button onClick={handleBack} className="p-2 rounded-full bg-white/40 dark:bg-white/5 hover:bg-white/60 transition-colors"><ArrowLeft className="w-5 h-5 text-[#1d1d1f] dark:text-white" /></button><div><h1 className="text-2xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white">{t('publicSubmit.title')}</h1><p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm">{t('publicSubmit.subtitle')}</p></div></div>
                 <div className="glass-panel rounded-[2rem] p-4 sm:p-6 md:p-8 mb-6 md:mb-8 relative overflow-hidden">
