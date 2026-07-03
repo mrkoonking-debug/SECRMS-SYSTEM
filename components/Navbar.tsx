@@ -238,7 +238,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
         </div>
       )}
 
-      <aside className={`hidden md:flex flex-col w-72 z-50 bg-white/60 dark:bg-[#1c1c22]/60 backdrop-blur-xl ${embedded ? 'h-full rounded-2xl border border-gray-200/30 dark:border-white/[0.06] shadow-sm' : 'fixed left-0 top-0 bottom-0 border-r border-gray-200/30 dark:border-white/[0.06]'
+      <aside className={`hidden md:flex flex-col w-72 z-50 bg-[#f1f1f4] dark:bg-[#1e1e22] ${embedded ? 'h-full rounded-2xl border border-gray-200/50 dark:border-white/[0.08] shadow-sm' : 'fixed left-0 top-0 bottom-0 border-r border-gray-200/30 dark:border-white/[0.06]'
         }`}>
         <div className="p-6 pb-2">
           <Link to={user ? "/admin/dashboard" : "/"} className="flex items-center gap-3 group">
