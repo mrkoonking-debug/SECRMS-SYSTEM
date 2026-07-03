@@ -230,6 +230,26 @@
         -webkit-overflow-scrolling: touch;
         scroll-behavior: smooth;
       }
+
+      /* Global Responsive Styling Overrides for Mobile Screens */
+      .glass-panel, .p-8 {
+        padding: 1.25rem !important; /* 20px instead of 32px */
+      }
+      .p-10 {
+        padding: 1.5rem !important; /* 24px */
+      }
+      .gap-8 {
+        gap: 1rem !important;
+      }
+      .mb-8, .mb-10, .mb-12 {
+        margin-bottom: 1.25rem !important;
+      }
+      .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+        margin-top: 1.25rem !important;
+      }
+      .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+        margin-top: 1rem !important;
+      }
     }
 
     /* Touch-friendly card press effect */

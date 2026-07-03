@@ -16,9 +16,34 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
   const [unassignedCount, setUnassignedCount] = useState(0);
   const [overdueCount, setOverdueCount] = useState(0);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isScrollingDown, setIsScrollingDown] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useLanguage();
+
+  // Track scroll direction to collapse bottom tab bar on mobile
+  useEffect(() => {
+    let lastScrollTop = 0;
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (!target) return;
+      const scrollTop = target.scrollTop ?? window.scrollY ?? 0;
+      
+      if (scrollTop < 10) {
+        setIsScrollingDown(false);
+        return;
+      }
+      
+      if (scrollTop > lastScrollTop) {
+        setIsScrollingDown(true);
+      } else if (scrollTop < lastScrollTop - 5) {
+        setIsScrollingDown(false);
+      }
+      lastScrollTop = scrollTop;
+    };
+    window.addEventListener('scroll', handleScroll, true);
+    return () => window.removeEventListener('scroll', handleScroll, true);
+  }, []);
 
   useEffect(() => {
     MockDb.waitForAuth().then(() => {
@@ -161,56 +186,68 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
         </button>
       </div>
 
-       {/* ===== Mobile Bottom Tab Bar (Premium iOS Style) ===== */}
+       {/* ===== Mobile Bottom Tab Bar (Premium Floating Capsule Style) ===== */}
        {user && (
          <>
            <div
-             className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-2xl border-t border-gray-200/50 dark:border-white/[0.08] shadow-[0_-1px_12px_rgba(0,0,0,0.03)] grid grid-cols-5 items-center px-1"
-             style={{ height: 'calc(54px + env(safe-area-inset-bottom))', paddingBottom: 'env(safe-area-inset-bottom)' }}
+             className="md:hidden fixed bottom-4 left-4 right-4 z-40 pointer-events-none transition-all duration-300"
+             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
            >
- 
-             {/* Dashboard */}
-             <Link to="/admin/dashboard" className={`flex flex-col items-center justify-center h-full relative transition-all duration-200 ${location.pathname === '/admin/dashboard' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
-               <div className={`transition-all duration-200 ${location.pathname === '/admin/dashboard' ? 'scale-110' : ''}`}><LayoutGrid className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/dashboard' ? 2.2 : 1.8} /></div>
-               <span className={`text-[9px] font-semibold mt-0.5 leading-none transition-all ${location.pathname === '/admin/dashboard' ? 'font-bold' : ''}`}>ภาพรวม</span>
-               {overdueCount > 0 && (
-                 <span className="absolute top-1.5 right-[18%] w-[6px] h-[6px] rounded-full bg-red-500 ring-2 ring-white dark:ring-[#22222a]"></span>
-               )}
-             </Link>
- 
-             {/* Claims List */}
-             <Link to="/admin/rmas" className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${location.pathname === '/admin/rmas' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
-               <div className={`transition-all duration-200 ${location.pathname === '/admin/rmas' ? 'scale-110' : ''}`}><List className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/rmas' ? 2.2 : 1.8} /></div>
-               <span className={`text-[9px] font-semibold mt-0.5 leading-none ${location.pathname === '/admin/rmas' ? 'font-bold' : ''}`}>รายการ</span>
-             </Link>
- 
-             {/* Submit Claim (Flat Standard Tab Option) */}
-             <Link to="/admin/submit" className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${location.pathname === '/admin/submit' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
-               <div className={`transition-all duration-200 ${location.pathname === '/admin/submit' ? 'scale-110' : ''}`}><PlusCircle className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/submit' ? 2.2 : 1.8} /></div>
-               <span className={`text-[9px] font-semibold mt-0.5 leading-none ${location.pathname === '/admin/submit' ? 'font-bold' : ''}`}>เพิ่มเคลม</span>
-             </Link>
- 
-             {/* Notifications */}
-             <Link to="/admin/incoming" className={`flex flex-col items-center justify-center h-full relative transition-all duration-200 ${location.pathname === '/admin/incoming' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
-               <div className={`transition-all duration-200 ${location.pathname === '/admin/incoming' ? 'scale-110' : ''}`}><Bell className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/incoming' ? 2.2 : 1.8} /></div>
-               <span className={`text-[9px] font-semibold mt-0.5 leading-none ${location.pathname === '/admin/incoming' ? 'font-bold' : ''}`}>แจ้งเตือน</span>
-               {unassignedCount > 0 && (
-                 <span className="absolute top-1 right-[10%] min-w-[16px] h-[16px] flex items-center justify-center bg-red-500 text-white text-[8px] font-bold rounded-full px-1 leading-none ring-2 ring-white dark:ring-[#22222a]">
-                   {unassignedCount > 99 ? '99+' : unassignedCount}
-                 </span>
-               )}
-             </Link>
- 
-             {/* More Menu */}
-             <button id="mobile-more-trigger" onClick={() => setIsMobileOpen(!isMobileOpen)} className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${isMobileOpen ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
-               <div className={`transition-all duration-200 ${isMobileOpen ? 'scale-110' : ''}`}><Menu className="w-[19px] h-[19px]" strokeWidth={isMobileOpen ? 2.2 : 1.8} /></div>
-               <span className={`text-[9px] font-semibold mt-0.5 leading-none ${isMobileOpen ? 'font-bold' : ''}`}>อื่นๆ</span>
-             </button>
+             {/* Glass capsule bar */}
+             <div 
+               className={`
+                 relative bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-2xl border border-black/[0.05] dark:border-white/[0.08] shadow-[0_-4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_30px_rgba(0,0,0,0.4)] grid grid-cols-5 items-center pointer-events-auto px-1 transition-all duration-300
+                 ${isScrollingDown ? 'h-[44px] rounded-full px-2' : 'h-[56px] rounded-[20px]'}
+               `}
+             >
+  
+               {/* Dashboard */}
+               <Link to="/admin/dashboard" className={`flex flex-col items-center justify-center h-full relative transition-all duration-200 ${location.pathname === '/admin/dashboard' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
+                 <div className={`transition-all duration-200 ${location.pathname === '/admin/dashboard' ? 'scale-110' : ''}`}><LayoutGrid className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/dashboard' ? 2.2 : 1.8} /></div>
+                 <span className={`text-[9px] font-semibold transition-all duration-300 ${isScrollingDown ? 'opacity-0 scale-50 max-h-0 mt-0 overflow-hidden' : 'opacity-100 max-h-4 mt-0.5 leading-none'} ${location.pathname === '/admin/dashboard' ? 'font-bold' : ''}`}>ภาพรวม</span>
+                 {overdueCount > 0 && (
+                   <span className={`absolute rounded-full bg-red-500 ring-2 ring-white dark:ring-[#22222a] transition-all duration-300 ${isScrollingDown ? 'top-2 right-[28%] w-[5px] h-[5px]' : 'top-1.5 right-[18%] w-[6px] h-[6px]'}`}></span>
+                 )}
+               </Link>
+  
+               {/* Claims List */}
+               <Link to="/admin/rmas" className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${location.pathname === '/admin/rmas' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
+                 <div className={`transition-all duration-200 ${location.pathname === '/admin/rmas' ? 'scale-110' : ''}`}><List className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/rmas' ? 2.2 : 1.8} /></div>
+                 <span className={`text-[9px] font-semibold transition-all duration-300 ${isScrollingDown ? 'opacity-0 scale-50 max-h-0 mt-0 overflow-hidden' : 'opacity-100 max-h-4 mt-0.5 leading-none'} ${location.pathname === '/admin/rmas' ? 'font-bold' : ''}`}>รายการ</span>
+               </Link>
+  
+               {/* Submit Claim (Flat Standard Tab Option) */}
+               <Link to="/admin/submit" className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${location.pathname === '/admin/submit' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
+                 <div className={`transition-all duration-200 ${location.pathname === '/admin/submit' ? 'scale-110' : ''}`}><PlusCircle className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/submit' ? 2.2 : 1.8} /></div>
+                 <span className={`text-[9px] font-semibold transition-all duration-300 ${isScrollingDown ? 'opacity-0 scale-50 max-h-0 mt-0 overflow-hidden' : 'opacity-100 max-h-4 mt-0.5 leading-none'} ${location.pathname === '/admin/submit' ? 'font-bold' : ''}`}>เพิ่มเคลม</span>
+               </Link>
+  
+               {/* Notifications */}
+               <Link to="/admin/incoming" className={`flex flex-col items-center justify-center h-full relative transition-all duration-200 ${location.pathname === '/admin/incoming' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
+                 <div className={`transition-all duration-200 ${location.pathname === '/admin/incoming' ? 'scale-110' : ''}`}><Bell className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/incoming' ? 2.2 : 1.8} /></div>
+                 <span className={`text-[9px] font-semibold transition-all duration-300 ${isScrollingDown ? 'opacity-0 scale-50 max-h-0 mt-0 overflow-hidden' : 'opacity-100 max-h-4 mt-0.5 leading-none'} ${location.pathname === '/admin/incoming' ? 'font-bold' : ''}`}>แจ้งเตือน</span>
+                 {unassignedCount > 0 && (
+                   <span className={`absolute flex items-center justify-center bg-red-500 text-white font-bold rounded-full px-1 leading-none ring-2 ring-white dark:ring-[#22222a] transition-all duration-300 ${isScrollingDown ? 'top-1 right-[20%] min-w-[12px] h-[12px] text-[7px]' : 'top-1 right-[10%] min-w-[16px] h-[16px] text-[8px]'}`}>
+                     {unassignedCount > 99 ? '99+' : unassignedCount}
+                   </span>
+                 )}
+               </Link>
+  
+               {/* More Menu */}
+               <button id="mobile-more-trigger" onClick={() => setIsMobileOpen(!isMobileOpen)} className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${isMobileOpen ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
+                 <div className={`transition-all duration-200 ${isMobileOpen ? 'scale-110' : ''}`}><Menu className="w-[19px] h-[19px]" strokeWidth={isMobileOpen ? 2.2 : 1.8} /></div>
+                 <span className={`text-[9px] font-semibold transition-all duration-300 ${isScrollingDown ? 'opacity-0 scale-50 max-h-0 mt-0 overflow-hidden' : 'opacity-100 max-h-4 mt-0.5 leading-none'} ${isMobileOpen ? 'font-bold' : ''}`}>อื่นๆ</span>
+               </button>
+             </div>
            </div>
- 
+  
            {/* ===== Mobile Popover Menu (Premium Non-blocking macOS Style) ===== */}
            {isMobileOpen && (
-             <div id="mobile-more-popup" className="md:hidden fixed bottom-[calc(62px+env(safe-area-inset-bottom))] right-3 w-[250px] bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-2xl border border-gray-200/50 dark:border-white/[0.08] rounded-2xl shadow-xl z-50 pointer-events-auto flex flex-col overflow-hidden animate-slide-up">
+             <div 
+               id="mobile-more-popup" 
+               className="md:hidden fixed right-3 w-[250px] bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-2xl border border-gray-200/50 dark:border-white/[0.08] rounded-2xl shadow-xl z-50 pointer-events-auto flex flex-col overflow-hidden animate-slide-up transition-all duration-300"
+               style={{ bottom: isScrollingDown ? 'calc(66px + env(safe-area-inset-bottom))' : 'calc(78px + env(safe-area-inset-bottom))' }}
+             >
               {/* Quick Settings */}
               <div className="p-2 border-b border-gray-100/50 dark:border-white/[0.04]">
                 <div className="flex items-center justify-between bg-gray-50 dark:bg-white/[0.03] p-1 rounded-xl border border-gray-100 dark:border-white/[0.04]">

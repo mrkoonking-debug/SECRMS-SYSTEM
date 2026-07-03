@@ -11,7 +11,7 @@ import { ProductEntryForm } from '../components/ProductEntryForm';
 import { showToast, showValidationError } from '../services/toast';
 
 
-const INPUT_CLASS = "w-full bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-[#2c2c2e] border border-gray-200 dark:border-[#333] hover:border-blue-400/50 dark:hover:border-white/30 rounded-2xl px-4 py-4 text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c1e] focus:ring-2 focus:ring-[#0071e3]/50 focus:border-[#0071e3] transition-all outline-none";
+const INPUT_CLASS = "w-full bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-[#2c2c2e] border border-gray-200 dark:border-[#333] hover:border-blue-400/50 dark:hover:border-white/30 rounded-xl md:rounded-2xl px-4 py-2.5 md:py-3.5 text-sm md:text-base text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c1e] focus:ring-2 focus:ring-[#0071e3]/50 focus:border-[#0071e3] transition-all outline-none";
 
 export const CustomerSubmit: React.FC = () => {
     const navigate = useNavigate();
@@ -635,44 +635,44 @@ export const CustomerSubmit: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen py-12 px-4">
+        <div className="min-h-screen py-6 md:py-12 px-4">
             <div className="max-w-4xl mx-auto">
-                <div className="mb-8 flex items-center gap-4"><button onClick={handleBack} className="p-2 rounded-full bg-white/40 dark:bg-white/5 hover:bg-white/60 transition-colors"><ArrowLeft className="w-5 h-5 text-[#1d1d1f] dark:text-white" /></button><div><h1 className="text-3xl font-bold text-[#1d1d1f] dark:text-white">{t('publicSubmit.title')}</h1><p className="text-gray-500 dark:text-gray-400 text-sm">{t('publicSubmit.subtitle')}</p></div></div>
-                <div className="glass-panel rounded-[2rem] p-8 mb-8 relative overflow-hidden">
+                <div className="mb-6 md:mb-8 flex items-center gap-3 md:gap-4"><button onClick={handleBack} className="p-2 rounded-full bg-white/40 dark:bg-white/5 hover:bg-white/60 transition-colors"><ArrowLeft className="w-5 h-5 text-[#1d1d1f] dark:text-white" /></button><div><h1 className="text-2xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white">{t('publicSubmit.title')}</h1><p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm">{t('publicSubmit.subtitle')}</p></div></div>
+                <div className="glass-panel rounded-[2rem] p-4 sm:p-6 md:p-8 mb-6 md:mb-8 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500/0 via-blue-500/20 to-blue-500/0"></div>
-                    <h2 className="text-xl font-bold text-[#1d1d1f] dark:text-white mb-6 text-center">{t('publicSubmit.howToTitle')}</h2>
+                    <h2 className="text-lg md:text-xl font-bold text-[#1d1d1f] dark:text-white mb-4 md:mb-6 text-center">{t('publicSubmit.howToTitle')}</h2>
                     {/* Simplified steps display just as info */}
-                    <div className="flex flex-wrap justify-center gap-6 md:gap-12">
+                    <div className="flex flex-wrap justify-center gap-4 md:gap-12">
                         <div className="flex flex-col items-center text-center max-w-[120px]">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-2"><Box className="w-5 h-5" /></div>
-                            <div className="text-xs font-bold text-gray-500">1. {t('publicSubmit.step1')}</div>
+                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-1.5 md:mb-2"><Box className="w-4 h-4 md:w-5 md:h-5" /></div>
+                            <div className="text-[10px] md:text-xs font-bold text-gray-500">1. {t('publicSubmit.step1')}</div>
                         </div>
                         <div className="flex flex-col items-center text-center max-w-[120px]">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-2"><User className="w-5 h-5" /></div>
-                            <div className="text-xs font-bold text-gray-500">2. {t('publicSubmit.step2')}</div>
+                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-1.5 md:mb-2"><User className="w-4 h-4 md:w-5 md:h-5" /></div>
+                            <div className="text-[10px] md:text-xs font-bold text-gray-500">2. {t('publicSubmit.step2')}</div>
                         </div>
                         <div className="flex flex-col items-center text-center max-w-[120px]">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-2"><PenTool className="w-5 h-5" /></div>
-                            <div className="text-xs font-bold text-gray-500">3. {t('publicSubmit.step3')}</div>
+                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-1.5 md:mb-2"><PenTool className="w-4 h-4 md:w-5 md:h-5" /></div>
+                            <div className="text-[10px] md:text-xs font-bold text-gray-500">3. {t('publicSubmit.step3')}</div>
                         </div>
                     </div>
                 </div>
 
                 {/* Single Page Form Container */}
-                <div className="space-y-8">
+                <div className="space-y-4 md:space-y-8">
 
                     {/* Section 1: Customer Details */}
-                    <div className="glass-panel rounded-[2rem] p-8 relative overflow-hidden">
-                        <h2 className="text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-3 mb-6">
-                            <span className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-sm font-bold">1</span>
+                    <div className="glass-panel rounded-[2rem] p-4 sm:p-6 md:p-8 relative overflow-hidden">
+                        <h2 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+                            <span className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-xs md:text-sm font-bold">1</span>
                             {t('publicSubmit.contactInfo')}
                         </h2>
 
-                        <div className="space-y-6">
+                        <div className="space-y-4 md:space-y-6">
                             {/* Row 1: Quotation (Ref) & Company Name */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('publicSubmit.quotationNo')}</label>
+                                    <label className="block text-[10px] md:text-xs font-semibold text-gray-500 uppercase mb-1.5 md:mb-2 ml-2">{t('publicSubmit.quotationNo')}</label>
                                     <input
                                         value={customer.quotationNumber}
                                         onChange={e => setCustomer({ ...customer, quotationNumber: e.target.value })}
@@ -682,7 +682,7 @@ export const CustomerSubmit: React.FC = () => {
                                     {errors.quotationNumber && <p className="text-red-500 text-xs ml-2 mt-1">{errors.quotationNumber}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('publicSubmit.companyName')} <span className="text-red-500">*</span></label>
+                                    <label className="block text-[10px] md:text-xs font-semibold text-gray-500 uppercase mb-1.5 md:mb-2 ml-2">{t('publicSubmit.companyName')} <span className="text-red-500">*</span></label>
                                     <input
                                         value={customer.companyName}
                                         onChange={e => setCustomer({ ...customer, companyName: e.target.value })}
@@ -695,9 +695,9 @@ export const CustomerSubmit: React.FC = () => {
                             </div>
 
                             {/* Row 2: Contact Person & Phone Number */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('publicSubmit.contactName')} <span className="text-red-500">*</span></label>
+                                    <label className="block text-[10px] md:text-xs font-semibold text-gray-500 uppercase mb-1.5 md:mb-2 ml-2">{t('publicSubmit.contactName')} <span className="text-red-500">*</span></label>
                                     <input
                                         value={customer.contactName}
                                         onChange={e => setCustomer({ ...customer, contactName: e.target.value })}
@@ -708,7 +708,7 @@ export const CustomerSubmit: React.FC = () => {
                                     {errors.contactName && <p className="text-red-500 text-xs ml-2 mt-1">{errors.contactName}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('publicSubmit.phone')} <span className="text-red-500">*</span></label>
+                                    <label className="block text-[10px] md:text-xs font-semibold text-gray-500 uppercase mb-1.5 md:mb-2 ml-2">{t('publicSubmit.phone')} <span className="text-red-500">*</span></label>
                                     <input
                                         type="tel"
                                         value={customer.phone}
@@ -722,9 +722,9 @@ export const CustomerSubmit: React.FC = () => {
                             </div>
 
                             {/* Row 3: LINE Account (Where they bought) & LINE ID */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('publicSubmit.lineAccountLabel')} <span className="text-red-500">*</span></label>
+                                    <label className="block text-[10px] md:text-xs font-semibold text-gray-500 uppercase mb-1.5 md:mb-2 ml-2">{t('publicSubmit.lineAccountLabel')} <span className="text-red-500">*</span></label>
                                     <select value={customer.lineAccount} onChange={e => setCustomer({ ...customer, lineAccount: e.target.value })} className={INPUT_CLASS + ' cursor-pointer'}>
                                         <option value="">{t('publicSubmit.lineAccountPlaceholder')}</option>
                                         {LINE_ACCOUNTS.map(la => <option key={la.id} value={la.id}>{la.label}</option>)}
@@ -732,7 +732,7 @@ export const CustomerSubmit: React.FC = () => {
                                     {errors.lineAccount && <p className="text-red-500 text-xs ml-2 mt-1">{errors.lineAccount}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.lineId')}</label>
+                                    <label className="block text-[10px] md:text-xs font-semibold text-gray-500 uppercase mb-1.5 md:mb-2 ml-2">{t('submit.lineId')}</label>
                                     <input
                                         value={customer.lineId}
                                         onChange={e => setCustomer({ ...customer, lineId: e.target.value })}
@@ -745,7 +745,7 @@ export const CustomerSubmit: React.FC = () => {
 
                             {/* Row 4: Return Address */}
                             <div>
-                                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.returnAddress')} <span className="text-red-500">*</span></label>
+                                <label className="block text-[10px] md:text-xs font-semibold text-gray-500 uppercase mb-1.5 md:mb-2 ml-2">{t('submit.returnAddress')} <span className="text-red-500">*</span></label>
                                 <textarea
                                     value={customer.returnAddress}
                                     onChange={e => setCustomer({ ...customer, returnAddress: e.target.value })}
@@ -760,18 +760,18 @@ export const CustomerSubmit: React.FC = () => {
                     </div>
 
                     {/* Section 2: Product Info */}
-                    <div className="glass-panel rounded-[2rem] p-8 relative overflow-hidden">
-                        <h2 className="text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-3 mb-6">
-                            <span className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-sm font-bold">2</span>
+                    <div className="glass-panel rounded-[2rem] p-4 sm:p-6 md:p-8 relative overflow-hidden">
+                        <h2 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+                            <span className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-xs md:text-sm font-bold">2</span>
                             {t('publicSubmit.productInfo')}
                         </h2>
 
                         {/* Step-by-step guide for customers */}
-                        <div className="mb-6 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/60 dark:border-blue-800/30 rounded-2xl">
-                            <h3 className="text-sm font-bold text-blue-700 dark:text-blue-300 mb-3 flex items-center gap-2">
+                        <div className="mb-4 md:mb-6 p-4 md:p-5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/60 dark:border-blue-800/30 rounded-2xl">
+                            <h3 className="text-xs md:text-sm font-bold text-blue-700 dark:text-blue-300 mb-2 md:mb-3 flex items-center gap-2">
                                 📋 วิธีเพิ่มรายการเข้าระบบ
                             </h3>
-                            <div className="space-y-2">
+                            <div className="space-y-1.5 md:space-y-2">
                                 {[
                                     { num: '①', text: 'เลือกยี่ห้อสินค้า เช่น Hikvision, Dahua' },
                                     { num: '②', text: 'กรอกรุ่นสินค้า และ Serial Number (ดูจากสติกเกอร์บนตัวเครื่อง) หรือกด 📷 สแกน' },
@@ -779,8 +779,8 @@ export const CustomerSubmit: React.FC = () => {
                                     { num: '④', text: 'กดปุ่ม "เพิ่มรายการ" ด้านล่าง เพื่อเพิ่มเข้ารายการ' },
                                     { num: '⑤', text: 'ถ้ามีสินค้ามากกว่า 1 ชิ้น ให้กรอกข้อมูลชิ้นถัดไป แล้วกด "เพิ่มรายการ" อีกครั้ง ทำซ้ำจนครบทุกชิ้น' },
                                 ].map((s, i) => (
-                                    <div key={i} className="flex items-start gap-2.5 text-sm text-blue-800/80 dark:text-blue-200/80">
-                                        <span className="text-blue-500 font-bold text-base leading-5">{s.num}</span>
+                                    <div key={i} className="flex items-start gap-2 text-xs md:text-sm text-blue-800/80 dark:text-blue-200/80">
+                                        <span className="text-blue-500 font-bold text-sm md:text-base leading-4 md:leading-5">{s.num}</span>
                                         <span>{s.text}</span>
                                     </div>
                                 ))}
@@ -791,8 +791,8 @@ export const CustomerSubmit: React.FC = () => {
 
                         {/* Basket List */}
                         {basket.length > 0 && (
-                            <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/10">
-                                <h3 className="text-sm font-bold text-gray-500 uppercase mb-4 flex items-center gap-2">
+                            <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-100 dark:border-white/10">
+                                <h3 className="text-xs md:text-sm font-bold text-gray-500 uppercase mb-3 md:mb-4 flex items-center gap-2">
                                     <Package className="w-4 h-4" /> {t('submit.itemsInJob')} ({basket.length})
                                 </h3>
                                 <div className="space-y-3">

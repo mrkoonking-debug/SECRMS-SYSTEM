@@ -87,20 +87,20 @@ export const CustomerStatus: React.FC = () => {
       </div>
 
       <div className="max-w-2xl mx-auto">
-        <div className="mb-12 animate-slide-up">
+        <div className="mb-6 md:mb-12 animate-slide-up">
           <div className="text-[11px] font-bold text-[#0071e3] uppercase tracking-wider mb-1">{t('track.reference')}</div>
-          <h1 className="text-3xl md:text-4xl font-bold text-[#1d1d1f] dark:text-white tracking-tight">
+          <h1 className="text-xl md:text-4xl font-bold text-[#1d1d1f] dark:text-white tracking-tight flex flex-wrap gap-2 items-center">
             {validRmas[0].groupRequestId || validRmas[0].id}
             {validRmas[0].quotationNumber && (
-              <span className="ml-3 bg-gray-100 dark:bg-[#2c2c2e] text-gray-600 dark:text-gray-300 text-sm px-3 py-1 rounded-lg border border-gray-200 dark:border-[#424245] align-middle">
+              <span className="bg-gray-100 dark:bg-[#2c2c2e] text-gray-600 dark:text-gray-300 text-xs md:text-sm px-2 py-0.5 md:px-3 md:py-1 rounded-lg border border-gray-200 dark:border-[#424245]">
                 Ref: {validRmas[0].quotationNumber}
               </span>
             )}
           </h1>
-          <p className="text-[#86868b] text-lg mt-2">{validRmas[0].customerName}</p>
+          <p className="text-[#86868b] text-sm md:text-lg mt-1.5">{validRmas[0].customerName}</p>
         </div>
 
-        <div className="space-y-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+        <div className="space-y-4 md:space-y-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
           {validRmas.map((rma) => {
             const currentStep = getStepStatus(rma.status);
             const steps = [
@@ -111,10 +111,10 @@ export const CustomerStatus: React.FC = () => {
             ];
 
             return (
-              <div key={rma.id} className="glass-panel p-8">
-                <div className="flex justify-between items-start mb-10">
+              <div key={rma.id} className="glass-panel p-4 sm:p-6 md:p-8">
+                <div className="flex justify-between items-start mb-6 md:mb-10">
                   <div>
-                    <h3 className="text-xl font-bold text-[#1d1d1f] dark:text-white mb-1">{rma.productModel}</h3>
+                    <h3 className="text-lg md:text-xl font-bold text-[#1d1d1f] dark:text-white mb-1">{rma.productModel}</h3>
                     <div className="text-xs font-mono text-[#86868b]">S/N: {rma.serialNumber}</div>
                   </div>
                   <StatusBadge status={rma.status} />

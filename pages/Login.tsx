@@ -59,15 +59,15 @@ export const Login: React.FC = () => {
       </Link>
 
       <div className="w-full max-w-[400px]">
-        <div className="bg-white dark:bg-[#1c1c1e] rounded-3xl p-8 md:p-10 shadow-lg border border-gray-100 dark:border-[#333]">
+        <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl md:rounded-3xl p-6 sm:p-8 md:p-10 shadow-lg border border-gray-100 dark:border-[#333]">
 
           {/* ส่วนหัว Logo */}
-          <div className="flex flex-col items-center mb-10">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
+          <div className="flex flex-col items-center mb-6 md:mb-10">
+            <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center mb-4 md:mb-6">
               <img src="/logo.png" alt="SEC Claim Logo" className="w-full h-full object-contain" />
             </div>
-            <h2 className="text-2xl font-bold text-[#1d1d1f] dark:text-white tracking-tight mb-1">SEC RMS SYSTEM</h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">{t('login.subtitle')}</p>
+            <h2 className="text-xl md:text-2xl font-bold text-[#1d1d1f] dark:text-white tracking-tight mb-1">SEC RMS SYSTEM</h2>
+            <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm">{t('login.subtitle')}</p>
           </div>
 
           {/* ฟอร์ม Login */}
@@ -79,7 +79,7 @@ export const Login: React.FC = () => {
                 placeholder={t('login.emailPlaceholder')}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-[#f5f5f7] dark:bg-[#2c2c2e] border-none rounded-xl px-4 py-4 text-[#1d1d1f] dark:text-white focus:ring-2 focus:ring-[#0071e3] transition-all"
+                className="w-full bg-[#f5f5f7] dark:bg-[#2c2c2e] border-none rounded-xl px-4 py-2.5 md:py-4 text-sm md:text-base text-[#1d1d1f] dark:text-white focus:ring-2 focus:ring-[#0071e3] transition-all"
               />
             </div>
 
@@ -89,7 +89,7 @@ export const Login: React.FC = () => {
                 placeholder={t('login.password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#f5f5f7] dark:bg-[#2c2c2e] border-none rounded-xl px-4 py-4 text-[#1d1d1f] dark:text-white focus:ring-2 focus:ring-[#0071e3] transition-all"
+                className="w-full bg-[#f5f5f7] dark:bg-[#2c2c2e] border-none rounded-xl px-4 py-2.5 md:py-4 text-sm md:text-base text-[#1d1d1f] dark:text-white focus:ring-2 focus:ring-[#0071e3] transition-all"
               />
             </div>
 
@@ -99,7 +99,7 @@ export const Login: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 mt-2 bg-[#0071e3] hover:bg-[#0077ed] disabled:bg-gray-400 text-white rounded-xl font-bold shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              className="w-full py-2.5 md:py-4 mt-2 bg-[#0071e3] hover:bg-[#0077ed] disabled:bg-gray-400 text-white rounded-xl font-bold shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm md:text-base"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>{t('login.signIn')} <ArrowRight className="w-4 h-4" /></>}
             </button>

@@ -14,7 +14,7 @@ import { showToast, showValidationError } from '../services/toast';
 const DEFAULT_ACCESSORIES = COMMON_ACCESSORIES.filter(a => a !== 'acc_hdd');
 
 const getInputClass = (hasError: boolean) => `
-  w-full px-4 py-3 text-sm rounded-2xl outline-none transition-all
+  w-full px-4 py-2.5 md:py-3 text-sm rounded-xl md:rounded-2xl outline-none transition-all
   bg-white dark:bg-[#1c1c1e] 
   border border-gray-200 dark:border-[#333]
   text-[#1d1d1f] dark:text-white
@@ -156,8 +156,8 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
     const getExistingHdds = () => currentItem.accessories.filter(a => a.startsWith('acc_hdd::')).map(a => a.split('::')[1]);
 
     return (
-        <div className="space-y-6 animate-fade-in">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-4 md:space-y-6 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 <div data-tour="tour-brand">
                     <GlassSelect label={t('submit.brand')} value={currentItem.brand} onChange={val => { setCurrentItem(p => ({ ...p, brand: val })); setErrors(p => ({ ...p, brand: '' })); }} options={brandOptions} searchable recentKey="brand" hasError={!!errors.brand} required />
                     {mode === 'customer' && <p className="text-[11px] text-blue-500/70 mt-1 ml-2 flex items-center gap-1">💡 เช่น Hikvision, Dahua, Uniview</p>}
@@ -220,7 +220,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                 <TeamSelector selectedMain={selectedMainTeam} onSelectMain={setSelectedMainTeam} currentTeam={currentItem.team} onSelectSub={(t: any) => setCurrentItem(p => ({ ...p, team: t }))} t={t} error={errors.team} />
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 {mode === 'admin' && (
                     <div>
                         <GlassSelect label={t('submit.distributor')} value={currentItem.distributor} onChange={val => setCurrentItem(p => ({ ...p, distributor: val }))} options={distOptions} searchable recentKey="distributor" hasError={!!errors.distributor} required />
@@ -299,7 +299,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                 </div>
             </div>
 
-            <button data-tour="tour-add-button" onClick={handleAddClick} className="w-full py-4 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-[0.98]">
+            <button data-tour="tour-add-button" onClick={handleAddClick} className="w-full py-3 md:py-4 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl md:rounded-2xl text-sm md:text-base font-bold flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-[0.98]">
                 <Plus className="w-5 h-5" /> {noSerial && quantity > 1 ? `เพิ่ม ${quantity} รายการ` : t(mode === 'customer' ? 'publicSubmit.addAnother' : 'submit.addToJob')}
             </button>
 

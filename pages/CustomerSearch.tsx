@@ -53,13 +53,13 @@ export const CustomerSearch: React.FC = () => {
             <main className="flex-1 flex flex-col justify-center items-center px-4 w-full max-w-5xl mx-auto relative z-10">
 
                 <div className="w-full text-center mb-12">
-                    <div className="w-20 h-20 md:w-32 md:h-32 mx-auto mb-6 flex items-center justify-center animate-slide-up">
+                    <div className="w-16 h-16 md:w-32 md:h-32 mx-auto mb-4 md:mb-6 flex items-center justify-center animate-slide-up">
                         <img src="/logo.png?v=2" alt="SEC Claim Logo" className="w-full h-full object-contain" />
                     </div>
-                    <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold text-[#1d1d1f] dark:text-white tracking-tight leading-[1.1] mb-6 animate-slide-up">
+                    <h1 className="text-2xl md:text-4xl lg:text-6xl font-bold text-[#1d1d1f] dark:text-white tracking-tight leading-[1.1] mb-4 md:mb-6 animate-slide-up">
                         {t('public.heroTitle')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0071e3] to-[#a855f7]">{t('public.heroTitleSuffix')}</span>
                     </h1>
-                    <p className="text-base md:text-lg lg:text-xl text-[#86868b] font-medium max-w-xl mx-auto mb-12 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                    <p className="text-sm md:text-lg lg:text-xl text-[#86868b] font-medium max-w-xl mx-auto mb-6 md:mb-12 animate-slide-up" style={{ animationDelay: '0.1s' }}>
                         {t('public.heroSubtitle')}
                     </p>
 
@@ -68,11 +68,11 @@ export const CustomerSearch: React.FC = () => {
                         <form
                             onSubmit={handleSearch}
                             className={`
-                            relative bg-white dark:bg-[#1c1c1e] rounded-full p-1.5 md:p-2 pl-5 md:pl-6 flex items-center shadow-lg transition-all duration-300 border
+                            relative bg-white dark:bg-[#1c1c1e] rounded-full p-1 md:p-2 pl-4 md:pl-6 flex items-center shadow-lg transition-all duration-300 border
                             ${isFocused ? 'border-gray-400 dark:border-white/40 ring-4 ring-black/5 dark:ring-white/5' : 'border-gray-200 dark:border-white/10'}
                         `}
                         >
-                            <Search className={`w-5 h-5 mr-3 flex-shrink-0 transition-colors ${isFocused ? 'text-black dark:text-white' : 'text-gray-400'}`} />
+                            <Search className={`w-5 h-5 mr-2 md:mr-3 flex-shrink-0 transition-colors ${isFocused ? 'text-black dark:text-white' : 'text-gray-400'}`} />
                             <input
                                 ref={searchInputRef}
                                 value={query}
@@ -80,28 +80,28 @@ export const CustomerSearch: React.FC = () => {
                                 onFocus={() => setIsFocused(true)}
                                 onBlur={() => setIsFocused(false)}
                                 placeholder={t('public.inputHint')}
-                                className="flex-1 bg-transparent border-none py-3 text-sm md:text-base text-[#1d1d1f] dark:text-gray-100 placeholder-gray-400 focus:ring-0 outline-none w-full min-w-0"
+                                className="flex-1 bg-transparent border-none py-2 md:py-3 text-sm md:text-base text-[#1d1d1f] dark:text-gray-100 placeholder-gray-400 focus:ring-0 outline-none w-full min-w-0"
                             />
                             <button
                                 type="submit"
                                 disabled={!query}
                                 className={`
-                                p-3 rounded-full transition-all flex items-center justify-center flex-shrink-0
+                                p-2 md:p-3 rounded-full transition-all flex items-center justify-center flex-shrink-0
                                 ${query ? 'bg-black dark:bg-white text-white dark:text-black shadow-md' : 'bg-gray-100 dark:bg-white/5 text-gray-300'}
                             `}
                             >
-                                <ArrowRight className="w-5 h-5" />
+                                <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
                             </button>
                         </form>
                     </div>
                 </div>
 
                 {/* Gradient Register Button - Kept as requested to only remove color from search */}
-                <div className="mb-16 animate-slide-up" style={{ animationDelay: '0.25s' }}>
-                    <Link to="/register" className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 text-[#1d1d1f] dark:text-white rounded-full text-lg font-bold shadow-sm hover:shadow-xl hover:border-[#0071e3] transition-all transform hover:scale-105 active:scale-95">
-                        <PlusCircle className="w-6 h-6 text-[#0071e3]" />
+                <div className="mb-8 md:mb-16 animate-slide-up" style={{ animationDelay: '0.25s' }}>
+                    <Link to="/register" className="group relative inline-flex items-center gap-2 md:gap-3 px-5 py-3 md:px-8 md:py-4 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 text-[#1d1d1f] dark:text-white rounded-full text-sm md:text-lg font-bold shadow-sm hover:shadow-xl hover:border-[#0071e3] transition-all transform hover:scale-105 active:scale-95">
+                        <PlusCircle className="w-5 h-5 md:w-6 md:h-6 text-[#0071e3]" />
                         <span>{t('public.registerTitle')}</span>
-                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 group-hover:text-[#0071e3] transition-all" />
+                        <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-gray-400 group-hover:translate-x-1 group-hover:text-[#0071e3] transition-all" />
                     </Link>
                 </div>
 
