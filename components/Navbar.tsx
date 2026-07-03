@@ -94,7 +94,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
     <>
       {user ? (
         <>
-          <div className="text-[9.5px] font-bold text-[#86868b]/75 uppercase tracking-widest mb-1.5 mt-3 pl-3">Management</div>
+          <div className="text-[9.5px] font-bold text-white/90 dark:text-white/80 uppercase tracking-widest mb-1.5 mt-3 pl-3">Management</div>
           <NavLink to="/admin/dashboard" label={t('nav.overview')} icon={LayoutGrid} badgeCount={overdueCount} />
           <NavLink to="/admin/incoming" label={t('nav.incoming')} icon={Bell} badgeCount={unassignedCount} />
           <NavLink to="/admin/rmas" label={t('nav.claims')} icon={List} />
@@ -103,7 +103,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
 
           {user.role === 'admin' && (
             <>
-              <div className="text-[9.5px] font-bold text-[#86868b]/75 uppercase tracking-widest mt-6 mb-1.5 pl-3">System</div>
+              <div className="text-[9.5px] font-bold text-white/90 dark:text-white/80 uppercase tracking-widest mt-6 mb-1.5 pl-3">System</div>
               <NavLink to="/admin/users" label={t('nav.users')} icon={Users} />
               <NavLink to="/admin/logs" label="System Logs" icon={History} />
               <NavLink to="/admin/brands" label={t('nav.brands')} icon={Tag} />

@@ -57,7 +57,7 @@ const AppContent: React.FC = () => {
       {isAdmin ? (
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden w-full h-full md:p-4 md:gap-4">
           <Navbar embedded={true} />
-          <main className="flex-1 overflow-y-auto overflow-x-hidden relative bg-[#fafafa] dark:bg-[#18181b] md:rounded-2xl border-t md:border border-gray-200/50 dark:border-white/[0.08] shadow-sm custom-scrollbar pb-24 md:pb-0">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden relative bg-[#f0ede8] dark:bg-[#1a1a1d] md:rounded-2xl border-t md:border border-gray-200/50 dark:border-white/[0.08] shadow-sm custom-scrollbar pb-24 md:pb-0">
             <div className="min-h-full p-4 md:p-8 pt-20 md:pt-8">
               <Suspense fallback={<PageLoader />}>
                 <Routes>
