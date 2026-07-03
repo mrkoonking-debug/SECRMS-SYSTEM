@@ -8,6 +8,43 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 const PAGE_SIZE = 50;
 
+const getTeamBadge = (team: Team) => {
+    switch (team) {
+        case Team.HIKVISION:
+            return (
+                <span key={team} className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-md bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
+                    ทีม A
+                </span>
+            );
+        case Team.DAHUA:
+            return (
+                <span key={team} className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-md bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
+                    ทีม B
+                </span>
+            );
+        case Team.TEAM_C:
+            return (
+                <span key={team} className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-md bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
+                    ทีม C
+                </span>
+            );
+        case Team.TEAM_E:
+            return (
+                <span key={team} className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                    ทีม E
+                </span>
+            );
+        case Team.TEAM_G:
+            return (
+                <span key={team} className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-md bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 border border-fuchsia-500/20">
+                    ทีม G
+                </span>
+            );
+        default:
+            return null;
+    }
+};
+
 export const ClaimsList: React.FC = () => {
     const [rmas, setRMAs] = useState<RMA[]>([]);
     const [loading, setLoading] = useState(true);
@@ -227,6 +264,7 @@ export const ClaimsList: React.FC = () => {
                                     <div className="space-y-3 md:space-y-4 pl-3 md:pl-0">
                                         {sortedJobKeys.map(jobKey => {
                                             const jobItems = jobsInDate[jobKey];
+                                            const uniqueTeams = Array.from(new Set(jobItems.map(i => i.team).filter(Boolean))) as Team[];
                                             const customerName = jobItems[0]?.customerName || 'Unknown';
                                             const quotationNumber = jobItems[0]?.quotationNumber;
                                             const isJobDone = jobItems.every(i => [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(i.status));
@@ -243,6 +281,8 @@ export const ClaimsList: React.FC = () => {
                                                                     <span className="truncate">{jobKey}</span>
                                                                     {/* Desktop: Ref badge */}
                                                                     <span className={`hidden md:inline-flex text-[10px] px-2 py-0.5 rounded-md border ${quotationNumber ? 'bg-gray-100/80 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400 border-gray-200/60 dark:border-white/[0.06]' : 'bg-gray-50/80 dark:bg-white/[0.03] text-gray-400 dark:text-gray-500 border-gray-100 dark:border-white/[0.04] italic'}`}>{quotationNumber ? `Ref: ${quotationNumber}` : 'ไม่มี Ref'}</span>
+                                                                    {/* Unique Team Badges */}
+                                                                    {uniqueTeams.map(t => getTeamBadge(t))}
                                                                     {/* Desktop: Full badge / Mobile: Compact badge */}
                                                                     {isJobDone && <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] md:text-[10px] px-1.5 md:px-2 py-0.5 rounded-full border border-emerald-500/20 font-bold flex items-center gap-0.5 md:gap-1 flex-shrink-0"><CheckCircle2 className="w-3 h-3" /> <span className="hidden md:inline">เสร็จสิ้น</span><span className="md:hidden">เสร็จ</span></span>}
                                                                     {!isJobDone && jobItems.some(i => isRMAOverdue(i)) && <>
