@@ -239,7 +239,7 @@ export const ClaimsList: React.FC = () => {
     );
 
     return (
-        <div className="max-w-6xl mx-auto px-3 md:px-6 pb-24 md:pb-8">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 pb-24 md:pb-8">
             {/* ── Header ── */}
             <div className="flex items-center justify-between gap-4 mb-4 md:mb-6">
                 <div>
@@ -274,7 +274,7 @@ export const ClaimsList: React.FC = () => {
                     <div className="hidden md:block h-5 w-px bg-gray-200 dark:bg-white/10 flex-shrink-0 animate-fade-in"></div>
                     
                     {/* iOS Segmented Control style with Sliding Indicator */}
-                    <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full flex items-center relative w-full max-w-[340px] md:max-w-[420px] flex-shrink-0">
+                    <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full grid grid-cols-4 items-center relative w-full md:max-w-[420px] flex-shrink-0">
                         {/* Sliding Indicator with Dynamic Colors */}
                         <div 
                           className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform translate-z-0 ${getStatusColorClass(statusFilter)}`}
@@ -287,7 +287,7 @@ export const ClaimsList: React.FC = () => {
                             <button 
                                 key={s} 
                                 onClick={() => setStatusFilter(s as typeof statusFilter)} 
-                                className={`relative z-10 flex-1 px-3 py-1.5 md:px-3.5 md:py-2 text-[10px] md:text-xs font-semibold rounded-full transition-colors duration-200 whitespace-nowrap text-center ${
+                                className={`relative z-10 px-3 py-1.5 md:px-3.5 md:py-2 text-[10px] md:text-xs font-semibold rounded-full transition-colors duration-200 whitespace-nowrap text-center ${
                                     statusFilter === s 
                                         ? 'text-white' 
                                         : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'

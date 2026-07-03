@@ -220,7 +220,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
              <div 
                className={`
                  apple-fluid-transition relative bg-white/70 dark:bg-[#121214]/75 backdrop-blur-xl border border-white/20 dark:border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.4)] grid grid-cols-5 items-center pointer-events-auto px-1 rounded-full
-                 ${isScrollingDown ? 'h-[40px] px-2 w-[50%] max-w-[190px]' : 'h-[56px] w-[88%] max-w-[350px]'}
+                  ${isScrollingDown ? 'h-[40px] px-2 w-[50%] max-w-[200px]' : 'h-[56px] w-[90%] max-w-[380px]'}
                `}
              >
   

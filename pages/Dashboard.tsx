@@ -105,7 +105,7 @@ export const Dashboard: React.FC = () => {
     );
 
     return (
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-5 md:py-8">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-5 md:py-8">
             <div className="flex flex-col justify-between mb-6 md:mb-12 gap-4 md:gap-6">
                 <div>
                     <h1 className="text-lg md:text-4xl lg:text-5xl font-bold text-[#1d1d1f] dark:text-white tracking-tight mb-1">{t('dashboard.title')}</h1>
@@ -114,7 +114,7 @@ export const Dashboard: React.FC = () => {
 
                 <div className="flex flex-col gap-3">
                     {/* iOS Segmented Control with Sliding Indicator for Teams */}
-                    <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full flex items-center relative w-full max-w-[340px] md:max-w-[480px] flex-shrink-0">
+                    <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full grid grid-cols-4 items-center relative w-full md:max-w-[480px] flex-shrink-0">
                         {/* Sliding Indicator with Dynamic Team Colors */}
                         <div 
                           className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform translate-z-0 ${getTeamColorClass(
@@ -131,14 +131,14 @@ export const Dashboard: React.FC = () => {
                             }% + 2px)`
                           }}
                         />
-                        <button onClick={() => handleMainFilterClick('ALL')} className={`relative z-10 flex-1 py-2 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 ${selectedTeam === 'ALL' ? 'text-white dark:text-gray-900' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}>{t('teams.all')}</button>
-                        <button onClick={() => handleMainFilterClick('A')} className={`relative z-10 flex-1 py-2 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 flex items-center justify-center gap-1 ${selectedTeam === Team.HIKVISION ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}><Box className="w-3.5 h-3.5" /> Team A</button>
-                        <button onClick={() => handleMainFilterClick('B')} className={`relative z-10 flex-1 py-2 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 flex items-center justify-center gap-1 ${selectedTeam === Team.DAHUA ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}><Layers className="w-3.5 h-3.5" /> Team B</button>
-                        <button onClick={() => handleMainFilterClick('C')} className={`relative z-10 flex-1 py-2 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 flex items-center justify-center gap-1 ${isGroupCActive ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}><Wifi className="w-3.5 h-3.5" /> Team C <ChevronDown className={`w-3 h-3 ${isGroupCActive ? 'rotate-180' : ''}`} /></button>
+                        <button onClick={() => handleMainFilterClick('ALL')} className={`relative z-10 py-2 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 ${selectedTeam === 'ALL' ? 'text-white dark:text-gray-900' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}>{t('teams.all')}</button>
+                        <button onClick={() => handleMainFilterClick('A')} className={`relative z-10 py-2 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 flex items-center justify-center gap-1 ${selectedTeam === Team.HIKVISION ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}><Box className="w-3.5 h-3.5" /> Team A</button>
+                        <button onClick={() => handleMainFilterClick('B')} className={`relative z-10 py-2 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 flex items-center justify-center gap-1 ${selectedTeam === Team.DAHUA ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}><Layers className="w-3.5 h-3.5" /> Team B</button>
+                        <button onClick={() => handleMainFilterClick('C')} className={`relative z-10 py-2 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 flex items-center justify-center gap-1 ${isGroupCActive ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}><Wifi className="w-3.5 h-3.5" /> Team C <ChevronDown className={`w-3 h-3 ${isGroupCActive ? 'rotate-180' : ''}`} /></button>
                     </div>
 
                     {isGroupCActive && (
-                        <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full flex items-center relative w-full max-w-[280px] md:max-w-[360px] flex-shrink-0 animate-fade-in pl-1">
+                        <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full grid grid-cols-3 items-center relative w-full max-w-[280px] md:max-w-[360px] flex-shrink-0 animate-fade-in">
                             {/* Sliding Indicator for Sub Teams */}
                             <div 
                               className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform translate-z-0 ${getSubTeamColorClass(selectedTeam)}`}
@@ -151,9 +151,9 @@ export const Dashboard: React.FC = () => {
                                 }% + 2px)`
                               }}
                             />
-                            <button onClick={() => setSelectedTeam(Team.TEAM_C)} className={`relative z-10 flex-1 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-center transition-colors duration-200 ${selectedTeam === Team.TEAM_C ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>Network</button>
-                            <button onClick={() => setSelectedTeam(Team.TEAM_E)} className={`relative z-10 flex-1 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-center transition-colors duration-200 ${selectedTeam === Team.TEAM_E ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>UPS</button>
-                            <button onClick={() => setSelectedTeam(Team.TEAM_G)} className={`relative z-10 flex-1 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-center transition-colors duration-200 ${selectedTeam === Team.TEAM_G ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>Online</button>
+                            <button onClick={() => setSelectedTeam(Team.TEAM_C)} className={`relative z-10 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-center transition-colors duration-200 ${selectedTeam === Team.TEAM_C ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>Network</button>
+                            <button onClick={() => setSelectedTeam(Team.TEAM_E)} className={`relative z-10 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-center transition-colors duration-200 ${selectedTeam === Team.TEAM_E ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>UPS</button>
+                            <button onClick={() => setSelectedTeam(Team.TEAM_G)} className={`relative z-10 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-center transition-colors duration-200 ${selectedTeam === Team.TEAM_G ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>Online</button>
                         </div>
                     )}
                 </div>
