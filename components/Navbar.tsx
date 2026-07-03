@@ -208,44 +208,52 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
        {user && (
          <>
            <div
-             className="md:hidden fixed bottom-4 left-4 right-4 z-40 pointer-events-none transition-all duration-300"
+             className="md:hidden fixed bottom-4 left-0 right-0 z-40 pointer-events-none flex justify-center transition-all duration-300"
              style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
            >
              {/* Glass capsule bar */}
              <div 
                className={`
                  apple-fluid-transition relative bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-2xl border border-black/[0.05] dark:border-white/[0.08] shadow-[0_-4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_30px_rgba(0,0,0,0.4)] grid grid-cols-5 items-center pointer-events-auto px-1
-                 ${isScrollingDown ? 'h-[44px] rounded-full px-2' : 'h-[56px] rounded-[20px]'}
+                 ${isScrollingDown ? 'h-[40px] rounded-full px-2 w-[190px]' : 'h-[56px] rounded-[20px] w-[calc(100%-3rem)] max-w-[320px]'}
                `}
              >
   
                {/* Dashboard */}
                <Link to="/admin/dashboard" className={`flex flex-col items-center justify-center h-full relative transition-all duration-200 ${location.pathname === '/admin/dashboard' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
-                 <div className={`transition-all duration-200 ${location.pathname === '/admin/dashboard' ? 'scale-110' : ''}`}><LayoutGrid className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/dashboard' ? 2.2 : 1.8} /></div>
+                 <div className={`transition-all duration-300 ${isScrollingDown ? 'scale-90' : 'scale-100'}`}>
+                   <div className={`transition-all duration-200 ${location.pathname === '/admin/dashboard' ? 'scale-110' : ''}`}><LayoutGrid className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/dashboard' ? 2.2 : 1.8} /></div>
+                 </div>
                  <span className={`text-[9px] font-semibold apple-fluid-item ${isScrollingDown ? 'opacity-0 scale-50 max-h-0 mt-0 overflow-hidden' : 'opacity-100 scale-100 max-h-4 mt-0.5 leading-none'} ${location.pathname === '/admin/dashboard' ? 'font-bold' : ''}`}>ภาพรวม</span>
                  {overdueCount > 0 && (
-                   <span className={`absolute rounded-full bg-red-500 ring-2 ring-white dark:ring-[#22222a] transition-all duration-300 ${isScrollingDown ? 'top-2 right-[28%] w-[5px] h-[5px]' : 'top-1.5 right-[18%] w-[6px] h-[6px]'}`}></span>
+                   <span className={`absolute rounded-full bg-red-500 ring-2 ring-white dark:ring-[#22222a] transition-all duration-300 ${isScrollingDown ? 'top-1.5 right-[24%] w-[4px] h-[4px]' : 'top-1.5 right-[18%] w-[6px] h-[6px]'}`}></span>
                  )}
                </Link>
   
                {/* Claims List */}
                <Link to="/admin/rmas" className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${location.pathname === '/admin/rmas' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
-                 <div className={`transition-all duration-200 ${location.pathname === '/admin/rmas' ? 'scale-110' : ''}`}><List className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/rmas' ? 2.2 : 1.8} /></div>
+                 <div className={`transition-all duration-300 ${isScrollingDown ? 'scale-90' : 'scale-100'}`}>
+                   <div className={`transition-all duration-200 ${location.pathname === '/admin/rmas' ? 'scale-110' : ''}`}><List className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/rmas' ? 2.2 : 1.8} /></div>
+                 </div>
                  <span className={`text-[9px] font-semibold apple-fluid-item ${isScrollingDown ? 'opacity-0 scale-50 max-h-0 mt-0 overflow-hidden' : 'opacity-100 scale-100 max-h-4 mt-0.5 leading-none'} ${location.pathname === '/admin/rmas' ? 'font-bold' : ''}`}>รายการ</span>
                </Link>
   
                {/* Submit Claim (Flat Standard Tab Option) */}
                <Link to="/admin/submit" className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${location.pathname === '/admin/submit' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
-                 <div className={`transition-all duration-200 ${location.pathname === '/admin/submit' ? 'scale-110' : ''}`}><PlusCircle className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/submit' ? 2.2 : 1.8} /></div>
+                 <div className={`transition-all duration-300 ${isScrollingDown ? 'scale-90' : 'scale-100'}`}>
+                   <div className={`transition-all duration-200 ${location.pathname === '/admin/submit' ? 'scale-110' : ''}`}><PlusCircle className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/submit' ? 2.2 : 1.8} /></div>
+                 </div>
                  <span className={`text-[9px] font-semibold apple-fluid-item ${isScrollingDown ? 'opacity-0 scale-50 max-h-0 mt-0 overflow-hidden' : 'opacity-100 scale-100 max-h-4 mt-0.5 leading-none'} ${location.pathname === '/admin/submit' ? 'font-bold' : ''}`}>เพิ่มเคลม</span>
                </Link>
   
                {/* Notifications */}
                <Link to="/admin/incoming" className={`flex flex-col items-center justify-center h-full relative transition-all duration-200 ${location.pathname === '/admin/incoming' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
-                 <div className={`transition-all duration-200 ${location.pathname === '/admin/incoming' ? 'scale-110' : ''}`}><Bell className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/incoming' ? 2.2 : 1.8} /></div>
+                 <div className={`transition-all duration-300 ${isScrollingDown ? 'scale-90' : 'scale-100'}`}>
+                   <div className={`transition-all duration-200 ${location.pathname === '/admin/incoming' ? 'scale-110' : ''}`}><Bell className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/incoming' ? 2.2 : 1.8} /></div>
+                 </div>
                  <span className={`text-[9px] font-semibold apple-fluid-item ${isScrollingDown ? 'opacity-0 scale-50 max-h-0 mt-0 overflow-hidden' : 'opacity-100 scale-100 max-h-4 mt-0.5 leading-none'} ${location.pathname === '/admin/incoming' ? 'font-bold' : ''}`}>แจ้งเตือน</span>
                  {unassignedCount > 0 && (
-                   <span className={`absolute flex items-center justify-center bg-red-500 text-white font-bold rounded-full px-1 leading-none ring-2 ring-white dark:ring-[#22222a] transition-all duration-300 ${isScrollingDown ? 'top-1 right-[20%] min-w-[12px] h-[12px] text-[7px]' : 'top-1 right-[10%] min-w-[16px] h-[16px] text-[8px]'}`}>
+                   <span className={`absolute flex items-center justify-center bg-red-500 text-white font-bold rounded-full px-1 leading-none ring-2 ring-white dark:ring-[#22222a] transition-all duration-300 ${isScrollingDown ? 'top-0.5 right-[20%] min-w-[11px] h-[11px] text-[6.5px]' : 'top-1 right-[10%] min-w-[16px] h-[16px] text-[8px]'}`}>
                      {unassignedCount > 99 ? '99+' : unassignedCount}
                    </span>
                  )}
@@ -253,7 +261,9 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
   
                {/* More Menu */}
                <button id="mobile-more-trigger" onClick={() => setIsMobileOpen(!isMobileOpen)} className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${isMobileOpen ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
-                 <div className={`transition-all duration-200 ${isMobileOpen ? 'scale-110' : ''}`}><Menu className="w-[19px] h-[19px]" strokeWidth={isMobileOpen ? 2.2 : 1.8} /></div>
+                 <div className={`transition-all duration-300 ${isScrollingDown ? 'scale-90' : 'scale-100'}`}>
+                   <div className={`transition-all duration-200 ${isMobileOpen ? 'scale-110' : ''}`}><Menu className="w-[19px] h-[19px]" strokeWidth={isMobileOpen ? 2.2 : 1.8} /></div>
+                 </div>
                  <span className={`text-[9px] font-semibold apple-fluid-item ${isScrollingDown ? 'opacity-0 scale-50 max-h-0 mt-0 overflow-hidden' : 'opacity-100 scale-100 max-h-4 mt-0.5 leading-none'} ${isMobileOpen ? 'font-bold' : ''}`}>อื่นๆ</span>
                </button>
              </div>
