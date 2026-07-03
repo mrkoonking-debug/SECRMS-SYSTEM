@@ -238,23 +238,22 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
         </div>
       )}
 
-      {/* ===== Desktop Sidebar (macOS Glassmorphism) ===== */}
-      <aside className={`hidden md:flex flex-col w-72 z-50 bg-white/45 dark:bg-[#1e1e24]/60 backdrop-blur-3xl ${embedded ? 'h-full border-r border-gray-200/30 dark:border-white/[0.06]' : 'fixed left-0 top-0 bottom-0 border-r border-gray-200/30 dark:border-white/[0.06]'
+      <aside className={`hidden md:flex flex-col w-72 z-50 bg-white/60 dark:bg-[#1c1c22]/60 backdrop-blur-xl ${embedded ? 'h-full rounded-2xl border border-gray-200/30 dark:border-white/[0.06] shadow-sm' : 'fixed left-0 top-0 bottom-0 border-r border-gray-200/30 dark:border-white/[0.06]'
         }`}>
-        <div className="p-8 pb-4">
+        <div className="p-6 pb-2">
           <Link to={user ? "/admin/dashboard" : "/"} className="flex items-center gap-3 group">
-            <div className="h-10 w-10 flex items-center justify-center transition-transform group-hover:scale-105">
+            <div className="h-9 w-9 flex items-center justify-center transition-transform group-hover:scale-105">
               <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
             </div>
-            <span className="font-bold text-xl text-[#1d1d1f] dark:text-white tracking-tighter text-nowrap">SEC RMS SYSTEM</span>
+            <span className="font-bold text-lg text-[#1d1d1f] dark:text-white tracking-tighter text-nowrap">SEC RMS SYSTEM</span>
           </Link>
         </div>
 
-        <div className="flex-1 flex flex-col gap-1 px-6 py-6 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 flex flex-col gap-1 px-4 py-4 overflow-y-auto custom-scrollbar">
           {navContent}
         </div>
 
-        <div className="p-6 mt-auto">
+        <div className="p-4 mt-auto">
           <div className="flex items-center justify-between mb-6 bg-white/50 dark:bg-white/[0.03] p-2 rounded-full shadow-sm border border-gray-200/30 dark:border-white/[0.06]">
             <div className="flex gap-1"><ThemeToggle /><LanguageToggle /></div>
             <div className="flex gap-1">

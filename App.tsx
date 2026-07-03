@@ -55,10 +55,10 @@ const AppContent: React.FC = () => {
   return (
     <div className="relative w-full h-screen flex flex-col overflow-hidden bg-gradient-to-br from-[#f5f5f7] via-[#eef0f5] to-[#f0f2f8] dark:bg-gradient-to-br dark:from-[#1e1e24] dark:via-[#18181e] dark:to-[#1e1e24] transition-colors duration-300">
       {isAdmin ? (
-        <div className="flex-1 flex flex-col md:flex-row overflow-hidden w-full h-full">
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden w-full h-full md:p-4 md:gap-4">
           <Navbar embedded={true} />
-          <main className="flex-1 overflow-y-auto overflow-x-hidden relative bg-transparent custom-scrollbar pb-24 md:pb-0">
-            <div className="min-h-full p-4 md:p-8 pt-20 md:pt-8">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden relative bg-white/75 dark:bg-[#17171c]/75 backdrop-blur-xl md:rounded-2xl border-t md:border border-gray-200/30 dark:border-white/[0.06] shadow-sm custom-scrollbar pb-24 md:pb-0">
+            <div className="min-h-full p-4 md:p-6 pt-20 md:pt-6">
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
