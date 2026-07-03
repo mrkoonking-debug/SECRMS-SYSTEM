@@ -40,7 +40,7 @@ export const StatusBadge: React.FC<Props> = React.memo(({ status, isOverdue }) =
   };
 
   return (
-    <span className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStyles()}`}>
+    <span className={`px-2 md:px-3 py-0.5 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-wider ${getStyles()}`}>
       {t(`status.${status}`)}
     </span>
   );
