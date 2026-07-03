@@ -45,6 +45,20 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
     setIsMobileOpen(false);
   }, [location.pathname]);
 
+  // Close popover menu on clicking outside
+  useEffect(() => {
+    if (!isMobileOpen) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      const popup = document.getElementById('mobile-more-popup');
+      const trigger = document.getElementById('mobile-more-trigger');
+      if (popup && !popup.contains(e.target as Node) && trigger && !trigger.contains(e.target as Node)) {
+        setIsMobileOpen(false);
+      }
+    };
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, [isMobileOpen]);
+
   const handleLogout = () => {
     MockDb.logout();
     setUser(null);
@@ -193,47 +207,32 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
             </Link>
 
             {/* More Menu */}
-            <button onClick={() => setIsMobileOpen(true)} className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${isMobileOpen ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
+            <button id="mobile-more-trigger" onClick={() => setIsMobileOpen(!isMobileOpen)} className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${isMobileOpen ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
               <div className={`transition-all duration-200 ${isMobileOpen ? 'scale-110' : ''}`}><Menu className="w-[19px] h-[19px]" strokeWidth={isMobileOpen ? 2.2 : 1.8} /></div>
               <span className={`text-[9px] font-semibold mt-0.5 leading-none ${isMobileOpen ? 'font-bold' : ''}`}>อื่นๆ</span>
             </button>
           </div>
-        </div>
-      )}
 
-      {/* ===== Mobile Centered Popup Menu (Premium macOS/iOS Style) ===== */}
-      {isMobileOpen && (
-        <div className="md:hidden fixed inset-0 z-40 animate-fade-in flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsMobileOpen(false)} />
-
-          {/* Centered Card */}
-          <div className="relative w-full max-w-[320px] bg-white/95 dark:bg-[#1a1a20]/95 backdrop-blur-2xl border border-gray-200/50 dark:border-white/[0.08] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-scale-in">
-            {/* Header */}
-            <div className="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06] flex items-center justify-between shrink-0 bg-white/50 dark:bg-white/[0.02]">
-              <span className="font-bold text-sm text-gray-800 dark:text-white">เมนูเพิ่มเติม</span>
-              <button onClick={() => setIsMobileOpen(false)} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/[0.06] text-gray-400 dark:text-gray-500 transition-colors">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* List Content */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-4">
+          {/* ===== Mobile Popover Menu (Premium Non-blocking macOS Style) ===== */}
+          {isMobileOpen && (
+            <div id="mobile-more-popup" className="absolute bottom-[65px] right-3 w-[250px] bg-white/95 dark:bg-[#1a1a20]/95 backdrop-blur-2xl border border-gray-200/50 dark:border-white/[0.08] rounded-2xl shadow-xl z-50 pointer-events-auto flex flex-col overflow-hidden animate-slide-up">
               {/* Quick Settings */}
-              <div className="flex items-center justify-between bg-gray-50 dark:bg-white/[0.03] p-2 rounded-2xl border border-gray-100 dark:border-white/[0.04]">
-                <div className="flex gap-1.5"><ThemeToggle /><LanguageToggle /></div>
-                {user && (
-                  <Link to="/" title="Go to Website" className="p-2 rounded-xl text-gray-400 hover:text-[#0071e3] hover:bg-white dark:hover:bg-white/[0.06] transition-all">
-                    <Globe className="h-4 w-4" />
-                  </Link>
-                )}
+              <div className="p-2 border-b border-gray-100/50 dark:border-white/[0.04]">
+                <div className="flex items-center justify-between bg-gray-50 dark:bg-white/[0.03] p-1 rounded-xl border border-gray-100 dark:border-white/[0.04]">
+                  <div className="flex gap-1.5"><ThemeToggle /><LanguageToggle /></div>
+                  {user && (
+                    <Link to="/" title="Go to Website" className="p-1.5 rounded-lg text-gray-400 hover:text-[#0071e3] hover:bg-white dark:hover:bg-white/[0.06] transition-all">
+                      <Globe className="h-4 w-4" />
+                    </Link>
+                  )}
+                </div>
               </div>
 
               {/* Navigation Options */}
-              <div className="space-y-1">
+              <div className="p-2 max-h-[250px] overflow-y-auto custom-scrollbar space-y-1">
                 {user?.role === 'admin' ? (
                   <>
-                    <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-2.5 mb-1.5">การจัดการระบบ</div>
+                    <div className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-2 mb-1.5">การจัดการระบบ</div>
                     <NavLink to="/admin/users" label={t('nav.users')} icon={Users} />
                     <NavLink to="/admin/logs" label="System Logs" icon={History} />
                     <NavLink to="/admin/brands" label={t('nav.brands')} icon={Tag} />
@@ -243,32 +242,34 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
                   </>
                 ) : (
                   <>
-                    <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-2.5 mb-1.5">การจัดการ</div>
+                    <div className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-2 mb-1.5">การจัดการ</div>
                     <NavLink to="/admin/reports" label={t('nav.reports')} icon={BarChart3} />
                     <NavLink to="/admin/settings" label={t('nav.settings')} icon={Settings} />
                   </>
                 )}
               </div>
-            </div>
 
-            {/* User Profile & Logout */}
-            {user && (
-              <div className="p-3.5 border-t border-gray-100 dark:border-white/[0.06] bg-gray-50/50 dark:bg-white/[0.01] flex items-center gap-3 shrink-0">
-                <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-[#3a3a3c] flex items-center justify-center font-bold text-gray-500 dark:text-gray-400 text-sm shrink-0">
-                  {user.name.charAt(0)}
+              {/* User Profile & Logout */}
+              {user && (
+                <div className="p-3 border-t border-gray-100/50 dark:border-white/[0.04] bg-gray-50/50 dark:bg-white/[0.01] flex items-center gap-2.5 shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#3a3a3c] flex items-center justify-center font-bold text-gray-500 dark:text-gray-400 text-xs shrink-0">
+                    {user.name.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[11px] font-bold text-[#1d1d1f] dark:text-white truncate">{user.name}</div>
+                    <div className="text-[9px] text-gray-450 dark:text-gray-500 truncate uppercase tracking-wider mt-0.5">{user.role}</div>
+                  </div>
+                  <button onClick={handleLogout} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all shrink-0" title="Logout">
+                    <LogOut className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-                <div className="flex-1 min-w-0 pr-1">
-                  <div className="text-xs font-bold text-[#1d1d1f] dark:text-white truncate">{user.name}</div>
-                  <div className="text-[9px] text-gray-400 dark:text-gray-500 truncate uppercase tracking-wider mt-0.5">{user.role}</div>
-                </div>
-                <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all shrink-0" title="Logout">
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       )}
+
+
 
       <aside className={`hidden md:flex flex-col w-72 z-50 bg-white/40 dark:bg-[#1c1c24]/40 backdrop-blur-xl ${embedded ? 'h-full rounded-2xl border border-gray-200/50 dark:border-white/[0.08] shadow-sm' : 'fixed left-0 top-0 bottom-0 border-r border-gray-200/30 dark:border-white/[0.06]'
         }`}>
