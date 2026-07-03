@@ -68,19 +68,15 @@ export const Dashboard: React.FC = () => {
 
     const StatCard = ({ label, value, icon, color, subValue, subLabel }: any) => (
         <div className="glass-panel p-3.5 md:p-6 flex flex-col justify-between relative overflow-hidden group">
-            <div className="relative z-10 flex flex-col w-full">
-                {/* Header Row: Icon + Label (compact responsive layout) */}
-                <div className="flex items-center gap-2 mb-2 md:mb-3">
-                    <div className={`p-1.5 md:p-2 rounded-lg ${color} bg-opacity-10 dark:bg-opacity-20 flex-shrink-0 flex items-center justify-center`}>
-                        {React.cloneElement(icon, { className: 'w-4 h-4 md:w-5 md:h-5' })}
-                    </div>
-                    <span className="text-[11px] md:text-xs font-bold text-gray-500 dark:text-gray-400 truncate leading-tight flex-1">{label}</span>
+            <div className="relative z-10 flex flex-col justify-between h-full">
+                <div className={`p-1.5 md:p-2.5 rounded-xl ${color} bg-opacity-10 dark:bg-opacity-20 w-fit flex-shrink-0`}>
+                    {React.cloneElement(icon, { className: 'w-4 h-4 md:w-5 md:h-5' })}
                 </div>
-                {/* Value & subValue */}
-                <div className="flex flex-col">
-                    <div className="text-lg md:text-2xl font-bold text-[#1d1d1f] dark:text-white tracking-tight leading-none mb-1">{value}</div>
+                <div className="mt-2.5 md:mt-4">
+                    <div className="text-xl md:text-2xl font-bold text-[#1d1d1f] dark:text-white tracking-tight leading-none mb-1">{value}</div>
+                    <div className="text-[10px] md:text-xs font-semibold text-gray-500 dark:text-gray-400 leading-tight">{label}</div>
                     {subValue && (
-                        <div className="text-[9px] md:text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+                        <div className="text-[9px] md:text-[10px] text-gray-450 dark:text-gray-500 font-medium mt-0.5">
                             {subValue} {subLabel}
                         </div>
                     )}
