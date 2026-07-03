@@ -510,7 +510,7 @@ export const JobDetail: React.FC = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-3 md:gap-y-6 text-sm">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-3 md:gap-y-6 text-sm">
                             <div className="flex flex-col gap-1">
                                 <span className="text-gray-400 font-semibold text-[11px] tracking-wider uppercase">{t('publicSubmit.companyName')}</span>
                                 <span className="text-[#1d1d1f] dark:text-gray-200 font-medium">{customerForm.customerName || '-'}</span>
@@ -527,11 +527,11 @@ export const JobDetail: React.FC = () => {
                                 <span className="text-gray-400 font-semibold text-[11px] tracking-wider uppercase">{t('submit.lineId')}</span>
                                 <span className="text-[#1d1d1f] dark:text-gray-200 font-medium">{customerForm.customerLineId || '-'}</span>
                             </div>
-                            <div className="flex flex-col gap-1 col-span-2">
+                            <div className="flex flex-col gap-1 col-span-1 md:col-span-2">
                                 <span className="text-gray-400 font-semibold text-[11px] tracking-wider uppercase">Email</span>
                                 <span className="text-[#1d1d1f] dark:text-gray-200 font-medium">{customerForm.customerEmail || '-'}</span>
                             </div>
-                            <div className="flex flex-col gap-1 col-span-2">
+                            <div className="flex flex-col gap-1 col-span-1 md:col-span-2">
                                 <span className="text-gray-400 font-semibold text-[11px] tracking-wider uppercase">{t('submit.returnAddress')}</span>
                                 <div className="text-[#1d1d1f] dark:text-gray-200 font-medium text-xs md:text-sm leading-relaxed bg-gray-50 dark:bg-black/10 p-2.5 md:p-3 rounded-lg md:rounded-xl border border-gray-100 dark:border-white/5 whitespace-pre-line mt-1">
                                     {customerForm.customerReturnAddress || '-'}
