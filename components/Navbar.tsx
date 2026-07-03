@@ -201,39 +201,71 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
         </div>
       )}
 
-      {/* ===== Mobile Slide-Out Overlay ===== */}
+      {/* ===== Mobile Centered Popup Menu (Premium macOS/iOS Style) ===== */}
       {isMobileOpen && (
-        <div className="md:hidden fixed inset-0 z-40 animate-fade-in">
+        <div className="md:hidden fixed inset-0 z-40 animate-fade-in flex items-center justify-center p-4">
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/60" onClick={() => setIsMobileOpen(false)} />
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsMobileOpen(false)} />
 
-          {/* Panel */}
-          <div className="absolute top-14 right-0 bottom-0 w-[280px] bg-[#f5f5f7] dark:bg-[#1c1c22] border-l border-gray-200/50 dark:border-white/[0.06] flex flex-col overflow-hidden animate-slide-up">
-            <div className="flex-1 min-h-0 flex flex-col gap-1 px-4 py-4 pb-6 overflow-y-auto custom-scrollbar">
-              {navContent}
+          {/* Centered Card */}
+          <div className="relative w-full max-w-[320px] bg-white/95 dark:bg-[#1a1a20]/95 backdrop-blur-2xl border border-gray-200/50 dark:border-white/[0.08] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-scale-in">
+            {/* Header */}
+            <div className="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06] flex items-center justify-between shrink-0 bg-white/50 dark:bg-white/[0.02]">
+              <span className="font-bold text-sm text-gray-800 dark:text-white">เมนูเพิ่มเติม</span>
+              <button onClick={() => setIsMobileOpen(false)} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/[0.06] text-gray-400 dark:text-gray-500 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Bottom section */}
-            <div
-              className="p-4 mt-auto border-t border-gray-200/50 dark:border-white/[0.06] shrink-0 bg-[#f5f5f7] dark:bg-[#1c1c22]"
-              style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
-            >
-              <div className="flex items-center justify-between mb-4 bg-white dark:bg-[#26262e] p-2 rounded-full shadow-sm border border-gray-100 dark:border-white/[0.06]">
-                <div className="flex gap-1"><ThemeToggle /><LanguageToggle /></div>
-                {user && <Link to="/" title="Go to Website" className="p-2 rounded-full text-[#86868b] hover:text-[#0071e3] transition-colors"><Globe className="h-4 w-4" /></Link>}
+            {/* List Content */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-4">
+              {/* Quick Settings */}
+              <div className="flex items-center justify-between bg-gray-50 dark:bg-white/[0.03] p-2 rounded-2xl border border-gray-100 dark:border-white/[0.04]">
+                <div className="flex gap-1.5"><ThemeToggle /><LanguageToggle /></div>
+                {user && (
+                  <Link to="/" title="Go to Website" className="p-2 rounded-xl text-gray-400 hover:text-[#0071e3] hover:bg-white dark:hover:bg-white/[0.06] transition-all">
+                    <Globe className="h-4 w-4" />
+                  </Link>
+                )}
               </div>
 
-              {user && (
-                <div className="flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-[#26262e] border border-gray-100 dark:border-white/[0.06] shadow-sm mb-1">
-                  <div className="w-10 h-10 rounded-full bg-[#f5f5f7] dark:bg-[#3a3a3c] flex items-center justify-center font-bold text-gray-400 shrink-0">{user.name.charAt(0)}</div>
-                  <div className="flex-1 min-w-0 pr-1">
-                    <div className="text-sm font-bold text-[#1d1d1f] dark:text-white truncate">{user.name}</div>
-                    <div className="text-[10px] text-[#86868b] truncate uppercase tracking-wider">{user.role}</div>
-                  </div>
-                  <button onClick={handleLogout} className="p-2 text-[#86868b] hover:text-red-500 transition-colors shrink-0" title="Logout"><LogOut className="w-4 h-4" /></button>
-                </div>
-              )}
+              {/* Navigation Options */}
+              <div className="space-y-1">
+                {user?.role === 'admin' ? (
+                  <>
+                    <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-2.5 mb-1.5">การจัดการระบบ</div>
+                    <NavLink to="/admin/users" label={t('nav.users')} icon={Users} />
+                    <NavLink to="/admin/logs" label="System Logs" icon={History} />
+                    <NavLink to="/admin/brands" label={t('nav.brands')} icon={Tag} />
+                    <NavLink to="/admin/distributors" label={t('nav.distributors')} icon={Building2} />
+                    <NavLink to="/admin/settings" label={t('nav.settings')} icon={Settings} />
+                    <NavLink to="/admin/reports" label={t('nav.reports')} icon={BarChart3} />
+                  </>
+                ) : (
+                  <>
+                    <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-2.5 mb-1.5">การจัดการ</div>
+                    <NavLink to="/admin/reports" label={t('nav.reports')} icon={BarChart3} />
+                    <NavLink to="/admin/settings" label={t('nav.settings')} icon={Settings} />
+                  </>
+                )}
+              </div>
             </div>
+
+            {/* User Profile & Logout */}
+            {user && (
+              <div className="p-3.5 border-t border-gray-100 dark:border-white/[0.06] bg-gray-50/50 dark:bg-white/[0.01] flex items-center gap-3 shrink-0">
+                <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-[#3a3a3c] flex items-center justify-center font-bold text-gray-500 dark:text-gray-400 text-sm shrink-0">
+                  {user.name.charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0 pr-1">
+                  <div className="text-xs font-bold text-[#1d1d1f] dark:text-white truncate">{user.name}</div>
+                  <div className="text-[9px] text-gray-400 dark:text-gray-500 truncate uppercase tracking-wider mt-0.5">{user.role}</div>
+                </div>
+                <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all shrink-0" title="Logout">
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
