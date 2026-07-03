@@ -113,61 +113,64 @@ export const IncomingClaims: React.FC = () => {
     if (loading) return <div className="p-20 text-center"><Loader2 className="w-10 h-10 animate-spin mx-auto text-[#0071e3]" /></div>;
 
     return (
-        <div className="max-w-5xl mx-auto px-4 py-6 sm:py-8">
-            <div className="mb-10">
-                <h1 className="text-3xl font-bold text-[#1d1d1f] dark:text-white mb-2">{t('incoming.title')}</h1>
-                <p className="text-gray-500">{t('incoming.subtitle')}</p>
+        <div className="max-w-5xl mx-auto px-3 md:px-4 py-4 sm:py-8 pb-24 md:pb-8">
+            <div className="mb-5 md:mb-10">
+                <h1 className="text-xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white mb-1 md:mb-2">{t('incoming.title')}</h1>
+                <p className="text-xs md:text-base text-gray-500">{t('incoming.subtitle')}</p>
             </div>
 
             {groupedJobs.length === 0 ? (
-                <div className="glass-panel p-20 text-center rounded-[3rem]">
-                    <div className="w-20 h-20 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <CheckCircle2 className="w-10 h-10 text-gray-400" />
+                <div className="glass-panel p-12 md:p-20 text-center rounded-2xl md:rounded-[3rem]">
+                    <div className="w-14 h-14 md:w-20 md:h-20 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
+                        <CheckCircle2 className="w-7 h-7 md:w-10 md:h-10 text-gray-400" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-400">{t('incoming.noIncoming')}</h3>
+                    <h3 className="text-base md:text-xl font-bold text-gray-400">{t('incoming.noIncoming')}</h3>
                 </div>
             ) : (
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                     {groupedJobs.map((job) => {
                         const isExpanded = expandedGroupId === job.groupId;
                         const isSelected = selectedGroupId === job.groupId;
 
                         return (
                             <div key={job.groupId} className={`glass-panel overflow-hidden transition-all duration-300 ${isSelected ? 'ring-2 ring-[#0071e3] scale-[1.01] shadow-2xl' : 'hover:scale-[1.005]'}`}>
-                                <div className="p-5 sm:p-8 flex flex-col gap-4 sm:gap-6">
+                                <div className="p-3.5 md:p-8 flex flex-col gap-3 md:gap-6">
                                     {/* Summary Row */}
-                                    <div className="flex flex-col gap-5 sm:gap-6">
-                                        <div className="flex-1 space-y-4 cursor-pointer" onClick={() => toggleExpand(job.groupId)}>
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <div className="text-[10px] font-bold text-[#0071e3] uppercase tracking-widest mb-1 flex items-center gap-2">
-                                                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                                    <div className="flex flex-col gap-3 md:gap-6">
+                                        <div className="flex-1 space-y-2 md:space-y-4 cursor-pointer" onClick={() => toggleExpand(job.groupId)}>
+                                            <div className="flex justify-between items-start gap-2">
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="text-[9px] md:text-[10px] font-bold text-[#0071e3] uppercase tracking-widest mb-0.5 md:mb-1 flex items-center gap-1.5">
+                                                        <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0"></div>
                                                         {t('incoming.receivedFrom')}
                                                     </div>
-                                                    <h3 className="text-2xl font-bold text-[#1d1d1f] dark:text-white flex items-center gap-3">
+                                                    <h3 className="text-base md:text-2xl font-bold text-[#1d1d1f] dark:text-white truncate">
                                                         {job.customerName}
-                                                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-[#0071e3]/10 text-[#0071e3] rounded-full text-sm font-bold">
-                                                            <Package className="w-4 h-4" />
+                                                    </h3>
+                                                    <div className="flex items-center gap-2 mt-0.5">
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 md:px-3 md:py-1 bg-[#0071e3]/10 text-[#0071e3] rounded-full text-[11px] md:text-sm font-bold">
+                                                            <Package className="w-3 h-3 md:w-4 md:h-4" />
                                                             {job.rmas.length} {job.rmas.length === 1 ? 'item' : 'items'}
                                                         </span>
-                                                    </h3>
-                                                    <div className="text-sm text-gray-500 mt-1">{job.customerEmail}</div>
+                                                    </div>
+                                                    {/* Email hidden on mobile to save space */}
+                                                    <div className="hidden md:block text-sm text-gray-500 mt-1">{job.customerEmail}</div>
                                                 </div>
                                                 <div className="text-right flex-shrink-0">
-                                                    <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Ref ID</div>
-                                                    <div className="text-sm font-mono font-bold dark:text-gray-300">{job.groupId}</div>
+                                                    <div className="text-[9px] md:text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">Ref ID</div>
+                                                    <div className="text-[11px] md:text-sm font-mono font-bold dark:text-gray-300 break-all">{job.groupId}</div>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center gap-4 text-xs text-gray-400 pt-1">
-                                                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {new Date(job.createdAt).toLocaleString()}</span>
-                                                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                            <div className="flex items-center gap-2 md:gap-4 text-[10px] md:text-xs text-gray-400">
+                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3 md:w-3.5 md:h-3.5" /> {new Date(job.createdAt).toLocaleString()}</span>
+                                                <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
                                                 <span className={job.quotationNumber && job.quotationNumber !== 'N/A' ? '' : 'italic opacity-60'}>{job.quotationNumber && job.quotationNumber !== 'N/A' ? `QT: ${job.quotationNumber}` : 'ไม่มี Ref'}</span>
                                             </div>
 
                                             {/* Expand/Collapse hint */}
-                                            <button className="flex items-center gap-2 text-sm text-[#0071e3] font-semibold hover:underline transition-colors">
-                                                {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                                            <button className="flex items-center gap-1.5 text-xs md:text-sm text-[#0071e3] font-semibold hover:underline transition-colors">
+                                                {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                                                 {isExpanded ? 'ซ่อนรายละเอียด' : `ดูรายละเอียด ${job.rmas.length} รายการ`}
                                             </button>
                                         </div>
@@ -176,10 +179,10 @@ export const IncomingClaims: React.FC = () => {
                                             {!isSelected && (
                                                 <button
                                                     onClick={() => { setSelectedGroupId(job.groupId); setExpandedGroupId(job.groupId); }}
-                                                    className="w-full sm:w-auto py-4 sm:py-6 px-6 bg-[#1d1d1f] dark:bg-white text-white dark:text-black rounded-2xl font-bold flex items-center justify-center gap-3 transition-all hover:scale-105 active:scale-95 shadow-xl"
+                                                    className="w-full sm:w-auto py-3 md:py-4 px-5 md:px-6 bg-[#1d1d1f] dark:bg-white text-white dark:text-black rounded-xl md:rounded-2xl text-sm md:text-base font-bold flex items-center justify-center gap-2 md:gap-3 transition-all hover:scale-105 active:scale-95 shadow-lg md:shadow-xl"
                                                 >
                                                     {t('incoming.assignBtn')}
-                                                    <ChevronRight className="w-5 h-5" />
+                                                    <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
                                                 </button>
                                             )}
                                         </div>
@@ -187,10 +190,10 @@ export const IncomingClaims: React.FC = () => {
 
                                     {/* Expanded Item Details */}
                                     {isExpanded && (
-                                        <div className="border-t border-gray-100 dark:border-white/5 pt-6 animate-slide-up">
-                                            <div className="space-y-3">
+                                        <div className="border-t border-gray-100 dark:border-white/5 pt-4 md:pt-6 animate-slide-up">
+                                            <div className="space-y-2 md:space-y-3">
                                                 {job.rmas.map((rma, idx) => (
-                                                    <div key={rma.id} className="p-4 bg-gray-50 dark:bg-white/5 rounded-2xl flex flex-col md:flex-row md:items-center gap-4">
+                                                    <div key={rma.id} className="p-3 md:p-4 bg-gray-50 dark:bg-white/5 rounded-xl md:rounded-2xl flex flex-col md:flex-row md:items-center gap-2.5 md:gap-4">
                                                         <div className="w-8 h-8 rounded-full bg-[#0071e3]/10 text-[#0071e3] flex items-center justify-center text-sm font-bold flex-shrink-0">
                                                             {idx + 1}
                                                         </div>
