@@ -55,21 +55,36 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
 
   const NavLink = ({ to, label, icon: Icon, badgeCount = 0 }: { to: string, label: string, icon: any, badgeCount?: number }) => {
     const isActive = location.pathname === to;
-    return (
-      <Link to={to} className={`group relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 ${isActive ? 'bg-[#0071e3] text-white shadow-lg shadow-blue-500/20' : 'text-[#86868b] dark:text-gray-400 hover:bg-white/80 dark:hover:bg-white/[0.06] hover:shadow-sm hover:text-[#1d1d1f] dark:hover:text-white hover:translate-x-1'}`}>
-        <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-[#86868b] group-hover:text-[#1d1d1f] dark:group-hover:text-white transition-colors'}`} />
-        <span className="text-sm font-semibold tracking-tight">{label}</span>
+    
+    // Get macOS style icon background color
+    const getIconBgColor = () => {
+      switch (to) {
+        case '/admin/dashboard': return 'bg-[#007aff]'; // Blue
+        case '/admin/incoming': return 'bg-[#ff3b30]'; // Red
+        case '/admin/rmas': return 'bg-[#5856d6]'; // Purple
+        case '/admin/submit': return 'bg-[#34c759]'; // Green
+        case '/admin/reports': return 'bg-[#af52de]'; // Pink/Purple
+        case '/admin/users': return 'bg-[#ff9500]'; // Orange
+        case '/admin/logs': return 'bg-[#8e8e93]'; // Gray
+        case '/admin/brands': return 'bg-[#ff2d55]'; // Rose
+        case '/admin/distributors': return 'bg-[#30b0c7]'; // Teal
+        case '/admin/settings': return 'bg-[#555]'; // Gear Gray
+        default: return 'bg-[#007aff]';
+      }
+    };
 
-        {/* 🔥 แจ้งเตือนเป็นตัวเลข กรอบสีแดง */}
+    return (
+      <Link to={to} className={`group relative flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg transition-all duration-150 ${isActive ? 'bg-[#007aff] text-white' : 'text-[#1d1d1f] dark:text-gray-200 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] active:scale-[0.98]'}`}>
+        <div className={`w-[26px] h-[26px] rounded-[6px] flex items-center justify-center flex-shrink-0 ${getIconBgColor()} shadow-sm`}>
+          <Icon className="w-3.5 h-3.5 text-white" strokeWidth={2.2} />
+        </div>
+        <span className="text-[13px] font-medium tracking-tight flex-1">{label}</span>
+
+        {/* Badge count */}
         {badgeCount > 0 && (
-          <div className="absolute right-3 min-w-[20px] h-5 flex items-center justify-center bg-red-500 text-white text-[10px] font-black px-1.5 rounded-full shadow-sm ring-2 ring-white dark:ring-[#1c1c22]">
+          <div className={`min-w-[18px] h-4.5 flex items-center justify-center text-[10px] font-bold px-1.5 rounded-full ${isActive ? 'bg-white text-[#007aff]' : 'bg-red-500 text-white'}`}>
             {badgeCount > 99 ? '99+' : badgeCount}
           </div>
-        )}
-
-        {/* จุดสีฟ้าแสดงสถานะเมนูที่เลือก (ถ้าไม่มีตัวเลขแจ้งเตือน) */}
-        {isActive && badgeCount === 0 && (
-          <div className="absolute right-3 w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
         )}
       </Link>
     );
@@ -79,7 +94,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
     <>
       {user ? (
         <>
-          <div className="text-[10px] font-bold text-[#86868b] uppercase tracking-widest mb-2 mt-2 pl-4">Management</div>
+          <div className="text-[9.5px] font-bold text-[#86868b]/75 uppercase tracking-widest mb-1.5 mt-3 pl-3">Management</div>
           <NavLink to="/admin/dashboard" label={t('nav.overview')} icon={LayoutGrid} badgeCount={overdueCount} />
           <NavLink to="/admin/incoming" label={t('nav.incoming')} icon={Bell} badgeCount={unassignedCount} />
           <NavLink to="/admin/rmas" label={t('nav.claims')} icon={List} />
@@ -88,7 +103,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
 
           {user.role === 'admin' && (
             <>
-              <div className="text-[10px] font-bold text-[#86868b] uppercase tracking-widest mt-8 mb-2 pl-4">System</div>
+              <div className="text-[9.5px] font-bold text-[#86868b]/75 uppercase tracking-widest mt-6 mb-1.5 pl-3">System</div>
               <NavLink to="/admin/users" label={t('nav.users')} icon={Users} />
               <NavLink to="/admin/logs" label="System Logs" icon={History} />
               <NavLink to="/admin/brands" label={t('nav.brands')} icon={Tag} />
