@@ -263,15 +263,24 @@ export const ClaimsList: React.FC = () => {
                     <button onClick={handleExpandAll} className="hidden md:flex p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06] flex-shrink-0 transition-colors"><ChevronsUpDown className="w-4 h-4" /></button>
                     <div className="hidden md:block h-5 w-px bg-gray-200 dark:bg-white/10 flex-shrink-0 animate-fade-in"></div>
                     
-                    {/* iOS Segmented Control style */}
-                    <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0">
+                    {/* iOS Segmented Control style with Sliding Indicator */}
+                    <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full flex items-center relative w-full max-w-[340px] md:max-w-[420px] flex-shrink-0">
+                        {/* Sliding Indicator */}
+                        <div 
+                          className="absolute top-0.5 bottom-0.5 bg-white dark:bg-[#2c2c2e] rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                          style={{
+                            width: 'calc(25% - 0.25rem)',
+                            transform: `translateX(${['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].indexOf(statusFilter) * 100}%)`,
+                            left: '0.125rem'
+                          }}
+                        />
                         {['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].map((s) => (
                             <button 
                                 key={s} 
                                 onClick={() => setStatusFilter(s as typeof statusFilter)} 
-                                className={`flex-shrink-0 px-3.5 py-1.5 text-[10px] md:text-xs font-semibold rounded-full transition-all whitespace-nowrap text-center ${
+                                className={`relative z-10 flex-1 px-3 py-1.5 md:px-3.5 md:py-2 text-[10px] md:text-xs font-semibold rounded-full transition-colors duration-200 whitespace-nowrap text-center ${
                                     statusFilter === s 
-                                        ? 'bg-white dark:bg-[#2c2c2e] text-gray-900 dark:text-white shadow-[0_1px_3px_rgba(0,0,0,0.15)]' 
+                                        ? 'text-gray-900 dark:text-white' 
                                         : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                                 }`}
                             >

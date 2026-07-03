@@ -94,17 +94,45 @@ export const Dashboard: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col gap-3">
-                    <div className="flex flex-wrap items-center gap-2 w-full">
-                        <button onClick={() => handleMainFilterClick('ALL')} className={`px-4 py-2 md:px-6 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap transition-all ${selectedTeam === 'ALL' ? 'bg-[#1d1d1f] dark:bg-white text-white dark:text-black shadow-lg' : 'bg-white dark:bg-[#1c1c1e] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#2c2c2e]'}`}>{t('teams.all')}</button>
-                        <button onClick={() => handleMainFilterClick('A')} className={`px-4 py-2 md:px-6 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${selectedTeam === Team.HIKVISION ? 'bg-red-500 text-white shadow-lg' : 'bg-white dark:bg-[#1c1c1e] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#2c2c2e]'}`}><Box className="w-3.5 h-3.5" /> Team A</button>
-                        <button onClick={() => handleMainFilterClick('B')} className={`px-4 py-2 md:px-6 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${selectedTeam === Team.DAHUA ? 'bg-orange-500 text-white shadow-lg' : 'bg-white dark:bg-[#1c1c1e] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#2c2c2e]'}`}><Layers className="w-3.5 h-3.5" /> Team B</button>
-                        <button onClick={() => handleMainFilterClick('C')} className={`px-4 py-2 md:px-6 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${isGroupCActive ? 'bg-blue-500 text-white shadow-lg' : 'bg-white dark:bg-[#1c1c1e] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#2c2c2e]'}`}><Wifi className="w-3.5 h-3.5" /> Team C <ChevronDown className={`w-3 h-3 ${isGroupCActive ? 'rotate-180' : ''}`} /></button>
+                    {/* iOS Segmented Control with Sliding Indicator for Teams */}
+                    <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full flex items-center relative w-full max-w-[340px] md:max-w-[480px] flex-shrink-0">
+                        {/* Sliding Indicator */}
+                        <div 
+                          className="absolute top-0.5 bottom-0.5 bg-white dark:bg-[#2c2c2e] rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                          style={{
+                            width: 'calc(25% - 0.25rem)',
+                            transform: `translateX(${
+                              (selectedTeam === 'ALL' ? 0 : 
+                               selectedTeam === Team.HIKVISION ? 1 : 
+                               selectedTeam === Team.DAHUA ? 2 : 3) * 100
+                            }%)`,
+                            left: '0.125rem'
+                          }}
+                        />
+                        <button onClick={() => handleMainFilterClick('ALL')} className={`relative z-10 flex-1 py-2 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 ${selectedTeam === 'ALL' ? 'text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}>{t('teams.all')}</button>
+                        <button onClick={() => handleMainFilterClick('A')} className={`relative z-10 flex-1 py-2 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 flex items-center justify-center gap-1 ${selectedTeam === Team.HIKVISION ? 'text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}><Box className="w-3.5 h-3.5" /> Team A</button>
+                        <button onClick={() => handleMainFilterClick('B')} className={`relative z-10 flex-1 py-2 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 flex items-center justify-center gap-1 ${selectedTeam === Team.DAHUA ? 'text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}><Layers className="w-3.5 h-3.5" /> Team B</button>
+                        <button onClick={() => handleMainFilterClick('C')} className={`relative z-10 flex-1 py-2 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 flex items-center justify-center gap-1 ${isGroupCActive ? 'text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}><Wifi className="w-3.5 h-3.5" /> Team C <ChevronDown className={`w-3 h-3 ${isGroupCActive ? 'rotate-180' : ''}`} /></button>
                     </div>
+
                     {isGroupCActive && (
-                        <div className="flex flex-wrap items-center gap-2 animate-fade-in pl-4 border-l-2 border-blue-500/20">
-                            <button onClick={() => setSelectedTeam(Team.TEAM_C)} className={`px-4 py-2 rounded-full text-xs font-bold ${selectedTeam === Team.TEAM_C ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-200' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}>Network</button>
-                            <button onClick={() => setSelectedTeam(Team.TEAM_E)} className={`px-4 py-2 rounded-full text-xs font-bold ${selectedTeam === Team.TEAM_E ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-200' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}>UPS</button>
-                            <button onClick={() => setSelectedTeam(Team.TEAM_G)} className={`px-4 py-2 rounded-full text-xs font-bold ${selectedTeam === Team.TEAM_G ? 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/40 dark:text-fuchsia-200' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}>Online</button>
+                        <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full flex items-center relative w-full max-w-[280px] md:max-w-[360px] flex-shrink-0 animate-fade-in pl-1">
+                            {/* Sliding Indicator for Sub Teams */}
+                            <div 
+                              className="absolute top-0.5 bottom-0.5 bg-white dark:bg-[#2c2c2e] rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                              style={{
+                                width: 'calc(33.333% - 0.25rem)',
+                                transform: `translateX(${
+                                  (selectedTeam === Team.TEAM_C ? 0 : 
+                                   selectedTeam === Team.TEAM_E ? 1 : 
+                                   selectedTeam === Team.TEAM_G ? 2 : 0) * 100
+                                }%)`,
+                                left: '0.125rem'
+                              }}
+                            />
+                            <button onClick={() => setSelectedTeam(Team.TEAM_C)} className={`relative z-10 flex-1 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-center transition-colors duration-200 ${selectedTeam === Team.TEAM_C ? 'text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>Network</button>
+                            <button onClick={() => setSelectedTeam(Team.TEAM_E)} className={`relative z-10 flex-1 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-center transition-colors duration-200 ${selectedTeam === Team.TEAM_E ? 'text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>UPS</button>
+                            <button onClick={() => setSelectedTeam(Team.TEAM_G)} className={`relative z-10 flex-1 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-center transition-colors duration-200 ${selectedTeam === Team.TEAM_G ? 'text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>Online</button>
                         </div>
                     )}
                 </div>
