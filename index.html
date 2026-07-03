@@ -36,39 +36,91 @@
     }
   </script>
   <style>
+    /* ===== CSS Custom Properties — hoverstat.es-inspired theming ===== */
+    :root {
+      --bg-primary: #f5f5f7;
+      --bg-secondary: #eef0f5;
+      --text-primary: #1d1d1f;
+      --text-secondary: #86868b;
+      --surface: rgba(255, 255, 255, 0.88);
+      --surface-hover: rgba(255, 255, 255, 0.95);
+      --border: rgba(0, 0, 0, 0.05);
+      --border-hover: rgba(0, 113, 227, 0.25);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.03);
+      --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06), 0 8px 32px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08), 0 16px 48px rgba(0, 0, 0, 0.06);
+      --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.08);
+      --accent: #0071e3;
+      --transition-smooth: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --transition-bounce: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .dark {
+      --bg-primary: #1e1e24;
+      --bg-secondary: #16161c;
+      --text-primary: #e8e8ed;
+      --text-secondary: #8e8e93;
+      --surface: rgba(38, 38, 46, 0.75);
+      --surface-hover: rgba(48, 48, 56, 0.85);
+      --border: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(0, 113, 227, 0.35);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.12);
+      --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.16);
+      --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.25), 0 16px 48px rgba(0, 0, 0, 0.2);
+      --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.35);
+    }
+
     html, body {
       overflow-x: hidden;
       max-width: 100vw;
     }
 
+    * {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+
     body {
-      background-color: #f5f5f7;
-      color: #1d1d1f;
-      transition: all 0.3s;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      transition: background-color var(--transition-smooth), color var(--transition-smooth);
       margin: 0;
     }
 
     .dark body {
-      background-color: #16161a;
-      color: #f5f5f7;
+      background-color: #1e1e24;
+      color: #e8e8ed;
     }
 
+    /* ===== Glass Panel — hoverstat.es-inspired translucency ===== */
     .glass-panel {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(0, 0, 0, 0.04);
+      background: var(--surface);
+      backdrop-filter: blur(24px) saturate(1.6);
+      -webkit-backdrop-filter: blur(24px) saturate(1.6);
+      border: 1px solid var(--border);
       border-radius: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.03);
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow var(--transition-smooth), transform var(--transition-smooth), border-color var(--transition-smooth);
+    }
+
+    .glass-panel:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--border-hover);
     }
 
     .dark .glass-panel {
-      background: rgba(28, 28, 30, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.15);
+      background: rgba(32, 32, 40, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: var(--shadow-sm);
     }
 
-    /* Soft shadow for ALL white cards — reduces eye strain in light mode */
+    .dark .glass-panel:hover {
+      background: rgba(36, 36, 44, 0.82);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Soft shadow for ALL white cards */
     .bg-white {
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 2px 8px rgba(0, 0, 0, 0.025);
     }
@@ -93,35 +145,42 @@
       display: none;
     }
 
-    /* Mobile menu animations */
+    /* ===== Animations — hoverstat.es-inspired smooth entrances ===== */
     @keyframes fade-in {
-      from {
-        opacity: 0;
-      }
-
-      to {
-        opacity: 1;
-      }
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     @keyframes slide-up {
-      from {
-        opacity: 0;
-        transform: translateY(12px);
-      }
+      from { opacity: 0; transform: translateY(12px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
 
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    @keyframes slide-in-right {
+      from { opacity: 0; transform: translateX(16px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes scale-in {
+      from { opacity: 0; transform: scale(0.92); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes gentle-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
     }
 
     .animate-fade-in {
-      animation: fade-in 0.2s ease-out;
+      animation: fade-in 0.25s ease-out;
     }
 
     .animate-slide-up {
-      animation: slide-up 0.25s ease-out;
+      animation: slide-up 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .animate-scale-in {
+      animation: scale-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
     /* Extreme Performance Mode Overrides */
@@ -129,6 +188,7 @@
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
       transition: none !important;
+      animation: none !important;
     }
 
     html.performance-mode .bg-black\/50,
@@ -141,45 +201,31 @@
     html.performance-mode main,
     html.performance-mode div,
     html.performance-mode span {
-      /* Nuke all heavy tailwind blurs outright */
       --tw-backdrop-blur: blur(0) !important;
     }
 
     /* ===== Mobile UX Enhancements ===== */
-
-    /* Better touch targets — all interactive elements min 44px */
     @media (max-width: 768px) {
       button, a, input, select, textarea {
         min-height: 44px;
       }
-      
-      /* Compact padding on mobile */
+
       .rounded-\[2rem\] { border-radius: 1.25rem !important; }
       .rounded-\[2\.5rem\] { border-radius: 1.25rem !important; }
       .rounded-\[3rem\] { border-radius: 1.5rem !important; }
-      
-      /* Smooth touch feedback */
+
+      /* Smooth touch feedback — hoverstat.es-inspired press */
       button:active, a:active {
         transform: scale(0.97);
         transition: transform 0.1s ease;
       }
-      
-      /* Remove tap highlight on mobile */
+
       * {
         -webkit-tap-highlight-color: transparent;
       }
 
-      /* Better text rendering on mobile */
-      body {
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        text-rendering: optimizeLegibility;
-      }
-
-      /* Compact headings on mobile */
       h1 { font-size: 1.5rem !important; }
 
-      /* Smoother scrolling */
       main, .overflow-y-auto {
         -webkit-overflow-scrolling: touch;
         scroll-behavior: smooth;
@@ -207,18 +253,58 @@
       }
     }
 
-    /* Smooth card entrance */
+    /* ===== hoverstat.es-inspired staggered card entrance ===== */
     @keyframes card-appear {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(10px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
-    .space-y-4 > div, .space-y-8 > div {
-      animation: card-appear 0.3s ease-out both;
+    .space-y-4 > div, .space-y-8 > div,
+    .space-y-3 > div, .space-y-6 > div {
+      animation: card-appear 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
     }
-    .space-y-4 > div:nth-child(2) { animation-delay: 0.05s; }
-    .space-y-4 > div:nth-child(3) { animation-delay: 0.1s; }
-    .space-y-4 > div:nth-child(4) { animation-delay: 0.15s; }
-    .space-y-4 > div:nth-child(5) { animation-delay: 0.2s; }
+    .space-y-4 > div:nth-child(2), .space-y-3 > div:nth-child(2) { animation-delay: 0.04s; }
+    .space-y-4 > div:nth-child(3), .space-y-3 > div:nth-child(3) { animation-delay: 0.08s; }
+    .space-y-4 > div:nth-child(4), .space-y-3 > div:nth-child(4) { animation-delay: 0.12s; }
+    .space-y-4 > div:nth-child(5), .space-y-3 > div:nth-child(5) { animation-delay: 0.16s; }
+    .space-y-4 > div:nth-child(6), .space-y-3 > div:nth-child(6) { animation-delay: 0.20s; }
+    .space-y-4 > div:nth-child(7), .space-y-3 > div:nth-child(7) { animation-delay: 0.24s; }
+    .space-y-4 > div:nth-child(8), .space-y-3 > div:nth-child(8) { animation-delay: 0.28s; }
+
+    /* ===== hoverstat.es-inspired hover transform on interactive cards ===== */
+    @media (hover: hover) {
+      [data-hover-card] {
+        transition: transform var(--transition-smooth), box-shadow var(--transition-smooth), border-color var(--transition-smooth);
+      }
+      [data-hover-card]:hover {
+        transform: translateY(-2px) scale(1.005);
+        box-shadow: var(--shadow-hover) !important;
+      }
+      [data-hover-card]:active {
+        transform: translateY(0) scale(0.995);
+        transition-duration: 0.1s;
+      }
+    }
+
+    /* ===== Custom scrollbar (subtle, hoverstat.es-like) ===== */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.12);
+      border-radius: 10em;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.22);
+    }
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
   </style>
 
   <link rel="stylesheet" href="/index.css">

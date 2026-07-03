@@ -53,7 +53,7 @@ const AppContent: React.FC = () => {
 
 
   return (
-    <div className="relative w-full h-screen flex flex-col overflow-hidden bg-gradient-to-br from-[#f5f5f7] via-[#eef0f5] to-[#f0f2f8] dark:bg-gradient-to-br dark:from-[#1a1a22] dark:via-[#121216] dark:to-[#1a1a22] transition-colors duration-300">
+    <div className="relative w-full h-screen flex flex-col overflow-hidden bg-gradient-to-br from-[#f5f5f7] via-[#eef0f5] to-[#f0f2f8] dark:bg-gradient-to-br dark:from-[#1e1e24] dark:via-[#18181e] dark:to-[#1e1e24] transition-colors duration-300">
       {isAdmin ? (
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden w-full h-full">
           <Navbar embedded={true} />
