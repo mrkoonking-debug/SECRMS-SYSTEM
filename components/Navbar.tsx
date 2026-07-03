@@ -161,14 +161,13 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
         </button>
       </div>
 
-       {/* ===== Mobile Bottom Tab Bar (Premium) ===== */}
+       {/* ===== Mobile Bottom Tab Bar (Premium iOS Style) ===== */}
        {user && (
-         <div
-           className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-3 pointer-events-none"
-           style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
-         >
-           {/* Glass capsule bar */}
-           <div className="relative bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-2xl border border-black/[0.05] dark:border-white/[0.08] rounded-[20px] shadow-[0_-1px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-1px_30px_rgba(0,0,0,0.4)] grid grid-cols-5 items-center h-[56px] pointer-events-auto px-1">
+         <>
+           <div
+             className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-2xl border-t border-gray-200/50 dark:border-white/[0.08] shadow-[0_-1px_12px_rgba(0,0,0,0.03)] grid grid-cols-5 items-center px-1"
+             style={{ height: 'calc(54px + env(safe-area-inset-bottom))', paddingBottom: 'env(safe-area-inset-bottom)' }}
+           >
  
              {/* Dashboard */}
              <Link to="/admin/dashboard" className={`flex flex-col items-center justify-center h-full relative transition-all duration-200 ${location.pathname === '/admin/dashboard' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
@@ -211,7 +210,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
  
            {/* ===== Mobile Popover Menu (Premium Non-blocking macOS Style) ===== */}
            {isMobileOpen && (
-             <div id="mobile-more-popup" className="absolute bottom-[72px] right-3 w-[250px] bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-2xl border border-gray-200/50 dark:border-white/[0.08] rounded-2xl shadow-xl z-50 pointer-events-auto flex flex-col overflow-hidden animate-slide-up">
+             <div id="mobile-more-popup" className="md:hidden fixed bottom-[calc(62px+env(safe-area-inset-bottom))] right-3 w-[250px] bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-2xl border border-gray-200/50 dark:border-white/[0.08] rounded-2xl shadow-xl z-50 pointer-events-auto flex flex-col overflow-hidden animate-slide-up">
               {/* Quick Settings */}
               <div className="p-2 border-b border-gray-100/50 dark:border-white/[0.04]">
                 <div className="flex items-center justify-between bg-gray-50 dark:bg-white/[0.03] p-1 rounded-xl border border-gray-100 dark:border-white/[0.04]">
@@ -262,7 +261,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
               )}
             </div>
           )}
-        </div>
+        </>
       )}
 
 
