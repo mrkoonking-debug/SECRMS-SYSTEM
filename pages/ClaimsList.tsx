@@ -268,7 +268,7 @@ export const ClaimsList: React.FC = () => {
 
             {/* ── Search + Filters ── */}
             <div className="bg-white dark:bg-[#16161a] rounded-xl md:rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-200/60 dark:border-white/[0.08] p-1.5 mb-5 md:mb-6 sticky top-14 md:top-0 z-30 flex flex-col gap-2">
-                <div className="flex flex-col lg:flex-row lg:items-center gap-1 md:gap-2 w-full">
+                <div className="flex flex-col xl:flex-row xl:items-center gap-1 md:gap-2 w-full">
                     <div className="relative flex-grow group">
                         <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <input 
@@ -279,14 +279,14 @@ export const ClaimsList: React.FC = () => {
                             className="w-full bg-transparent border-none rounded-xl md:rounded-2xl py-2.5 md:py-3 pl-9 md:pl-11 pr-4 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0" 
                         />
                     </div>
-                    <div className="flex items-center gap-2 w-full lg:w-auto px-1 pb-1 lg:pb-0">
-                        <button onClick={handleExpandAll} className="hidden lg:flex p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06] flex-shrink-0 transition-colors">
+                    <div className="flex items-center gap-2 w-full xl:w-auto px-1 pb-1 xl:pb-0">
+                        <button onClick={handleExpandAll} className="hidden xl:flex p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06] flex-shrink-0 transition-colors">
                             <ChevronsUpDown className="w-4 h-4" />
                         </button>
-                        <div className="hidden lg:block h-5 w-px bg-gray-200 dark:bg-white/10 flex-shrink-0"></div>
+                        <div className="hidden xl:block h-5 w-px bg-gray-200 dark:bg-white/10 flex-shrink-0"></div>
                         
                         {/* iOS Segmented Control style with Sliding Indicator */}
-                        <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full grid grid-cols-4 items-center relative w-full lg:max-w-[420px] flex-shrink-0">
+                        <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full grid grid-cols-4 items-center relative w-full xl:max-w-[420px] flex-shrink-0">
                             {/* Sliding Indicator with Dynamic Colors */}
                             <div 
                               className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform translate-z-0 ${getStatusColorClass(statusFilter)}`}

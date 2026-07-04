@@ -164,7 +164,7 @@ export const SettingsPage: React.FC = () => {
 
   const getLineMessage = (group: any) => {
     const dateStr = new Date().toLocaleDateString('th-TH');
-    let msg = `📋 สรุปรายการงานเคลมค้างดำเนินการ\n👤 ผู้รับผิดชอบ: ${group.name}\n📅 วันที่: ${dateStr}\n\n`;
+    let msg = `📋 [SEC RMS] สรุปรายการงานเคลมค้างดำเนินการ\n👤 ผู้รับผิดชอบ: ${group.name}\n📅 วันที่: ${dateStr}\n\n`;
     group.items.forEach((item: any, idx: number) => {
       msg += `${idx + 1}. รหัส: ${item.id}\n   รุ่น: ${item.brand} ${item.productModel}\n   S/N: ${item.serialNumber}\n   สถานะ: ${item.status}\n\n`;
     });
