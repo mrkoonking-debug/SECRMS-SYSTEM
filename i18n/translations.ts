@@ -45,6 +45,9 @@ export const translations = {
       teamC: 'Team C: Network & UNV',
       teamE: 'Team E: UPS',
       teamG: 'Team G: Online Platform',
+      team_c: 'Team C: Network & UNV',
+      team_e: 'Team E: UPS',
+      team_g: 'Team G: Online Platform',
       all: 'All Teams',
       unassigned: 'Waiting for Assignment'
     },
@@ -441,6 +444,9 @@ export const translations = {
       teamC: 'ทีม C: Network & UNV',
       teamE: 'ทีม E: UPS',
       teamG: 'ทีม G: Online Platform',
+      team_c: 'ทีม C: Network & UNV',
+      team_e: 'ทีม E: UPS',
+      team_g: 'ทีม G: Online Platform',
       all: 'ภาพรวมทุกทีม',
       unassigned: 'รอรับเข้าทีม'
     },
