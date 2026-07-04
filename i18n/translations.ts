@@ -458,8 +458,8 @@ export const translations = {
       DONE: 'เสร็จสิ้น'
     },
     restockCondition: {
-      NEW: 'ของใหม่แกะกล่อง (New)',
-      REFURBISHED: 'ซ่อมแล้ว (Refurbished)'
+      NEW: 'ของใหม่แกะกล่อง',
+      REFURBISHED: 'ซ่อมแล้ว/ปรับสภาพ'
     },
     statusSteps: {
       received: 'รับเรื่อง',
@@ -468,16 +468,16 @@ export const translations = {
       ready: 'เสร็จสิ้น'
     },
     warranty: {
-      IN_WARRANTY: 'อยู่ในประกัน (In Warranty)',
-      OUT_OF_WARRANTY: 'หมดประกัน (Out of Warranty)',
-      VOID: 'ผิดเงื่อนไข/ไหม้/แตกหัก (Void)'
+      IN_WARRANTY: 'อยู่ในประกัน',
+      OUT_OF_WARRANTY: 'หมดประกัน',
+      VOID: 'ผิดเงื่อนไข/ไหม้/แตกหัก'
     },
     actions: {
       replaced_component: 'ศูนย์เปลี่ยนอะไหล่',
-      swapped_unit: 'ศูนย์เปลี่ยนตัวใหม่ (Swap)',
+      swapped_unit: 'ศูนย์เปลี่ยนตัวใหม่',
       software_update: 'แก้ไข Config/Firmware (จบที่ร้าน)',
       no_fault_found: 'ไม่พบอาการเสีย (ส่งคืน)',
-      advance_replacement: 'เปลี่ยนสินค้าล่วงหน้า (Advance Replacement)'
+      advance_replacement: 'เปลี่ยนสินค้าล่วงหน้า'
     },
     delays: {
       NONE: 'ปกติ (ไม่ล่าช้า)',

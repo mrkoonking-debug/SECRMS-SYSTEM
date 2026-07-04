@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { RMA, RMAStatus, Team, DelayReason, ResolutionDetails } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
-import { X, Save, AlertCircle, ArrowRight, CheckCircle2, ChevronRight, RotateCcw, Truck, Box, Layers, Wifi, Zap, ShoppingBag, ShieldCheck, RefreshCw, AlertOctagon, Plus, Check, Pencil, Lock, Search, Package, Wrench, Undo2, PackageCheck, ClipboardCheck, Settings2, Maximize2, ScanBarcode } from 'lucide-react';
+import { X, Save, AlertCircle, ArrowRight, CheckCircle2, ChevronRight, RotateCcw, Truck, Box, Layers, Wifi, Zap, ShoppingBag, ShieldCheck, RefreshCw, AlertOctagon, Plus, Check, Pencil, Lock, Search, Package, Wrench, Undo2, PackageCheck, ClipboardCheck, Settings2, Maximize2, ScanBarcode, Image as ImageIcon, Loader2, Trash2 } from 'lucide-react';
 import { GlassSelect } from './GlassSelect';
 import { MockDb } from '../services/mockDb';
 import { HddBulkModal } from './HddBulkModal';
 import { ScannerModal } from './ScannerModal';
 import { showToast } from '../services/toast';
+import { compressImage } from '../services/imageCompressor';
 
 interface EditRMADrawerProps {
     isOpen: boolean;
@@ -26,6 +27,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
     const [isSaving, setIsSaving] = useState(false);
     const [customDist, setCustomDist] = useState('');
     const [customBrand, setCustomBrand] = useState('');
+    const [isCompressingImage, setIsCompressingImage] = useState(false);
 
     // Custom Action State
     const [customAction, setCustomAction] = useState('');
@@ -143,17 +145,46 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                 if (newLevel < oldLevel) {
                     next.serviceType = undefined;
                     next.resolution = {
-                        ...prev.resolution!,
                         actionTaken: '',
-                        actionDetails: '',
-                        replacedSerialNumber: '',
-                        vendorTicketRef: '',
+                        technicalNotes: '',
+                        rootCause: ''
                     };
                 }
             }
-            
             return next;
         });
+    };
+
+    const handleAttachmentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        setIsCompressingImage(true);
+        try {
+            const currentAttachments = formData?.attachments || [];
+            const updated = [...currentAttachments];
+            for (let i = 0; i < files.length; i++) {
+                if (updated.length >= 5) {
+                    showToast('อัพโหลดรูปภาพได้สูงสุด 5 รูปต่อสินค้าหนึ่งชิ้น', 'error');
+                    break;
+                }
+                const file = files[i];
+                const compressed = await compressImage(file, 800, 800, 0.5);
+                updated.push({
+                    id: 'img-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+                    fileName: file.name,
+                    fileType: file.type,
+                    previewUrl: compressed
+                });
+            }
+            handleFormChange('attachments', updated);
+            showToast('อัพโหลดและบีบอัดรูปภาพสำเร็จ', 'success');
+        } catch (err) {
+            console.error('RMA image compression upload failed', err);
+            showToast('อัพโหลดรูปภาพไม่สำเร็จ', 'error');
+        } finally {
+            setIsCompressingImage(false);
+        }
     };
 
     const handleResolutionChange = (field: keyof ResolutionDetails, value: any) => {
@@ -577,6 +608,54 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                         </div>
                         <div className="relative z-10">
                             <GlassSelect label={t('track.warrantyStatus')} value={formData.repairCosts?.warrantyStatus || ''} onChange={handleWarrantyChange} options={warrantyOptions} searchable recentKey="warrantyStatus" />
+                        </div>
+                    </div>
+
+                    {/* แนบรูปภาพอุปกรณ์ */}
+                    <div className="border-t border-gray-100 dark:border-white/5 pt-4">
+                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2 flex items-center gap-1.5">
+                            <ImageIcon className="w-4 h-4 text-gray-400" /> แนบรูปภาพตัวเครื่อง / อาการเสีย (สูงสุด 5 รูป)
+                        </label>
+                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                            {(formData.attachments || []).map((att: any, attIdx: number) => (
+                                <div key={att.id || attIdx} className="relative aspect-square w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 group bg-gray-50 dark:bg-[#1e1e1f] flex items-center justify-center">
+                                    <img src={att.previewUrl} alt="Product Attachment" className="w-full h-full object-cover" />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const current = formData.attachments || [];
+                                            handleFormChange('attachments', current.filter((_: any, idx: number) => idx !== attIdx));
+                                        }}
+                                        className="absolute top-1.5 right-1.5 p-1 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow"
+                                        title="ลบรูปภาพ"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            ))}
+                            
+                            {(!formData.attachments || formData.attachments.length < 5) && (
+                                <div className="relative aspect-square w-full border-2 border-dashed border-gray-200 dark:border-[#424245] hover:border-blue-500 transition-colors rounded-2xl bg-white dark:bg-[#2c2c2e] flex flex-col items-center justify-center cursor-pointer p-2">
+                                    {isCompressingImage ? (
+                                        <div className="flex flex-col items-center gap-1 text-[10px] text-gray-400 text-center">
+                                            <Loader2 className="w-4 h-4 text-[#0071e3] animate-spin" />
+                                            <span>กำลังบีบอัด...</span>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <Plus className="w-5 h-5 text-gray-400 mb-1" />
+                                            <span className="text-[9px] text-gray-400 text-center">แนบรูปภาพ</span>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                multiple
+                                                onChange={handleAttachmentUpload}
+                                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                            />
+                                        </>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

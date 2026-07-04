@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Save, Calendar, Landmark, User, FileText, HelpCircle } from 'lucide-react';
 import { PettyCashTransaction, RMA } from '../types';
 import { MockDb } from '../services/mockDb';
 import { showToast } from '../services/toast';
+import { GlassSelect } from './GlassSelect';
+import { compressImage } from '../services/imageCompressor';
+import { X, Save, Calendar, Landmark, User, FileText, HelpCircle, Image as ImageIcon, Loader2, Trash2 } from 'lucide-react';
 
 interface TransactionModalProps {
   onClose: () => void;
@@ -29,32 +31,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const currentUser = MockDb.getCurrentUser();
   const [staffName, setStaffName] = useState(transaction?.staffName || currentUser?.name || '');
   const [note, setNote] = useState(transaction?.note || '');
-  const [refRmaId, setRefRmaId] = useState(transaction?.refRmaId || '');
-  const [rmas, setRmas] = useState<RMA[]>([]);
-  const [isLoadingRmas, setIsLoadingRmas] = useState(false);
-
+  const [receiptUrl, setReceiptUrl] = useState(transaction?.receiptUrl || '');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Auto descriptions suggestions
   const suggestions = type === 'EXPENSE' 
     ? ['ค่าส่งปลายทาง', 'ค่าบรรจุภัณฑ์/กล่อง/บับเบิ้ล', 'ค่าเครื่องเขียน/อุปกรณ์', 'ค่าเดินทาง/น้ำมัน']
-    : ['เติมเงินกองกลางจากเจ้านาย', 'รับคืนค่าประกัน', 'ปรับสมดุลเงินสด'];
-
-  useEffect(() => {
-    const fetchRMAs = async () => {
-      setIsLoadingRmas(true);
-      try {
-        const list = await MockDb.getRMAs();
-        // Sort RMAs: latest first
-        setRmas(list.filter(r => !r.isDeleted).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
-      } catch (err) {
-        console.error('Error fetching RMAs for link dropdown', err);
-      } finally {
-        setIsLoadingRmas(false);
-      }
-    };
-    fetchRMAs();
-  }, []);
+    : ['เบิกเงินค่าขนส่งปลายทาง', 'เบิกเงินกองกลางประจำสัปดาห์', 'เบิกเงินกองกลางเพิ่มเติม'];
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -67,6 +51,24 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    try {
+      // Compress to max 800px width/height, 0.5 quality for extremely light size
+      const compressed = await compressImage(file, 800, 800, 0.5);
+      setReceiptUrl(compressed);
+      showToast('อัพโหลดและบีบอัดรูปภาพสำเร็จ', 'success');
+    } catch (err) {
+      console.error('Image compression failed', err);
+      showToast('ไม่สามารถอัพโหลดรูปภาพได้', 'error');
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -84,7 +86,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         staffName: staffName.trim(),
         isReimbursed: transaction?.isReimbursed || false,
         note: note.trim(),
-        refRmaId: refRmaId || undefined,
+        receiptUrl: receiptUrl || undefined,
         ...(type === 'INCOME' ? { paidBy: 'PETTY_CASH' as const } : {}) // Income is always funded to Petty Cash
       };
 
@@ -139,14 +141,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 onClick={() => { setType('EXPENSE'); setPaidBy('PETTY_CASH'); }}
                 className={`py-2 text-xs font-bold rounded-lg transition-all ${type === 'EXPENSE' ? 'bg-[#ff9500] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
               >
-                รายจ่าย (Expense)
+                รายจ่าย
               </button>
               <button
                 type="button"
                 onClick={() => { setType('INCOME'); setPaidBy('PETTY_CASH'); }}
                 className={`py-2 text-xs font-bold rounded-lg transition-all ${type === 'INCOME' ? 'bg-[#34c759] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
               >
-                รายรับ (Income)
+                เบิกเงินพี่เกษม
               </button>
             </div>
           </div>
@@ -213,17 +215,17 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             {/* Category */}
             <div>
               <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1">หมวดหมู่</label>
-              <select
+              <GlassSelect
                 value={category}
-                onChange={e => setCategory(e.target.value)}
-                className={inputClass(false)}
-              >
-                <option value="ค่าขนส่ง">ค่าขนส่ง / ปลายทาง</option>
-                <option value="ค่าบรรจุภัณฑ์">ค่ากล่อง / บับเบิ้ล</option>
-                <option value="ค่าเครื่องเขียน">ค่าเครื่องเขียน / อุปกรณ์</option>
-                <option value="กองกลาง">เงินกองกลาง (รับเข้า/เจ้านาย)</option>
-                <option value="อื่นๆ">อื่นๆ</option>
-              </select>
+                onChange={val => setCategory(val)}
+                options={[
+                  { value: 'ค่าขนส่ง', label: 'ค่าขนส่ง / ปลายทาง' },
+                  { value: 'ค่าบรรจุภัณฑ์', label: 'ค่ากล่อง / บับเบิ้ล' },
+                  { value: 'ค่าเครื่องเขียน', label: 'ค่าเครื่องเขียน / อุปกรณ์' },
+                  { value: 'กองกลาง', label: 'เงินกองกลาง (รับเข้า/เจ้านาย)' },
+                  { value: 'อื่นๆ', label: 'อื่นๆ' },
+                ]}
+              />
             </div>
 
             {/* Staff Name */}
@@ -246,39 +248,62 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           {type === 'EXPENSE' && (
             <div>
               <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1">จ่ายด้วยเงินก้อนไหน?</label>
-              <select
+              <GlassSelect
                 value={paidBy}
-                onChange={e => setPaidBy(e.target.value as any)}
-                className={inputClass(false)}
-              >
-                <option value="PETTY_CASH">เงินสดกองกลาง (Petty Cash)</option>
-                <option value="PERSONAL_CASH">สำรองจ่ายด้วยเงินสดส่วนตัว (พนักงานจ่ายสด)</option>
-                <option value="PERSONAL_TRANSFER">สำรองจ่ายด้วยเงินโอนส่วนตัว (พนักงานโอนจ่าย)</option>
-              </select>
+                onChange={val => setPaidBy(val as 'PETTY_CASH' | 'PERSONAL_CASH' | 'PERSONAL_TRANSFER')}
+                options={[
+                  { value: 'PETTY_CASH', label: 'เงินสดกองกลาง' },
+                  { value: 'PERSONAL_CASH', label: 'พนักงานสำรองจ่าย' },
+                ]}
+              />
               <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 ml-1">
                 *หากเลือก 'สำรองจ่ายด้วยเงินส่วนตัว' ระบบจะบันทึกค้างคืนพนักงาน เพื่อแจ้งให้หัวหน้าเบิกคืนเงินสดในภายหลัง
               </p>
             </div>
           )}
 
-          {/* Linked RMA ID (Optional) */}
+          {/* แนบรูปภาพใบเสร็จ / สลิป */}
           <div>
             <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1 flex items-center gap-1">
-              <FileText className="w-3.5 h-3.5" /> เชื่อมโยงกับใบงานเคลม (Optional)
+              <ImageIcon className="w-3.5 h-3.5" /> แนบรูปภาพใบเสร็จ / สลิป (Optional)
             </label>
-            <select
-              value={refRmaId}
-              onChange={e => setRefRmaId(e.target.value)}
-              className={inputClass(false)}
-              disabled={isLoadingRmas}
-            >
-              <option value="">-- ไม่ระบุ / ไม่เชื่อมโยง --</option>
-              {rmas.map(r => (
-                <option key={r.id} value={r.id}>
-                  {r.id} ({r.customerName} - {r.brand} {r.productModel})
-                </option>
-              ))}
-            </select>
+            
+            {receiptUrl ? (
+              <div className="relative w-full max-w-[200px] h-32 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 group bg-gray-50 dark:bg-[#1e1e1f] flex items-center justify-center">
+                <img src={receiptUrl} alt="Receipt Preview" className="w-full h-full object-contain p-2" />
+                <button
+                  type="button"
+                  onClick={() => setReceiptUrl('')}
+                  className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow"
+                  title="ลบรูปภาพ"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="w-full border-2 border-dashed border-gray-200 dark:border-[#424245] hover:border-blue-500 transition-colors rounded-xl p-4 bg-white dark:bg-[#1e1e1f] relative flex flex-col items-center justify-center cursor-pointer min-h-[90px]">
+                {isUploadingImage ? (
+                  <div className="flex flex-col items-center gap-1.5 text-xs text-gray-400">
+                    <Loader2 className="w-5 h-5 text-[#0071e3] animate-spin" />
+                    <span>กำลังบีบอัดและโหลดรูปภาพ...</span>
+                  </div>
+                ) : (
+                  <>
+                    <ImageIcon className="w-6 h-6 text-gray-400 mb-1" />
+                    <span className="text-xs text-gray-400">คลิกที่นี่เพื่อเลือกหรือถ่ายรูปใบเสร็จ (PNG/JPG)</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
+                  </>
+                )}
+              </div>
+            )}
+            <p className="text-[10px] text-gray-400 mt-1 ml-1">
+              *ระบบจะช่วยบีบอัดรูปภาพให้มีขนาดเล็กและประหยัดข้อมูลโดยอัตโนมัติ
+            </p>
           </div>
 
           {/* Notes */}

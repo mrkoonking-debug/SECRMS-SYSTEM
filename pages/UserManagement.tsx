@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
-import { UserPlus, Trash2, Shield, User, Loader2, AlertCircle, Check, Edit2, X, Save } from 'lucide-react';
+import { UserPlus, Trash2, Shield, User, Loader2, AlertCircle, Check, Edit2, X, Save, Wallet } from 'lucide-react';
 import { Team } from '../types';
 import { GlassSelect } from '../components/GlassSelect';
 import { showToast } from '../services/toast';
@@ -19,10 +19,11 @@ export const UserManagement: React.FC = () => {
   const [editingUid, setEditingUid] = useState<string | null>(null);
   const [editRole, setEditRole] = useState('');
   const [editTeam, setEditTeam] = useState('');
+  const [editCanAccessFinance, setEditCanAccessFinance] = useState(false);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: '', email: '', password: '', role: 'staff', team: 'ALL'
+    name: '', email: '', password: '', role: 'staff', team: 'ALL', canAccessFinance: false
   });
 
   const fetchUsers = async () => {
@@ -50,7 +51,7 @@ export const UserManagement: React.FC = () => {
     try {
       await MockDb.createStaffAccount(formData);
       setSuccess('สร้างบัญชีพนักงานสำเร็จ!');
-      setFormData({ name: '', email: '', password: '', role: 'staff', team: 'ALL' });
+      setFormData({ name: '', email: '', password: '', role: 'staff', team: 'ALL', canAccessFinance: false });
       fetchUsers();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'ไม่สามารถสร้างบัญชีได้');
@@ -70,6 +71,7 @@ export const UserManagement: React.FC = () => {
     setEditingUid(user.uid);
     setEditRole(user.role || 'staff');
     setEditTeam(user.team || 'ALL');
+    setEditCanAccessFinance(user.canAccessFinance || false);
   };
 
   const cancelEdit = () => {
@@ -81,7 +83,7 @@ export const UserManagement: React.FC = () => {
   const handleSaveEdit = async (uid: string) => {
     setIsSavingEdit(true);
     try {
-      await MockDb.updateStaffAccount(uid, { role: editRole, team: editTeam });
+      await MockDb.updateStaffAccount(uid, { role: editRole, team: editTeam, canAccessFinance: editCanAccessFinance });
       showToast('อัพเดทสิทธิ์สำเร็จ', 'success');
       setEditingUid(null);
       fetchUsers();
@@ -178,6 +180,23 @@ export const UserManagement: React.FC = () => {
               options={teamOptions}
             />
 
+            {/* Finance Access Toggle */}
+            <div 
+              onClick={() => setFormData({ ...formData, canAccessFinance: !formData.canAccessFinance })}
+              className="flex items-center justify-between bg-amber-50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-800/30 rounded-xl px-4 py-3 cursor-pointer select-none"
+            >
+              <div className="flex items-center gap-2">
+                <Wallet className="w-4 h-4 text-amber-500" />
+                <span className="text-xs font-bold text-amber-700 dark:text-amber-400">เข้าถึงหน้าการเงิน</span>
+              </div>
+              <button
+                type="button"
+                className={`w-11 h-6 rounded-full transition-colors relative ${formData.canAccessFinance ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+              >
+                <span className={`block w-4 h-4 rounded-full bg-white shadow-sm absolute top-1 left-1 transition-transform ${formData.canAccessFinance ? 'translate-x-5' : 'translate-x-0'}`} />
+              </button>
+            </div>
+
             {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {error}</div>}
             {success && <div className="p-3 bg-green-50 text-green-600 rounded-xl text-xs flex items-center gap-2"><Check className="w-4 h-4" /> {success}</div>}
 
@@ -218,25 +237,36 @@ export const UserManagement: React.FC = () => {
 
                         <div>
                           <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">ระดับสิทธิ์</label>
-                          <select
+                          <GlassSelect
                             value={editRole}
-                            onChange={e => setEditRole(e.target.value)}
-                            className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-lg px-3 py-2.5 text-sm dark:text-white outline-none focus:ring-2 focus:ring-[#0071e3]"
-                          >
-                            <option value="staff">พนักงานทั่วไป (Staff)</option>
-                            <option value="admin">ผู้จัดการระบบ (Admin)</option>
-                          </select>
+                            onChange={val => setEditRole(val)}
+                            options={roleOptions}
+                          />
                         </div>
 
                         <div>
                           <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">แผนกที่รับผิดชอบ</label>
-                          <select
+                          <GlassSelect
                             value={editTeam}
-                            onChange={e => setEditTeam(e.target.value)}
-                            className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-lg px-3 py-2.5 text-sm dark:text-white outline-none focus:ring-2 focus:ring-[#0071e3]"
+                            onChange={val => setEditTeam(val)}
+                            options={teamOptions}
+                          />
+                        </div>
+
+                        <div 
+                          onClick={() => setEditCanAccessFinance(!editCanAccessFinance)}
+                          className="flex items-center justify-between bg-amber-50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-800/30 rounded-lg px-3 py-2.5 cursor-pointer select-none"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Wallet className="w-4 h-4 text-amber-500" />
+                            <span className="text-xs font-bold text-amber-700 dark:text-amber-400">เข้าถึงหน้าการเงิน</span>
+                          </div>
+                          <button
+                            type="button"
+                            className={`w-11 h-6 rounded-full transition-colors relative ${editCanAccessFinance ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}
                           >
-                            {teamOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                          </select>
+                            <span className={`block w-4 h-4 rounded-full bg-white shadow-sm absolute top-1 left-1 transition-transform ${editCanAccessFinance ? 'translate-x-5' : 'translate-x-0'}`} />
+                          </button>
                         </div>
 
                         <div className="flex gap-2 pt-1">
@@ -265,9 +295,10 @@ export const UserManagement: React.FC = () => {
                           <div>
                             <div className="font-bold dark:text-white">{user.name}</div>
                             <div className="text-xs text-gray-500">{user.email}</div>
-                            <div className="mt-1 flex gap-2">
+                            <div className="mt-1 flex gap-2 flex-wrap">
                               <span className={`text-[10px] px-2 py-0.5 rounded uppercase font-bold ${getRoleBadge(user.role)}`}>{user.role}</span>
                               <span className={`text-[10px] px-2 py-0.5 rounded uppercase font-bold ${getTeamBadge(user.team)}`}>{user.team}</span>
+                              {user.canAccessFinance && <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-amber-100 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400">FINANCE</span>}
                             </div>
                           </div>
                         </div>

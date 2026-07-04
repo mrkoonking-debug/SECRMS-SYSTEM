@@ -403,14 +403,21 @@ export const ClaimsList: React.FC = () => {
                                                                               <span className="text-gray-500 dark:text-gray-400 truncate">{item.productModel}</span>
                                                                               <span className="text-gray-400 dark:text-gray-500 font-mono text-[10px]">({item.serialNumber})</span>
                                                                           </div>
-                                                                          <div className="flex items-center gap-2 flex-shrink-0 ml-auto sm:ml-0">
-                                                                              {item.issueDescription && (
-                                                                                  <span className="text-gray-400 dark:text-gray-500 truncate max-w-[120px] sm:max-w-[200px]" title={item.issueDescription}>
-                                                                                      อาการ: {item.issueDescription}
-                                                                                  </span>
-                                                                              )}
-                                                                              <StatusBadge status={item.status} isOverdue={isRMAOverdue(item)} />
-                                                                          </div>
+                                                                          <div className="flex items-center gap-3 flex-shrink-0 ml-auto sm:ml-0 text-[10px] text-gray-400 dark:text-gray-500">
+                                                                               <div className="flex flex-col text-right">
+                                                                                   {item.issueDescription && (
+                                                                                       <span className="truncate max-w-[150px] sm:max-w-[250px]" title={item.issueDescription}>
+                                                                                           อาการที่แจ้ง: {item.issueDescription}
+                                                                                       </span>
+                                                                                   )}
+                                                                                   {item.resolution?.rootCause && (
+                                                                                       <span className="truncate max-w-[150px] sm:max-w-[250px] text-[#0071e3] font-medium" title={item.resolution.rootCause}>
+                                                                                           อาการที่พบ: {item.resolution.rootCause}
+                                                                                       </span>
+                                                                                   )}
+                                                                               </div>
+                                                                               <StatusBadge status={item.status} isOverdue={isRMAOverdue(item)} />
+                                                                           </div>
                                                                       </div>
                                                                   ))}
                                                                   {jobItems.length > 3 && (

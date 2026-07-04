@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef, lazy, Suspense } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { RMA, RMAStatus, ProductType } from '../types';
-import { ArrowLeft, Package, User, Clock, Edit2, AlertCircle, CheckCircle2, History, Trash2, Truck, ShieldCheck, FileText, Edit3, Save, Loader2, Plus, CheckSquare, Square, Zap, X as XClose, Search, Wrench, Undo2, RefreshCw, ClipboardCheck, Settings2, PackageCheck, Check } from 'lucide-react';
+import { ArrowLeft, Package, User, Clock, Edit2, AlertCircle, CheckCircle2, History, Trash2, Truck, ShieldCheck, FileText, Edit3, Save, Loader2, Plus, CheckSquare, Square, Zap, X as XClose, Search, Wrench, Undo2, RefreshCw, ClipboardCheck, Settings2, PackageCheck, Check, Image as ImageIcon } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { StatusBadge } from '../components/StatusBadge';
 import { GlassSelect } from '../components/GlassSelect';
@@ -90,6 +90,7 @@ export const JobDetail: React.FC = () => {
     // Add item modal
     const [showAddItemModal, setShowAddItemModal] = useState(false);
     const [isAddingItem, setIsAddingItem] = useState(false);
+    const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null);
 
     // Bulk actions state
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -307,7 +308,7 @@ export const JobDetail: React.FC = () => {
                 deviceUsername: item.deviceUsername || '',
                 devicePassword: item.devicePassword || '',
                 team: item.team || null,
-                attachments: [],
+                attachments: item.attachments || [],
                 createdBy: `Staff (Added to ${first.groupRequestId || jobInfo.id})`
             });
 
@@ -675,6 +676,26 @@ export const JobDetail: React.FC = () => {
                                                 {item.notes ? item.notes : <span className="text-gray-300 italic">ไม่มีบันทึก</span>}
                                             </div>
                                         </div>
+
+                                        {item.attachments && item.attachments.length > 0 && (
+                                            <div className="mt-3 border-t border-gray-100 dark:border-white/5 pt-2.5">
+                                                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 flex items-center gap-1">
+                                                    <ImageIcon className="w-3.5 h-3.5" /> รูปภาพอุปกรณ์ที่แนบมา ({item.attachments.length})
+                                                </div>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {item.attachments.map((att: any, attIdx: number) => (
+                                                        <button
+                                                            key={att.id || attIdx}
+                                                            onClick={() => setActiveImageUrl(att.previewUrl)}
+                                                            className="w-12 h-12 rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-transform"
+                                                            title="คลิกเพื่อขยายรูป"
+                                                        >
+                                                            <img src={att.previewUrl} className="w-full h-full object-cover" alt={att.fileName || 'Product'} />
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="flex-shrink-0 flex flex-wrap items-center md:flex-col md:items-end gap-3 md:min-w-[140px]">
@@ -1977,6 +1998,32 @@ export const JobDetail: React.FC = () => {
                                 {isBulkUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                 {isBulkUpdating ? 'กำลังบันทึก...' : `บันทึก (${selectedIds.size} รายการ)`}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Lightbox Modal for Viewing Product Attachments */}
+            {activeImageUrl && (
+                <div 
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[99999] flex items-center justify-center p-4 animate-fade-in"
+                    onClick={() => setActiveImageUrl(null)}
+                >
+                    <div 
+                        className="relative max-w-3xl w-full max-h-[90vh] bg-white dark:bg-[#1c1c1e] rounded-3xl overflow-hidden shadow-2xl p-2 flex flex-col items-center"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <button
+                            onClick={() => setActiveImageUrl(null)}
+                            className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/80 text-white rounded-full transition-colors z-10"
+                        >
+                            <XClose className="w-5 h-5" />
+                        </button>
+                        <div className="w-full overflow-auto flex justify-center p-4 mt-8">
+                            <img src={activeImageUrl} alt="Product Attachment Full size" className="max-w-full max-h-[70vh] object-contain rounded-xl" />
+                        </div>
+                        <div className="pb-4 pt-2 text-center">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">รูปภาพอุปกรณ์ที่ส่งเคลม</p>
                         </div>
                     </div>
                 </div>

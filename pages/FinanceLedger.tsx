@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Landmark, Plus, FileSpreadsheet, Search, RefreshCw, Trash2, Edit2, Check, 
-  ArrowUpRight, ArrowDownLeft, AlertCircle, Coins, Clock, ChevronRight
+  ArrowUpRight, ArrowDownLeft, AlertCircle, Coins, Clock, ChevronRight, Image as ImageIcon, X
 } from 'lucide-react';
 import { PettyCashTransaction, PettyCashSummary } from '../types';
 import { MockDb } from '../services/mockDb';
 import { useLanguage } from '../contexts/LanguageContext';
 import { showToast } from '../services/toast';
 import { TransactionModal } from '../components/TransactionModal';
+import { GlassSelect } from '../components/GlassSelect';
 
 export const FinanceLedger: React.FC = () => {
   const [transactions, setTransactions] = useState<PettyCashTransaction[]>([]);
@@ -27,6 +28,7 @@ export const FinanceLedger: React.FC = () => {
   // Modal states
   const [showModal, setShowModal] = useState(false);
   const [selectedTx, setSelectedTx] = useState<PettyCashTransaction | undefined>(undefined);
+  const [activeReceiptUrl, setActiveReceiptUrl] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -52,6 +54,12 @@ export const FinanceLedger: React.FC = () => {
       navigate('/login', { replace: true });
       return;
     }
+    // Guard: only admin or users with canAccessFinance can access
+    if (currentUser.role !== 'admin' && !(currentUser as any).canAccessFinance) {
+      showToast('คุณไม่มีสิทธิ์เข้าถึงหน้าการเงิน กรุณาติดต่อผู้ดูแลระบบ', 'error');
+      navigate('/admin/dashboard', { replace: true });
+      return;
+    }
     fetchData();
   }, [currentUser, navigate]);
 
@@ -68,7 +76,9 @@ export const FinanceLedger: React.FC = () => {
     const matchesType = typeFilter === 'ALL' || tx.type === typeFilter;
 
     // Source filter
-    const matchesSource = sourceFilter === 'ALL' || tx.paidBy === sourceFilter;
+    const matchesSource = sourceFilter === 'ALL' || 
+      (sourceFilter === 'PERSONAL_CASH' && (tx.paidBy === 'PERSONAL_CASH' || tx.paidBy === 'PERSONAL_TRANSFER')) ||
+      tx.paidBy === sourceFilter;
 
     // Date range filter
     const matchesStartDate = !startDate || tx.date >= startDate;
@@ -269,32 +279,31 @@ export const FinanceLedger: React.FC = () => {
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-sm outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white"
-              placeholder="ค้นหาข้อความ, ชื่อช่าง, RMA..."
+              placeholder="ค้นหาข้อความ..."
             />
           </div>
 
           {/* Type Filter */}
-          <select
+          <GlassSelect
             value={typeFilter}
-            onChange={e => setTypeFilter(e.target.value as any)}
-            className="px-3 py-2 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-sm outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white"
-          >
-            <option value="ALL">ทุกประเภทรายการ (All Type)</option>
-            <option value="INCOME">รายรับ (Income Only)</option>
-            <option value="EXPENSE">รายจ่าย (Expense Only)</option>
-          </select>
+            onChange={val => setTypeFilter(val as 'ALL' | 'INCOME' | 'EXPENSE')}
+            options={[
+              { value: 'ALL', label: 'ทุกประเภท' },
+              { value: 'INCOME', label: 'เบิกเงินพี่เกษม' },
+              { value: 'EXPENSE', label: 'รายจ่าย' },
+            ]}
+          />
 
           {/* Source Filter */}
-          <select
+          <GlassSelect
             value={sourceFilter}
-            onChange={e => setSourceFilter(e.target.value)}
-            className="px-3 py-2 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-sm outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white"
-          >
-            <option value="ALL">ทุกแหล่งที่จ่ายเงิน (All Source)</option>
-            <option value="PETTY_CASH">จ่ายด้วยเงินกองกลาง (Petty Cash)</option>
-            <option value="PERSONAL_CASH">สำรองด้วยเงินสดพนักงาน (Cash)</option>
-            <option value="PERSONAL_TRANSFER">สำรองด้วยเงินโอนพนักงาน (Transfer)</option>
-          </select>
+            onChange={val => setSourceFilter(val)}
+            options={[
+              { value: 'ALL', label: 'ทุกแหล่งเงิน' },
+              { value: 'PETTY_CASH', label: 'เงินกองกลาง' },
+              { value: 'PERSONAL_CASH', label: 'พนักงานสำรองจ่าย' },
+            ]}
+          />
 
           {/* Date range pickers */}
           <div className="flex gap-2 items-center">
@@ -365,7 +374,7 @@ export const FinanceLedger: React.FC = () => {
                         <td className="py-3.5 whitespace-nowrap">
                           {tx.type === 'INCOME' ? (
                             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full font-bold text-[10px]">
-                              <ArrowUpRight className="w-3 h-3" /> รายรับ
+                              <ArrowUpRight className="w-3 h-3" /> เบิกเงินพี่เกษม
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-orange-500/10 text-[#ff9500] rounded-full font-bold text-[10px]">
@@ -376,17 +385,20 @@ export const FinanceLedger: React.FC = () => {
 
                         {/* Description & linked RMA */}
                         <td className="py-3.5 max-w-[200px] md:max-w-[300px]">
-                          <div>
-                            <span className="font-semibold block truncate" title={tx.description}>{tx.description}</span>
-                            <span className="text-[10px] text-gray-400 mt-0.5 block">{tx.category}</span>
-                            {tx.refRmaId && (
-                              <button 
-                                onClick={() => navigate(`/admin/job/${tx.refRmaId}`)} 
-                                className="mt-1 text-[10px] text-blue-500 hover:underline flex items-center font-bold"
+                          <div className="flex items-center gap-3">
+                            {tx.receiptUrl && (
+                              <button
+                                onClick={() => setActiveReceiptUrl(tx.receiptUrl!)}
+                                className="w-8 h-8 rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-transform"
+                                title="ดูใบเสร็จ"
                               >
-                                {tx.refRmaId} <ChevronRight className="w-3 h-3" />
+                                <img src={tx.receiptUrl} className="w-full h-full object-cover" alt="Receipt" />
                               </button>
                             )}
+                            <div className="truncate">
+                              <span className="font-semibold block truncate" title={tx.description}>{tx.description}</span>
+                              <span className="text-[10px] text-gray-400 mt-0.5 block">{tx.category}</span>
+                            </div>
                           </div>
                         </td>
 
@@ -394,13 +406,13 @@ export const FinanceLedger: React.FC = () => {
                         <td className="py-3.5">
                           <div>
                             {tx.type === 'INCOME' ? (
-                              <span className="text-gray-400">ฝากเข้ากองกลาง</span>
+                              <span className="text-gray-400">เบิกเงินพี่เกษม</span>
                             ) : tx.paidBy === 'PETTY_CASH' ? (
                               <span className="text-blue-500 font-medium">เงินกองกลาง</span>
                             ) : (
                               <div className="space-y-1">
                                 <span className="text-amber-500 font-semibold block">
-                                  {tx.paidBy === 'PERSONAL_CASH' ? 'พนักงานจ่ายสดสำรอง' : 'พนักงานโอนสำรอง'}
+                                  พนักงานสำรองจ่าย
                                 </span>
                                 {tx.isReimbursed ? (
                                   <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.2 rounded-md">
@@ -482,16 +494,18 @@ export const FinanceLedger: React.FC = () => {
                     </div>
 
                     {/* Middle Row: Description */}
-                    <div>
-                      <h4 className="text-xs font-bold text-[#1d1d1f] dark:text-white leading-tight">{tx.description}</h4>
-                      <p className="text-[10px] text-gray-400 mt-0.5">{tx.category} · ทำโดย {tx.staffName}</p>
-                      
-                      {tx.refRmaId && (
-                        <button 
-                          onClick={() => navigate(`/admin/job/${tx.refRmaId}`)} 
-                          className="mt-1 text-[10px] text-blue-500 hover:underline flex items-center font-bold gap-0.5"
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <h4 className="text-xs font-bold text-[#1d1d1f] dark:text-white leading-tight">{tx.description}</h4>
+                        <p className="text-[10px] text-gray-400 mt-0.5">{tx.category} · ทำโดย {tx.staffName}</p>
+                      </div>
+                      {tx.receiptUrl && (
+                        <button
+                          onClick={() => setActiveReceiptUrl(tx.receiptUrl!)}
+                          className="w-10 h-10 rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-transform"
+                          title="ดูใบเสร็จ"
                         >
-                          RMA: {tx.refRmaId} <ChevronRight className="w-2.5 h-2.5" />
+                          <img src={tx.receiptUrl} className="w-full h-full object-cover" alt="Receipt" />
                         </button>
                       )}
                     </div>
@@ -500,7 +514,7 @@ export const FinanceLedger: React.FC = () => {
                     <div className="pt-2 border-t border-gray-100/50 dark:border-white/5 flex items-center justify-between gap-2 flex-wrap">
                       <div>
                         {tx.type === 'INCOME' ? (
-                          <span className="text-[10px] text-gray-400">ฝากเงินกองกลาง</span>
+                          <span className="text-[10px] text-gray-400">เบิกเงินพี่เกษม</span>
                         ) : tx.paidBy === 'PETTY_CASH' ? (
                           <span className="text-[10px] text-blue-500 font-semibold">จ่ายจากกองกลาง</span>
                         ) : (
@@ -562,6 +576,32 @@ export const FinanceLedger: React.FC = () => {
           onSave={() => { setShowModal(false); setSelectedTx(undefined); fetchData(); }}
           transaction={selectedTx}
         />
+      )}
+
+      {/* Lightbox for viewing Receipt */}
+      {activeReceiptUrl && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[99999] flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setActiveReceiptUrl(null)}
+        >
+          <div 
+            className="relative max-w-3xl w-full max-h-[90vh] bg-white dark:bg-[#1c1c1e] rounded-3xl overflow-hidden shadow-2xl p-2 flex flex-col items-center"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setActiveReceiptUrl(null)}
+              className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/80 text-white rounded-full transition-colors z-10"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="w-full overflow-auto flex justify-center p-4 mt-8">
+              <img src={activeReceiptUrl} alt="Receipt Full size" className="max-w-full max-h-[70vh] object-contain rounded-xl" />
+            </div>
+            <div className="pb-4 pt-2 text-center">
+              <p className="text-xs text-gray-500 dark:text-gray-400">รูปภาพหลักฐานการทำรายการการเงิน</p>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

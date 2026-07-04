@@ -158,14 +158,13 @@ export const GlassSelect: React.FC<GlassSelectProps> = ({
           : 'text-[#1d1d1f] dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#282a2c]'}
       `}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
         {option.icon}
-        <span className="font-medium truncate">
+        <span className="font-medium truncate block w-full">
           {option.label}
-          {option.value !== option.label && option.value !== 'Other' && <span className="text-gray-400 font-normal ml-1">({option.value})</span>}
         </span>
       </div>
-      {option.value === value && <Check className="w-4 h-4 flex-shrink-0" />}
+      {option.value === value && <Check className="w-4 h-4 flex-shrink-0 text-white" />}
     </button>
   );
 
@@ -185,7 +184,7 @@ export const GlassSelect: React.FC<GlassSelectProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onClick={(e) => e.stopPropagation()}
-              placeholder="Search..."
+              placeholder="ค้นหารายการการเงิน..."
               className="w-full bg-gray-100 dark:bg-[#282a2c] border-none rounded-lg py-2 pl-9 pr-3 text-sm text-[#1d1d1f] dark:text-white focus:ring-2 focus:ring-[#0071e3]/50 placeholder-gray-400 outline-none focus:outline-none"
             />
           </div>
@@ -239,7 +238,7 @@ export const GlassSelect: React.FC<GlassSelectProps> = ({
           {selectedOption?.icon}
           <span className={!selectedOption ? "text-gray-500 dark:text-gray-400" : ""}>
             {selectedOption
-              ? <>{selectedOption.label}{selectedOption.value !== selectedOption.label && selectedOption.value !== 'Other' && <span className="text-gray-400 font-normal ml-1">({selectedOption.value})</span>}</>
+              ? <>{selectedOption.label}</>
               : placeholder}
           </span>
         </div>

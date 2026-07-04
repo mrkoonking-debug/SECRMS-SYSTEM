@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, Minus, ScanBarcode, X, Box, Wifi, Zap, ShoppingBag, Layers, HardDrive, Check, Info } from 'lucide-react';
-import { ProductType, Team } from '../types';
+import { Plus, Minus, ScanBarcode, X, Box, Wifi, Zap, ShoppingBag, Layers, HardDrive, Check, Info, Image as ImageIcon, Loader2, Trash2 } from 'lucide-react';
+import { ProductType, Team, Attachment } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { GlassSelect } from './GlassSelect';
 import { COMMON_ACCESSORIES } from '../constants/options';
@@ -10,6 +10,7 @@ import { MockDb } from '../services/mockDb';
 import { HddBulkModal } from './HddBulkModal';
 import { ScannerModal } from './ScannerModal';
 import { showToast, showValidationError } from '../services/toast';
+import { compressImage } from '../services/imageCompressor';
 
 const DEFAULT_ACCESSORIES = COMMON_ACCESSORIES.filter(a => a !== 'acc_hdd');
 
@@ -53,6 +54,8 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
     const [noSerial, setNoSerial] = useState(false);
     const [quantity, setQuantity] = useState(1);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [attachments, setAttachments] = useState<Attachment[]>([]);
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
 
     // Modals State
     const [showHddModal, setShowHddModal] = useState(false);
@@ -96,6 +99,41 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
         return newErrors;
     };
 
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        setIsUploadingImage(true);
+        try {
+            const newAttachments: Attachment[] = [...attachments];
+            for (let i = 0; i < files.length; i++) {
+                if (newAttachments.length >= 5) {
+                    showToast('อัพโหลดรูปภาพได้สูงสุด 5 รูปต่อสินค้าหนึ่งชิ้น', 'error');
+                    break;
+                }
+                const file = files[i];
+                const compressed = await compressImage(file, 800, 800, 0.5);
+                newAttachments.push({
+                    id: 'img-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+                    fileName: file.name,
+                    fileType: file.type,
+                    previewUrl: compressed
+                });
+            }
+            setAttachments(newAttachments);
+            showToast('อัพโหลดรูปภาพอุปกรณ์สำเร็จ', 'success');
+        } catch (err) {
+            console.error(err);
+            showToast('ไม่สามารถอัพโหลดรูปภาพได้', 'error');
+        } finally {
+            setIsUploadingImage(false);
+        }
+    };
+
+    const removeAttachment = (id: string) => {
+        setAttachments(prev => prev.filter(att => att.id !== id));
+    };
+
     const handleAddClick = () => {
         const validationErrors = validate();
         if (Object.keys(validationErrors).length > 0) {
@@ -126,6 +164,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
             team: mode === 'customer' ? Team.TEAM_C : currentItem.team,
             deviceUsername: currentItem.deviceUsername.trim(),
             devicePassword: currentItem.devicePassword.trim(),
+            attachments: attachments,
         };
 
         if (noSerial && quantity > 1) {
@@ -140,6 +179,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
 
         // Reset Form
         setCurrentItem({ brand: '', model: '', serial: '', type: ProductType.CCTV_CAMERA, distributor: '', issue: '', accessories: [], team: '', deviceUsername: '', devicePassword: '' });
+        setAttachments([]);
         setSelectedMainTeam(''); setCustomDistributor(''); setCustomBrand(''); setCustomAccessory(''); setErrors({});
         setNoSerial(false); setQuantity(1);
     };
@@ -297,6 +337,55 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                     <input value={currentItem.devicePassword} onChange={e => setCurrentItem({ ...currentItem, devicePassword: e.target.value })} className={getInputClass(false)} placeholder={t('placeholders.password')} />
                     {mode !== 'customer' && <p className="text-[11px] text-gray-400 mt-1 ml-2">{t('submit.passwordHint')}</p>}
                 </div>
+            </div>
+
+            {/* แนบรูปภาพอุปกรณ์ */}
+            <div>
+                <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1.5 flex items-center gap-1">
+                    <ImageIcon className="w-3.5 h-3.5" /> แนบรูปภาพตัวเครื่อง / อาการเสีย (Optional)
+                </label>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                    {attachments.map((att) => (
+                        <div key={att.id} className="relative aspect-square w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 group bg-gray-50 dark:bg-[#1e1e1f] flex items-center justify-center">
+                            <img src={att.previewUrl} alt="Product Attachment Preview" className="w-full h-full object-cover" />
+                            <button
+                                type="button"
+                                onClick={() => removeAttachment(att.id)}
+                                className="absolute top-1.5 right-1.5 p-1 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow"
+                                title="ลบรูปภาพ"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+                    ))}
+                    
+                    {attachments.length < 5 && (
+                        <div className="relative aspect-square w-full border-2 border-dashed border-gray-200 dark:border-[#424245] hover:border-blue-500 transition-colors rounded-2xl bg-white dark:bg-[#1e1e1f] flex flex-col items-center justify-center cursor-pointer p-2">
+                            {isUploadingImage ? (
+                                <div className="flex flex-col items-center gap-1 text-[10px] text-gray-400 text-center">
+                                    <Loader2 className="w-4 h-4 text-[#0071e3] animate-spin" />
+                                    <span>กำลังบีบอัด...</span>
+                                </div>
+                            ) : (
+                                <>
+                                    <Plus className="w-5 h-5 text-gray-400 mb-1" />
+                                    <span className="text-[9px] text-gray-400 text-center">แนบรูปภาพ (สูงสุด 5 รูป)</span>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        onChange={handleImageChange}
+                                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                    />
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
+                <p className="text-[10px] text-gray-400 mt-1.5 ml-2">
+                    *ระบบจะบีบอัดรูปภาพอุปกรณ์ให้อัตโนมัติ เพื่อไม่ให้เปลืองปริมาณการส่งข้อมูลมือถือ
+                </p>
             </div>
 
             <button data-tour="tour-add-button" onClick={handleAddClick} className="w-full py-3 md:py-4 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl md:rounded-2xl text-sm md:text-base font-bold flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-[0.98] outline-none focus:outline-none">

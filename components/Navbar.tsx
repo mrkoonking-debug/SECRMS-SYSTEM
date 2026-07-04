@@ -214,7 +214,13 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
           <NavLink to="/admin/rmas" label={t('nav.claims')} icon={List} />
           <NavLink to="/admin/submit" label={t('nav.newRequest')} icon={PlusCircle} />
           <NavLink to="/admin/reports" label={t('nav.reports')} icon={BarChart3} />
-          <NavLink to="/admin/finance" label="การเงิน / บันทึกรายจ่าย" icon={Wallet} />
+
+          {(user.role === 'admin' || (user as any).canAccessFinance) && (
+            <>
+              <div className="text-[9.5px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-6 mb-1.5 pl-3">Finance</div>
+              <NavLink to="/admin/finance" label="การเงิน / บันทึกรายจ่าย" icon={Wallet} />
+            </>
+          )}
 
           {user.role === 'admin' && (
             <>

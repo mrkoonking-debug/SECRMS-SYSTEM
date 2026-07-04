@@ -539,7 +539,7 @@ export const MockDb = {
     try {
       const userCredential = await createUserWithEmailAndPassword(secondaryAuth, data.email, data.password);
       const uid = userCredential.user.uid;
-      await setDoc(doc(db, 'users', uid), { name: data.name, email: data.email, role: data.role, team: data.team, createdAt: serverTimestamp() });
+      await setDoc(doc(db, 'users', uid), { name: data.name, email: data.email, role: data.role, team: data.team, canAccessFinance: data.canAccessFinance || false, createdAt: serverTimestamp() });
       await signOut(secondaryAuth);
       await deleteApp(secondaryApp);
       return true;
@@ -551,7 +551,7 @@ export const MockDb = {
           const existingCred = await signInWithEmailAndPassword(secondaryAuth, data.email, data.password);
           const uid = existingCred.user.uid;
           // Re-create the Firestore user document
-          await setDoc(doc(db, 'users', uid), { name: data.name, email: data.email, role: data.role, team: data.team, createdAt: serverTimestamp() });
+          await setDoc(doc(db, 'users', uid), { name: data.name, email: data.email, role: data.role, team: data.team, canAccessFinance: data.canAccessFinance || false, createdAt: serverTimestamp() });
           await signOut(secondaryAuth);
           await deleteApp(secondaryApp);
           return true;
@@ -593,7 +593,7 @@ export const MockDb = {
     // the 'auth/email-already-in-use' case by re-signing in and re-creating the Firestore doc.
     console.info(`User ${userEmail || uid} removed from Firestore. Firebase Auth account still exists but has no profile.`);
   },
-  updateStaffAccount: async (uid: string, updates: { role?: string; team?: string; name?: string }) => {
+  updateStaffAccount: async (uid: string, updates: { role?: string; team?: string; name?: string; canAccessFinance?: boolean }) => {
     if (!isConfigured || !db) throw new Error("Firebase Not Configured");
     if (currentUser?.role !== 'admin') throw new Error('Unauthorized: admin access required');
     await updateDoc(doc(db, 'users', uid), updates);
@@ -1465,7 +1465,7 @@ export const MockDb = {
     if (!isConfigured || !db) {
       return OFFLINE_PETTY_CASH.filter(tx => !tx.isDeleted).sort((a, b) => b.date.localeCompare(a.date));
     }
-    const q = query(collection(db, 'pettycash'), orderBy('date', 'desc'), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'pettycash'), orderBy('createdAt', 'desc'));
     const snap = await getDocs(q);
     const results: PettyCashTransaction[] = [];
     snap.forEach(docSnap => {
@@ -1479,16 +1479,21 @@ export const MockDb = {
 
   async addPettyCashTransaction(tx: Omit<PettyCashTransaction, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     const nowStr = new Date().toISOString();
-    const newTx = {
+    // Strip undefined values — Firestore addDoc throws on undefined
+    const raw: Record<string, any> = {
       ...tx,
       createdAt: nowStr,
       updatedAt: nowStr,
       isDeleted: false
     };
+    const newTx: Record<string, any> = {};
+    for (const [k, v] of Object.entries(raw)) {
+      if (v !== undefined) newTx[k] = v;
+    }
 
     if (!isConfigured || !db) {
       const id = 'tx-' + Math.random().toString(36).substr(2, 9);
-      OFFLINE_PETTY_CASH.push({ id, ...newTx });
+      OFFLINE_PETTY_CASH.push({ id, ...newTx } as PettyCashTransaction);
       return id;
     }
 
@@ -1498,10 +1503,12 @@ export const MockDb = {
 
   async updatePettyCashTransaction(id: string, updates: Partial<PettyCashTransaction>): Promise<void> {
     const nowStr = new Date().toISOString();
-    const cleanUpdates = {
-      ...updates,
-      updatedAt: nowStr
-    };
+    // Strip undefined values — Firestore updateDoc throws on undefined
+    const raw: Record<string, any> = { ...updates, updatedAt: nowStr };
+    const cleanUpdates: Record<string, any> = {};
+    for (const [k, v] of Object.entries(raw)) {
+      if (v !== undefined) cleanUpdates[k] = v;
+    }
 
     if (!isConfigured || !db) {
       const idx = OFFLINE_PETTY_CASH.findIndex(tx => tx.id === id);
