@@ -164,7 +164,7 @@ export const Dashboard: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-10">
                 <StatCard label={t('dashboard.pendingAction')} value={stats.pendingRMAs} icon={<Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />} color="bg-blue-500" />
                 <StatCard label={t('dashboard.revenuePipeline')} value={stats.revenuePipeline} icon={<Truck className="w-6 h-6 text-orange-600 dark:text-orange-400" />} color="bg-orange-500" />
-                <StatCard label={t('dashboard.avgTurnaround')} value={`${Math.round(stats.avgTurnaroundHours / 24)}`} subLabel="วัน" subValue="Avg" icon={<Timer className="w-6 h-6 text-purple-600 dark:text-purple-400" />} color="bg-purple-500" />
+                <StatCard label={t('dashboard.avgTurnaround')} value={`${Math.round(stats.avgTurnaroundHours / 24)} ${t('dashboard.days')}`} icon={<Timer className="w-6 h-6 text-purple-600 dark:text-purple-400" />} color="bg-purple-500" />
                 <StatCard label={t('dashboard.overdue')} value={stats.overdueCount} icon={<AlertOctagon className="w-6 h-6 text-red-600 dark:text-red-400" />} color="bg-red-500" />
             </div>
 

@@ -163,7 +163,7 @@ export const FinanceLedger: React.FC = () => {
         t.amount.toFixed(2),
         t.description,
         t.category || '',
-        t.paidBy === 'PETTY_CASH' ? 'เงินกองกลาง' : t.paidBy === 'PERSONAL_CASH' ? 'เงินสดส่วนตัวช่าง' : 'เงินโอนส่วนตัวช่าง',
+        t.paidBy === 'PETTY_CASH' ? 'เงินกองกลาง' : t.paidBy === 'PERSONAL_CASH' ? 'เงินสดส่วนตัวพนักงาน' : 'เงินโอนส่วนตัวพนักงาน',
         t.staffName,
         t.type === 'INCOME' ? 'N/A' : t.paidBy === 'PETTY_CASH' ? 'N/A' : t.isReimbursed ? 'คืนแล้ว' : 'ยังไม่คืน',
         t.refRmaId || '',
@@ -646,7 +646,7 @@ export const FinanceLedger: React.FC = () => {
                             onClick={() => handleReimburse(tx.id)}
                             className="px-2 py-1 bg-[#34c759] hover:bg-[#30b34f] text-white font-bold rounded-lg text-[9px] transition-colors active:scale-95"
                           >
-                            คืนเงินช่าง
+                            คืนเงินพนักงาน
                           </button>
                         )}
                         <button
