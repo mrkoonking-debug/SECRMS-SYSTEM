@@ -353,67 +353,71 @@ export const ClaimsList: React.FC = () => {
                                 </button>
 
                                 {isDateExpanded && (
-                                     <div className="bg-white dark:bg-[#16161a] rounded-2xl md:rounded-[22px] border border-gray-200/60 dark:border-white/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:shadow-none overflow-hidden divide-y divide-gray-100 dark:divide-white/[0.04]">
-                                         {sortedJobKeys.map(jobKey => {
-                                             const jobItems = jobsInDate[jobKey];
-                                             const jobTeam = jobItems[0]?.team;
-                                             const customerName = jobItems[0]?.customerName || 'Unknown';
-                                             const quotationNumber = jobItems[0]?.quotationNumber;
-                                             const isJobCancelled = jobItems.every(i => i.status === RMAStatus.CANCELLED);
-                                             const isJobDone = jobItems.every(i => [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(i.status));
+                                      <div className="space-y-3">
+                                          {sortedJobKeys.map(jobKey => {
+                                              const jobItems = jobsInDate[jobKey];
+                                              const jobTeam = jobItems[0]?.team;
+                                              const customerName = jobItems[0]?.customerName || 'Unknown';
+                                              const quotationNumber = jobItems[0]?.quotationNumber;
+                                              const isJobCancelled = jobItems.every(i => i.status === RMAStatus.CANCELLED);
+                                              const isJobDone = jobItems.every(i => [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(i.status));
 
-                                             return (
-                                                 <div key={jobKey} onClick={() => handleJobClick(jobKey)} className={`p-4 flex items-center justify-between gap-4 cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors duration-150 group ${isJobCancelled ? 'opacity-50 grayscale bg-gray-50/30 dark:bg-black/10' : ''}`}>
-                                                     <div className="flex items-center gap-3.5 min-w-0 flex-grow">
-                                                         {/* macOS-style Icon Badge */}
-                                                         <div className={`w-8.5 h-8.5 rounded-lg flex items-center justify-center flex-shrink-0 text-white shadow-sm transition-transform group-hover:scale-105 ${isJobCancelled ? 'bg-gray-400 dark:bg-gray-600' : isJobDone ? 'bg-[#34c759]' : jobItems.some(i => isRMAOverdue(i)) ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>
-                                                             {isJobCancelled ? <X className="w-4 h-4 text-white" /> : isJobDone ? <CheckCircle2 className="w-4 h-4 text-white" /> : <Package className="w-4 h-4 text-white" />}
-                                                         </div>
-                                                         
-                                                         <div className="min-w-0 flex-1">
-                                                             <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
-                                                                 <span className="text-[13px] md:text-[15px] font-bold text-[#1d1d1f] dark:text-white truncate">{jobKey}</span>
-                                                                 {/* Ref badge */}
-                                                                 <span className={`text-[10px] px-1.5 py-0.5 rounded-md border ${quotationNumber ? 'bg-gray-100/80 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400 border-gray-200/60 dark:border-white/[0.06]' : 'bg-gray-50/80 dark:bg-white/[0.03] text-gray-400 dark:text-gray-500 border-gray-100 dark:border-white/[0.04] italic'}`}>{quotationNumber ? `Ref: ${quotationNumber}` : 'ไม่มี Ref'}</span>
-                                                                 {/* Team badge */}
-                                                                 {jobTeam && getTeamBadge(jobTeam)}
-                                                                 {/* Status indicators */}
-                                                                 {isJobCancelled ? (
-                                                                     <span className="bg-gray-500/10 text-gray-500 dark:text-gray-400 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-gray-500/20 font-bold">ยกเลิกแล้ว</span>
-                                                                 ) : isJobDone ? (
-                                                                     <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-emerald-500/20 font-bold flex items-center gap-0.5"><CheckCircle2 className="w-3 h-3" /> เสร็จสิ้น</span>
-                                                                 ) : null}
-                                                                 {!isJobDone && jobItems.some(i => isRMAOverdue(i)) && <span className="bg-[#ff3b30]/10 text-[#ff3b30] text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-[#ff3b30]/15 font-bold">Overdue</span>}
-                                                             </div>
-                                                             <div className="text-[11px] md:text-[13px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5 md:gap-2 mt-0.5">
-                                                                 <span>{customerName}</span>
-                                                                 <span className="text-gray-300 dark:text-gray-700">·</span>
-                                                                 <span>{jobItems.length} {t('claimsList.items')}</span>
-                                                             </div>
-                                                             <div className="flex flex-wrap gap-1 mt-1.5">
-                                                                 {jobItems.slice(0, 5).map((item) => (
-                                                                     <StatusBadge key={item.id} status={item.status} isOverdue={isRMAOverdue(item)} />
-                                                                 ))}
-                                                                 {jobItems.length > 5 && <span className="text-[10px] text-gray-400 font-medium self-center">+{jobItems.length - 5}</span>}
-                                                             </div>
-                                                         </div>
-                                                     </div>
-                                                     
-                                                     {/* Right side brands & arrow */}
-                                                     <div className="flex items-center gap-3 flex-shrink-0">
-                                                         <div className="hidden sm:flex -space-x-1.5">
-                                                             {jobItems.slice(0, 3).map((item) => (
-                                                                 <div key={item.id} className={`w-6 h-6 rounded-md border border-white dark:border-[#1c1c1e] flex items-center justify-center text-[9px] font-bold text-white shadow-sm ${item.team === Team.HIKVISION ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>{item.brand.substring(0, 1)}</div>
-                                                             ))}
-                                                             {jobItems.length > 3 && <div className="w-6 h-6 rounded-md border border-white dark:border-[#1c1c1e] bg-gray-100 dark:bg-white/[0.06] text-gray-400 text-[9px] flex items-center justify-center shadow-sm">+{jobItems.length - 3}</div>}
-                                                         </div>
-                                                         <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 transition-transform group-hover:translate-x-0.5" />
-                                                     </div>
-                                                 </div>
-                                             );
-                                         })}
-                                     </div>
-                                 )}
+                                              return (
+                                                  <div 
+                                                      key={jobKey} 
+                                                      onClick={() => handleJobClick(jobKey)} 
+                                                      className={`p-4 flex items-center justify-between gap-4 cursor-pointer bg-white dark:bg-[#1e1e1f] rounded-2xl border border-gray-200/70 dark:border-white/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.01)] dark:shadow-none hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500/50 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-all duration-200 group ${isJobCancelled ? 'opacity-50 grayscale bg-gray-50/20 dark:bg-black/10' : ''}`}
+                                                  >
+                                                      <div className="flex items-center gap-3.5 min-w-0 flex-grow">
+                                                          {/* macOS-style Icon Badge */}
+                                                          <div className={`w-8.5 h-8.5 rounded-lg flex items-center justify-center flex-shrink-0 text-white shadow-sm transition-transform group-hover:scale-105 ${isJobCancelled ? 'bg-gray-400 dark:bg-gray-600' : isJobDone ? 'bg-[#34c759]' : jobItems.some(i => isRMAOverdue(i)) ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>
+                                                              {isJobCancelled ? <X className="w-4 h-4 text-white" /> : isJobDone ? <CheckCircle2 className="w-4 h-4 text-white" /> : <Package className="w-4 h-4 text-white" />}
+                                                          </div>
+                                                          
+                                                          <div className="min-w-0 flex-1">
+                                                              <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
+                                                                  <span className="text-[13px] md:text-[15px] font-bold text-[#1d1d1f] dark:text-white truncate">{jobKey}</span>
+                                                                  {/* Ref badge */}
+                                                                  <span className={`text-[10px] px-1.5 py-0.5 rounded-md border ${quotationNumber ? 'bg-gray-100/80 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400 border-gray-200/60 dark:border-white/[0.06]' : 'bg-gray-50/80 dark:bg-white/[0.03] text-gray-400 dark:text-gray-500 border-gray-100 dark:border-white/[0.04] italic'}`}>{quotationNumber ? `Ref: ${quotationNumber}` : 'ไม่มี Ref'}</span>
+                                                                  {/* Team badge */}
+                                                                  {jobTeam && getTeamBadge(jobTeam)}
+                                                                  {/* Status indicators */}
+                                                                  {isJobCancelled ? (
+                                                                      <span className="bg-gray-500/10 text-gray-500 dark:text-gray-400 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-gray-500/20 font-bold">ยกเลิกแล้ว</span>
+                                                                  ) : isJobDone ? (
+                                                                      <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-emerald-500/20 font-bold flex items-center gap-0.5"><CheckCircle2 className="w-3 h-3" /> เสร็จสิ้น</span>
+                                                                  ) : null}
+                                                                  {!isJobDone && jobItems.some(i => isRMAOverdue(i)) && <span className="bg-[#ff3b30]/10 text-[#ff3b30] text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-[#ff3b30]/15 font-bold">Overdue</span>}
+                                                              </div>
+                                                              <div className="text-[11px] md:text-[13px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5 md:gap-2 mt-0.5">
+                                                                  <span>{customerName}</span>
+                                                                  <span className="text-gray-300 dark:text-gray-700">·</span>
+                                                                  <span>{jobItems.length} {t('claimsList.items')}</span>
+                                                              </div>
+                                                              <div className="flex flex-wrap gap-1 mt-1.5">
+                                                                  {jobItems.slice(0, 5).map((item) => (
+                                                                      <StatusBadge key={item.id} status={item.status} isOverdue={isRMAOverdue(item)} />
+                                                                  ))}
+                                                                  {jobItems.length > 5 && <span className="text-[10px] text-gray-400 font-medium self-center">+{jobItems.length - 5}</span>}
+                                                              </div>
+                                                          </div>
+                                                      </div>
+                                                      
+                                                      {/* Right side brands & arrow */}
+                                                      <div className="flex items-center gap-3 flex-shrink-0">
+                                                          <div className="hidden sm:flex -space-x-1.5">
+                                                              {jobItems.slice(0, 3).map((item) => (
+                                                                  <div key={item.id} className={`w-6 h-6 rounded-md border border-white dark:border-[#1c1c1e] flex items-center justify-center text-[9px] font-bold text-white shadow-sm ${item.team === Team.HIKVISION ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>{item.brand.substring(0, 1)}</div>
+                                                              ))}
+                                                              {jobItems.length > 3 && <div className="w-6 h-6 rounded-md border border-white dark:border-[#1c1c1e] bg-gray-100 dark:bg-white/[0.06] text-gray-400 text-[9px] flex items-center justify-center shadow-sm">+{jobItems.length - 3}</div>}
+                                                          </div>
+                                                          <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 transition-transform group-hover:translate-x-0.5" />
+                                                      </div>
+                                                  </div>
+                                              );
+                                          })}
+                                      </div>
+                                  )}
                             </div>
                         );
                     })
