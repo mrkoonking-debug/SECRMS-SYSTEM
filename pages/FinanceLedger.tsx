@@ -186,23 +186,23 @@ export const FinanceLedger: React.FC = () => {
           </div>
           <div>
             <h1 className="text-xl md:text-2xl font-black text-[#1d1d1f] dark:text-white leading-tight">ระบบบันทึกค่าใช้จ่าย & กองกลาง</h1>
-            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5">จัดการกระแสเงินสดกองกลาง บันทึกการสำรองจ่าย และอนุมัติการเบิกคืนเงินสำหรับทีมช่าง</p>
+            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5">จัดการกระแสเงินสดกองกลาง บันทึกการสำรองจ่าย และอนุมัติการเบิกคืนเงินพนักงาน</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <button
             onClick={handleExportCSV}
-            className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-[#2c2c2e] dark:hover:bg-[#3a3a3c] border border-gray-200/50 dark:border-white/5 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-bold flex items-center gap-1.5 active:scale-95 transition-all outline-none"
+            className="w-full sm:w-auto px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-[#2c2c2e] dark:hover:bg-[#3a3a3c] border border-gray-200/50 dark:border-white/5 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all outline-none"
           >
             <FileSpreadsheet className="w-4 h-4 text-green-600" />
             ส่งออกรายงาน (CSV)
           </button>
           <button
             onClick={() => { setSelectedTx(undefined); setShowModal(true); }}
-            className="px-4 py-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-sm font-bold flex items-center gap-1.5 active:scale-95 transition-all shadow-md shadow-blue-500/10 outline-none"
+            className="w-full sm:w-auto px-4 py-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-md shadow-blue-500/10 outline-none"
           >
             <Plus className="w-4 h-4" />
-            เพิ่มบันทึกรายรับ/จ่าย
+            เพิ่มบันทึกการเงิน
           </button>
         </div>
       </div>
@@ -306,20 +306,24 @@ export const FinanceLedger: React.FC = () => {
           />
 
           {/* Date range pickers */}
-          <div className="flex gap-2 items-center">
-            <input
-              type="date"
-              value={startDate}
-              onChange={e => setStartDate(e.target.value)}
-              className="w-full px-2 py-2 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-xs outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white"
-            />
-            <span className="text-gray-400 text-xs">ถึง</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={e => setEndDate(e.target.value)}
-              className="w-full px-2 py-2 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-xs outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white"
-            />
+          <div className="flex gap-2 items-center w-full">
+            <div className="flex-1 min-w-0">
+              <input
+                type="date"
+                value={startDate}
+                onChange={e => setStartDate(e.target.value)}
+                className="w-full px-3 py-2.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-xs outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white"
+              />
+            </div>
+            <span className="text-gray-400 text-xs shrink-0">ถึง</span>
+            <div className="flex-1 min-w-0">
+              <input
+                type="date"
+                value={endDate}
+                onChange={e => setEndDate(e.target.value)}
+                className="w-full px-3 py-2.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-xs outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white"
+              />
+            </div>
           </div>
         </div>
 
