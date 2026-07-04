@@ -243,6 +243,16 @@
         -webkit-backdrop-filter: none !important;
       }
 
+      /* Keep beautiful glassmorphism on the floating navigation bars because they are small and critical for readability */
+      .nav-glass {
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        background-color: rgba(255, 255, 255, 0.88) !important;
+      }
+      .dark .nav-glass {
+        background-color: rgba(26, 26, 30, 0.88) !important;
+      }
+
       /* Disable layout-thrashing entry animations on mobile viewports to speed up page loads */
       .space-y-4 > div, .space-y-8 > div,
       .space-y-3 > div, .space-y-6 > div {
