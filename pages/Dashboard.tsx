@@ -31,7 +31,7 @@ export const Dashboard: React.FC = () => {
     const [selectedTeam, setSelectedTeam] = useState<Team | 'ALL' | 'GROUP_C'>('ALL');
     const [isGroupCActive, setIsGroupCActive] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -114,50 +114,46 @@ export const Dashboard: React.FC = () => {
 
                 <div className="flex flex-col gap-3">
                     {/* iOS Segmented Control with Sliding Indicator for Teams */}
-                    <div className="w-full overflow-x-auto scrollbar-hide flex-shrink-0 pb-1">
-                        <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full grid grid-cols-4 items-center relative w-full min-w-[340px] md:min-w-[480px] md:max-w-[480px] flex-shrink-0">
-                            {/* Sliding Indicator with Dynamic Team Colors */}
-                            <div 
-                              className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform translate-z-0 ${getTeamColorClass(
-                                selectedTeam === 'ALL' ? 'ALL' : 
-                                selectedTeam === Team.HIKVISION ? 'A' : 
-                                selectedTeam === Team.DAHUA ? 'B' : 'C'
-                              )}`}
-                              style={{
-                                width: 'calc(25% - 4px)',
-                                left: `calc(${
-                                  (selectedTeam === 'ALL' ? 0 : 
-                                   selectedTeam === Team.HIKVISION ? 1 : 
-                                   selectedTeam === Team.DAHUA ? 2 : 3) * 25
-                                }% + 2px)`
-                              }}
-                            />
-                            <button onClick={() => handleMainFilterClick('ALL')} className={`relative z-10 py-2 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 outline-none focus:outline-none ${selectedTeam === 'ALL' ? 'text-white dark:text-gray-900' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}>{t('teams.all')}</button>
-                            <button onClick={() => handleMainFilterClick('A')} className={`relative z-10 py-2 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 flex items-center justify-center gap-1 outline-none focus:outline-none ${selectedTeam === Team.HIKVISION ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}><Box className="w-3.5 h-3.5" /> Team A</button>
-                            <button onClick={() => handleMainFilterClick('B')} className={`relative z-10 py-2 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 flex items-center justify-center gap-1 outline-none focus:outline-none ${selectedTeam === Team.DAHUA ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}><Layers className="w-3.5 h-3.5" /> Team B</button>
-                            <button onClick={() => handleMainFilterClick('C')} className={`relative z-10 py-2 md:py-3 rounded-full text-[11px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 flex items-center justify-center gap-1 outline-none focus:outline-none ${isGroupCActive ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}><Wifi className="w-3.5 h-3.5" /> Team C <ChevronDown className={`w-3 h-3 ${isGroupCActive ? 'rotate-180' : ''}`} /></button>
-                        </div>
+                    <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full grid grid-cols-4 items-center relative w-full md:max-w-[480px] flex-shrink-0">
+                        {/* Sliding Indicator with Dynamic Team Colors */}
+                        <div 
+                          className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform translate-z-0 ${getTeamColorClass(
+                            selectedTeam === 'ALL' ? 'ALL' : 
+                            selectedTeam === Team.HIKVISION ? 'A' : 
+                            selectedTeam === Team.DAHUA ? 'B' : 'C'
+                          )}`}
+                          style={{
+                            width: 'calc(25% - 4px)',
+                            left: `calc(${
+                              (selectedTeam === 'ALL' ? 0 : 
+                               selectedTeam === Team.HIKVISION ? 1 : 
+                               selectedTeam === Team.DAHUA ? 2 : 3) * 25
+                            }% + 2px)`
+                          }}
+                        />
+                        <button onClick={() => handleMainFilterClick('ALL')} className={`relative z-10 py-2 md:py-3 rounded-full text-[10px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 outline-none focus:outline-none ${selectedTeam === 'ALL' ? 'text-white dark:text-gray-900' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}>{language === 'en' ? 'All Teams' : 'ทุกทีม'}</button>
+                        <button onClick={() => handleMainFilterClick('A')} className={`relative z-10 py-2 md:py-3 rounded-full text-[10px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 flex items-center justify-center gap-1 outline-none focus:outline-none ${selectedTeam === Team.HIKVISION ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}><Box className="w-3.5 h-3.5 hidden sm:inline" /> Team A</button>
+                        <button onClick={() => handleMainFilterClick('B')} className={`relative z-10 py-2 md:py-3 rounded-full text-[10px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 flex items-center justify-center gap-1 outline-none focus:outline-none ${selectedTeam === Team.DAHUA ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}><Layers className="w-3.5 h-3.5 hidden sm:inline" /> Team B</button>
+                        <button onClick={() => handleMainFilterClick('C')} className={`relative z-10 py-2 md:py-3 rounded-full text-[10px] md:text-sm font-semibold whitespace-nowrap text-center transition-colors duration-200 flex items-center justify-center gap-1 outline-none focus:outline-none ${isGroupCActive ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}><Wifi className="w-3.5 h-3.5 hidden sm:inline" /> Team C <ChevronDown className={`w-3 h-3 ${isGroupCActive ? 'rotate-180' : ''} hidden sm:inline`} /></button>
                     </div>
 
                     {isGroupCActive && (
-                        <div className="w-full overflow-x-auto scrollbar-hide flex-shrink-0 pb-1">
-                            <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full grid grid-cols-3 items-center relative w-full min-w-[280px] md:min-w-[360px] md:max-w-[360px] flex-shrink-0 animate-fade-in">
-                                {/* Sliding Indicator for Sub Teams */}
-                                <div 
-                                  className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform translate-z-0 ${getSubTeamColorClass(selectedTeam)}`}
-                                  style={{
-                                    width: 'calc(33.333% - 4px)',
-                                    left: `calc(${
-                                      (selectedTeam === Team.TEAM_C ? 0 : 
-                                       selectedTeam === Team.TEAM_E ? 1 : 
-                                       selectedTeam === Team.TEAM_G ? 2 : 0) * 33.333
-                                    }% + 2px)`
-                                  }}
-                                />
-                                <button onClick={() => setSelectedTeam(Team.TEAM_C)} className={`relative z-10 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-center transition-colors duration-200 outline-none focus:outline-none ${selectedTeam === Team.TEAM_C ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>Network</button>
-                                <button onClick={() => setSelectedTeam(Team.TEAM_E)} className={`relative z-10 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-center transition-colors duration-200 outline-none focus:outline-none ${selectedTeam === Team.TEAM_E ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>UPS</button>
-                                <button onClick={() => setSelectedTeam(Team.TEAM_G)} className={`relative z-10 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-center transition-colors duration-200 outline-none focus:outline-none ${selectedTeam === Team.TEAM_G ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>Online</button>
-                            </div>
+                        <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full grid grid-cols-3 items-center relative w-full max-w-[280px] md:max-w-[360px] flex-shrink-0 animate-fade-in">
+                            {/* Sliding Indicator for Sub Teams */}
+                            <div 
+                              className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform translate-z-0 ${getSubTeamColorClass(selectedTeam)}`}
+                              style={{
+                                width: 'calc(33.333% - 4px)',
+                                left: `calc(${
+                                  (selectedTeam === Team.TEAM_C ? 0 : 
+                                   selectedTeam === Team.TEAM_E ? 1 : 
+                                   selectedTeam === Team.TEAM_G ? 2 : 0) * 33.333
+                                }% + 2px)`
+                              }}
+                            />
+                            <button onClick={() => setSelectedTeam(Team.TEAM_C)} className={`relative z-10 py-1.5 rounded-full text-[10px] md:text-xs font-semibold text-center transition-colors duration-200 outline-none focus:outline-none ${selectedTeam === Team.TEAM_C ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>Network</button>
+                            <button onClick={() => setSelectedTeam(Team.TEAM_E)} className={`relative z-10 py-1.5 rounded-full text-[10px] md:text-xs font-semibold text-center transition-colors duration-200 outline-none focus:outline-none ${selectedTeam === Team.TEAM_E ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>UPS</button>
+                            <button onClick={() => setSelectedTeam(Team.TEAM_G)} className={`relative z-10 py-1.5 rounded-full text-[10px] md:text-xs font-semibold text-center transition-colors duration-200 outline-none focus:outline-none ${selectedTeam === Team.TEAM_G ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>Online</button>
                         </div>
                     )}
                 </div>

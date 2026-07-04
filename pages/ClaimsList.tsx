@@ -68,7 +68,7 @@ export const ClaimsList: React.FC = () => {
         return saved ? new Set(JSON.parse(saved)) : new Set(['Today', 'Yesterday', 'This Week']);
     });
     const [isTeamCExpanded, setIsTeamCExpanded] = useState(() => sessionStorage.getItem('rmas_isTeamCExpanded') === 'true');
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const navigate = useNavigate();
     const searchTimerRef = useRef<any>(null);
 
@@ -274,7 +274,7 @@ export const ClaimsList: React.FC = () => {
                     <div className="hidden md:block h-5 w-px bg-gray-200 dark:bg-white/10 flex-shrink-0 animate-fade-in"></div>
                     
                     {/* iOS Segmented Control style with Sliding Indicator */}
-                    <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full grid grid-cols-4 items-center relative w-full min-w-[340px] md:min-w-[420px] md:max-w-[420px] flex-shrink-0">
+                    <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full grid grid-cols-4 items-center relative w-full md:max-w-[420px] flex-shrink-0">
                         {/* Sliding Indicator with Dynamic Colors */}
                         <div 
                           className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform translate-z-0 ${getStatusColorClass(statusFilter)}`}
@@ -287,13 +287,16 @@ export const ClaimsList: React.FC = () => {
                             <button 
                                 key={s} 
                                 onClick={() => setStatusFilter(s as typeof statusFilter)} 
-                                className={`relative z-10 px-3 py-1.5 md:px-3.5 md:py-2 text-[10px] md:text-xs font-semibold rounded-full transition-colors duration-200 whitespace-nowrap text-center outline-none focus:outline-none ${
+                                className={`relative z-10 px-1 md:px-3.5 py-1.5 md:py-2 text-[10px] md:text-xs font-semibold rounded-full transition-colors duration-200 whitespace-nowrap text-center outline-none focus:outline-none ${
                                     statusFilter === s 
                                         ? 'text-white' 
                                         : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                                 }`}
                             >
-                                {s === 'ALL' ? t('claimsList.filterStatus') : t(`status.${s}`)}
+                                {language === 'en' 
+                                    ? (s === 'ALL' ? 'All' : s === 'PENDING' ? 'Received' : s === 'IN_PROGRESS' ? 'Progress' : 'Done')
+                                    : (s === 'ALL' ? 'ทั้งหมด' : s === 'PENDING' ? 'รับเรื่อง' : s === 'IN_PROGRESS' ? 'ดำเนินการ' : 'เสร็จสิ้น')
+                                }
                             </button>
                         ))}
                     </div>
