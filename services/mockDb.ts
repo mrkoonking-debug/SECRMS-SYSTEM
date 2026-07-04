@@ -328,6 +328,104 @@ export const MockDb = {
       console.error("checkAndSendOverdueEmails failed:", err);
     }
   },
+  sendOverdueSummaryToEveryone: async (): Promise<{ sentCount: number; status: string }> => {
+    if (!isConfigured || !db) throw new Error("Firebase Not Configured");
+    
+    // 1. Fetch users
+    const usersRef = collection(db, 'users');
+    const usersSnap = await getDocs(usersRef);
+    const usersList = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+    
+    // 2. Fetch active RMAs
+    const rmasRef = collection(db, 'rmas');
+    const q = query(rmasRef, where('isDeleted', '!=', true));
+    const rmasSnap = await getDocs(q);
+    const activeRmas = rmasSnap.docs
+      .map(doc => doc.data() as RMA)
+      .filter(rma => ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(rma.status));
+
+    if (activeRmas.length === 0) {
+      return { sentCount: 0, status: 'No active RMAs found' };
+    }
+
+    let sentCount = 0;
+    
+    // 3. For each user, find their active RMAs and trigger email
+    for (const user of usersList) {
+      if (!user.email) continue;
+      
+      const userRmas = activeRmas.filter(rma => 
+        (rma.creatorEmail && rma.creatorEmail.toLowerCase() === user.email.toLowerCase()) ||
+        (rma.createdBy && rma.createdBy.toLowerCase() === user.name.toLowerCase())
+      );
+      
+      if (userRmas.length === 0) continue;
+
+      // 4. Construct table rows
+      const rmasListHtml = userRmas.map(rma => `
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+          <td style="padding: 10px; font-family: monospace; font-size: 13px; font-weight: bold; color: #1d1d1f;">${rma.id}</td>
+          <td style="padding: 10px; font-size: 13px; color: #434345;">${rma.brand} ${rma.productModel}</td>
+          <td style="padding: 10px; font-family: monospace; font-size: 12px; color: #86868b;">${rma.serialNumber}</td>
+          <td style="padding: 10px; font-size: 12px;">
+            <span style="background-color: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px;">
+              ${rma.status}
+            </span>
+          </td>
+          <td style="padding: 10px; font-size: 12px; color: #86868b;">
+            ${new Date(rma.createdAt).toLocaleDateString('th-TH')}
+          </td>
+        </tr>
+      `).join('');
+
+      const emailHtml = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 700px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <span style="font-size: 40px;">📋</span>
+            <h2 style="color: #1d1d1f; margin-top: 10px; margin-bottom: 5px;">สรุปรายการงานเคลมค้างดำเนินการ (Pending Summary)</h2>
+            <p style="color: #86868b; font-size: 14px; margin: 0;">เรียนคุณ ${user.name} - ข้อมูลสรุป ณ วันที่ ${new Date().toLocaleDateString('th-TH')}</p>
+          </div>
+          
+          <p style="color: #434345; font-size: 14px; line-height: 1.6;">ระบบได้รวบรวมรายการใบงานเคลมที่คุณเป็นผู้บันทึก ซึ่งยังคง<strong>ค้างดำเนินการอยู่ในระบบทั้งหมดจำนวน ${userRmas.length} รายการ</strong> ดังรายละเอียดตารางด้านล่างนี้:</p>
+          
+          <table style="width: 100%; border-collapse: collapse; margin: 20px 0; text-align: left;">
+            <thead>
+              <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                <th style="padding: 12px 10px; font-size: 13px; font-weight: bold; color: #475569;">Job ID</th>
+                <th style="padding: 12px 10px; font-size: 13px; font-weight: bold; color: #475569;">ยี่ห้อ / รุ่น</th>
+                <th style="padding: 12px 10px; font-size: 13px; font-weight: bold; color: #475569;">Serial Number</th>
+                <th style="padding: 12px 10px; font-size: 13px; font-weight: bold; color: #475569;">สถานะ</th>
+                <th style="padding: 12px 10px; font-size: 13px; font-weight: bold; color: #475569;">วันที่รับเรื่อง</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rmasListHtml}
+            </tbody>
+          </table>
+          
+          <div style="text-align: center; margin: 32px 0 20px 0;">
+            <a href="${window.location.origin}/admin/rmas" style="display: inline-block; background-color: #0071e3; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);">เปิดระบบจัดการงานเคลม</a>
+          </div>
+          
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;"/>
+          <p style="font-size: 11px; color: #86868b; line-height: 1.5; text-align: center;">อีเมลสรุปงานค้างนี้จัดทำขึ้นโดยความประสงค์ของผู้ดูแลระบบ SEC Claim RMS<br/>หากท่านตรวจสอบแล้วพบข้อมูลผิดพลาดประการใด กรุณาแก้ไขสถานะใบงานโดยตรงบนโปรแกรม</p>
+        </div>
+      `;
+
+      const mailRef = collection(db, 'mail');
+      await addDoc(mailRef, {
+        to: user.email,
+        message: {
+          subject: `[SEC RMS] สรุปรายการงานเคลมค้างดำเนินการของคุณ ${user.name} (จำนวน ${userRmas.length} รายการ)`,
+          html: emailHtml
+        }
+      });
+      
+      sentCount++;
+    }
+
+    return { sentCount, status: 'Success' };
+  },
 
   // --- Seed Data (Admin Only) ---
   seedDatabase: async () => {

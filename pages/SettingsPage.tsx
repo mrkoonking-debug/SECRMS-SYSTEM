@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
-import { Settings, Save, Check, Loader2, Globe, Building, Zap, Trash2, AlertTriangle, Archive, X, Search, Wrench, Download, Upload } from 'lucide-react';
+import { Settings, Save, Check, Loader2, Globe, Building, Zap, Trash2, AlertTriangle, Archive, X, Search, Wrench, Download, Upload, Mail, Send } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { showToast } from '../services/toast';
 
@@ -112,6 +112,24 @@ export const SettingsPage: React.FC = () => {
       showToast(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด', 'error');
     } finally {
       setIsFixingIds(false);
+    }
+  };
+
+  const [isSendingSummary, setIsSendingSummary] = useState(false);
+
+  const handleSendOverdueSummary = async () => {
+    setIsSendingSummary(true);
+    try {
+      const result = await MockDb.sendOverdueSummaryToEveryone();
+      if (result.sentCount > 0) {
+        showToast(`ส่งสรุปรายการงานค้างไปยังช่างสำเร็จทั้งหมด ${result.sentCount} อีเมล 📧`, 'success');
+      } else {
+        showToast('ไม่พบงานค้างที่ต้องแจ้งเตือนในระบบในขณะนี้ ✨', 'success');
+      }
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการส่งอีเมล', 'error');
+    } finally {
+      setIsSendingSummary(false);
     }
   };
 
@@ -298,8 +316,13 @@ export const SettingsPage: React.FC = () => {
               <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.performanceMode ? 'translate-x-5' : 'translate-x-0'}`}></span>
             </button>
           </div>
+        </div>
 
-          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl flex-wrap gap-4 mt-4">
+        {/* Email Notifications Section */}
+        <div className="glass-panel p-4 sm:p-6 md:p-8 rounded-xl md:rounded-[2rem] space-y-4 md:space-y-6 mt-6">
+          <h3 className="text-base md:text-lg font-bold flex items-center gap-2"><Mail className="w-5 h-5 text-blue-500" /> ระบบแจ้งเตือนทางอีเมล (Email Notifications)</h3>
+
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl flex-wrap gap-4">
             <div className="flex-1">
               <h4 className="font-bold text-sm text-[#1d1d1f] dark:text-white mb-1">ระบบแจ้งเตือนอีเมลอัตโนมัติ (Overdue Alerts)</h4>
               <p className="text-xs text-gray-500">แจ้งเตือนทางอีเมลไปยังผู้สร้างงานโดยอัตโนมัติ เมื่อใบงานค้างอยู่ในระบบเกิน 15 วันและยังดำเนินการไม่เสร็จสิ้น</p>
@@ -313,6 +336,28 @@ export const SettingsPage: React.FC = () => {
             >
               <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.enableOverdueEmailAlerts ? 'translate-x-5' : 'translate-x-0'}`}></span>
             </button>
+          </div>
+
+          <div className="p-4 bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl">
+            <div className="flex items-start justify-between flex-wrap gap-4">
+              <div className="flex-1">
+                <h4 className="font-bold text-sm text-[#1d1d1f] dark:text-white mb-1 flex items-center gap-2">
+                  <Send className="w-4 h-4 text-blue-500" /> ส่งอีเมลสรุปงานค้างถึงทุกคนตอนนี้ (Send Summary Now)
+                </h4>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  ส่งอีเมลรวบรวมรายการใบงานค้างดำเนินการทั้งหมดแยกตามผู้รับผิดชอบ ไปยังอีเมลของช่างและเจ้าหน้าที่ทุกคนที่มีงานค้างในระบบทันที
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleSendOverdueSummary}
+                disabled={isSendingSummary}
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-all active:scale-95 shadow-sm"
+              >
+                {isSendingSummary ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                {isSendingSummary ? 'กำลังส่ง...' : 'ส่งสรุปอีเมล'}
+              </button>
+            </div>
           </div>
         </div>
 
