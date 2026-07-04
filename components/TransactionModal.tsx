@@ -154,20 +154,33 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           {/* Transaction Type Selector */}
           <div>
             <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1">ประเภทรายการ</label>
-            <div className="grid grid-cols-2 gap-2 bg-gray-100 dark:bg-black/20 p-1.5 rounded-xl">
+            <div className="relative flex bg-gray-100 dark:bg-black/20 p-1 rounded-full w-full h-11 items-center border border-gray-200/20 dark:border-white/5 select-none">
+              {/* Sliding Highlight Pill */}
+              <div 
+                className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full transition-all duration-300 ease-out shadow-sm bg-white dark:bg-[#2c2c2e] border border-gray-200/20 dark:border-white/5 ${
+                  type === 'EXPENSE' 
+                    ? 'left-1' 
+                    : 'left-[calc(50%+3px)]'
+                }`}
+              />
+              
               <button
                 type="button"
                 onClick={() => { setType('EXPENSE'); setPaidBy('PETTY_CASH'); }}
-                className={`py-2 text-xs font-bold rounded-lg transition-all ${type === 'EXPENSE' ? 'bg-[#ff9500] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                className={`flex-1 z-10 text-center text-xs font-bold py-2 rounded-full transition-all duration-300 outline-none ${
+                  type === 'EXPENSE' ? 'text-[#ff9500]' : 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
               >
                 รายจ่าย
               </button>
               <button
                 type="button"
                 onClick={() => { setType('INCOME'); setPaidBy('PETTY_CASH'); }}
-                className={`py-2 text-xs font-bold rounded-lg transition-all ${type === 'INCOME' ? 'bg-[#34c759] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                className={`flex-1 z-10 text-center text-xs font-bold py-2 rounded-full transition-all duration-300 outline-none ${
+                  type === 'INCOME' ? 'text-[#34c759]' : 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
               >
-                เบิกเงินพี่เกษม
+                รายรับ
               </button>
             </div>
           </div>
