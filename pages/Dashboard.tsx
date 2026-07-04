@@ -105,7 +105,7 @@ export const Dashboard: React.FC = () => {
     );
 
     return (
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-5 md:py-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-5 md:py-8">
             <div className="flex flex-col justify-between mb-6 md:mb-12 gap-4 md:gap-6">
                 <div>
                     <h1 className="text-lg md:text-4xl lg:text-5xl font-bold text-[#1d1d1f] dark:text-white tracking-tight mb-1">{t('dashboard.title')}</h1>

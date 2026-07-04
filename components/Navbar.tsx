@@ -11,6 +11,58 @@ interface NavbarProps {
   embedded?: boolean;
 }
 
+const clearAllCachesAndReload = async () => {
+  // Clear Service Worker registrations
+  if ('serviceWorker' in navigator) {
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const r of regs) await r.unregister();
+    } catch (e) {
+      console.error("SW unregister failed:", e);
+    }
+  }
+  
+  // Clear Cache Storage
+  if ('caches' in window) {
+    try {
+      const keys = await caches.keys();
+      for (const k of keys) await caches.delete(k);
+    } catch (e) {
+      console.error("Cache delete failed:", e);
+    }
+  }
+
+  // Clear sessionStorage (temp search terms, filters, and expanded states)
+  sessionStorage.clear();
+
+  // Clear dropdown histories and tour progress from localStorage
+  const keysToRemove: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && (key.startsWith('gs_freq_') || key.startsWith('rmas_') || key.startsWith('onboarding_'))) {
+      keysToRemove.push(key);
+    }
+  }
+  keysToRemove.forEach(key => localStorage.removeItem(key));
+
+  // Clear IndexedDB databases (e.g. offline Firestore cache)
+  if (window.indexedDB && window.indexedDB.databases) {
+    try {
+      const dbs = await window.indexedDB.databases();
+      for (const dbInfo of dbs) {
+        if (dbInfo.name) {
+          window.indexedDB.deleteDatabase(dbInfo.name);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to delete IndexedDB databases:", e);
+    }
+  }
+
+  // Reload the page hard
+  window.location.reload();
+};
+
 export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
   const [user, setUser] = useState<any>(null);
   const [unassignedCount, setUnassignedCount] = useState(0);
@@ -191,17 +243,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
           <span className="font-bold text-[15px] text-[#1d1d1f] dark:text-white tracking-tight">SEC RMS</span>
         </Link>
         <button
-          onClick={async () => {
-            if ('serviceWorker' in navigator) {
-              const regs = await navigator.serviceWorker.getRegistrations();
-              for (const r of regs) await r.unregister();
-            }
-            if ('caches' in window) {
-              const keys = await caches.keys();
-              for (const k of keys) await caches.delete(k);
-            }
-            window.location.reload();
-          }}
+          onClick={clearAllCachesAndReload}
           className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#0071e3] hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all active:scale-90"
           title="ล้างแคช & รีเฟรช"
         >
@@ -356,11 +398,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
             <div className="flex gap-1"><ThemeToggle /><LanguageToggle /></div>
             <div className="flex gap-1">
               <button
-                onClick={async () => {
-                  if ('serviceWorker' in navigator) { const regs = await navigator.serviceWorker.getRegistrations(); for (const r of regs) await r.unregister(); }
-                  if ('caches' in window) { const keys = await caches.keys(); for (const k of keys) await caches.delete(k); }
-                  window.location.reload();
-                }}
+                onClick={clearAllCachesAndReload}
                 className="p-2 rounded-full text-[#86868b] hover:text-[#0071e3] transition-colors"
                 title="ล้างแคช & รีเฟรช"
               ><RefreshCw className="h-4 w-4" /></button>

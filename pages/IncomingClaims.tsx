@@ -113,7 +113,7 @@ export const IncomingClaims: React.FC = () => {
     if (loading) return <div className="p-20 text-center"><Loader2 className="w-10 h-10 animate-spin mx-auto text-[#0071e3]" /></div>;
 
     return (
-        <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 sm:py-8 pb-24 md:pb-8">
+        <div className="max-w-5xl mx-auto px-2 sm:px-4 md:px-6 py-4 sm:py-8 pb-24 md:pb-8">
             <div className="mb-5 md:mb-10">
                 <h1 className="text-xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white mb-1 md:mb-2">{t('incoming.title')}</h1>
                 <p className="text-xs md:text-base text-gray-500">{t('incoming.subtitle')}</p>

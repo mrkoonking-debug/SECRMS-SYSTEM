@@ -119,7 +119,7 @@ export const SubmitClaim: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-4 md:py-6 px-4 md:px-6 pb-28 md:pb-6">
+    <div className="max-w-4xl mx-auto py-4 md:py-6 px-2 sm:px-4 md:px-6 pb-28 md:pb-6">
       {step === 'success' ? (
         <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
           <div className="bg-white dark:bg-[#1c1c1e] rounded-[3rem] p-12 max-w-2xl w-full shadow-xl border border-gray-100 dark:border-[#333]">
