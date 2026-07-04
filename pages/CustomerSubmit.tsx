@@ -475,8 +475,8 @@ export const CustomerSubmit: React.FC = () => {
 
     if (step === 'success') {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
-                <div className="glass-panel rounded-[3rem] p-12 max-w-2xl w-full text-center shadow-2xl">
+            <div className="min-h-screen flex flex-col items-center justify-center px-2 py-12">
+                <div className="glass-panel rounded-[3rem] p-5 md:p-12 max-w-2xl w-full text-center shadow-2xl">
                     <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6"><CheckCircle2 className="w-12 h-12 text-green-600 dark:text-green-400" /></div>
                     <h1 className="text-3xl font-bold text-[#1d1d1f] dark:text-white mb-4">{t('publicSubmit.successTitle')}</h1>
                     <p className="text-gray-500 dark:text-gray-400 mb-8">{t('publicSubmit.successDesc')}</p>
@@ -635,10 +635,10 @@ export const CustomerSubmit: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen py-6 md:py-12 px-5 sm:px-6 md:px-8">
+        <div className="min-h-screen py-4 md:py-12 px-2 sm:px-6 md:px-8">
             <div className="max-w-4xl mx-auto">
                 <div className="mb-6 md:mb-8 flex items-center gap-3 md:gap-4"><button onClick={handleBack} className="p-2 rounded-full bg-white/40 dark:bg-white/5 hover:bg-white/60 transition-colors"><ArrowLeft className="w-5 h-5 text-[#1d1d1f] dark:text-white" /></button><div><h1 className="text-2xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white">{t('publicSubmit.title')}</h1><p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm">{t('publicSubmit.subtitle')}</p></div></div>
-                <div className="glass-panel rounded-[2rem] p-4 sm:p-6 md:p-8 mb-6 md:mb-8 relative overflow-hidden">
+                <div className="glass-panel rounded-[2rem] p-3.5 sm:p-6 md:p-8 mb-4 md:mb-8 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500/0 via-blue-500/20 to-blue-500/0"></div>
                     <h2 className="text-lg md:text-xl font-bold text-[#1d1d1f] dark:text-white mb-4 md:mb-6 text-center">{t('publicSubmit.howToTitle')}</h2>
                     {/* Simplified steps display just as info */}
@@ -662,7 +662,7 @@ export const CustomerSubmit: React.FC = () => {
                 <div className="space-y-4 md:space-y-8">
 
                     {/* Section 1: Customer Details */}
-                    <div className="glass-panel rounded-[2rem] p-4 sm:p-6 md:p-8 relative overflow-hidden">
+                    <div className="glass-panel rounded-[2rem] p-3.5 sm:p-6 md:p-8 relative overflow-hidden">
                         <h2 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
                             <span className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-xs md:text-sm font-bold">1</span>
                             {t('publicSubmit.contactInfo')}
@@ -760,7 +760,7 @@ export const CustomerSubmit: React.FC = () => {
                     </div>
 
                     {/* Section 2: Product Info */}
-                    <div className="glass-panel rounded-[2rem] p-4 sm:p-6 md:p-8 relative overflow-hidden">
+                    <div className="glass-panel rounded-[2rem] p-3.5 sm:p-6 md:p-8 relative overflow-hidden">
                         <h2 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
                             <span className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-xs md:text-sm font-bold">2</span>
                             {t('publicSubmit.productInfo')}

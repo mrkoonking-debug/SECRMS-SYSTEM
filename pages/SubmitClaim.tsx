@@ -122,7 +122,7 @@ export const SubmitClaim: React.FC = () => {
     <div className="max-w-4xl mx-auto py-4 md:py-6 px-2 sm:px-4 md:px-6 pb-28 md:pb-6">
       {step === 'success' ? (
         <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
-          <div className="bg-white dark:bg-[#1c1c1e] rounded-[3rem] p-12 max-w-2xl w-full shadow-xl border border-gray-100 dark:border-[#333]">
+          <div className="bg-white dark:bg-[#1c1c1e] rounded-[3rem] p-5 md:p-12 max-w-2xl w-full shadow-xl border border-gray-100 dark:border-[#333]">
             <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
               <Save className="w-12 h-12 text-green-600 dark:text-green-400" />
             </div>
@@ -164,7 +164,7 @@ export const SubmitClaim: React.FC = () => {
                 {basket.length > 0 && (<div className="text-right"><div className="text-2xl md:text-3xl font-bold text-[#0071e3]">{basket.length}</div><div className="text-[10px] md:text-xs text-gray-500 uppercase font-semibold">{t('submit.itemsInJob')}</div></div>)}
           </div>
 
-          <div className="bg-white dark:bg-[#1c1c1e] rounded-xl md:rounded-[2rem] p-5 md:p-8 mb-5 md:mb-8 border border-gray-100 dark:border-[#333]">
+          <div className="bg-white dark:bg-[#1c1c1e] rounded-xl md:rounded-[2rem] p-3.5 sm:p-6 md:p-8 mb-4 md:mb-8 border border-gray-100 dark:border-[#333]">
                 <h2 className="font-semibold text-base md:text-lg flex items-center gap-2 md:gap-3 mb-4 md:mb-6 text-[#1d1d1f] dark:text-white"><span className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-xs md:text-sm font-bold">1</span>{t('submit.customerDetails')}</h2>
 
             {/* Row 1: Quotation (Ref) & Company Name */}
@@ -261,13 +261,13 @@ export const SubmitClaim: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-[#1c1c1e] rounded-xl md:rounded-[2rem] p-5 md:p-8 mb-5 md:mb-8 border border-gray-100 dark:border-[#333] relative overflow-hidden">
+          <div className="bg-white dark:bg-[#1c1c1e] rounded-xl md:rounded-[2rem] p-3.5 sm:p-6 md:p-8 mb-4 md:mb-8 border border-gray-100 dark:border-[#333] relative overflow-hidden">
                 <h2 className="font-semibold text-base md:text-lg flex items-center gap-2 md:gap-3 mb-4 md:mb-6 text-[#1d1d1f] dark:text-white"><span className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-xs md:text-sm font-bold">2</span>{t('submit.addItem')}</h2>
             <ProductEntryForm mode="admin" onAddItem={handleAddItem} />
           </div>
 
           {basket.length > 0 && (
-            <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] p-8 mb-8 border border-gray-100 dark:border-[#333] animate-fade-in">
+            <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] p-3.5 sm:p-6 md:p-8 mb-4 md:mb-8 border border-gray-100 dark:border-[#333] animate-fade-in">
               <h2 className="font-semibold text-lg mb-6 text-[#1d1d1f] dark:text-white flex justify-between items-center"><span className="flex items-center gap-3"><span className="w-8 h-8 rounded-full bg-green-500/10 text-green-600 flex items-center justify-center text-sm font-bold">3</span>{t('submit.itemsInJob')} ({basket.length})</span><button onClick={() => setBasket([])} className="text-xs text-red-500 hover:underline">{t('submit.other')} (Clear)</button></h2>
               <div className="space-y-4">
                 {basket.map((item, idx) => (

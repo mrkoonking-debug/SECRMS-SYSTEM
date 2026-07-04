@@ -235,7 +235,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                         <button
                             type="button"
                             onClick={(e) => { e.preventDefault(); setCurrentItem(prev => ({ ...prev, accessories: prev.accessories.includes('unit_only') ? prev.accessories.filter(a => a !== 'unit_only') : ['unit_only'] })); setErrors(p => ({ ...p, accessories: '' })); }}
-                            className={`px-4 py-2 text-xs font-medium rounded-full border transition-all flex items-center gap-2 ${currentItem.accessories.includes('unit_only') ? 'bg-yellow-500 text-white border-yellow-500 shadow-md' : 'bg-white dark:bg-[#2c2c2e] border-[#d2d2d7] dark:border-[#424245] text-[#1d1d1f] dark:text-gray-300 hover:border-yellow-500 hover:text-yellow-500'}`}
+                            className={`px-4 py-2 text-xs font-medium rounded-full border transition-all flex items-center gap-2 outline-none focus:outline-none ${currentItem.accessories.includes('unit_only') ? 'bg-yellow-500 text-white border-yellow-500 shadow-md' : 'bg-white dark:bg-[#2c2c2e] border-[#d2d2d7] dark:border-[#424245] text-[#1d1d1f] dark:text-gray-300 hover:border-yellow-500 hover:text-yellow-500'}`}
                         >
                             {t('accessories_list.unit_only')}
                         </button>
@@ -247,7 +247,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                                     type="button"
                                     key={acc}
                                     onClick={(e) => { e.preventDefault(); toggleAccessory(acc); }}
-                                    className={`px-4 py-2 text-xs font-medium rounded-full border transition-all flex items-center gap-2 ${isActive ? 'bg-[#0071e3] text-white border-[#0071e3] shadow-md' : 'bg-white dark:bg-[#2c2c2e] border-[#d2d2d7] dark:border-[#424245] text-[#1d1d1f] dark:text-gray-300 hover:border-[#0071e3] hover:text-[#0071e3]'}`}
+                                    className={`px-4 py-2 text-xs font-medium rounded-full border transition-all flex items-center gap-2 outline-none focus:outline-none ${isActive ? 'bg-[#0071e3] text-white border-[#0071e3] shadow-md' : 'bg-white dark:bg-[#2c2c2e] border-[#d2d2d7] dark:border-[#424245] text-[#1d1d1f] dark:text-gray-300 hover:border-[#0071e3] hover:text-[#0071e3]'}`}
                                 >
                                     {t(`accessories_list.${acc}`)}
                                     {acc === 'acc_hdd' && <span className={`flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold ${hddCount > 0 ? 'bg-white text-[#0071e3]' : 'bg-gray-200 dark:bg-white/10 text-gray-500'}`}>{hddCount > 0 ? hddCount : <Plus className="w-2.5 h-2.5" />}</span>}
@@ -299,7 +299,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                 </div>
             </div>
 
-            <button data-tour="tour-add-button" onClick={handleAddClick} className="w-full py-3 md:py-4 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl md:rounded-2xl text-sm md:text-base font-bold flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-[0.98]">
+            <button data-tour="tour-add-button" onClick={handleAddClick} className="w-full py-3 md:py-4 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl md:rounded-2xl text-sm md:text-base font-bold flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-[0.98] outline-none focus:outline-none">
                 <Plus className="w-5 h-5" /> {noSerial && quantity > 1 ? `เพิ่ม ${quantity} รายการ` : t(mode === 'customer' ? 'publicSubmit.addAnother' : 'submit.addToJob')}
             </button>
 
@@ -351,42 +351,45 @@ const TeamSelector = ({ selectedMain, onSelectMain, currentTeam, onSelectSub, t,
     };
 
     return (
-        <div className="bg-gray-50 dark:bg-[#1c1c1e] rounded-2xl p-6 border border-gray-200 dark:border-[#333]">
-            <label className="block text-xs font-semibold text-gray-500 uppercase mb-4">{t('submit.assignTeam')}</label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="bg-gray-50 dark:bg-[#1c1c1e] rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-[#333]">
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-3 ml-1">{t('submit.assignTeam')}</label>
+            <div className="grid grid-cols-3 gap-2 mb-4">
                 {[
-                    { id: 'A', label: t('teams.hikvision'), sub: 'Team A', icon: Box, color: 'red', val: Team.HIKVISION },
-                    { id: 'B', label: t('teams.dahua'), sub: 'Team B', icon: Layers, color: 'orange', val: Team.DAHUA },
-                    { id: 'C', label: `${t('teams.teamC')} (Group)`, sub: 'Team C / E / G', icon: Wifi, color: 'blue', val: null }
+                    { id: 'A', label: 'HIKVISION', sub: 'Team A', icon: Box, color: 'red', val: Team.HIKVISION },
+                    { id: 'B', label: 'DAHUA', sub: 'Team B', icon: Layers, color: 'orange', val: Team.DAHUA },
+                    { id: 'C', label: 'Network', sub: 'C / E / G', icon: Wifi, color: 'blue', val: null }
                 ].map((item) => (
                     <button
                         type="button"
                         key={item.id}
                         onClick={() => onSelectMain(item.id)}
-                        className={`relative p-4 rounded-xl border text-left transition-all flex items-start gap-3 bg-white dark:bg-[#2c2c2e] ${selectedMain === item.id ? getActiveClass(item.color) : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'}`}
+                        className={`relative p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1.5 bg-white dark:bg-[#2c2c2e] outline-none focus:outline-none ${selectedMain === item.id ? getActiveClass(item.color) : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'}`}
                     >
-                        <div className={`p-2 rounded-lg ${selectedMain === item.id ? `bg-${item.color}-500 text-white` : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}><item.icon className="w-5 h-5" /></div>
-                        <div><div className="font-bold text-sm text-[#1d1d1f] dark:text-white">{item.label}</div><div className="text-[10px] text-gray-500">{item.sub}</div></div>
+                        <div className={`p-1.5 rounded-lg ${selectedMain === item.id ? (item.color === 'red' ? 'bg-red-500 text-white' : item.color === 'orange' ? 'bg-orange-500 text-white' : 'bg-blue-500 text-white') : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}><item.icon className="w-4 h-4" /></div>
+                        <div>
+                            <div className="font-bold text-xs text-[#1d1d1f] dark:text-white leading-tight">{item.label}</div>
+                            <div className="text-[9px] text-gray-500 mt-0.5">{item.sub}</div>
+                        </div>
                     </button>
                 ))}
             </div>
             {selectedMain === 'C' && (
                 <div className="animate-fade-in pl-4 border-l-2 border-[#0071e3]/30 ml-2">
                     <div className="text-xs font-bold text-[#0071e3] uppercase mb-3">{t('modals.selectSubUnit')}</div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-3 gap-2">
                         {[
-                            { val: Team.TEAM_C, label: t('teams.teamC'), icon: Wifi, color: 'cyan' },
-                            { val: Team.TEAM_E, label: t('teams.teamE'), icon: Zap, color: 'yellow' },
-                            { val: Team.TEAM_G, label: t('teams.teamG'), icon: ShoppingBag, color: 'fuchsia' }
+                            { val: Team.TEAM_C, label: 'Team C', icon: Wifi, color: 'cyan' },
+                            { val: Team.TEAM_E, label: 'Team E', icon: Zap, color: 'yellow' },
+                            { val: Team.TEAM_G, label: 'Team G', icon: ShoppingBag, color: 'fuchsia' }
                         ].map(sub => (
                             <button
                                 type="button"
                                 key={sub.val}
                                 onClick={() => onSelectSub(sub.val)}
-                                className={`p-3 rounded-xl border text-left transition-all text-sm flex items-center gap-2 bg-white dark:bg-[#2c2c2e] ${currentTeam === sub.val ? getActiveSubClass(sub.color) : 'border-transparent hover:bg-gray-50 dark:hover:bg-[#3a3a3c]'}`}
+                                className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 bg-white dark:bg-[#2c2c2e] outline-none focus:outline-none ${currentTeam === sub.val ? getActiveSubClass(sub.color) : 'border-transparent hover:bg-gray-50 dark:hover:bg-[#3a3a3c]'}`}
                             >
                                 <sub.icon className={`w-4 h-4 ${currentTeam === sub.val ? getActiveSubText(sub.color) : 'text-gray-400'}`} />
-                                <span className={currentTeam === sub.val ? `font-bold ${getActiveSubText(sub.color)}` : 'text-gray-600 dark:text-gray-300'}>{sub.label}</span>
+                                <span className={`text-[10px] sm:text-xs font-semibold ${currentTeam === sub.val ? `font-bold ${getActiveSubText(sub.color)}` : 'text-gray-600 dark:text-gray-355'}`}>{sub.label}</span>
                             </button>
                         ))}
                     </div>
