@@ -9,11 +9,12 @@ import { ProductEntryForm } from '../components/ProductEntryForm';
 import { showToast, showValidationError } from '../services/toast';
 
 const getInputClass = (hasError: boolean) => `
-  liquid-input w-full rounded-2xl px-4 py-3.5 text-sm
+  liquid-input w-full rounded-xl px-3 py-1.5 md:px-4 md:py-2.5 text-xs md:text-sm
   text-[#1d1d1f] dark:text-white 
-  bg-white dark:bg-[#2c2c2e]
-  border border-gray-200 dark:border-[#424245]
+  bg-white dark:bg-[#1e1e1f]
+  border border-gray-200 dark:border-white/10
   placeholder-gray-400 dark:placeholder-gray-500 
+  focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3] transition-all outline-none
   ${hasError ? 'border-red-500 focus:ring-red-500' : ''}
 `;
 
@@ -164,13 +165,13 @@ export const SubmitClaim: React.FC = () => {
                 {basket.length > 0 && (<div className="text-right"><div className="text-2xl md:text-3xl font-bold text-[#0071e3]">{basket.length}</div><div className="text-[10px] md:text-xs text-gray-500 uppercase font-semibold">{t('submit.itemsInJob')}</div></div>)}
           </div>
 
-          <div className="bg-white dark:bg-[#1c1c1e] rounded-xl md:rounded-[2rem] p-3.5 sm:p-6 md:p-8 mb-4 md:mb-8 border border-gray-100 dark:border-[#333]">
+          <div className="bg-white dark:bg-[#1e1e1f] rounded-xl md:rounded-[2rem] p-3.5 sm:p-6 md:p-8 mb-4 md:mb-8 border border-gray-200 dark:border-white/10 shadow-sm">
                 <h2 className="font-semibold text-base md:text-lg flex items-center gap-2 md:gap-3 mb-4 md:mb-6 text-[#1d1d1f] dark:text-white"><span className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-xs md:text-sm font-bold">1</span>{t('submit.customerDetails')}</h2>
 
             {/* Row 1: Quotation (Ref) & Company Name */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('publicSubmit.quotationNo')}</label>
+                <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('publicSubmit.quotationNo')}</label>
                 <input
                   value={customer.quotationNumber}
                   onChange={e => setCustomer({ ...customer, quotationNumber: e.target.value })}
@@ -182,7 +183,7 @@ export const SubmitClaim: React.FC = () => {
                 {errors.quotationNumber && touched.quotationNumber && <p className="text-red-500 text-xs mt-1 ml-2">{errors.quotationNumber}</p>}
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('publicSubmit.companyName')} <span className="text-red-500">*</span></label>
+                <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('publicSubmit.companyName')} <span className="text-red-500">*</span></label>
                 <input
                   value={customer.name}
                   onChange={e => setCustomer({ ...customer, name: e.target.value })}
@@ -196,9 +197,9 @@ export const SubmitClaim: React.FC = () => {
             </div>
 
             {/* Row 2: Contact Person & Phone Number */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('publicSubmit.contactName')} <span className="text-red-500">*</span></label>
+                <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('publicSubmit.contactName')} <span className="text-red-500">*</span></label>
                 <input
                   value={customer.contactPerson}
                   onChange={e => setCustomer({ ...customer, contactPerson: e.target.value })}
@@ -210,7 +211,7 @@ export const SubmitClaim: React.FC = () => {
                 {errors.contactPerson && touched.contactPerson && <p className="text-red-500 text-xs mt-1 ml-2">{errors.contactPerson}</p>}
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('publicSubmit.phone')} <span className="text-red-500">*</span></label>
+                <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('publicSubmit.phone')} <span className="text-red-500">*</span></label>
                 <input
                   value={customer.phone}
                   onChange={e => setCustomer({ ...customer, phone: e.target.value })}
@@ -224,9 +225,9 @@ export const SubmitClaim: React.FC = () => {
             </div>
 
             {/* Row 3: LINE ID & Email */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.lineId')}</label>
+                <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('submit.lineId')}</label>
                 <input
                   value={customer.lineId}
                   onChange={e => setCustomer({ ...customer, lineId: e.target.value })}
@@ -236,7 +237,7 @@ export const SubmitClaim: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">Email (Optional)</label>
+                <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">Email (Optional)</label>
                 <input
                   value={customer.email}
                   onChange={e => setCustomer({ ...customer, email: e.target.value })}
@@ -247,9 +248,9 @@ export const SubmitClaim: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.returnAddress')}</label>
+                <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('submit.returnAddress')}</label>
                 <textarea
                   value={customer.returnAddress}
                   onChange={e => setCustomer({ ...customer, returnAddress: e.target.value })}
@@ -261,24 +262,24 @@ export const SubmitClaim: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-[#1c1c1e] rounded-xl md:rounded-[2rem] p-3.5 sm:p-6 md:p-8 mb-4 md:mb-8 border border-gray-100 dark:border-[#333] relative overflow-hidden">
+          <div className="bg-white dark:bg-[#1e1e1f] rounded-xl md:rounded-[2rem] p-3.5 sm:p-6 md:p-8 mb-4 md:mb-8 border border-gray-200 dark:border-white/10 relative overflow-hidden shadow-sm">
                 <h2 className="font-semibold text-base md:text-lg flex items-center gap-2 md:gap-3 mb-4 md:mb-6 text-[#1d1d1f] dark:text-white"><span className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-xs md:text-sm font-bold">2</span>{t('submit.addItem')}</h2>
             <ProductEntryForm mode="admin" onAddItem={handleAddItem} />
           </div>
 
           {basket.length > 0 && (
-            <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] p-3.5 sm:p-6 md:p-8 mb-4 md:mb-8 border border-gray-100 dark:border-[#333] animate-fade-in">
+            <div className="bg-white dark:bg-[#1e1e1f] rounded-[2rem] p-3.5 sm:p-6 md:p-8 mb-4 md:mb-8 border border-gray-200 dark:border-white/10 shadow-sm animate-fade-in">
               <h2 className="font-semibold text-lg mb-6 text-[#1d1d1f] dark:text-white flex justify-between items-center"><span className="flex items-center gap-3"><span className="w-8 h-8 rounded-full bg-green-500/10 text-green-600 flex items-center justify-center text-sm font-bold">3</span>{t('submit.itemsInJob')} ({basket.length})</span><button onClick={() => setBasket([])} className="text-xs text-red-500 hover:underline">{t('submit.other')} (Clear)</button></h2>
               <div className="space-y-4">
                 {basket.map((item, idx) => (
-                  <div key={item.id} className="flex items-start justify-between p-4 bg-gray-50 dark:bg-[#2c2c2e] rounded-2xl border border-gray-100 dark:border-[#333]">
+                  <div key={item.id} className="flex items-start justify-between p-4 bg-gray-50 dark:bg-[#131314] rounded-2xl border border-gray-100 dark:border-white/10">
                     <div className="flex items-start gap-4">
-                      <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#3a3a3c] flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300">{idx + 1}</div>
+                      <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#282a2c] flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300">{idx + 1}</div>
                       <div>
                         <div className="font-bold text-[#1d1d1f] dark:text-white">{item.brand} {item.model}</div>
                         <div className="text-xs text-gray-500 font-mono mb-1">S/N: {item.serial}</div>
                         <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">{item.issue}</div>
-                        {item.accessories.length > 0 && (<div className="flex flex-wrap gap-1 mb-1">{item.accessories.map((acc: string) => (<span key={acc} className="text-[10px] px-1.5 py-0.5 bg-gray-100 dark:bg-[#3a3a3c] rounded text-gray-500">{formatAccessory(acc)}</span>))}</div>)}
+                        {item.accessories.length > 0 && (<div className="flex flex-wrap gap-1 mb-1">{item.accessories.map((acc: string) => (<span key={acc} className="text-[10px] px-1.5 py-0.5 bg-gray-100 dark:bg-[#282a2c] rounded text-gray-500">{formatAccessory(acc)}</span>))}</div>)}
                         <div className="text-[10px] text-gray-400 mt-1">Dist: {item.distributor} | Team: {item.team}</div>
                       </div>
                     </div>

@@ -14,14 +14,14 @@ import { showToast, showValidationError } from '../services/toast';
 const DEFAULT_ACCESSORIES = COMMON_ACCESSORIES.filter(a => a !== 'acc_hdd');
 
 const getInputClass = (hasError: boolean) => `
-  w-full px-4 py-2.5 md:py-3 text-sm rounded-xl md:rounded-2xl outline-none transition-all
-  bg-white dark:bg-[#1c1c1e] 
-  border border-gray-200 dark:border-[#333]
+  w-full px-3 py-1.5 md:px-4 md:py-2.5 text-xs md:text-sm rounded-xl md:rounded-2xl outline-none transition-all
+  bg-white dark:bg-[#1e1e1f] 
+  border border-gray-200 dark:border-white/10
   text-[#1d1d1f] dark:text-white
   placeholder-gray-400 dark:placeholder-gray-500
-  focus:bg-white dark:focus:bg-[#1c1c1e]
+  focus:bg-white dark:focus:bg-[#1e1e1f]
   focus:ring-2 focus:ring-[#0071e3] focus:border-[#0071e3]
-  hover:bg-gray-50 dark:hover:bg-[#2c2c2e]
+  hover:bg-gray-50 dark:hover:bg-[#282a2c]
   hover:border-blue-400/50 dark:hover:border-white/30
   ${hasError ? 'border-red-500 focus:ring-red-500' : ''}
 `;
@@ -156,29 +156,29 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
     const getExistingHdds = () => currentItem.accessories.filter(a => a.startsWith('acc_hdd::')).map(a => a.split('::')[1]);
 
     return (
-        <div className="space-y-4 md:space-y-6 animate-fade-in">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="space-y-3 md:space-y-5 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 md:gap-6">
                 <div data-tour="tour-brand">
                     <GlassSelect label={t('submit.brand')} value={currentItem.brand} onChange={val => { setCurrentItem(p => ({ ...p, brand: val })); setErrors(p => ({ ...p, brand: '' })); }} options={brandOptions} searchable recentKey="brand" hasError={!!errors.brand} required />
-                    {mode === 'customer' && <p className="text-[11px] text-blue-500/70 mt-1 ml-2 flex items-center gap-1">💡 เช่น Hikvision, Dahua, Uniview</p>}
+                    {mode === 'customer' && <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mt-1 ml-2 flex items-center gap-1">💡 เช่น Hikvision, Dahua, Uniview</p>}
                     {currentItem.brand === 'Other' && <input value={customBrand} onChange={e => setCustomBrand(e.target.value)} className={`mt-2 ${getInputClass(!!errors.customBrand)}`} placeholder={t('placeholders.specifyBrand')} />}
                 </div>
 
                 <div className="relative" data-tour="tour-model-serial">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.model')} <span className="text-red-500">*</span></label>
+                    <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('submit.model')} <span className="text-red-500">*</span></label>
                     <div className="relative">
                         <input value={currentItem.model} onChange={e => setCurrentItem({ ...currentItem, model: e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase() })} className={`${getInputClass(!!errors.model)} pr-10 uppercase`} placeholder={t('submit.enterModel')} style={{ textTransform: 'uppercase' }} />
                         <button type="button" onClick={() => { setScanTarget('model'); setShowScanner(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 transition-colors"><ScanBarcode className="w-5 h-5" /></button>
                     </div>
-                    {mode === 'customer' && <p className="text-[11px] text-blue-500/70 mt-1 ml-2 flex items-center gap-1">💡 ดูจากสติกเกอร์บนตัวเครื่อง หรือกด 📷 สแกน</p>}
+                    {mode === 'customer' && <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mt-1 ml-2 flex items-center gap-1">💡 ดูจากสติกเกอร์บนตัวเครื่อง หรือกด 📷 สแกน</p>}
                 </div>
 
                 <div className="relative">
                     {noSerial ? (
                         <>
-                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">จำนวน (Quantity)</label>
-                            <div className="flex items-center gap-4 px-4 py-2.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-[#333] rounded-2xl">
-                                <button type="button" onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] flex items-center justify-center hover:bg-gray-200 dark:hover:bg-[#3a3a3c] transition-all active:scale-95">
+                            <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">จำนวน (Quantity)</label>
+                            <div className="flex items-center gap-4 px-3 py-1.5 bg-white dark:bg-[#1e1e1f] border border-gray-200 dark:border-white/10 rounded-2xl">
+                                <button type="button" onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#282a2c] border border-gray-200 dark:border-[#424245] flex items-center justify-center hover:bg-gray-200 dark:hover:bg-[#3a3a3c] transition-all active:scale-95">
                                     <Minus className="w-4 h-4 text-gray-500" />
                                 </button>
                                 <span className="text-2xl font-black text-[#1d1d1f] dark:text-white tabular-nums min-w-[2ch] text-center">{quantity}</span>
@@ -191,12 +191,12 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                         </>
                     ) : (
                         <>
-                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.serial')} <span className="text-red-500">*</span></label>
+                            <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('submit.serial')} <span className="text-red-500">*</span></label>
                             <div className="relative">
                                 <input value={currentItem.serial} onChange={e => setCurrentItem({ ...currentItem, serial: e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase() })} className={`${getInputClass(!!errors.serial)} pr-10 uppercase`} placeholder={t('submit.enterSn')} style={{ textTransform: 'uppercase' }} />
                                 <button type="button" onClick={() => { setScanTarget('serial'); setShowScanner(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 transition-colors"><ScanBarcode className="w-5 h-5" /></button>
                             </div>
-                            {mode === 'customer' && <p className="text-[11px] text-blue-500/70 mt-1 ml-2 flex items-center gap-1">💡 หมายเลข S/N อยู่บนสติกเกอร์ด้านหลังเครื่อง</p>}
+                            {mode === 'customer' && <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mt-1 ml-2 flex items-center gap-1">💡 หมายเลข S/N อยู่บนสติกเกอร์ด้านหลังเครื่อง</p>}
                             {mode !== 'customer' && <p className="text-[11px] text-gray-400 mt-1 ml-2">{t('submit.serialHint')}</p>}
                         </>
                     )}
@@ -205,7 +205,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                         onClick={() => { setNoSerial(!noSerial); if (!noSerial) { setCurrentItem(p => ({ ...p, serial: '' })); setQuantity(1); } }}
                         className={`mt-2 flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${noSerial
                             ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700'
-                            : 'bg-gray-50 dark:bg-[#2c2c2e] text-gray-500 dark:text-gray-400 border-gray-200 dark:border-[#424245] hover:border-amber-400 hover:text-amber-500'
+                            : 'bg-gray-50 dark:bg-[#1e1e1f] text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10 hover:border-amber-400 hover:text-amber-500'
                         }`}
                     >
                         <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${noSerial ? 'bg-amber-500 border-amber-500' : 'border-gray-300 dark:border-gray-600'}`}>
@@ -220,7 +220,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                 <TeamSelector selectedMain={selectedMainTeam} onSelectMain={setSelectedMainTeam} currentTeam={currentItem.team} onSelectSub={(t: any) => setCurrentItem(p => ({ ...p, team: t }))} t={t} error={errors.team} />
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 md:gap-6">
                 {mode === 'admin' && (
                     <div>
                         <GlassSelect label={t('submit.distributor')} value={currentItem.distributor} onChange={val => setCurrentItem(p => ({ ...p, distributor: val }))} options={distOptions} searchable recentKey="distributor" hasError={!!errors.distributor} required />
@@ -229,13 +229,13 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                 )}
 
                 <div className={mode === 'customer' ? 'col-span-2' : ''} data-tour="tour-accessories">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.accessories')} <span className="text-red-500">*</span></label>
-                    {mode === 'customer' && <p className="text-[11px] text-blue-500/70 mb-2 ml-2 flex items-center gap-1">💡 เลือกสิ่งที่ส่งมาพร้อมเครื่อง (ไม่จำเป็นต้องเลือก ข้ามได้)</p>}
+                    <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('submit.accessories')} <span className="text-red-500">*</span></label>
+                    {mode === 'customer' && <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mb-2 ml-2 flex items-center gap-1">💡 เลือกสิ่งที่ส่งมาพร้อมเครื่อง (ไม่จำเป็นต้องเลือก ข้ามได้)</p>}
                     <div className="flex flex-wrap gap-2 mb-2">
                         <button
                             type="button"
                             onClick={(e) => { e.preventDefault(); setCurrentItem(prev => ({ ...prev, accessories: prev.accessories.includes('unit_only') ? prev.accessories.filter(a => a !== 'unit_only') : ['unit_only'] })); setErrors(p => ({ ...p, accessories: '' })); }}
-                            className={`px-4 py-2 text-xs font-medium rounded-full border transition-all flex items-center gap-2 outline-none focus:outline-none ${currentItem.accessories.includes('unit_only') ? 'bg-yellow-500 text-white border-yellow-500 shadow-md' : 'bg-white dark:bg-[#2c2c2e] border-[#d2d2d7] dark:border-[#424245] text-[#1d1d1f] dark:text-gray-300 hover:border-yellow-500 hover:text-yellow-500'}`}
+                            className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-all flex items-center gap-1.5 outline-none focus:outline-none ${currentItem.accessories.includes('unit_only') ? 'bg-yellow-500 text-white border-yellow-500 shadow-md' : 'bg-white dark:bg-[#1e1e1f] border-[#d2d2d7] dark:border-white/10 text-[#1d1d1f] dark:text-gray-300 hover:border-yellow-500 hover:text-yellow-500'}`}
                         >
                             {t('accessories_list.unit_only')}
                         </button>
@@ -247,7 +247,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                                     type="button"
                                     key={acc}
                                     onClick={(e) => { e.preventDefault(); toggleAccessory(acc); }}
-                                    className={`px-4 py-2 text-xs font-medium rounded-full border transition-all flex items-center gap-2 outline-none focus:outline-none ${isActive ? 'bg-[#0071e3] text-white border-[#0071e3] shadow-md' : 'bg-white dark:bg-[#2c2c2e] border-[#d2d2d7] dark:border-[#424245] text-[#1d1d1f] dark:text-gray-300 hover:border-[#0071e3] hover:text-[#0071e3]'}`}
+                                    className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-all flex items-center gap-1.5 outline-none focus:outline-none ${isActive ? 'bg-[#0071e3] text-white border-[#0071e3] shadow-md' : 'bg-white dark:bg-[#1e1e1f] border-[#d2d2d7] dark:border-white/10 text-[#1d1d1f] dark:text-gray-300 hover:border-[#0071e3] hover:text-[#0071e3]'}`}
                                 >
                                     {t(`accessories_list.${acc}`)}
                                     {acc === 'acc_hdd' && <span className={`flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold ${hddCount > 0 ? 'bg-white text-[#0071e3]' : 'bg-gray-200 dark:bg-white/10 text-gray-500'}`}>{hddCount > 0 ? hddCount : <Plus className="w-2.5 h-2.5" />}</span>}
@@ -274,10 +274,10 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
             </div>
 
             <div data-tour="tour-issue">
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.issueDesc')} <span className="text-red-500">*</span></label>
+                <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('submit.issueDesc')} <span className="text-red-500">*</span></label>
                 <textarea value={currentItem.issue} onChange={e => setCurrentItem({ ...currentItem, issue: e.target.value })} rows={3} className={getInputClass(!!errors.issue)} placeholder={mode === 'customer' ? t('placeholders.issueCustomer') : t('placeholders.issueAdmin')} />
                 {mode === 'customer'
-                    ? <p className="text-[11px] text-blue-500/70 mt-1 ml-2 flex items-center gap-1">💡 เช่น &quot;ภาพมืด&quot;, &quot;เชื่อมต่อไม่ได้&quot;, &quot;มีเสียงดัง&quot;</p>
+                    ? <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mt-1 ml-2 flex items-center gap-1">💡 เช่น &quot;ภาพมืด&quot;, &quot;เชื่อมต่อไม่ได้&quot;, &quot;มีเสียงดัง&quot;</p>
                     : <p className="text-[11px] text-gray-400 mt-1 ml-2">{t('submit.issueHint')}</p>
                 }
             </div>
@@ -285,15 +285,15 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
             {/* Device Username / Password (Optional) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.deviceUsername')}</label>
+                    <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('submit.deviceUsername')}</label>
                     <input value={currentItem.deviceUsername} onChange={e => setCurrentItem({ ...currentItem, deviceUsername: e.target.value })} className={getInputClass(false)} placeholder={t('placeholders.username')} />
                     {mode === 'customer'
-                        ? <p className="text-[11px] text-blue-500/70 mt-1 ml-2 flex items-center gap-1">💡 ถ้ามีรหัสเข้าเครื่อง กรุณาแจ้งด้วย ช่วยให้ซ่อมเร็วขึ้น</p>
+                        ? <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mt-1 ml-2 flex items-center gap-1">💡 ถ้ามีรหัสเข้าเครื่อง กรุณาแจ้งด้วย ช่วยให้ซ่อมเร็วขึ้น</p>
                         : <p className="text-[11px] text-gray-400 mt-1 ml-2">{t('submit.usernameHint')}</p>
                     }
                 </div>
                 <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('submit.devicePassword')}</label>
+                    <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('submit.devicePassword')}</label>
                     <input value={currentItem.devicePassword} onChange={e => setCurrentItem({ ...currentItem, devicePassword: e.target.value })} className={getInputClass(false)} placeholder={t('placeholders.password')} />
                     {mode !== 'customer' && <p className="text-[11px] text-gray-400 mt-1 ml-2">{t('submit.passwordHint')}</p>}
                 </div>
@@ -351,8 +351,8 @@ const TeamSelector = ({ selectedMain, onSelectMain, currentTeam, onSelectSub, t,
     };
 
     return (
-        <div className="bg-gray-50 dark:bg-[#1c1c1e] rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-[#333]">
-            <label className="block text-xs font-semibold text-gray-500 uppercase mb-3 ml-1">{t('submit.assignTeam')}</label>
+        <div className="bg-gray-50 dark:bg-[#131314] rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-white/10">
+            <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-3 ml-1">{t('submit.assignTeam')}</label>
             <div className="grid grid-cols-3 gap-2 mb-4">
                 {[
                     { id: 'A', label: 'HIKVISION', sub: 'Team A', icon: Box, color: 'red', val: Team.HIKVISION },
@@ -363,7 +363,7 @@ const TeamSelector = ({ selectedMain, onSelectMain, currentTeam, onSelectSub, t,
                         type="button"
                         key={item.id}
                         onClick={() => onSelectMain(item.id)}
-                        className={`relative p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1.5 bg-white dark:bg-[#2c2c2e] outline-none focus:outline-none ${selectedMain === item.id ? getActiveClass(item.color) : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'}`}
+                        className={`relative p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1.5 bg-white dark:bg-[#1e1e1f] outline-none focus:outline-none ${selectedMain === item.id ? getActiveClass(item.color) : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'}`}
                     >
                         <div className={`p-1.5 rounded-lg ${selectedMain === item.id ? (item.color === 'red' ? 'bg-red-500 text-white' : item.color === 'orange' ? 'bg-orange-500 text-white' : 'bg-blue-500 text-white') : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}><item.icon className="w-4 h-4" /></div>
                         <div>
@@ -386,7 +386,7 @@ const TeamSelector = ({ selectedMain, onSelectMain, currentTeam, onSelectSub, t,
                                 type="button"
                                 key={sub.val}
                                 onClick={() => onSelectSub(sub.val)}
-                                className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 bg-white dark:bg-[#2c2c2e] outline-none focus:outline-none ${currentTeam === sub.val ? getActiveSubClass(sub.color) : 'border-transparent hover:bg-gray-50 dark:hover:bg-[#3a3a3c]'}`}
+                                className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 bg-white dark:bg-[#1e1e1f] outline-none focus:outline-none ${currentTeam === sub.val ? getActiveSubClass(sub.color) : 'border-transparent hover:bg-gray-50 dark:hover:bg-[#3a3a3c]'}`}
                             >
                                 <sub.icon className={`w-4 h-4 ${currentTeam === sub.val ? getActiveSubText(sub.color) : 'text-gray-400'}`} />
                                 <span className={`text-[10px] sm:text-xs font-semibold ${currentTeam === sub.val ? `font-bold ${getActiveSubText(sub.color)}` : 'text-gray-600 dark:text-gray-355'}`}>{sub.label}</span>

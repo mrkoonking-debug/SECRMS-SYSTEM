@@ -11,7 +11,7 @@ import { ProductEntryForm } from '../components/ProductEntryForm';
 import { showToast, showValidationError } from '../services/toast';
 
 
-const INPUT_CLASS = "w-full bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-[#2c2c2e] border border-gray-200 dark:border-[#333] hover:border-blue-400/50 dark:hover:border-white/30 rounded-xl md:rounded-2xl px-3 py-2 md:px-4 md:py-3.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c1e] focus:ring-2 focus:ring-[#0071e3]/50 focus:border-[#0071e3] transition-all outline-none";
+const INPUT_CLASS = "w-full bg-white dark:bg-[#1e1e1f] hover:bg-gray-50 dark:hover:bg-[#282a2c] border border-gray-200 dark:border-white/10 hover:border-blue-400/50 dark:hover:border-white/30 rounded-xl md:rounded-2xl px-3 py-1.5 md:px-4 md:py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1e1e1f] focus:ring-2 focus:ring-[#0071e3]/50 focus:border-[#0071e3] transition-all outline-none";
 
 export const CustomerSubmit: React.FC = () => {
     const navigate = useNavigate();
@@ -668,11 +668,11 @@ export const CustomerSubmit: React.FC = () => {
                             {t('publicSubmit.contactInfo')}
                         </h2>
 
-                        <div className="space-y-4 md:space-y-6">
+                        <div className="space-y-3.5 md:space-y-6">
                             {/* Row 1: Quotation (Ref) & Company Name */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 md:gap-6">
                                 <div>
-                                    <label className="block text-[10px] md:text-xs font-semibold text-gray-500 uppercase mb-1.5 md:mb-2 ml-2">{t('publicSubmit.quotationNo')}</label>
+                                    <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('publicSubmit.quotationNo')}</label>
                                     <input
                                         value={customer.quotationNumber}
                                         onChange={e => setCustomer({ ...customer, quotationNumber: e.target.value })}
@@ -682,7 +682,7 @@ export const CustomerSubmit: React.FC = () => {
                                     {errors.quotationNumber && <p className="text-red-500 text-xs ml-2 mt-1">{errors.quotationNumber}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] md:text-xs font-semibold text-gray-500 uppercase mb-1.5 md:mb-2 ml-2">{t('publicSubmit.companyName')} <span className="text-red-500">*</span></label>
+                                    <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('publicSubmit.companyName')} <span className="text-red-500">*</span></label>
                                     <input
                                         value={customer.companyName}
                                         onChange={e => setCustomer({ ...customer, companyName: e.target.value })}
@@ -695,9 +695,9 @@ export const CustomerSubmit: React.FC = () => {
                             </div>
 
                             {/* Row 2: Contact Person & Phone Number */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 md:gap-6">
                                 <div>
-                                    <label className="block text-[10px] md:text-xs font-semibold text-gray-500 uppercase mb-1.5 md:mb-2 ml-2">{t('publicSubmit.contactName')} <span className="text-red-500">*</span></label>
+                                    <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('publicSubmit.contactName')} <span className="text-red-500">*</span></label>
                                     <input
                                         value={customer.contactName}
                                         onChange={e => setCustomer({ ...customer, contactName: e.target.value })}
@@ -708,7 +708,7 @@ export const CustomerSubmit: React.FC = () => {
                                     {errors.contactName && <p className="text-red-500 text-xs ml-2 mt-1">{errors.contactName}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] md:text-xs font-semibold text-gray-500 uppercase mb-1.5 md:mb-2 ml-2">{t('publicSubmit.phone')} <span className="text-red-500">*</span></label>
+                                    <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('publicSubmit.phone')} <span className="text-red-500">*</span></label>
                                     <input
                                         type="tel"
                                         value={customer.phone}
@@ -722,9 +722,9 @@ export const CustomerSubmit: React.FC = () => {
                             </div>
 
                             {/* Row 3: LINE Account (Where they bought) & LINE ID */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 md:gap-6">
                                 <div>
-                                    <label className="block text-[10px] md:text-xs font-semibold text-gray-500 uppercase mb-1.5 md:mb-2 ml-2">{t('publicSubmit.lineAccountLabel')} <span className="text-red-500">*</span></label>
+                                    <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('publicSubmit.lineAccountLabel')} <span className="text-red-500">*</span></label>
                                     <select value={customer.lineAccount} onChange={e => setCustomer({ ...customer, lineAccount: e.target.value })} className={INPUT_CLASS + ' cursor-pointer'}>
                                         <option value="">{t('publicSubmit.lineAccountPlaceholder')}</option>
                                         {LINE_ACCOUNTS.map(la => <option key={la.id} value={la.id}>{la.label}</option>)}
@@ -732,7 +732,7 @@ export const CustomerSubmit: React.FC = () => {
                                     {errors.lineAccount && <p className="text-red-500 text-xs ml-2 mt-1">{errors.lineAccount}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] md:text-xs font-semibold text-gray-500 uppercase mb-1.5 md:mb-2 ml-2">{t('submit.lineId')}</label>
+                                    <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('submit.lineId')}</label>
                                     <input
                                         value={customer.lineId}
                                         onChange={e => setCustomer({ ...customer, lineId: e.target.value })}
@@ -745,7 +745,7 @@ export const CustomerSubmit: React.FC = () => {
 
                             {/* Row 4: Return Address */}
                             <div>
-                                <label className="block text-[10px] md:text-xs font-semibold text-gray-500 uppercase mb-1.5 md:mb-2 ml-2">{t('submit.returnAddress')} <span className="text-red-500">*</span></label>
+                                <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('submit.returnAddress')} <span className="text-red-500">*</span></label>
                                 <textarea
                                     value={customer.returnAddress}
                                     onChange={e => setCustomer({ ...customer, returnAddress: e.target.value })}
