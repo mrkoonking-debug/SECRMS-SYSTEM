@@ -298,6 +298,22 @@ export const SettingsPage: React.FC = () => {
               <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.performanceMode ? 'translate-x-5' : 'translate-x-0'}`}></span>
             </button>
           </div>
+
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl flex-wrap gap-4 mt-4">
+            <div className="flex-1">
+              <h4 className="font-bold text-sm text-[#1d1d1f] dark:text-white mb-1">ระบบแจ้งเตือนอีเมลอัตโนมัติ (Overdue Alerts)</h4>
+              <p className="text-xs text-gray-500">แจ้งเตือนทางอีเมลไปยังผู้สร้างงานโดยอัตโนมัติ เมื่อใบงานค้างอยู่ในระบบเกิน 15 วันและยังดำเนินการไม่เสร็จสิ้น</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSettings({ ...settings, enableOverdueEmailAlerts: !settings.enableOverdueEmailAlerts })}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${settings.enableOverdueEmailAlerts ? 'bg-green-500' : 'bg-gray-200 dark:bg-[#424245]'}`}
+              role="switch"
+              aria-checked={settings.enableOverdueEmailAlerts}
+            >
+              <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.enableOverdueEmailAlerts ? 'translate-x-5' : 'translate-x-0'}`}></span>
+            </button>
+          </div>
         </div>
 
         {/* Data Management Section */}

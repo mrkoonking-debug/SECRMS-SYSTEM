@@ -40,6 +40,8 @@ export const Dashboard: React.FC = () => {
                 const teamFilter = selectedTeam === 'ALL' ? undefined : selectedTeam;
                 const data = await MockDb.getStats(teamFilter);
                 setStats(data);
+                // Trigger overdue email notifications in background
+                MockDb.checkAndSendOverdueEmails().catch(e => console.error("checkAndSendOverdueEmails failed:", e));
             } catch (err: unknown) {
                 console.error('Dashboard fetch failed:', err);
                 setError(err instanceof Error ? err.message : 'ไม่สามารถโหลดข้อมูลได้');

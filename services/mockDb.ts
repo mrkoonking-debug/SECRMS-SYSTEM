@@ -5,7 +5,7 @@ import { initializeApp, deleteApp } from 'firebase/app';
 import {
   collection, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc,
   query, where, orderBy, Timestamp, limit, serverTimestamp, startAfter, QueryDocumentSnapshot,
-  getCountFromServer, runTransaction
+  getCountFromServer, runTransaction, addDoc
 } from 'firebase/firestore';
 import {
   signInWithEmailAndPassword, signOut, onAuthStateChanged,
@@ -47,7 +47,8 @@ let OFFLINE_SETTINGS = {
   tel: '02-999-8888',
   logoUrl: '/logo.png',
   website: 'www.sec-technology.com',
-  performanceMode: false
+  performanceMode: false,
+  enableOverdueEmailAlerts: false
 };
 
 // Auth ready promise — resolves once onAuthStateChanged fires for the first time
@@ -241,6 +242,91 @@ export const MockDb = {
   updateSettings: async (s: any) => {
     if (!isConfigured || !db) throw new Error("Firebase Not Configured");
     try { await setDoc(doc(db, 'settings', 'config'), s); } catch (e) { console.error("updateSettings failed", e); throw e; }
+  },
+  checkAndSendOverdueEmails: async () => {
+    if (!isConfigured || !db) return;
+    try {
+      const settings = await MockDb.getSettings();
+      if (!settings?.enableOverdueEmailAlerts) return;
+
+      const rmasRef = collection(db, 'rmas');
+      const q = query(rmasRef, where('isDeleted', '!=', true));
+      const snap = await getDocs(q);
+      const now = Date.now();
+      const overdueLimit = 15 * 24 * 60 * 60 * 1000; // 15 days
+
+      for (const docSnap of snap.docs) {
+        const rma = docSnap.data() as RMA;
+        const isOverdue = ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(rma.status) &&
+          (now - new Date(rma.createdAt).getTime() > overdueLimit);
+
+        if (isOverdue && rma.creatorEmail && !rma.overdueEmailSent) {
+          // 1. Write to standard firebase 'mail' collection
+          const mailRef = collection(db, 'mail');
+          await addDoc(mailRef, {
+            to: rma.creatorEmail,
+            message: {
+              subject: `[SEC RMS - แจ้งเตือนด่วน] งานเคลมรุ่น ${rma.productModel} เกินกำหนดเวลา 15 วัน`,
+              html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eef2f6; border-radius: 12px;">
+                  <h2 style="color: #ef4444; margin-top: 0;">⚠️ แจ้งเตือนงานเคลมล่าช้า (Overdue Alert)</h2>
+                  <p>สวัสดีครับคุณ <strong>${rma.createdBy || 'Staff'}</strong>,</p>
+                  <p>งานเคลมที่คุณเป็นผู้สร้างเข้าระบบมีอายุงานเกิน <strong>15 วัน</strong> แล้วและยังดำเนินการไม่เสร็จสิ้น กรุณาตรวจสอบและติดตามงานโดยเร็ว:</p>
+                  <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                    <tr>
+                      <td style="padding: 8px 0; font-weight: bold; width: 120px; border-bottom: 1px solid #f1f5f9;">รหัสงานเคลม:</td>
+                      <td style="padding: 8px 0; font-family: monospace; font-size: 14px; border-bottom: 1px solid #f1f5f9;">${rma.id}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 8px 0; font-weight: bold; border-bottom: 1px solid #f1f5f9;">ยี่ห้อ / รุ่น:</td>
+                      <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;">${rma.brand} ${rma.productModel}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 8px 0; font-weight: bold; border-bottom: 1px solid #f1f5f9;">Serial Number:</td>
+                      <td style="padding: 8px 0; font-family: monospace; border-bottom: 1px solid #f1f5f9;">${rma.serialNumber}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 8px 0; font-weight: bold; border-bottom: 1px solid #f1f5f9;">วันที่สร้าง:</td>
+                      <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;">${new Date(rma.createdAt).toLocaleString('th-TH')}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 8px 0; font-weight: bold; border-bottom: 1px solid #f1f5f9;">สถานะปัจจุบัน:</td>
+                      <td style="padding: 8px 0; color: #f59e0b; font-weight: bold; border-bottom: 1px solid #f1f5f9;">${rma.status}</td>
+                    </tr>
+                  </table>
+                  <p style="margin-bottom: 25px;">คุณสามารถคลิกเข้าไปดูรายละเอียดและบันทึกประวัติการส่งซ่อมได้ที่ปุ่มด้านล่างนี้:</p>
+                  <div style="text-align: center; margin: 30px 0;">
+                    <a href="${window.location.origin}/admin/job/${encodeURIComponent(rma.groupRequestId || rma.id)}" style="display: inline-block; background-color: #0071e3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 15px;">ดูรายละเอียดและจัดการงานเคลม</a>
+                  </div>
+                  <hr style="border: none; border-top: 1px solid #eef2f6; margin: 30px 0;"/>
+                  <p style="font-size: 11px; color: #86868b; line-height: 1.5;">อีเมลนี้เป็นการแจ้งเตือนอัตโนมัติจากระบบ SEC Claim RMS หากงานเคลมนี้เสร็จสิ้นแล้วกรุณาเปลี่ยนสถานะในระบบเป็น 'ซ่อมเสร็จ / พร้อมคืน' หรือ 'ปิดงาน' เพื่อปิดรับการแจ้งเตือน</p>
+                </div>
+              `
+            }
+          });
+
+          // 2. Set overdueEmailSent = true in the rmas doc to avoid repeat emails
+          await updateDoc(docSnap.ref, {
+            overdueEmailSent: true,
+            updatedAt: serverTimestamp()
+          });
+
+          // 3. Log to timeline event
+          const currentHistory = rma.history || [];
+          await updateDoc(docSnap.ref, {
+            history: [...currentHistory, {
+              id: `evt-${Date.now()}`,
+              date: Timestamp.now(),
+              type: 'SYSTEM',
+              description: `ระบบส่งอีเมลแจ้งเตือนงานล่าช้าไปยังผู้สร้างเรียบร้อย (${rma.creatorEmail})`,
+              user: 'System'
+            }]
+          });
+        }
+      }
+    } catch (err) {
+      console.error("checkAndSendOverdueEmails failed:", err);
+    }
   },
 
   // --- Seed Data (Admin Only) ---

@@ -127,6 +127,10 @@ export interface RMA {
   isDeleted?: boolean;
   deletedAt?: string;
   deletedBy?: string;
+
+  // Email Notifications
+  creatorEmail?: string;
+  overdueEmailSent?: boolean;
 }
 
 // 10. โครงสร้างข้อมูลสำหรับ Dashboard (สถิติรวม)

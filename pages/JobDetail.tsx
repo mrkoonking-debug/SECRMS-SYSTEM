@@ -624,7 +624,11 @@ export const JobDetail: React.FC = () => {
                                                 <div className="text-sm text-gray-700 dark:text-gray-200">
                                                     <span className="text-gray-400 font-medium">วิธีดำเนินการ: </span>
                                                     <strong className="text-gray-800 dark:text-gray-100">
-                                                        {t(`actions.${item.resolution.actionTaken.toLowerCase().replace(/ /g, '_')}`) || item.resolution.actionTaken}
+                                                        {(() => {
+                                                            const key = `actions.${item.resolution.actionTaken.toLowerCase().replace(/ /g, '_')}`;
+                                                            const trans = t(key);
+                                                            return trans === key ? item.resolution.actionTaken : trans;
+                                                        })()}
                                                     </strong>
                                                 </div>
                                                 {item.resolution.actionDetails && (

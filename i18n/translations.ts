@@ -80,7 +80,8 @@ export const translations = {
       replaced_component: 'Vendor Replaced Part',
       swapped_unit: 'Vendor Swapped Unit',
       software_update: 'Software/Firmware Fixed (In-House)',
-      no_fault_found: 'No Fault Found (Returned)'
+      no_fault_found: 'No Fault Found (Returned)',
+      advance_replacement: 'Advance Replacement'
     },
     delays: {
       NONE: 'No Delay',
@@ -475,7 +476,8 @@ export const translations = {
       replaced_component: 'ศูนย์เปลี่ยนอะไหล่',
       swapped_unit: 'ศูนย์เปลี่ยนตัวใหม่ (Swap)',
       software_update: 'แก้ไข Config/Firmware (จบที่ร้าน)',
-      no_fault_found: 'ไม่พบอาการเสีย (ส่งคืน)'
+      no_fault_found: 'ไม่พบอาการเสีย (ส่งคืน)',
+      advance_replacement: 'เปลี่ยนสินค้าล่วงหน้า (Advance Replacement)'
     },
     delays: {
       NONE: 'ปกติ (ไม่ล่าช้า)',

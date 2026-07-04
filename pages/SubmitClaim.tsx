@@ -98,7 +98,8 @@ export const SubmitClaim: React.FC = () => {
           issueDescription: item.issue,
           team: item.team as Team,
           attachments: [],
-          createdBy: MockDb.getCurrentUser()?.name || 'Admin'
+          createdBy: MockDb.getCurrentUser()?.name || 'Admin',
+          creatorEmail: MockDb.getCurrentUser()?.email || ''
         };
 
         const newRMA = await MockDb.addRMA(rmaData);
