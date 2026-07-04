@@ -80,19 +80,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
         else setCurrentItem(prev => ({ ...prev, team: '' }));
     }, [selectedMainTeam, mode]);
 
-    // Auto-suggest Team based on Brand
-    useEffect(() => {
-        if (mode === 'customer') return;
-        if (!currentItem.brand) return;
-        const b = currentItem.brand.toLowerCase();
-        if (b.includes('hikvision') || b.includes('hilook') || b.includes('ezviz')) {
-            setSelectedMainTeam('A');
-        } else if (b.includes('dahua') || b.includes('imou')) {
-            setSelectedMainTeam('B');
-        } else {
-            setSelectedMainTeam('C');
-        }
-    }, [currentItem.brand, mode]);
+
 
     const validate = (): Record<string, string> => {
         const newErrors: Record<string, string> = {};
