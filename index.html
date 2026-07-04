@@ -96,12 +96,18 @@
     /* ===== Glass Panel — hoverstat.es-inspired translucency ===== */
     .glass-panel {
       background: var(--surface);
-      backdrop-filter: blur(24px) saturate(1.6);
-      -webkit-backdrop-filter: blur(24px) saturate(1.6);
       border: 1px solid var(--border);
       border-radius: 1.5rem;
       box-shadow: var(--shadow-sm);
       transition: box-shadow var(--transition-smooth), transform var(--transition-smooth), border-color var(--transition-smooth);
+    }
+
+    /* Disable heavy backdrop blurs on mobile devices to solve scroll lag issues */
+    @media (min-width: 769px) {
+      .glass-panel {
+        backdrop-filter: blur(24px) saturate(1.6);
+        -webkit-backdrop-filter: blur(24px) saturate(1.6);
+      }
     }
 
     .glass-panel:hover {
