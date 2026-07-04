@@ -5,7 +5,7 @@ import { MockDb } from '../services/mockDb';
 import { showToast } from '../services/toast';
 import { GlassSelect } from './GlassSelect';
 import { compressImage } from '../services/imageCompressor';
-import { X, Save, Calendar, Landmark, User, FileText, HelpCircle, Image as ImageIcon, Loader2, Trash2 } from 'lucide-react';
+import { X, Save, Calendar, Landmark, User, FileText, HelpCircle, Image as ImageIcon, Loader2, Trash2, Clock } from 'lucide-react';
 
 interface TransactionModalProps {
   onClose: () => void;
@@ -20,6 +20,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 }) => {
   const isEdit = !!transaction;
   const [date, setDate] = useState(transaction?.date || new Date().toISOString().split('T')[0]);
+  const [time, setTime] = useState(transaction?.time || new Date().toTimeString().split(' ')[0].substring(0, 5)); // HH:MM
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>(transaction?.type || 'EXPENSE');
   const [amount, setAmount] = useState<string>(transaction?.amount ? String(transaction.amount) : '');
   const [description, setDescription] = useState(transaction?.description || '');
@@ -37,7 +38,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   // Auto descriptions suggestions
   const suggestions = type === 'EXPENSE' 
-    ? ['ค่าส่งปลายทาง', 'ค่าบรรจุภัณฑ์/กล่อง/บับเบิ้ล', 'ค่าเครื่องเขียน/อุปกรณ์', 'ค่าเดินทาง/น้ำมัน']
+    ? ['ค่าส่งปลายทาง', 'ค่าของใช้สำนักงาน', 'ค่าป้าแม่บ้าน', 'ทอนเงินสดขายหน้าร้าน', 'จ่ายเบี้ยเลี้ยง']
     : ['เบิกเงินค่าขนส่งปลายทาง', 'เบิกเงินกองกลางประจำสัปดาห์', 'เบิกเงินกองกลางเพิ่มเติม'];
 
   const validate = () => {
@@ -78,6 +79,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     try {
       const payload = {
         date,
+        time,
         type,
         amount: Number(amount),
         description: description.trim(),
@@ -112,10 +114,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   `;
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4 animate-fade-in">
-      <div className="bg-white dark:bg-[#1c1c1e] w-full max-w-lg rounded-2xl shadow-2xl border border-gray-200 dark:border-[#333] flex flex-col overflow-hidden max-h-[90vh]">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-2 sm:p-4 animate-fade-in">
+      <div className="bg-white dark:bg-[#1c1c1e] w-full max-w-lg rounded-2xl shadow-2xl border border-gray-200 dark:border-[#333] flex flex-col overflow-hidden max-h-[92vh] sm:max-h-[90vh]">
         {/* Header */}
-        <div className="p-5 border-b border-gray-100 dark:border-[#333] flex items-center justify-between flex-shrink-0">
+        <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-[#333] flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3">
             <Landmark className="w-6 h-6 text-[#0071e3]" />
             <div>
@@ -131,7 +133,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         </div>
 
         {/* Form Content */}
-        <form onSubmit={handleSave} className="flex-grow overflow-y-auto p-6 space-y-4 custom-scrollbar">
+        <form onSubmit={handleSave} className="flex-grow flex flex-col overflow-hidden">
+          <div className="flex-grow overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar">
           {/* Transaction Type Selector */}
           <div>
             <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1">ประเภทรายการ</label>
@@ -153,11 +156,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             {/* Date */}
             <div>
-              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1 flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" /> วันที่
+              <label className="block text-[10px] sm:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1 flex items-center gap-1">
+                <Calendar className="w-3 h-3 text-[#0071e3]" /> วันที่
               </label>
               <input
                 type="date"
@@ -165,12 +168,25 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 onChange={e => setDate(e.target.value)}
                 className={inputClass(!!errors.date)}
               />
-              {errors.date && <p className="text-red-500 text-[11px] mt-1 ml-1">{errors.date}</p>}
+              {errors.date && <p className="text-red-500 text-[10px] mt-1 ml-1">{errors.date}</p>}
+            </div>
+
+            {/* Time */}
+            <div>
+              <label className="block text-[10px] sm:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1 flex items-center gap-1">
+                <Clock className="w-3 h-3 text-[#0071e3]" /> เวลา
+              </label>
+              <input
+                type="time"
+                value={time}
+                onChange={e => setTime(e.target.value)}
+                className={inputClass(false)}
+              />
             </div>
 
             {/* Amount */}
             <div>
-              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1">จำนวนเงิน (บาท) <span className="text-red-500">*</span></label>
+              <label className="block text-[10px] sm:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1 truncate">จำนวนเงิน <span className="text-red-500">*</span></label>
               <input
                 type="number"
                 step="0.01"
@@ -180,7 +196,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 className={inputClass(!!errors.amount)}
                 placeholder="0.00"
               />
-              {errors.amount && <p className="text-red-500 text-[11px] mt-1 ml-1">{errors.amount}</p>}
+              {errors.amount && <p className="text-red-500 text-[10px] mt-1">{errors.amount}</p>}
             </div>
           </div>
 
@@ -211,54 +227,129 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {/* Category */}
-            <div>
-              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1">หมวดหมู่</label>
-              <GlassSelect
-                value={category}
-                onChange={val => setCategory(val)}
-                options={[
-                  { value: 'ค่าขนส่ง', label: 'ค่าขนส่ง / ปลายทาง' },
-                  { value: 'ค่าบรรจุภัณฑ์', label: 'ค่ากล่อง / บับเบิ้ล' },
-                  { value: 'ค่าเครื่องเขียน', label: 'ค่าเครื่องเขียน / อุปกรณ์' },
-                  { value: 'กองกลาง', label: 'เงินกองกลาง (รับเข้า/เจ้านาย)' },
-                  { value: 'อื่นๆ', label: 'อื่นๆ' },
-                ]}
-              />
+          {/* Category Selection (Grid layout for modern, direct select) */}
+          <div>
+            <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2 ml-1">
+              หมวดหมู่รายการ
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: 'ค่าขนส่ง', label: 'ค่าขนส่ง / ปลายทาง' },
+                { value: 'ค่าบรรจุภัณฑ์', label: 'ค่ากล่อง / บับเบิ้ล' },
+                { value: 'ค่าเครื่องเขียน', label: 'ค่าเครื่องเขียน / อุปกรณ์' },
+                { value: 'กองกลาง', label: 'เงินกองกลาง (เติมเข้า)' },
+                { value: 'อื่นๆ', label: 'อื่นๆ' },
+              ].map(opt => {
+                const isSelected = category === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setCategory(opt.value)}
+                    className={`px-3 py-2.5 text-xs font-medium rounded-xl text-left transition-all duration-200 border flex items-center justify-between ${
+                      isSelected
+                        ? 'bg-blue-50 border-[#0071e3] text-[#0071e3] dark:bg-blue-950/30 dark:border-blue-500 dark:text-blue-400 font-bold shadow-sm'
+                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-[#2c2c2e] dark:border-white/5 dark:text-gray-300 dark:hover:bg-[#3a3a3c]'
+                    }`}
+                  >
+                    <span>{opt.label}</span>
+                    {isSelected && (
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#0071e3] dark:bg-blue-400 shadow-sm" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
+          </div>
 
-            {/* Staff Name */}
-            <div>
-              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1 flex items-center gap-1">
-                <User className="w-3.5 h-3.5" /> ผู้ทำรายการ <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={staffName}
-                onChange={e => setStaffName(e.target.value)}
-                className={inputClass(!!errors.staffName)}
-                placeholder="ชื่อพนักงาน"
-              />
-              {errors.staffName && <p className="text-red-500 text-[11px] mt-1 ml-1">{errors.staffName}</p>}
-            </div>
+          {/* Staff Name */}
+          <div>
+            <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1 flex items-center gap-1">
+              <User className="w-3.5 h-3.5 text-[#0071e3]" /> ผู้ทำรายการ <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={staffName}
+              onChange={e => setStaffName(e.target.value)}
+              className={inputClass(!!errors.staffName)}
+              placeholder="ชื่อพนักงาน"
+            />
+            {errors.staffName && <p className="text-red-500 text-[11px] mt-1 ml-1">{errors.staffName}</p>}
           </div>
 
           {/* Paid By (Only visible for Expense) */}
           {type === 'EXPENSE' && (
             <div>
-              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1">จ่ายด้วยเงินก้อนไหน?</label>
-              <GlassSelect
-                value={paidBy}
-                onChange={val => setPaidBy(val as 'PETTY_CASH' | 'PERSONAL_CASH' | 'PERSONAL_TRANSFER')}
-                options={[
-                  { value: 'PETTY_CASH', label: 'เงินสดกองกลาง' },
-                  { value: 'PERSONAL_CASH', label: 'พนักงานสำรองจ่าย' },
-                ]}
-              />
-              <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 ml-1">
-                *หากเลือก 'สำรองจ่ายด้วยเงินส่วนตัว' ระบบจะบันทึกค้างคืนพนักงาน เพื่อแจ้งให้หัวหน้าเบิกคืนเงินสดในภายหลัง
-              </p>
+              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1">จ่ายด้วยเงินก้อนไหน?</label>
+              
+              <div className="flex items-center gap-3 bg-gray-50/50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 rounded-2xl p-2.5">
+                {/* Playful Toggle Switch */}
+                <div 
+                  onClick={() => setPaidBy(paidBy === 'PETTY_CASH' ? 'PERSONAL_CASH' : 'PETTY_CASH')}
+                  className={`relative w-32 h-11 rounded-full cursor-pointer p-1 transition-all duration-500 select-none border shadow-inner flex-shrink-0 ${
+                    paidBy === 'PETTY_CASH' 
+                      ? 'bg-blue-500/10 dark:bg-blue-900/20 border-blue-200/40 dark:border-blue-800/20' 
+                      : 'bg-orange-500/15 dark:bg-orange-950/20 border-orange-200/40 dark:border-orange-900/20'
+                  }`}
+                >
+                  {/* Track Illustration - Company (Visible when Personal is selected on the left) */}
+                  <div className={`absolute left-2 top-1/2 -translate-y-1/2 transition-all duration-500 ${paidBy === 'PETTY_CASH' ? 'opacity-0 scale-75 rotate-12' : 'opacity-100 scale-100 rotate-0'}`}>
+                    <svg className="w-5 h-5 text-orange-400/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="12" cy="12" r="5" />
+                      <line x1="12" y1="3" x2="12" y2="7" />
+                      <line x1="12" y1="17" x2="12" y2="21" />
+                      <line x1="3" y1="12" x2="7" y2="12" />
+                      <line x1="17" y1="12" x2="21" y2="12" />
+                    </svg>
+                  </div>
+
+                  {/* Track Illustration - Employee (Visible when Petty Cash is selected on the right) */}
+                  <div className={`absolute right-2 top-1/2 -translate-y-1/2 transition-all duration-500 ${paidBy === 'PERSONAL_CASH' ? 'opacity-0 scale-75 -rotate-12' : 'opacity-100 scale-100 rotate-0'}`}>
+                    <svg className="w-5 h-5 text-blue-500/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M19 8v6M22 11h-6" />
+                    </svg>
+                  </div>
+
+                  {/* Sliding Thumb: represents the active selector */}
+                  <div 
+                    className={`absolute top-1 w-8 h-8 rounded-full bg-white dark:bg-[#2c2c2e] shadow-md flex items-center justify-center transition-all duration-500 ease-out ${
+                      paidBy === 'PETTY_CASH' 
+                        ? 'left-1 border border-blue-300 dark:border-blue-700 shadow-blue-500/10' 
+                        : 'left-[calc(100%-36px)] border border-orange-300 dark:border-orange-700 shadow-orange-500/10'
+                    }`}
+                  >
+                    {paidBy === 'PETTY_CASH' ? (
+                      <svg className="w-5 h-5 text-blue-600 animate-fade-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 text-orange-600 animate-fade-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M18 8a3 3 0 1 0-6 0 3 3 0 0 0 6 0ZM6 21v-2a4 4 0 0 1 4-4h5" />
+                        <path d="m20 18 2 2-2 2" />
+                        <path d="M12 21h8" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+
+                {/* Label and Explanations */}
+                <div className="flex-grow flex flex-col justify-center min-w-0">
+                  <span className="font-bold text-xs sm:text-sm text-gray-800 dark:text-gray-200 leading-tight">
+                    {paidBy === 'PETTY_CASH' ? 'เงินสดกองกลาง (เงินบริษัท)' : 'พนักงานสำรองจ่าย (เบิกคืนทีหลัง)'}
+                  </span>
+                  <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight mt-0.5">
+                    {paidBy === 'PETTY_CASH' 
+                      ? 'จ่ายตรงจากเงินสดส่วนกลาง' 
+                      : 'พนักงานจ่ายส่วนตัวไปก่อนเพื่อเบิกคืน'}
+                  </span>
+                </div>
+              </div>
             </div>
           )}
 
@@ -319,9 +410,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               placeholder="ระบุรายละเอียดเพิ่มเติม เช่น โอนเข้าบัญชีขนส่งปลายทาง ฯลฯ"
             />
           </div>
+          </div>
 
           {/* Footer actions */}
-          <div className="p-5 border-t border-gray-100 dark:border-[#333] flex items-center justify-end gap-3 flex-shrink-0 pt-4">
+          <div className="p-4 border-t border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-[#1c1c1e] flex items-center justify-end gap-3 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}

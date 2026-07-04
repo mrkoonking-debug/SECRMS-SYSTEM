@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Landmark, Plus, FileSpreadsheet, Search, RefreshCw, Trash2, Edit2, Check, 
-  ArrowUpRight, ArrowDownLeft, AlertCircle, Coins, Clock, ChevronRight, Image as ImageIcon, X
+  ArrowUpRight, ArrowDownLeft, AlertCircle, Coins, Clock, ChevronRight, Image as ImageIcon, X, Wallet, Calendar
 } from 'lucide-react';
 import { PettyCashTransaction, PettyCashSummary } from '../types';
 import { MockDb } from '../services/mockDb';
@@ -179,85 +179,106 @@ export const FinanceLedger: React.FC = () => {
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 animate-fade-in px-4 pb-20 md:pb-8">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-6 backdrop-blur-xl">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500">
-            <Landmark className="w-6 h-6" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 bg-white/70 dark:bg-[#1e1e24]/40 border border-gray-200/50 dark:border-white/[0.08] rounded-2xl p-4 shadow-[0_8px_32px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
+            <Landmark className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-xl md:text-2xl font-black text-[#1d1d1f] dark:text-white leading-tight">ระบบบันทึกค่าใช้จ่าย & กองกลาง</h1>
-            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5">จัดการกระแสเงินสดกองกลาง บันทึกการสำรองจ่าย และอนุมัติการเบิกคืนเงินพนักงาน</p>
+            <h1 className="text-base sm:text-lg md:text-xl font-bold text-[#1d1d1f] dark:text-white leading-tight">ระบบบันทึกค่าใช้จ่าย & กองกลาง</h1>
+            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5">จัดการเงินสดกองกลาง บันทึกสำรองจ่าย และคืนเงินพนักงาน</p>
           </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <div className="flex gap-2 w-full sm:w-auto shrink-0">
           <button
             onClick={handleExportCSV}
-            className="w-full sm:w-auto px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-[#2c2c2e] dark:hover:bg-[#3a3a3c] border border-gray-200/50 dark:border-white/5 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all outline-none"
+            className="flex-1 sm:flex-none px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-[#2c2c2e] dark:hover:bg-[#3a3a3c] border border-gray-200/50 dark:border-white/5 text-gray-700 dark:text-gray-300 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 active:scale-95 transition-all outline-none"
           >
-            <FileSpreadsheet className="w-4 h-4 text-green-600" />
-            ส่งออกรายงาน (CSV)
+            <FileSpreadsheet className="w-3.5 h-3.5 text-green-600" />
+            <span>ส่งออก CSV</span>
           </button>
           <button
             onClick={() => { setSelectedTx(undefined); setShowModal(true); }}
-            className="w-full sm:w-auto px-4 py-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-md shadow-blue-500/10 outline-none"
+            className="flex-1 sm:flex-none px-3 py-2 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 active:scale-95 transition-all shadow-md shadow-blue-500/10 outline-none"
           >
-            <Plus className="w-4 h-4" />
-            เพิ่มบันทึกการเงิน
+            <Plus className="w-3.5 h-3.5" />
+            <span>เพิ่มบันทึก</span>
           </button>
         </div>
       </div>
 
       {/* Summary Widgets Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {/* Petty Cash Balance */}
-        <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-6 backdrop-blur-xl flex flex-col justify-between min-h-[140px] relative overflow-hidden">
-          <div className="absolute right-4 top-4 text-emerald-500 bg-emerald-500/10 w-10 h-10 rounded-full flex items-center justify-center">
-            <Coins className="w-5 h-5" />
+        <div className="bg-white/70 dark:bg-[#1e1e24]/45 border border-gray-200/50 dark:border-white/[0.08] rounded-2xl p-3.5 sm:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
+          <div className="absolute right-3 top-3 text-emerald-500 bg-emerald-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
+            <Coins className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
-            <span className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block">ยอดเงินสดกองกลางคงเหลือ</span>
-            <span className={`text-2xl md:text-3xl font-black mt-2 block tabular-nums ${summary.pettyCashBalance >= 0 ? 'text-[#34c759]' : 'text-[#ff3b30]'}`}>
+            <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block pr-6">เงินสดกองกลางคงเหลือ</span>
+            <span className={`text-base sm:text-xl md:text-2xl font-black mt-1 sm:mt-2 block tabular-nums ${summary.pettyCashBalance >= 0 ? 'text-[#34c759]' : 'text-[#ff3b30]'}`}>
               {formatCurrency(summary.pettyCashBalance)}
             </span>
           </div>
-          <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 block">
-            *เฉพาะเงินกองกลางที่พร้อมหยิบจ่ายได้ทันที
+          <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-1 sm:mt-2 block leading-tight">
+            *เงินสดพร้อมหยิบจ่ายได้ทันที
           </span>
         </div>
 
+        {/* Net Remaining Balance */}
+        {(() => {
+          const netBalance = summary.pettyCashBalance - summary.totalPersonalAdvance;
+          return (
+            <div className="bg-white/70 dark:bg-[#1e1e24]/45 border border-gray-200/50 dark:border-white/[0.08] rounded-2xl p-3.5 sm:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
+              <div className="absolute right-3 top-3 text-blue-500 bg-blue-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
+                <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block pr-6">คงเหลือสุทธิ (หลังคืนช่าง)</span>
+                <span className={`text-base sm:text-xl md:text-2xl font-black mt-1 sm:mt-2 block tabular-nums ${netBalance >= 0 ? 'text-[#0071e3] dark:text-blue-400' : 'text-[#ff3b30]'}`}>
+                  {formatCurrency(netBalance)}
+                </span>
+              </div>
+              <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-1 sm:mt-2 block leading-tight">
+                *หักยอดที่ต้องคืนพนักงานแล้ว
+              </span>
+            </div>
+          );
+        })()}
+
         {/* Unpaid Advance Payments */}
-        <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-6 backdrop-blur-xl flex flex-col justify-between min-h-[140px] relative overflow-hidden">
-          <div className="absolute right-4 top-4 text-orange-500 bg-orange-500/10 w-10 h-10 rounded-full flex items-center justify-center">
-            <Clock className="w-5 h-5" />
+        <div className="bg-white/70 dark:bg-[#1e1e24]/45 border border-gray-200/50 dark:border-white/[0.08] rounded-2xl p-3.5 sm:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
+          <div className="absolute right-3 top-3 text-orange-500 bg-orange-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
+            <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
-            <span className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block">ยอดสำรองจ่ายค้างคืนพนักงาน</span>
-            <span className="text-2xl md:text-3xl font-black text-[#ff9500] mt-2 block tabular-nums">
+            <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block pr-6">สำรองจ่ายค้างคืนพนักงาน</span>
+            <span className="text-base sm:text-xl md:text-2xl font-black text-[#ff9500] mt-1 sm:mt-2 block tabular-nums">
               {formatCurrency(summary.totalPersonalAdvance)}
             </span>
           </div>
-          <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 block">
-            *พนักงานออกเงินสด/โอนส่วนตัวสำรองจ่ายไปก่อน
+          <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-1 sm:mt-2 block leading-tight">
+            *พนักงานสำรองจ่ายเงินตัวเองไปก่อน
           </span>
         </div>
 
         {/* Staff Breakdown settlement card */}
-        <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-6 backdrop-blur-xl flex flex-col justify-between min-h-[140px]">
-          <span className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block mb-2">ยอดค้างคืนจำแนกตามพนักงาน</span>
-          <div className="flex-1 overflow-y-auto max-h-[80px] space-y-1.5 custom-scrollbar pr-1">
+        <div className="bg-white/70 dark:bg-[#1e1e24]/45 border border-gray-200/50 dark:border-white/[0.08] rounded-2xl p-3.5 sm:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px]">
+          <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block mb-1">ยอดค้างคืนแยกรายคน</span>
+          <div className="flex-1 overflow-y-auto max-h-[60px] sm:max-h-[85px] space-y-1 custom-scrollbar pr-0.5">
             {Object.keys(summary.personalAdvanceByStaff).length === 0 ? (
-              <p className="text-xs text-gray-400 dark:text-gray-500 italic mt-2">ไม่มีพนักงานค้างเบิกคืนเงินสด</p>
+              <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 italic mt-1 sm:mt-2">ไม่มีค้างจ่ายพนักงาน</p>
             ) : (
               Object.entries(summary.personalAdvanceByStaff).map(([name, amount]) => (
-                <div key={name} className="flex items-center justify-between text-xs py-1 border-b border-gray-100/50 dark:border-white/5 last:border-0">
-                  <span className="font-semibold text-[#1d1d1f] dark:text-gray-300">{name}</span>
-                  <div className="flex items-center gap-2">
+                <div key={name} className="flex items-center justify-between text-[10px] sm:text-xs py-0.5 border-b border-gray-100/50 dark:border-white/5 last:border-0">
+                  <span className="font-semibold text-[#1d1d1f] dark:text-gray-300 truncate max-w-[50px] sm:max-w-none">{name}</span>
+                  <div className="flex items-center gap-1.5">
                     <span className="font-bold text-[#ff9500] tabular-nums">{formatCurrency(amount)}</span>
                     <button
                       onClick={() => handleReimburseAllForStaff(name)}
-                      className="text-[10px] px-2 py-0.5 bg-blue-500/10 text-[#0071e3] font-bold rounded hover:bg-[#0071e3] hover:text-white transition-colors"
+                      className="text-[8px] sm:text-[9px] px-1.5 py-0.5 bg-blue-500/10 hover:bg-[#0071e3] hover:text-white text-[#0071e3] font-bold rounded transition-colors"
                     >
-                      คืนเงินทั้งหมด
+                      คืนเงิน
                     </button>
                   </div>
                 </div>
@@ -268,11 +289,11 @@ export const FinanceLedger: React.FC = () => {
       </div>
 
       {/* Filter and Table Section */}
-      <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-4 md:p-6 backdrop-blur-xl space-y-6">
+      <div className="bg-white/70 dark:bg-[#1e1e24]/40 border border-gray-200/50 dark:border-white/[0.08] rounded-3xl p-4 md:p-6 shadow-[0_8px_32px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl space-y-6">
         {/* Filters Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="flex flex-col xl:flex-row xl:items-center gap-4">
           {/* Search bar */}
-          <div className="relative">
+          <div className="relative w-full xl:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
@@ -283,45 +304,94 @@ export const FinanceLedger: React.FC = () => {
             />
           </div>
 
-          {/* Type Filter */}
-          <GlassSelect
-            value={typeFilter}
-            onChange={val => setTypeFilter(val as 'ALL' | 'INCOME' | 'EXPENSE')}
-            options={[
-              { value: 'ALL', label: 'ทุกประเภท' },
-              { value: 'INCOME', label: 'เบิกเงินพี่เกษม' },
-              { value: 'EXPENSE', label: 'รายจ่าย' },
-            ]}
-          />
+          {/* Filter Chips Container */}
+          <div className="flex flex-col md:flex-row md:items-center gap-3.5 flex-grow w-full">
+            {/* Type Filter Chips */}
+            <div className="grid grid-cols-3 bg-gray-100/80 dark:bg-white/[0.04] p-1 rounded-xl w-full md:w-auto shrink-0 select-none">
+              <button
+                onClick={() => setTypeFilter('ALL')}
+                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-center ${
+                  typeFilter === 'ALL'
+                    ? 'bg-white dark:bg-white/10 text-gray-800 dark:text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                ทุกประเภท
+              </button>
+              <button
+                onClick={() => setTypeFilter('INCOME')}
+                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-center ${
+                  typeFilter === 'INCOME'
+                    ? 'bg-emerald-500 text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                เบิกเงินพี่เกษม
+              </button>
+              <button
+                onClick={() => setTypeFilter('EXPENSE')}
+                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-center ${
+                  typeFilter === 'EXPENSE'
+                    ? 'bg-orange-500 text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                รายจ่าย
+              </button>
+            </div>
 
-          {/* Source Filter */}
-          <GlassSelect
-            value={sourceFilter}
-            onChange={val => setSourceFilter(val)}
-            options={[
-              { value: 'ALL', label: 'ทุกแหล่งเงิน' },
-              { value: 'PETTY_CASH', label: 'เงินกองกลาง' },
-              { value: 'PERSONAL_CASH', label: 'พนักงานสำรองจ่าย' },
-            ]}
-          />
+            {/* Source Filter Chips */}
+            <div className="grid grid-cols-3 bg-gray-100/80 dark:bg-white/[0.04] p-1 rounded-xl w-full md:w-auto shrink-0 select-none">
+              <button
+                onClick={() => setSourceFilter('ALL')}
+                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-center ${
+                  sourceFilter === 'ALL'
+                    ? 'bg-white dark:bg-white/10 text-gray-800 dark:text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                ทุกแหล่งเงิน
+              </button>
+              <button
+                onClick={() => setSourceFilter('PETTY_CASH')}
+                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-center ${
+                  sourceFilter === 'PETTY_CASH'
+                    ? 'bg-blue-500 text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                เงินกองกลาง
+              </button>
+              <button
+                onClick={() => setSourceFilter('PERSONAL_CASH')}
+                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-center ${
+                  sourceFilter === 'PERSONAL_CASH'
+                    ? 'bg-amber-500 text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                สำรองจ่าย
+              </button>
+            </div>
+          </div>
 
           {/* Date range pickers */}
-          <div className="flex gap-2 items-center w-full">
-            <div className="flex-1 min-w-0">
+          <div className="flex gap-2 items-center w-full xl:w-auto flex-shrink-0">
+            <div className="flex-1 sm:flex-initial sm:w-32">
               <input
                 type="date"
                 value={startDate}
                 onChange={e => setStartDate(e.target.value)}
-                className="w-full px-3 py-2.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-xs outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white"
+                className="w-full px-2.5 py-1.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-xs outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white shadow-sm"
               />
             </div>
-            <span className="text-gray-400 text-xs shrink-0">ถึง</span>
-            <div className="flex-1 min-w-0">
+            <span className="text-gray-400 text-xs font-semibold shrink-0">ถึง</span>
+            <div className="flex-1 sm:flex-initial sm:w-32">
               <input
                 type="date"
                 value={endDate}
                 onChange={e => setEndDate(e.target.value)}
-                className="w-full px-3 py-2.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-xs outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white"
+                className="w-full px-2.5 py-1.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-xs outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white shadow-sm"
               />
             </div>
           </div>
@@ -372,7 +442,15 @@ export const FinanceLedger: React.FC = () => {
                     return (
                       <tr key={tx.id} className="text-xs text-[#1d1d1f] dark:text-gray-200 hover:bg-gray-50/50 dark:hover:bg-white/[0.01] transition-all">
                         {/* Date */}
-                        <td className="py-3.5 pl-2 font-mono whitespace-nowrap">{tx.date}</td>
+                        <td className="py-3.5 pl-2 font-mono whitespace-nowrap">
+                          <div>{tx.date}</div>
+                          {tx.time && (
+                            <div className="text-[10px] text-gray-400 flex items-center gap-0.5 mt-0.5">
+                              <Clock className="w-3 h-3 text-gray-400/80" />
+                              {tx.time}
+                            </div>
+                          )}
+                        </td>
                         
                         {/* Type Icon */}
                         <td className="py-3.5 whitespace-nowrap">
@@ -491,7 +569,17 @@ export const FinanceLedger: React.FC = () => {
                   >
                     {/* Top Row: Date & Amount */}
                     <div className="flex justify-between items-center">
-                      <span className="text-[10px] text-gray-400 font-mono">{tx.date}</span>
+                      <span className="text-[10px] text-gray-400 font-mono flex items-center gap-1.5">
+                        <Calendar className="w-3 h-3 text-gray-400/85" />
+                        <span>{tx.date}</span>
+                        {tx.time && (
+                          <>
+                            <span className="text-gray-300 dark:text-gray-700">|</span>
+                            <Clock className="w-3 h-3 text-gray-400/85" />
+                            <span>{tx.time}</span>
+                          </>
+                        )}
+                      </span>
                       <span className="text-sm font-bold tabular-nums">
                         {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
                       </span>

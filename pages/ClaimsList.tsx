@@ -337,7 +337,7 @@ export const ClaimsList: React.FC = () => {
                         if (!rmasInDate) return null;
                         const isDateExpanded = expandedDates.has(dateLabel);
                         const jobsInDate = getJobsForDate(rmasInDate);
-                        const sortedJobKeys = Object.keys(jobsInDate).sort((a, b) => new Date(jobsInDate[b][0].updatedAt).getTime() - new Date(jobsInDate[a][0].updatedAt).getTime());
+                        const sortedJobKeys = Object.keys(jobsInDate).sort((a, b) => new Date(jobsInDate[b][0].createdAt).getTime() - new Date(jobsInDate[a][0].createdAt).getTime());
 
                         return (
                             <div key={dateLabel} className="animate-fade-in">
@@ -363,83 +363,96 @@ export const ClaimsList: React.FC = () => {
                                               const isJobDone = jobItems.every(i => [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(i.status));
 
                                               return (
-                                                  <div 
-                                                      key={jobKey} 
-                                                      onClick={() => handleJobClick(jobKey)} 
-                                                      className={`p-4 flex items-center justify-between gap-4 cursor-pointer bg-white dark:bg-[#1e1e1f] rounded-2xl border border-gray-200/70 dark:border-white/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.01)] dark:shadow-none hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500/50 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-all duration-200 group ${isJobCancelled ? 'opacity-50 grayscale bg-gray-50/20 dark:bg-black/10' : ''}`}
-                                                  >
-                                                      <div className="flex items-center gap-3.5 min-w-0 flex-grow">
-                                                          {/* macOS-style Icon Badge */}
-                                                          <div className={`w-8.5 h-8.5 rounded-lg flex items-center justify-center flex-shrink-0 text-white shadow-sm transition-transform group-hover:scale-105 ${isJobCancelled ? 'bg-gray-400 dark:bg-gray-600' : isJobDone ? 'bg-[#34c759]' : jobItems.some(i => isRMAOverdue(i)) ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>
-                                                              {isJobCancelled ? <X className="w-4 h-4 text-white" /> : isJobDone ? <CheckCircle2 className="w-4 h-4 text-white" /> : <Package className="w-4 h-4 text-white" />}
-                                                          </div>
-                                                          
-                                                          <div className="min-w-0 flex-1">
-                                                              <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
-                                                                  <span className="text-[13px] md:text-[15px] font-bold text-[#1d1d1f] dark:text-white truncate">{jobKey}</span>
-                                                                  {/* Ref badge */}
-                                                                  <span className={`text-[10px] px-1.5 py-0.5 rounded-md border ${quotationNumber ? 'bg-gray-100/80 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400 border-gray-200/60 dark:border-white/[0.06]' : 'bg-gray-50/80 dark:bg-white/[0.03] text-gray-400 dark:text-gray-500 border-gray-100 dark:border-white/[0.04] italic'}`}>{quotationNumber ? `Ref: ${quotationNumber}` : 'ไม่มี Ref'}</span>
-                                                                  {/* Team badge */}
-                                                                  {jobTeam && getTeamBadge(jobTeam)}
-                                                                  {/* Status indicators */}
-                                                                  {isJobCancelled ? (
-                                                                      <span className="bg-gray-500/10 text-gray-500 dark:text-gray-400 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-gray-500/20 font-bold">ยกเลิกแล้ว</span>
-                                                                  ) : isJobDone ? (
-                                                                      <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-emerald-500/20 font-bold flex items-center gap-0.5"><CheckCircle2 className="w-3 h-3" /> เสร็จสิ้น</span>
-                                                                  ) : null}
-                                                                  {!isJobDone && jobItems.some(i => isRMAOverdue(i)) && <span className="bg-[#ff3b30]/10 text-[#ff3b30] text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-[#ff3b30]/15 font-bold">Overdue</span>}
-                                                              </div>
-                                                              <div className="text-[11px] md:text-[13px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5 md:gap-2 mt-0.5">
-                                                                  <span>{customerName}</span>
-                                                                  <span className="text-gray-300 dark:text-gray-700">·</span>
-                                                                  <span>{jobItems.length} {t('claimsList.items')}</span>
-                                                              </div>
-                                                              {/* Detailed Items Preview */}
-                                                              <div className="mt-2 space-y-1.5 bg-gray-50/50 dark:bg-white/[0.01] border border-gray-100 dark:border-white/5 rounded-xl p-2.5 max-w-full overflow-hidden">
-                                                                  {jobItems.slice(0, 3).map((item) => (
-                                                                      <div key={item.id} className="flex items-center justify-between text-[11px] gap-2 flex-wrap sm:flex-nowrap border-b border-gray-100/50 dark:border-white/5 last:border-0 pb-1.5 last:pb-0">
-                                                                          <div className="min-w-0 flex-1 flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
-                                                                              <span className="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">{item.brand}</span>
-                                                                              <span className="text-gray-500 dark:text-gray-400 truncate">{item.productModel}</span>
-                                                                              <span className="text-gray-400 dark:text-gray-500 font-mono text-[10px]">({item.serialNumber})</span>
-                                                                          </div>
-                                                                          <div className="flex items-center gap-3 flex-shrink-0 ml-auto sm:ml-0 text-[10px] text-gray-400 dark:text-gray-500">
-                                                                               <div className="flex flex-col text-right">
-                                                                                   {item.issueDescription && (
-                                                                                       <span className="truncate max-w-[150px] sm:max-w-[250px]" title={item.issueDescription}>
-                                                                                           อาการที่แจ้ง: {item.issueDescription}
-                                                                                       </span>
-                                                                                   )}
-                                                                                   {item.resolution?.rootCause && (
-                                                                                       <span className="truncate max-w-[150px] sm:max-w-[250px] text-[#0071e3] font-medium" title={item.resolution.rootCause}>
-                                                                                           อาการที่พบ: {item.resolution.rootCause}
-                                                                                       </span>
-                                                                                   )}
-                                                                               </div>
+                                                   <div 
+                                                       key={jobKey} 
+                                                       onClick={() => handleJobClick(jobKey)} 
+                                                       className={`p-4 flex flex-col gap-3 cursor-pointer bg-white dark:bg-[#1e1e1f] rounded-2xl border border-gray-200/70 dark:border-white/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.01)] dark:shadow-none hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500/50 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-all duration-200 group ${isJobCancelled ? 'opacity-50 grayscale bg-gray-50/20 dark:bg-black/10' : ''}`}
+                                                   >
+                                                       {/* Top Row: Icon, Key, Badges, and Chevron */}
+                                                       <div className="flex items-center justify-between gap-3 w-full">
+                                                           <div className="flex items-center gap-2 flex-wrap min-w-0 flex-1">
+                                                               <div className="flex items-center gap-2">
+                                                                   {/* macOS-style Icon Badge */}
+                                                                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-white shadow-sm transition-transform group-hover:scale-105 ${isJobCancelled ? 'bg-gray-400 dark:bg-gray-600' : isJobDone ? 'bg-[#34c759]' : jobItems.some(i => isRMAOverdue(i)) ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>
+                                                                       {isJobCancelled ? <X className="w-3.5 h-3.5 text-white" /> : isJobDone ? <CheckCircle2 className="w-3.5 h-3.5 text-white" /> : <Package className="w-3.5 h-3.5 text-white" />}
+                                                                   </div>
+                                                                   <span className="text-[13px] md:text-[15px] font-bold text-[#1d1d1f] dark:text-white whitespace-nowrap shrink-0">{jobKey}</span>
+                                                               </div>
+                                                               <div className="flex items-center gap-1.5 flex-wrap">
+                                                                   <span className={`text-[10px] px-1.5 py-0.5 rounded-md border whitespace-nowrap ${quotationNumber ? 'bg-gray-100/80 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400 border-gray-200/60 dark:border-white/[0.06]' : 'bg-gray-50/80 dark:bg-white/[0.03] text-gray-400 dark:text-gray-500 border-gray-100 dark:border-white/[0.04] italic'}`}>{quotationNumber ? `Ref: ${quotationNumber}` : 'ไม่มี Ref'}</span>
+                                                                   {jobTeam && getTeamBadge(jobTeam)}
+                                                               </div>
+                                                           </div>
+                                                           
+                                                           <div className="flex items-center gap-2 flex-shrink-0">
+                                                               <div className="hidden sm:flex -space-x-1.5 mr-1">
+                                                                   {jobItems.slice(0, 3).map((item) => (
+                                                                       <div key={item.id} className={`w-6 h-6 rounded-md border border-white dark:border-[#1c1c1e] flex items-center justify-center text-[9px] font-bold text-white shadow-sm ${item.team === Team.HIKVISION ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>{item.brand.substring(0, 1)}</div>
+                                                                   ))}
+                                                                   {jobItems.length > 3 && <div className="w-6 h-6 rounded-md border border-white dark:border-[#1c1c1e] bg-gray-100 dark:bg-white/[0.06] text-gray-400 text-[9px] flex items-center justify-center shadow-sm">+{jobItems.length - 3}</div>}
+                                                               </div>
+                                                               <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 transition-transform group-hover:translate-x-0.5" />
+                                                           </div>
+                                                       </div>
+
+                                                       {/* Mid Row: Customer Info */}
+                                                       <div className="flex items-center gap-1.5 md:gap-2 flex-wrap text-[11px] md:text-[13px] text-gray-500 dark:text-gray-400 pl-9 sm:pl-9">
+                                                           <span className="font-semibold text-gray-700 dark:text-gray-300">{customerName}</span>
+                                                           <span className="text-gray-300 dark:text-gray-700">·</span>
+                                                           <span>{jobItems.length} {t('claimsList.items')}</span>
+                                                           {isJobCancelled ? (
+                                                               <span className="bg-gray-500/10 text-gray-500 dark:text-gray-400 text-[9px] px-1.5 py-0.2 rounded-full border border-gray-500/20 font-bold ml-1">ยกเลิกแล้ว</span>
+                                                           ) : isJobDone ? (
+                                                               <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] px-1.5 py-0.2 rounded-full border border-emerald-500/20 font-bold flex items-center gap-0.5 ml-1"><CheckCircle2 className="w-2.5 h-2.5" /> เสร็จสิ้น</span>
+                                                           ) : null}
+                                                           {!isJobDone && jobItems.some(i => isRMAOverdue(i)) && <span className="bg-[#ff3b30]/10 text-[#ff3b30] text-[9px] px-1.5 py-0.2 rounded-full border border-[#ff3b30]/15 font-bold ml-1">Overdue</span>}
+                                                       </div>
+
+                                                       {/* Bottom Row: Detailed Items Preview */}
+                                                       <div className="w-full pl-0 sm:pl-9">
+                                                           <div className="mt-1 space-y-1.5 bg-gray-50/50 dark:bg-white/[0.01] border border-gray-100 dark:border-white/5 rounded-xl p-2.5 max-w-full overflow-hidden">
+                                                               {jobItems.slice(0, 3).map((item) => (
+                                                                   <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] gap-2 border-b border-gray-100/50 dark:border-white/5 last:border-0 pb-2 last:pb-0 pt-2 first:pt-0">
+                                                                       {/* Left: Product Info & Mobile Badge */}
+                                                                       <div className="flex items-start sm:items-center justify-between sm:justify-start gap-2 flex-wrap sm:flex-nowrap min-w-0 flex-grow">
+                                                                           <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                                                                               <span className="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">{item.brand}</span>
+                                                                               <span className="text-gray-500 dark:text-gray-400 truncate">{item.productModel}</span>
+                                                                               <span className="text-gray-400 dark:text-gray-500 font-mono text-[10px]">({item.serialNumber})</span>
+                                                                           </div>
+                                                                           <div className="sm:hidden shrink-0">
                                                                                <StatusBadge status={item.status} isOverdue={isRMAOverdue(item)} />
                                                                            </div>
-                                                                      </div>
-                                                                  ))}
-                                                                  {jobItems.length > 3 && (
-                                                                      <div className="text-[10px] text-gray-400 dark:text-gray-500 font-medium pt-1 text-center border-t border-gray-100/50 dark:border-white/5">
-                                                                          + มีสินค้าอีก {jobItems.length - 3} รายการในใบงานนี้
-                                                                      </div>
-                                                                  )}
-                                                              </div>
-                                                          </div>
-                                                      </div>
-                                                      
-                                                      {/* Right side brands & arrow */}
-                                                      <div className="flex items-center gap-3 flex-shrink-0">
-                                                          <div className="hidden sm:flex -space-x-1.5">
-                                                              {jobItems.slice(0, 3).map((item) => (
-                                                                  <div key={item.id} className={`w-6 h-6 rounded-md border border-white dark:border-[#1c1c1e] flex items-center justify-center text-[9px] font-bold text-white shadow-sm ${item.team === Team.HIKVISION ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>{item.brand.substring(0, 1)}</div>
-                                                              ))}
-                                                              {jobItems.length > 3 && <div className="w-6 h-6 rounded-md border border-white dark:border-[#1c1c1e] bg-gray-100 dark:bg-white/[0.06] text-gray-400 text-[9px] flex items-center justify-center shadow-sm">+{jobItems.length - 3}</div>}
-                                                          </div>
-                                                          <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 transition-transform group-hover:translate-x-0.5" />
-                                                      </div>
-                                                  </div>
+                                                                       </div>
+
+                                                                       {/* Right: Symptoms & Desktop Badge */}
+                                                                       <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 text-[10px] text-gray-400 dark:text-gray-500 w-full sm:w-auto">
+                                                                           <div className="flex flex-col text-left sm:text-right w-full sm:max-w-[280px]">
+                                                                               {item.issueDescription && (
+                                                                                   <div className="break-words whitespace-normal leading-relaxed" title={item.issueDescription}>
+                                                                                       <span className="font-medium text-gray-400 dark:text-gray-500">อาการที่แจ้ง:</span> {item.issueDescription}
+                                                                                   </div>
+                                                                               )}
+                                                                               {item.resolution?.rootCause && (
+                                                                                   <div className="break-words whitespace-normal leading-relaxed text-[#0071e3] font-semibold" title={item.resolution.rootCause}>
+                                                                                       <span>อาการที่พบ:</span> {item.resolution.rootCause}
+                                                                                   </div>
+                                                                               )}
+                                                                           </div>
+                                                                           <div className="hidden sm:block shrink-0">
+                                                                               <StatusBadge status={item.status} isOverdue={isRMAOverdue(item)} />
+                                                                           </div>
+                                                                       </div>
+                                                                   </div>
+                                                               ))}
+                                                               {jobItems.length > 3 && (
+                                                                   <div className="text-[10px] text-gray-400 dark:text-gray-500 font-medium pt-1 text-center border-t border-gray-100/50 dark:border-white/5">
+                                                                       + มีสินค้าอีก {jobItems.length - 3} รายการในใบงานนี้
+                                                                   </div>
+                                                               )}
+                                                           </div>
+                                                       </div>
+                                                   </div>
                                               );
                                           })}
                                       </div>

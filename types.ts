@@ -182,6 +182,7 @@ export interface Distributor {
 export interface PettyCashTransaction {
   id: string;
   date: string;                    // YYYY-MM-DD
+  time?: string;                   // HH:MM
   type: 'INCOME' | 'EXPENSE';
   amount: number;                  // จำนวนเงิน (บาท)
   description: string;             // เช่น "ค่าส่งปลายทาง Hikvision"

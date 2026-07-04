@@ -916,8 +916,8 @@ export const JobDetail: React.FC = () => {
                 return (
                     <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex flex-col animate-in fade-in duration-200">
                         {/* Toolbar */}
-                        <div className="flex-shrink-0 flex flex-wrap items-center gap-2 md:gap-3 px-4 md:px-6 py-3 bg-white/90 dark:bg-[#1c1c1e]/95 backdrop-blur border-b border-gray-200 dark:border-white/10 shadow-sm">
-                            <h2 className="text-gray-800 dark:text-white font-semibold text-base w-full sm:w-auto flex-1 mb-1 sm:mb-0">📋 Preview เอกสาร</h2>
+                        <div className="flex-shrink-0 flex items-center justify-between gap-1.5 px-3 md:px-6 py-2 bg-white/90 dark:bg-[#1c1c1e]/95 backdrop-blur border-b border-gray-200 dark:border-white/10 shadow-sm w-full overflow-x-auto scrollbar-none">
+                            <h2 className="text-gray-800 dark:text-white font-bold text-xs sm:text-base flex-shrink-0 whitespace-nowrap mr-1">📋 Preview</h2>
                             
                             {/* Distributor Selector Tabs */}
                             {docPreviewType === 'DISTRIBUTOR' && (() => {
@@ -930,10 +930,10 @@ export const JobDetail: React.FC = () => {
                                 if (distGroups.length <= 1) return null;
 
                                 return (
-                                    <div className="flex bg-gray-100 dark:bg-white/5 p-1 rounded-xl gap-1 text-xs font-semibold mr-auto">
+                                    <div className="flex bg-gray-100 dark:bg-white/5 p-1 rounded-xl gap-1 text-[10px] sm:text-xs font-semibold mr-auto">
                                         <button
                                             onClick={() => setSelectedDistTab('ALL')}
-                                            className={`px-3 py-1.5 rounded-lg transition-all ${
+                                            className={`px-2.5 py-1 rounded-lg transition-all ${
                                                 selectedDistTab === 'ALL'
                                                     ? 'bg-white dark:bg-white/15 text-gray-800 dark:text-white shadow-sm'
                                                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
@@ -945,7 +945,7 @@ export const JobDetail: React.FC = () => {
                                             <button
                                                 key={distName}
                                                 onClick={() => setSelectedDistTab(distName)}
-                                                className={`px-3 py-1.5 rounded-lg transition-all ${
+                                                className={`px-2.5 py-1 rounded-lg transition-all ${
                                                     selectedDistTab === distName
                                                         ? 'bg-white dark:bg-white/15 text-gray-800 dark:text-white shadow-sm'
                                                         : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
@@ -1030,10 +1030,10 @@ export const JobDetail: React.FC = () => {
                                         showToast('คัดลอกข้อความแล้ว!', 'success');
                                     }).catch(() => showToast('ไม่สามารถคัดลอกได้', 'error'));
                                 }}
-                                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors"
+                                className="px-2.5 py-1.5 sm:px-4 sm:py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium text-[11px] sm:text-sm flex items-center gap-1 sm:gap-2 transition-colors whitespace-nowrap"
                                 title="คัดลอกเฉพาะข้อความ (ใช้กับ Facebook ได้)"
                             >
-                                <Copy className="w-4 h-4" /> ข้อความ
+                                <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> ข้อความ
                             </button>
                             
                             {/* Copy Image — per-page buttons when multiple distributor pages */}
@@ -1076,10 +1076,10 @@ export const JobDetail: React.FC = () => {
                                                 }
                                             }}
                                             disabled={isCopyingImage}
-                                            className={`px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors ${isCopyingImage ? 'opacity-60 cursor-wait' : ''}`}
+                                            className={`px-2.5 py-1.5 sm:px-3 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium text-[11px] sm:text-xs flex items-center gap-1 transition-colors whitespace-nowrap ${isCopyingImage ? 'opacity-60 cursor-wait' : ''}`}
                                             title={`คัดลอกรูปภาพ - ${distName}`}
                                         >
-                                            {isCopyingImage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Copy className="w-3.5 h-3.5" />}
+                                            {isCopyingImage ? <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin" /> : <Copy className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
                                             📋 {distName}
                                         </button>
                                     ));
@@ -1111,10 +1111,10 @@ export const JobDetail: React.FC = () => {
                                             }
                                         }}
                                         disabled={isCopyingImage}
-                                        className={`px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors ${isCopyingImage ? 'opacity-60 cursor-wait' : ''}`}
+                                        className={`px-2.5 py-1.5 sm:px-4 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium text-[11px] sm:text-sm flex items-center gap-1 sm:gap-2 transition-colors whitespace-nowrap ${isCopyingImage ? 'opacity-60 cursor-wait' : ''}`}
                                         title="คัดลอกเฉพาะรูปภาพ"
                                     >
-                                        {isCopyingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />} รูปภาพ
+                                        {isCopyingImage ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" /> : <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />} รูปภาพ
                                     </button>
                                 );
                             })()}
@@ -1217,7 +1217,7 @@ export const JobDetail: React.FC = () => {
                                     }
                                 }}
                                 disabled={isCopyingImage || (docPreviewType === 'DISTRIBUTOR' && new Set(filteredRmas.map(r => r.distributor || 'Unknown')).size > 1)}
-                                className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition-colors ${
+                                className={`px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium text-[11px] sm:text-sm flex items-center gap-1 sm:gap-2 transition-colors whitespace-nowrap ${
                                     (docPreviewType === 'DISTRIBUTOR' && new Set(filteredRmas.map(r => r.distributor || 'Unknown')).size > 1)
                                         ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                                         : `bg-emerald-500 hover:bg-emerald-600 text-white ${isCopyingImage ? 'opacity-60 cursor-wait' : ''}`
@@ -1228,22 +1228,22 @@ export const JobDetail: React.FC = () => {
                                         : 'คัดลอกทั้งรูปภาพและข้อความ (สำหรับ LINE)'
                                 }
                             >
-                                {isCopyingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />} ทั้งหมด (LINE)
+                                {isCopyingImage ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />} ทั้งหมด
                             </button>
                             <button
                                 onClick={() => {
                                     const iframe = document.getElementById('doc-preview-iframe') as HTMLIFrameElement;
                                     iframe?.contentWindow?.print();
                                 }}
-                                className="px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors"
+                                className="px-2.5 py-1.5 sm:px-5 sm:py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-[11px] sm:text-sm flex items-center gap-1 sm:gap-2 transition-colors whitespace-nowrap"
                             >
-                                🖨️ พิมพ์เอกสาร
+                                🖨️ พิมพ์
                             </button>
                             <button
                                 onClick={() => setDocPreviewHtml(null)}
-                                className="px-5 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors"
+                                className="px-2.5 py-1.5 sm:px-5 sm:py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium text-[11px] sm:text-sm flex items-center gap-1 sm:gap-2 transition-colors whitespace-nowrap"
                             >
-                                <XIcon className="w-4 h-4" /> ปิด
+                                <XIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> ปิด
                             </button>
                         </div>
                         {/* Warning banner for partial customer documents */}

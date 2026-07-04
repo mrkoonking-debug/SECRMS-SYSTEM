@@ -526,134 +526,143 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
 
                 </div>
 
+
                 {/* Footer Buttons */}
-                <div className="p-4 border-t border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-[#1c1c1e] flex flex-wrap gap-2 justify-between items-center">
+                <div className="p-3 md:p-4 border-t border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-[#1c1c1e] flex justify-between items-center gap-1.5 flex-shrink-0">
                     <button
                         onClick={onClose}
-                        className="px-6 py-2.5 bg-gray-500 hover:bg-gray-600 text-white rounded-xl font-medium shadow-sm transition-colors"
+                        className="px-3 sm:px-6 py-2 sm:py-2.5 bg-gray-500 hover:bg-gray-600 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium shadow-sm transition-colors flex-shrink-0"
                     >
                         ปิด
                     </button>
 
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex gap-1 sm:gap-2 overflow-x-auto">
                         <button
                             onClick={handleSaveClick}
                             disabled={isSaving}
-                            className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium shadow-md shadow-orange-500/20 transition-all flex items-center gap-2"
+                            className="px-3 sm:px-6 py-2 sm:py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium shadow-md shadow-orange-500/20 transition-all flex items-center gap-1 sm:gap-2 whitespace-nowrap"
                         >
-                            <Save className="w-4 h-4" /> บันทึกข้อมูล
+                            <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> บันทึกข้อมูล
                         </button>
 
                         <button
                             onClick={handleSaveAndPrint}
                             disabled={isSaving}
-                            className="px-6 py-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl font-medium shadow-md shadow-blue-500/20 transition-all flex items-center gap-2"
+                            className="px-3 sm:px-6 py-2 sm:py-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium shadow-md shadow-blue-500/20 transition-all flex items-center gap-1 sm:gap-2 whitespace-nowrap"
                         >
-                            <Expand className="w-4 h-4" /> Preview {isTabbed ? `ศูนย์นี้` : 'ใบติดหน้ากล่อง'}
+                            <Expand className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Preview {isTabbed ? `ศูนย์` : 'ใบปะหน้า'}
                         </button>
 
                         {isTabbed && (
                             <button
                                 onClick={handlePreviewAll}
                                 disabled={isSaving}
-                                className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl font-bold shadow-md shadow-orange-500/20 transition-all flex items-center gap-2"
+                                className="px-3 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-orange-500/20 transition-all flex items-center gap-1 sm:gap-2 whitespace-nowrap"
                             >
-                                <Truck className="w-4 h-4" /> Preview ทั้งหมด ({tabNames.length} ใบ)
+                                <Truck className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> ทั้งหมด ({tabNames.length} ใบ)
                             </button>
                         )}
                     </div>
                 </div>
             </div>
         </div>
+
         {/* Preview Overlay */}
         {previewHtml && (
             <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex flex-col animate-in fade-in duration-200">
                 {/* Toolbar */}
-                <div className="flex-shrink-0 flex flex-wrap items-center gap-2 md:gap-3 px-4 md:px-6 py-3 bg-white/90 dark:bg-[#1c1c1e]/95 backdrop-blur border-b border-gray-200 dark:border-white/10 shadow-sm">
-                    <h2 className="text-gray-800 dark:text-white font-semibold text-base w-full sm:w-auto flex-1 mb-1 sm:mb-0">📋 Preview ใบปะหน้ากล่อง</h2>
-                    {/* Copy Text Only (Facebook friendly) */}
-                    <button
-                        onClick={handleCopyData}
-                        className="px-3 md:px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium text-xs md:text-sm flex items-center gap-1.5 md:gap-2 transition-colors"
-                        title="คัดลอกเฉพาะข้อความ (ใช้กับ Facebook ได้)"
-                    >
-                        <Copy className="w-3.5 h-3.5" /> ข้อความ
-                    </button>
-                    {/* Copy Image Only */}
-                    <button
-                        onClick={async () => {
-                            try {
-                                if (!previewHtml) { showToast('ไม่มีเอกสารสำหรับก็อปปี้', 'error'); return; }
-                                const blob = await renderHtmlToBlob(previewHtml);
-                                await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-                                showToast('คัดลอกรูปภาพแล้ว!', 'success');
-                            } catch (err) {
-                                console.error('Copy image failed:', err);
-                                showToast('ไม่สามารถคัดลอกรูปภาพได้ ลองใหม่อีกครั้ง', 'error');
-                            }
-                        }}
-                        className="px-3 md:px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium text-xs md:text-sm flex items-center gap-1.5 md:gap-2 transition-colors"
-                        title="คัดลอกเฉพาะรูปภาพ"
-                    >
-                        <Copy className="w-3.5 h-3.5" /> รูปภาพ
-                    </button>
-                    {/* Copy Both (LINE friendly) */}
-                    <button
-                        onClick={async () => {
-                            try {
-                                if (!previewHtml) { showToast('ไม่มีเอกสารสำหรับก็อปปี้', 'error'); return; }
-                                const blob = await renderHtmlToBlob(previewHtml);
-                                // Build text
-                                const jobId = currentRma.groupRequestId || currentRma.id;
-                                const refNo = currentRma.quotationNumber || '-';
-                                const cleanTrackingIds = effectiveTrackingIds.map(t => t.trim()).filter(Boolean);
-                                const items = currentRmas;
-                                let text = `เลขที่งานเคลม (Job ID): ${jobId}\n`;
-                                text += `เลขอ้างอิง/ใบเสนอราคา: ${refNo}\n\n`;
-                                text += `รายการสินค้า (${items.length} ชิ้น):\n`;
-                                items.forEach((item, i) => {
-                                    text += `${i + 1}. ${item.brand} ${item.productModel} | S/N: ${item.serialNumber || '-'}\n`;
-                                });
-                                text += `\nนำส่ง...${effectiveReceiverName}\n`;
-                                if (effectiveContactPerson) text += `ผู้ติดต่อ: ${effectiveContactPerson}\n`;
-                                if (effectiveReceiverAddress) text += `${effectiveReceiverAddress}\n`;
-                                if (effectiveReceiverPhone) text += `โทร. ${effectiveReceiverPhone}\n`;
-                                if (cleanTrackingIds.length > 0) {
-                                    text += `\n`;
-                                    cleanTrackingIds.forEach(tid => {
-                                        text += `หมายเลขพัสดุ: ${tid}\n`;
-                                        text += `https://track.thailandpost.co.th/?trackNumber=${tid}\n`;
-                                    });
+                <div className="flex-shrink-0 flex items-center justify-between gap-1.5 px-3 md:px-6 py-2 bg-white/90 dark:bg-[#1c1c1e]/95 backdrop-blur border-b border-gray-200 dark:border-white/10 shadow-sm w-full overflow-x-auto scrollbar-none">
+                    <h2 className="text-gray-800 dark:text-white font-bold text-xs sm:text-base flex-shrink-0 whitespace-nowrap mr-1">📋 Preview</h2>
+                    
+                    <div className="flex items-center gap-1 sm:gap-2">
+                        {/* Copy Text Only (Facebook friendly) */}
+                        <button
+                            onClick={handleCopyData}
+                            className="px-2.5 py-1.5 md:px-4 md:py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium text-[11px] md:text-sm flex items-center gap-1 md:gap-2 transition-colors whitespace-nowrap"
+                            title="คัดลอกเฉพาะข้อความ (ใช้กับ Facebook ได้)"
+                        >
+                            <Copy className="w-3.5 h-3.5" /> ข้อความ
+                        </button>
+                        
+                        {/* Copy Image Only */}
+                        <button
+                            onClick={async () => {
+                                try {
+                                    if (!previewHtml) { showToast('ไม่มีเอกสารสำหรับก็อปปี้', 'error'); return; }
+                                    const blob = await renderHtmlToBlob(previewHtml);
+                                    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                                    showToast('คัดลอกรูปภาพแล้ว!', 'success');
+                                } catch (err) {
+                                    console.error('Copy image failed:', err);
+                                    showToast('ไม่สามารถคัดลอกรูปภาพได้ ลองใหม่อีกครั้ง', 'error');
                                 }
-                                await navigator.clipboard.write([
-                                    new ClipboardItem({
-                                        'image/png': blob,
-                                        'text/plain': new Blob([text.trim()], { type: 'text/plain' })
-                                    })
-                                ]);
-                                showToast('คัดลอกรูป + ข้อความแล้ว! วางใน LINE ได้เลย', 'success');
-                            } catch (err) {
-                                console.error('Copy failed:', err);
-                                showToast('ไม่สามารถคัดลอกได้ ลองใหม่อีกครั้ง', 'error');
-                            }
-                        }}
-                        className="px-3 md:px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium text-xs md:text-sm flex items-center gap-1.5 md:gap-2 transition-colors"
-                        title="คัดลอกทั้งรูปภาพและข้อความ (สำหรับ LINE)"
-                    >
-                        <Copy className="w-3.5 h-3.5" /> ทั้งหมด
-                    </button>
-                    <button
-                        onClick={handlePrintFromPreview}
-                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-xs md:text-sm flex items-center gap-1.5 md:gap-2 transition-colors"
-                    >
-                        🖨️ พิมพ์เอกสาร
-                    </button>
-                    <button
-                        onClick={() => setPreviewHtml(null)}
-                        className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium text-xs md:text-sm flex items-center gap-1.5 md:gap-2 transition-colors"
-                    >
-                        <X className="w-4 h-4" /> ปิด
-                    </button>
+                            }}
+                            className="px-2.5 py-1.5 md:px-4 md:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium text-[11px] md:text-sm flex items-center gap-1 md:gap-2 transition-colors whitespace-nowrap"
+                            title="คัดลอกเฉพาะรูปภาพ"
+                        >
+                            <Copy className="w-3.5 h-3.5" /> รูปภาพ
+                        </button>
+                        
+                        {/* Copy Both (LINE friendly) */}
+                        <button
+                            onClick={async () => {
+                                try {
+                                    if (!previewHtml) { showToast('ไม่มีเอกสารสำหรับก็อปปี้', 'error'); return; }
+                                    const blob = await renderHtmlToBlob(previewHtml);
+                                    // Build text
+                                    const jobId = currentRma.groupRequestId || currentRma.id;
+                                    const refNo = currentRma.quotationNumber || '-';
+                                    const cleanTrackingIds = effectiveTrackingIds.map(t => t.trim()).filter(Boolean);
+                                    const items = currentRmas;
+                                    let text = `เลขที่งานเคลม (Job ID): ${jobId}\n`;
+                                    text += `เลขอ้างอิง/ใบเสนอราคา: ${refNo}\n\n`;
+                                    text += `รายการสินค้า (${items.length} ชิ้น):\n`;
+                                    items.forEach((item, i) => {
+                                        text += `${i + 1}. ${item.brand} ${item.productModel} | S/N: ${item.serialNumber || '-'}\n`;
+                                    });
+                                    text += `\nนำส่ง...${effectiveReceiverName}\n`;
+                                    if (effectiveContactPerson) text += `ผู้ติดต่อ: ${effectiveContactPerson}\n`;
+                                    if (effectiveReceiverAddress) text += `${effectiveReceiverAddress}\n`;
+                                    if (effectiveReceiverPhone) text += `โทร. ${effectiveReceiverPhone}\n`;
+                                    if (cleanTrackingIds.length > 0) {
+                                        text += `\n`;
+                                        cleanTrackingIds.forEach(tid => {
+                                            text += `หมายเลขพัสดุ: ${tid}\n`;
+                                            text += `https://track.thailandpost.co.th/?trackNumber=${tid}\n`;
+                                        });
+                                    }
+                                    await navigator.clipboard.write([
+                                        new ClipboardItem({
+                                            'image/png': blob,
+                                            'text/plain': new Blob([text.trim()], { type: 'text/plain' })
+                                        })
+                                    ]);
+                                    showToast('คัดลอกรูป + ข้อความแล้ว! วางใน LINE ได้เลย', 'success');
+                                } catch (err) {
+                                    console.error('Copy failed:', err);
+                                    showToast('ไม่สามารถคัดลอกได้ ลองใหม่อีกครั้ง', 'error');
+                                }
+                            }}
+                            className="px-2.5 py-1.5 md:px-4 md:py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium text-[11px] md:text-sm flex items-center gap-1 md:gap-2 transition-colors whitespace-nowrap"
+                            title="คัดลอกทั้งรูปภาพและข้อความ (สำหรับ LINE)"
+                        >
+                            <Copy className="w-3.5 h-3.5" /> ทั้งหมด
+                        </button>
+                        
+                        <button
+                            onClick={handlePrintFromPreview}
+                            className="px-2.5 py-1.5 md:px-4 md:py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-[11px] md:text-sm flex items-center gap-1 md:gap-2 transition-colors whitespace-nowrap"
+                        >
+                            🖨️ พิมพ์
+                        </button>
+                        
+                        <button
+                            onClick={() => setPreviewHtml(null)}
+                            className="px-2.5 py-1.5 md:px-4 md:py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium text-[11px] md:text-sm flex items-center gap-1.5 md:gap-2 transition-colors whitespace-nowrap"
+                        >
+                            <X className="w-3.5 h-3.5 md:w-4 md:h-4" /> ปิด
+                        </button>
+                    </div>
                 </div>
                 {/* Preview Content - A4 size */}
                 <div className="flex-1 overflow-auto flex justify-start lg:justify-center py-8 px-4 md:px-12 bg-gray-100/50 dark:bg-black/50">
