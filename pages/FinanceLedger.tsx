@@ -192,13 +192,13 @@ export const FinanceLedger: React.FC = () => {
     <div className="w-full max-w-7xl mx-auto space-y-6 animate-fade-in px-4 pb-20 md:pb-8">
       {/* Top Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 bg-white/70 dark:bg-[#1e1e24]/40 border border-gray-200/50 dark:border-white/[0.08] rounded-2xl p-4 shadow-[0_8px_32px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
             <Landmark className="w-5 h-5" />
           </div>
-          <div>
-            <h1 className="text-base sm:text-lg md:text-xl font-bold text-[#1d1d1f] dark:text-white leading-tight">ระบบบันทึกค่าใช้จ่าย & กองกลาง</h1>
-            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5">จัดการเงินสดกองกลาง บันทึกสำรองจ่าย และคืนเงินพนักงาน</p>
+          <div className="min-w-0">
+            <h1 className="text-sm sm:text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white leading-tight truncate whitespace-nowrap">รายจ่าย & เงินกองกลาง</h1>
+            <p className="text-[9px] sm:text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 truncate whitespace-nowrap">จัดการเงินกองกลางและสำรองจ่าย</p>
           </div>
         </div>
         <div className="flex gap-2 w-full sm:w-auto shrink-0">
@@ -226,13 +226,13 @@ export const FinanceLedger: React.FC = () => {
           <div className="absolute right-3 top-3 text-emerald-500 bg-emerald-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
             <Coins className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <div>
-            <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block pr-6">เงินสดกองกลางคงเหลือ</span>
+          <div className="min-w-0">
+            <span className="text-[9px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">เงินสดกองกลาง</span>
             <span className={`text-base sm:text-xl md:text-2xl font-black mt-1 sm:mt-2 block tabular-nums ${summary.pettyCashBalance >= 0 ? 'text-[#34c759]' : 'text-[#ff3b30]'}`}>
               {formatCurrency(summary.pettyCashBalance)}
             </span>
           </div>
-          <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-1 sm:mt-2 block leading-tight">
+          <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
             *เงินสดพร้อมหยิบจ่ายได้ทันที
           </span>
         </div>
@@ -245,14 +245,14 @@ export const FinanceLedger: React.FC = () => {
               <div className="absolute right-3 top-3 text-blue-500 bg-blue-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
                 <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div>
-                <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block pr-6">คงเหลือสุทธิ (หลังคืนช่าง)</span>
+              <div className="min-w-0">
+                <span className="text-[9px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">คงเหลือสุทธิ</span>
                 <span className={`text-base sm:text-xl md:text-2xl font-black mt-1 sm:mt-2 block tabular-nums ${netBalance >= 0 ? 'text-[#0071e3] dark:text-blue-400' : 'text-[#ff3b30]'}`}>
                   {formatCurrency(netBalance)}
                 </span>
               </div>
-              <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-1 sm:mt-2 block leading-tight">
-                *หักยอดที่ต้องคืนพนักงานแล้ว
+              <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
+                *หักยอดค้างคืนพนักงานแล้ว
               </span>
             </div>
           );
@@ -263,23 +263,23 @@ export const FinanceLedger: React.FC = () => {
           <div className="absolute right-3 top-3 text-orange-500 bg-orange-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
             <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <div>
-            <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block pr-6">สำรองจ่ายค้างคืนพนักงาน</span>
+          <div className="min-w-0">
+            <span className="text-[9px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">สำรองจ่ายค้างคืน</span>
             <span className="text-base sm:text-xl md:text-2xl font-black text-[#ff9500] mt-1 sm:mt-2 block tabular-nums">
               {formatCurrency(summary.totalPersonalAdvance)}
             </span>
           </div>
-          <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-1 sm:mt-2 block leading-tight">
-            *พนักงานสำรองจ่ายเงินตัวเองไปก่อน
+          <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
+            *พนักงานสำรองจ่ายเงินส่วนตัว
           </span>
         </div>
 
         {/* Staff Breakdown settlement card */}
         <div className="bg-white/70 dark:bg-[#1e1e24]/45 border border-gray-200/50 dark:border-white/[0.08] rounded-2xl p-3.5 sm:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px]">
-          <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block mb-1">ยอดค้างคืนแยกรายคน</span>
+          <span className="text-[9px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block mb-1 truncate whitespace-nowrap">ยอดค้างคืนแยกรายคน</span>
           <div className="flex-1 overflow-y-auto max-h-[60px] sm:max-h-[85px] space-y-1 custom-scrollbar pr-0.5">
             {Object.keys(summary.personalAdvanceByStaff).length === 0 ? (
-              <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 italic mt-1 sm:mt-2">ไม่มีค้างจ่ายพนักงาน</p>
+              <p className="text-[9px] sm:text-xs text-gray-400 dark:text-gray-500 italic mt-1 sm:mt-2 truncate whitespace-nowrap">ไม่มีค้างจ่ายพนักงาน</p>
             ) : (
               Object.entries(summary.personalAdvanceByStaff).map(([name, amount]) => (
                 <div key={name} className="flex items-center justify-between text-[10px] sm:text-xs py-0.5 border-b border-gray-100/50 dark:border-white/5 last:border-0">
@@ -305,81 +305,81 @@ export const FinanceLedger: React.FC = () => {
         {/* Filters Row */}
         <div className="flex flex-col xl:flex-row xl:items-center gap-4">
           {/* Search bar */}
-          <div className="relative w-full xl:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <div className="relative w-full xl:w-60">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-sm outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white"
+              className="w-full pl-8.5 pr-4 py-1.5 bg-gray-50/50 dark:bg-[#1c1c1e]/60 border border-gray-200/50 dark:border-white/5 rounded-xl text-xs outline-none focus:border-[#0071e3] focus:bg-white dark:focus:bg-[#1c1c1e] text-[#1d1d1f] dark:text-white transition-all shadow-sm"
               placeholder="ค้นหาข้อความ..."
             />
           </div>
 
           {/* Filter Chips Container */}
-          <div className="flex flex-col md:flex-row md:items-center gap-3.5 flex-grow w-full">
-            {/* Type Filter Chips */}
-            <div className="grid grid-cols-3 bg-gray-100/80 dark:bg-white/[0.04] p-1 rounded-xl w-full md:w-auto shrink-0 select-none">
+          <div className="flex flex-col md:flex-row md:items-center gap-3 w-full">
+            {/* Type Filter Segmented Control */}
+            <div className="grid grid-cols-3 bg-gray-100/60 dark:bg-white/[0.03] p-0.5 rounded-lg w-full md:w-auto shrink-0 select-none border border-gray-200/20 dark:border-white/[0.03]">
               <button
                 onClick={() => setTypeFilter('ALL')}
-                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-center ${
+                className={`py-1 px-2.5 rounded-md text-[11px] font-bold transition-all text-center ${
                   typeFilter === 'ALL'
-                    ? 'bg-white dark:bg-white/10 text-gray-800 dark:text-white shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                    ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
                 }`}
               >
-                ทุกประเภท
+                ทั้งหมด
               </button>
               <button
                 onClick={() => setTypeFilter('INCOME')}
-                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-center ${
+                className={`py-1 px-2.5 rounded-md text-[11px] font-bold transition-all text-center ${
                   typeFilter === 'INCOME'
-                    ? 'bg-emerald-500 text-white shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                    ? 'bg-white dark:bg-white/10 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
                 }`}
               >
-                เบิกเงินพี่เกษม
+                เงินเข้า
               </button>
               <button
                 onClick={() => setTypeFilter('EXPENSE')}
-                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-center ${
+                className={`py-1 px-2.5 rounded-md text-[11px] font-bold transition-all text-center ${
                   typeFilter === 'EXPENSE'
-                    ? 'bg-orange-500 text-white shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                    ? 'bg-white dark:bg-white/10 text-orange-600 dark:text-[#ff9500] shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
                 }`}
               >
                 รายจ่าย
               </button>
             </div>
 
-            {/* Source Filter Chips */}
-            <div className="grid grid-cols-3 bg-gray-100/80 dark:bg-white/[0.04] p-1 rounded-xl w-full md:w-auto shrink-0 select-none">
+            {/* Source Filter Segmented Control */}
+            <div className="grid grid-cols-3 bg-gray-100/60 dark:bg-white/[0.03] p-0.5 rounded-lg w-full md:w-auto shrink-0 select-none border border-gray-200/20 dark:border-white/[0.03]">
               <button
                 onClick={() => setSourceFilter('ALL')}
-                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-center ${
+                className={`py-1 px-2.5 rounded-md text-[11px] font-bold transition-all text-center ${
                   sourceFilter === 'ALL'
-                    ? 'bg-white dark:bg-white/10 text-gray-800 dark:text-white shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                    ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
                 }`}
               >
-                ทุกแหล่งเงิน
+                ทั้งหมด
               </button>
               <button
                 onClick={() => setSourceFilter('PETTY_CASH')}
-                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-center ${
+                className={`py-1 px-2.5 rounded-md text-[11px] font-bold transition-all text-center ${
                   sourceFilter === 'PETTY_CASH'
-                    ? 'bg-blue-500 text-white shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                    ? 'bg-white dark:bg-white/10 text-blue-600 dark:text-blue-400 shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
                 }`}
               >
-                เงินกองกลาง
+                กองกลาง
               </button>
               <button
                 onClick={() => setSourceFilter('PERSONAL_CASH')}
-                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-center ${
+                className={`py-1 px-2.5 rounded-md text-[11px] font-bold transition-all text-center ${
                   sourceFilter === 'PERSONAL_CASH'
-                    ? 'bg-amber-500 text-white shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                    ? 'bg-white dark:bg-white/10 text-amber-600 dark:text-amber-400 shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
                 }`}
               >
                 สำรองจ่าย

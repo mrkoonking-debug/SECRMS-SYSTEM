@@ -41,6 +41,22 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     ? ['ค่าส่งปลายทาง', 'ค่าของใช้สำนักงาน', 'ค่าป้าแม่บ้าน', 'ทอนเงินสดขายหน้าร้าน', 'จ่ายเบี้ยเลี้ยง']
     : ['เบิกเงินค่าขนส่งปลายทาง', 'เบิกเงินกองกลางประจำสัปดาห์', 'เบิกเงินกองกลางเพิ่มเติม'];
 
+  const handleDescriptionChange = (val: string) => {
+    setDescription(val);
+    const lowerVal = val.toLowerCase().trim();
+    if (lowerVal.includes('ส่งปลายทาง') || lowerVal.includes('ค่าส่ง')) {
+      setCategory('ค่าขนส่ง');
+    } else if (lowerVal.includes('ของใช้สำนักงาน') || lowerVal.includes('เครื่องเขียน')) {
+      setCategory('ค่าเครื่องเขียน');
+    } else if (lowerVal.includes('กล่อง') || lowerVal.includes('บับเบิ้ล')) {
+      setCategory('ค่าบรรจุภัณฑ์');
+    } else if (lowerVal.includes('ป้าแม่บ้าน') || lowerVal.includes('เบี้ยเลี้ยง') || lowerVal.includes('ทอนเงิน')) {
+      setCategory('อื่นๆ');
+    } else if (lowerVal.includes('เบิกเงิน') || lowerVal.includes('เติมเงิน') || lowerVal.includes('กองกลาง')) {
+      setCategory('กองกลาง');
+    }
+  };
+
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!date) newErrors.date = 'กรุณาเลือกวันที่';
@@ -114,8 +130,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   `;
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-2 sm:p-4 animate-fade-in">
-      <div className="bg-white dark:bg-[#1c1c1e] w-full max-w-lg rounded-2xl shadow-2xl border border-gray-200 dark:border-[#333] flex flex-col overflow-hidden max-h-[92vh] sm:max-h-[90vh]">
+    <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black/60 sm:p-4 animate-fade-in">
+      <div className="bg-white dark:bg-[#1c1c1e] w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-lg rounded-none sm:rounded-2xl shadow-2xl border-t sm:border border-gray-200 dark:border-[#333] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-[#333] flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3">
@@ -133,12 +149,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         </div>
 
         {/* Form Content */}
-        <form onSubmit={handleSave} className="flex-grow flex flex-col overflow-hidden">
-          <div className="flex-grow overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar">
+        <form onSubmit={handleSave} className="flex-grow flex flex-col overflow-hidden bg-gray-50/20 dark:bg-[#121214]/10">
+          <div className="flex-grow overflow-y-auto p-5 md:p-6 space-y-5 sm:space-y-6 custom-scrollbar">
           {/* Transaction Type Selector */}
           <div>
             <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1">ประเภทรายการ</label>
-            <div className="grid grid-cols-2 gap-2 bg-gray-100 dark:bg-black/20 p-1 rounded-xl">
+            <div className="grid grid-cols-2 gap-2 bg-gray-100 dark:bg-black/20 p-1.5 rounded-xl">
               <button
                 type="button"
                 onClick={() => { setType('EXPENSE'); setPaidBy('PETTY_CASH'); }}
@@ -156,11 +172,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
             {/* Date */}
-            <div>
-              <label className="block text-[10px] sm:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1 flex items-center gap-1">
-                <Calendar className="w-3 h-3 text-[#0071e3]" /> วันที่
+            <div className="col-span-1">
+              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1 flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5 text-[#0071e3]" /> วันที่
               </label>
               <input
                 type="date"
@@ -172,9 +188,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             </div>
 
             {/* Time */}
-            <div>
-              <label className="block text-[10px] sm:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1 flex items-center gap-1">
-                <Clock className="w-3 h-3 text-[#0071e3]" /> เวลา
+            <div className="col-span-1">
+              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-[#0071e3]" /> เวลา
               </label>
               <input
                 type="time"
@@ -185,8 +201,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             </div>
 
             {/* Amount */}
-            <div>
-              <label className="block text-[10px] sm:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1 truncate">จำนวนเงิน <span className="text-red-500">*</span></label>
+            <div className="col-span-2 sm:col-span-1">
+              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1 truncate">จำนวนเงิน <span className="text-red-500">*</span></label>
               <input
                 type="number"
                 step="0.01"
@@ -206,7 +222,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             <input
               type="text"
               value={description}
-              onChange={e => setDescription(e.target.value)}
+              onChange={e => handleDescriptionChange(e.target.value)}
               className={inputClass(!!errors.description)}
               placeholder="กรอกชื่อแบรนด์, สาเหตุ, หรือรายละเอียดสั้นๆ"
             />
@@ -218,7 +234,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 <button
                   type="button"
                   key={idx}
-                  onClick={() => setDescription(s)}
+                  onClick={() => handleDescriptionChange(s)}
                   className="text-[10px] px-2 py-1 bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/5 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/10 dark:hover:text-white transition-colors"
                 >
                   {s}
