@@ -55,6 +55,8 @@ const getStatusColorClass = (s: string) => {
     }
 };
 
+const DONE_STATUSES = [RMAStatus.CLOSED, RMAStatus.CANCELLED, RMAStatus.REPAIRED, RMAStatus.REJECTED, RMAStatus.RETURNED_FROM_VENDOR];
+
 export const ClaimsList: React.FC = () => {
     const [rmas, setRMAs] = useState<RMA[]>([]);
     const [loading, setLoading] = useState(true);
@@ -172,7 +174,7 @@ export const ClaimsList: React.FC = () => {
             if (statusFilter === 'ALL') return true;
             if (statusFilter === 'PENDING') return c.status === RMAStatus.PENDING;
             if (statusFilter === 'IN_PROGRESS') return [RMAStatus.DIAGNOSING, RMAStatus.WAITING_PARTS].includes(c.status);
-            if (statusFilter === 'DONE') return [RMAStatus.REPAIRED, RMAStatus.CLOSED, RMAStatus.REJECTED, RMAStatus.CANCELLED].includes(c.status);
+            if (statusFilter === 'DONE') return DONE_STATUSES.includes(c.status);
             return true;
         };
 
@@ -213,10 +215,10 @@ export const ClaimsList: React.FC = () => {
         }, {} as Record<string, RMA[]>);
     };
 
-    const getTeamCount = (team: Team) => rmas.filter(c => c.team === team && ![RMAStatus.CLOSED, RMAStatus.CANCELLED].includes(c.status)).length;
-    const getGroupCCount = () => rmas.filter(c => [Team.TEAM_C, Team.TEAM_E, Team.TEAM_G].includes(c.team) && ![RMAStatus.CLOSED, RMAStatus.CANCELLED].includes(c.status)).length;
+    const getTeamCount = (team: Team) => rmas.filter(c => c.team === team && !DONE_STATUSES.includes(c.status)).length;
+    const getGroupCCount = () => rmas.filter(c => [Team.TEAM_C, Team.TEAM_E, Team.TEAM_G].includes(c.team) && !DONE_STATUSES.includes(c.status)).length;
     const handleGroupCClick = () => { setIsTeamCExpanded(!isTeamCExpanded); setTeamFilter('GROUP_C'); };
-    const isRMAOverdue = (c: RMA) => ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(c.status) && (Math.floor((Date.now() - new Date(c.createdAt).getTime()) / 86400000) > 15);
+    const isRMAOverdue = (c: RMA) => !DONE_STATUSES.includes(c.status) && (Math.floor((Date.now() - new Date(c.createdAt).getTime()) / 86400000) > 15);
 
     const handleClearFilters = () => {
         setSearch('');
@@ -252,7 +254,7 @@ export const ClaimsList: React.FC = () => {
             {/* ── Bento Stats Grid ── */}
             <div className="mb-4 md:mb-6 space-y-2.5">
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:flex gap-2.5 md:gap-3 pb-1">
-                    <button onClick={() => { setTeamFilter('ALL'); setIsTeamCExpanded(false); }} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${teamFilter === 'ALL' ? 'bg-[#0071e3] text-white shadow-sm border border-[#0071e3]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-blue-300 dark:hover:border-blue-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] sm:text-[10px] md:text-[10px] font-bold uppercase tracking-wider mb-0.5 truncate ${teamFilter === 'ALL' ? 'text-blue-100' : 'text-gray-400 dark:text-gray-500'}`}>{t('claimsList.active')}</div><div className={`text-base md:text-2xl font-extrabold ${teamFilter === 'ALL' ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{rmas.filter(c => c.status !== RMAStatus.CLOSED && c.status !== RMAStatus.CANCELLED).length}</div></button>
+                    <button onClick={() => { setTeamFilter('ALL'); setIsTeamCExpanded(false); }} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${teamFilter === 'ALL' ? 'bg-[#0071e3] text-white shadow-sm border border-[#0071e3]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-blue-300 dark:hover:border-blue-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] sm:text-[10px] md:text-[10px] font-bold uppercase tracking-wider mb-0.5 truncate ${teamFilter === 'ALL' ? 'text-blue-100' : 'text-gray-400 dark:text-gray-500'}`}>{t('claimsList.active')}</div><div className={`text-base md:text-2xl font-extrabold ${teamFilter === 'ALL' ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{rmas.filter(c => !DONE_STATUSES.includes(c.status)).length}</div></button>
                     <button onClick={() => { setTeamFilter(Team.HIKVISION); setIsTeamCExpanded(false); }} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${teamFilter === Team.HIKVISION ? 'bg-[#e53e3e] text-white shadow-sm border border-[#e53e3e]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-red-300 dark:hover:border-red-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] sm:text-[10px] md:text-[10px] font-bold uppercase tracking-wider mb-0.5 ${teamFilter === Team.HIKVISION ? 'text-red-100' : 'text-red-500'}`}>HIK</div><div className={`text-base md:text-2xl font-extrabold ${teamFilter === Team.HIKVISION ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{getTeamCount(Team.HIKVISION)}</div></button>
                     <button onClick={() => { setTeamFilter(Team.DAHUA); setIsTeamCExpanded(false); }} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${teamFilter === Team.DAHUA ? 'bg-[#dd6b20] text-white shadow-sm border border-[#dd6b20]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-orange-300 dark:hover:border-orange-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] sm:text-[10px] md:text-[10px] font-bold uppercase tracking-wider mb-0.5 ${teamFilter === Team.DAHUA ? 'text-orange-100' : 'text-orange-500'}`}>DAHUA</div><div className={`text-base md:text-2xl font-extrabold ${teamFilter === Team.DAHUA ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{getTeamCount(Team.DAHUA)}</div></button>
                     <button onClick={handleGroupCClick} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'bg-[#805ad5] text-white shadow-sm border border-[#805ad5]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-violet-300 dark:hover:border-violet-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] sm:text-[10px] md:text-[10px] font-bold uppercase tracking-wider mb-0.5 ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-violet-100' : 'text-violet-500'}`}>Team C</div><div className={`text-base md:text-2xl font-extrabold ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{getGroupCCount()}</div></button>
@@ -360,7 +362,7 @@ export const ClaimsList: React.FC = () => {
                                               const customerName = jobItems[0]?.customerName || 'Unknown';
                                               const quotationNumber = jobItems[0]?.quotationNumber;
                                               const isJobCancelled = jobItems.every(i => i.status === RMAStatus.CANCELLED);
-                                              const isJobDone = jobItems.every(i => [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(i.status));
+                                              const isJobDone = jobItems.every(i => DONE_STATUSES.includes(i.status));
 
                                               return (
                                                    <div 

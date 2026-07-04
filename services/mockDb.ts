@@ -345,7 +345,7 @@ export const MockDb = {
     const rmasSnap = await getDocs(rmasRef);
     const activeRmas = rmasSnap.docs
       .map(doc => doc.data() as RMA)
-      .filter(rma => !rma.isDeleted && ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(rma.status));
+      .filter(rma => !rma.isDeleted && ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED, RMAStatus.REJECTED, RMAStatus.RETURNED_FROM_VENDOR].includes(rma.status));
 
     if (activeRmas.length === 0) {
       return { sentCount: 0, status: 'No active RMAs found' };
@@ -674,7 +674,7 @@ export const MockDb = {
     const all = await MockDb.getRMAs();
     const now = Date.now();
     return all.filter(c => {
-      if ([RMAStatus.CLOSED, RMAStatus.CANCELLED].includes(c.status)) return false;
+      if ([RMAStatus.CLOSED, RMAStatus.CANCELLED, RMAStatus.REPAIRED, RMAStatus.REJECTED, RMAStatus.RETURNED_FROM_VENDOR].includes(c.status)) return false;
       const daysOpen = Math.floor((now - new Date(c.createdAt).getTime()) / 86400000);
       return daysOpen > AGING_BUCKET_1;
     });
@@ -692,7 +692,7 @@ export const MockDb = {
     let overdue = 0;
     for (const c of all) {
       if (!c.team || (c.team as any) === 'UNASSIGNED') unassigned++;
-      if (![RMAStatus.CLOSED, RMAStatus.CANCELLED].includes(c.status)) {
+      if (![RMAStatus.CLOSED, RMAStatus.CANCELLED, RMAStatus.REPAIRED, RMAStatus.REJECTED, RMAStatus.RETURNED_FROM_VENDOR].includes(c.status)) {
         const daysOpen = Math.floor((now - new Date(c.createdAt).getTime()) / 86400000);
         if (daysOpen > OVERDUE_DAYS) overdue++;
       }
@@ -1387,7 +1387,7 @@ export const MockDb = {
     // activeDocs includes everything except CLOSED, REPAIRED, RETURNED_FROM_VENDOR, and CANCELLED
     // if it's REPLACED_FROM_STOCK, the customer is already satisfied, so we should NOT count it as an active/overdue issue FOR THE CUSTOMER.
     // However, the admin still needs to track it. So we keep it in activeDocs but we calculate aging differently.
-    const activeDocs = teamDocs.filter(c => ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.CANCELLED].includes(c.status));
+    const activeDocs = teamDocs.filter(c => ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.CANCELLED, RMAStatus.REJECTED].includes(c.status));
     const aging = { bucket0_7: 0, bucket8_15: 0, bucket15plus: 0 };
     
     activeDocs.forEach(c => {

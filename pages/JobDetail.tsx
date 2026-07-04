@@ -358,16 +358,16 @@ export const JobDetail: React.FC = () => {
                             <div className="flex flex-wrap items-center gap-1.5 md:gap-4 text-[11px] md:text-sm text-gray-500">
                                 <span className="flex items-center gap-1"><Clock className="w-3 h-3 md:w-4 md:h-4" /> {new Date(jobInfo.date).toLocaleDateString()}</span>
                                 <span className="bg-gray-100 dark:bg-white/10 px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs text-[#1d1d1f] dark:text-gray-300 font-medium">{jobInfo.count} {t('claimsList.items')}</span>
-                                <div className="flex gap-1.5 md:gap-2">
-                                    <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium border border-green-100 dark:border-green-900/30">
-                                        <CheckCircle2 className="w-2.5 h-2.5 md:w-3 md:h-3" />
-                                        {rmas.filter(c => c.status === RMAStatus.CLOSED || c.status === RMAStatus.REPAIRED || c.status === RMAStatus.REPLACED_FROM_STOCK || c.status === RMAStatus.RETURNED_FROM_VENDOR).length} {t('track.doneBadge')}
+                                    <div className="flex gap-1.5 md:gap-2">
+                                        <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium border border-green-100 dark:border-green-900/30">
+                                            <CheckCircle2 className="w-2.5 h-2.5 md:w-3 md:h-3" />
+                                            {rmas.filter(c => [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REPLACED_FROM_STOCK, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.REJECTED, RMAStatus.CANCELLED].includes(c.status)).length} {t('track.doneBadge')}
+                                        </div>
+                                        <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium border border-blue-100 dark:border-blue-900/30">
+                                            <Clock className="w-2.5 h-2.5 md:w-3 md:h-3" />
+                                            {rmas.filter(c => ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REPLACED_FROM_STOCK, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.REJECTED, RMAStatus.CANCELLED].includes(c.status)).length} {t('track.activeBadge')}
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium border border-blue-100 dark:border-blue-900/30">
-                                        <Clock className="w-2.5 h-2.5 md:w-3 md:h-3" />
-                                        {rmas.filter(c => c.status !== RMAStatus.CLOSED && c.status !== RMAStatus.REPAIRED && c.status !== RMAStatus.REPLACED_FROM_STOCK && c.status !== RMAStatus.RETURNED_FROM_VENDOR).length} {t('track.activeBadge')}
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
