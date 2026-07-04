@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
-import { Settings, Save, Check, Loader2, Globe, Building, Zap, Trash2, AlertTriangle, Archive, X, Search, Wrench, Download, Upload, Mail, Send, Copy } from 'lucide-react';
+import { Settings, Save, Check, Loader2, Globe, Building, Zap, Trash2, AlertTriangle, Archive, X, Search, Wrench, Download, Upload, Mail, Send, Copy, Package } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { showToast } from '../services/toast';
 import { RMAStatus } from '../types';
@@ -74,7 +74,7 @@ export const SettingsPage: React.FC = () => {
     try {
       const items = await MockDb.scanOldRMAs(5);
       if (items.length === 0) {
-        showToast('ไม่พบรายการเคลมที่เก่าเกิน 5 ปี ✨', 'success');
+        showToast('ไม่พบรายการเคลมที่เก่าเกิน 5 ปี', 'success');
       } else {
         setOldRmaList(items);
         setShowOldRmaModal(true);
@@ -130,7 +130,7 @@ export const SettingsPage: React.FC = () => {
       );
 
       if (activeRmas.length === 0) {
-        showToast('ไม่พบงานค้างที่ต้องแจ้งเตือนในระบบในขณะนี้ ✨', 'success');
+        showToast('ไม่พบงานค้างที่ต้องแจ้งเตือนในระบบในขณะนี้', 'success');
         return;
       }
 
@@ -181,7 +181,7 @@ export const SettingsPage: React.FC = () => {
 
   const handleCopyToClipboard = (text: string, name: string) => {
     navigator.clipboard.writeText(text);
-    showToast(`คัดลอกสรุปงานของ ${name} เรียบร้อย! 📋`, 'success');
+    showToast(`คัดลอกสรุปงานของ ${name} เรียบร้อย!`, 'success');
   };
 
   const [isExportingCsv, setIsExportingCsv] = useState(false);
@@ -220,7 +220,7 @@ export const SettingsPage: React.FC = () => {
       const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(row => row.map(val => `"${val.replace(/"/g, '""')}"`).join(','))].join('\n');
       
       downloadFile(csvContent, `sec-rmas-export-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
-      showToast('ดาวน์โหลด CSV สำเร็จ 📊', 'success');
+      showToast('ดาวน์โหลด CSV สำเร็จ', 'success');
     } catch (err: any) {
       showToast(err.message || 'เกิดข้อผิดพลาดในการส่งออก CSV', 'error');
     } finally {
@@ -247,7 +247,7 @@ export const SettingsPage: React.FC = () => {
       
       const jsonContent = JSON.stringify(backupData, null, 2);
       downloadFile(jsonContent, `sec-db-backup-${new Date().toISOString().split('T')[0]}.json`, 'application/json');
-      showToast('สำรองข้อมูลฐานข้อมูลสำเร็จ 🔐', 'success');
+      showToast('สำรองข้อมูลฐานข้อมูลสำเร็จ', 'success');
     } catch (err: any) {
       showToast(err.message || 'เกิดข้อผิดพลาดในการสำรองข้อมูล', 'error');
     } finally {
@@ -259,7 +259,7 @@ export const SettingsPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     
-    if (!confirm('⚠️ คำเตือน: การกู้คืนข้อมูลจะเขียนทับข้อมูลเดิมในระบบทั้งหมด ต้องการดำเนินการต่อหรือไม่?')) {
+    if (!confirm('คำเตือน: การกู้คืนข้อมูลจะเขียนทับข้อมูลเดิมในระบบทั้งหมด ต้องการดำเนินการต่อหรือไม่?')) {
       e.target.value = '';
       return;
     }
@@ -274,7 +274,7 @@ export const SettingsPage: React.FC = () => {
         }
 
         await MockDb.restoreDatabaseBackup(backup);
-        showToast('กู้คืนข้อมูลสำเร็จเรียบร้อย! 🎉', 'success');
+        showToast('กู้คืนข้อมูลสำเร็จเรียบร้อย!', 'success');
       } catch (err: any) {
         showToast(err.message || 'เกิดข้อผิดพลาดในการกู้คืนข้อมูล', 'error');
       } finally {
@@ -658,8 +658,9 @@ export const SettingsPage: React.FC = () => {
                         <span className="font-bold text-[#1d1d1f] dark:text-white text-base">{group.name}</span>
                         {group.email && <span className="text-xs text-gray-400">({group.email})</span>}
                       </div>
-                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-semibold flex items-center gap-1">
-                        📦 มีงานค้างดำเนินการ {group.items.length} รายการ
+                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-semibold flex items-center gap-1.5">
+                        <Package className="w-3.5 h-3.5 text-blue-500" />
+                        มีงานค้างดำเนินการ {group.items.length} รายการ
                       </p>
                     </div>
                     <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
