@@ -2,9 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
-import { Settings, Save, Check, Loader2, Globe, Building, Zap, Trash2, AlertTriangle, Archive, X, Search, Wrench, Download, Upload, Mail, Send } from 'lucide-react';
+import { Settings, Save, Check, Loader2, Globe, Building, Zap, Trash2, AlertTriangle, Archive, X, Search, Wrench, Download, Upload, Mail, Send, Copy } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { showToast } from '../services/toast';
+import { RMAStatus } from '../types';
 
 interface OldRmaItem {
   id: string; brand: string; model: string; serial: string;
@@ -116,21 +117,71 @@ export const SettingsPage: React.FC = () => {
   };
 
   const [isSendingSummary, setIsSendingSummary] = useState(false);
+  const [summaryList, setSummaryList] = useState<any[]>([]);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
 
   const handleSendOverdueSummary = async () => {
     setIsSendingSummary(true);
     try {
-      const result = await MockDb.sendOverdueSummaryToEveryone();
-      if (result.sentCount > 0) {
-        showToast(`ส่งสรุปรายการงานค้างไปยังช่างสำเร็จทั้งหมด ${result.sentCount} อีเมล 📧`, 'success');
-      } else {
+      const allRmas = await MockDb.getRMAs();
+      const activeRmas = allRmas.filter(rma => 
+        !rma.isDeleted && 
+        ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(rma.status)
+      );
+
+      if (activeRmas.length === 0) {
         showToast('ไม่พบงานค้างที่ต้องแจ้งเตือนในระบบในขณะนี้ ✨', 'success');
+        return;
       }
+
+      // Group active RMAs by creator
+      const groups: Record<string, { name: string; email: string; items: any[] }> = {};
+      
+      activeRmas.forEach(rma => {
+        const creatorName = rma.createdBy || 'Unknown';
+        const creatorEmail = rma.creatorEmail || '';
+        const groupKey = creatorEmail ? creatorEmail.toLowerCase() : creatorName.toLowerCase();
+        
+        if (!groups[groupKey]) {
+          groups[groupKey] = {
+            name: creatorName,
+            email: creatorEmail,
+            items: []
+          };
+        }
+        groups[groupKey].items.push(rma);
+      });
+
+      const list = Object.values(groups);
+      setSummaryList(list);
+      setShowSummaryModal(true);
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการส่งอีเมล', 'error');
+      showToast(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการรวบรวมข้อมูล', 'error');
     } finally {
       setIsSendingSummary(false);
     }
+  };
+
+  const getLineMessage = (group: any) => {
+    const dateStr = new Date().toLocaleDateString('th-TH');
+    let msg = `📋 สรุปรายการงานเคลมค้างดำเนินการ\n👤 ผู้รับผิดชอบ: ${group.name}\n📅 วันที่: ${dateStr}\n\n`;
+    group.items.forEach((item: any, idx: number) => {
+      msg += `${idx + 1}. รหัส: ${item.id}\n   รุ่น: ${item.brand} ${item.productModel}\n   S/N: ${item.serialNumber}\n   สถานะ: ${item.status}\n\n`;
+    });
+    msg += `จัดการงานเคลมคลิกที่นี่: ${window.location.origin}/admin/rmas`;
+    return msg;
+  };
+
+  const getMailtoUrl = (group: any) => {
+    const email = group.email || '';
+    const subject = encodeURIComponent(`[SEC RMS] สรุปรายการงานเคลมค้างดำเนินการของคุณ ${group.name} (${group.items.length} รายการ)`);
+    const body = encodeURIComponent(getLineMessage(group));
+    return `mailto:${email}?subject=${subject}&body=${body}`;
+  };
+
+  const handleCopyToClipboard = (text: string, name: string) => {
+    navigator.clipboard.writeText(text);
+    showToast(`คัดลอกสรุปงานของ ${name} เรียบร้อย! 📋`, 'success');
   };
 
   const [isExportingCsv, setIsExportingCsv] = useState(false);
@@ -345,7 +396,7 @@ export const SettingsPage: React.FC = () => {
                   <Send className="w-4 h-4 text-blue-500" /> ส่งอีเมลสรุปงานค้างถึงทุกคนตอนนี้ (Send Summary Now)
                 </h4>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                  ส่งอีเมลรวบรวมรายการใบงานค้างดำเนินการทั้งหมดแยกตามผู้รับผิดชอบ ไปยังอีเมลของช่างและเจ้าหน้าที่ทุกคนที่มีงานค้างในระบบทันที
+                  ส่งอีเมลรวบรวมรายการใบงานค้างดำเนินการทั้งหมดแยกตามผู้รับผิดชอบ ไปยังอีเมลของพนักงานและเจ้าหน้าที่ทุกคนที่มีงานค้างในระบบทันที
                 </p>
               </div>
               <button
@@ -574,6 +625,74 @@ export const SettingsPage: React.FC = () => {
                   {isDeletingOld ? 'กำลังลบ...' : `ยืนยันลบ ${oldRmaList.length} รายการ`}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ===== Summary Email Preview & Action Center Modal ===== */}
+      {showSummaryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-[#1c1c1e] w-full max-w-2xl rounded-2xl md:rounded-[24px] shadow-2xl border border-gray-100 dark:border-[#2c2c2e] max-h-[85vh] flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="p-5 md:p-6 border-b border-gray-100 dark:border-[#2c2c2e] flex items-center justify-between flex-shrink-0">
+              <div>
+                <h3 className="font-bold text-lg md:text-xl text-[#1d1d1f] dark:text-white flex items-center gap-2">
+                  <Send className="w-5 h-5 text-blue-500" />
+                  รายการสรุปงานค้างแยกตามพนักงาน
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">คัดลอกข้อความเพื่อส่งทาง LINE หรือส่งตรงไปยังอีเมลของแต่ละคนได้ฟรีแบบไม่มีค่าใช้จ่าย</p>
+              </div>
+              <button onClick={() => setShowSummaryModal(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* List */}
+            <div className="flex-grow overflow-y-auto p-5 md:p-6 space-y-4">
+              {summaryList.map((group, idx) => {
+                const lineMessage = getLineMessage(group);
+                return (
+                  <div key={idx} className="p-4 bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#3a3a3c] rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-[#1d1d1f] dark:text-white text-base">{group.name}</span>
+                        {group.email && <span className="text-xs text-gray-400">({group.email})</span>}
+                      </div>
+                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-semibold flex items-center gap-1">
+                        📦 มีงานค้างดำเนินการ {group.items.length} รายการ
+                      </p>
+                    </div>
+                    <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
+                      <button
+                        type="button"
+                        onClick={() => handleCopyToClipboard(lineMessage, group.name)}
+                        className="flex-1 sm:flex-initial px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        คัดลอกส่ง LINE
+                      </button>
+                      <a
+                        href={getMailtoUrl(group)}
+                        className="flex-1 sm:flex-initial px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm text-center"
+                      >
+                        <Mail className="w-3.5 h-3.5" />
+                        ส่งอีเมล
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-gray-100 dark:border-[#2c2c2e] flex items-center justify-end flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowSummaryModal(false)}
+                className="px-5 py-2.5 bg-gray-200 dark:bg-[#3a3a3c] text-gray-600 dark:text-gray-300 rounded-xl font-bold text-sm hover:bg-gray-300 transition-colors"
+              >
+                ปิดหน้าต่าง
+              </button>
             </div>
           </div>
         </div>
