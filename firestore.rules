@@ -54,5 +54,10 @@ service cloud.firestore {
     // 4. Counters — public read (ลูกค้าต้องอ่าน counter เพื่อสร้าง Job ID ตอนลงทะเบียน)
     // Write: authenticated staff only — ป้องกันคนนอกมาแก้ counter
     match /counters/{d} { allow read: if true; allow write: if isAuth(); }
+
+    // 5. Mail Collection (for Firebase Trigger Email Extension)
+    match /mail/{mailId} {
+      allow create: if isAuth();
+    }
   }
 }
