@@ -234,7 +234,19 @@
 
       main, .overflow-y-auto {
         -webkit-overflow-scrolling: touch;
-        scroll-behavior: smooth;
+        scroll-behavior: auto !important;
+      }
+
+      /* Disable heavy backdrop blurs on mobile viewports for smooth scrolling performance */
+      .backdrop-blur-sm, .backdrop-blur-md, .backdrop-blur-xl, .backdrop-blur-2xl, .backdrop-blur {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+      }
+
+      /* Disable layout-thrashing entry animations on mobile viewports to speed up page loads */
+      .space-y-4 > div, .space-y-8 > div,
+      .space-y-3 > div, .space-y-6 > div {
+        animation: none !important;
       }
 
       /* Global Responsive Styling Overrides for Mobile Screens */
