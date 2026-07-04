@@ -292,13 +292,31 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
                  <span className={`text-[9px] font-semibold apple-fluid-item ${isScrollingDown ? 'opacity-0 scale-50 max-h-0 mt-0 overflow-hidden' : 'opacity-100 scale-100 max-h-4 mt-0.5 leading-none'} ${location.pathname === '/admin/rmas' ? 'font-bold' : ''}`}>รายการ</span>
                </Link>
   
-               {/* Submit Claim (Flat Standard Tab Option) */}
-               <Link to="/admin/submit" onClick={() => { isScrollingDownRef.current = false; setIsScrollingDown(false); }} className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${location.pathname === '/admin/submit' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
-                 <div className={`transition-all duration-300 ${isScrollingDown ? 'scale-90' : 'scale-100'}`}>
-                   <div className={`transition-all duration-200 ${location.pathname === '/admin/submit' ? 'scale-110' : ''}`}><PlusCircle className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/submit' ? 2.2 : 1.8} /></div>
-                 </div>
-                 <span className={`text-[9px] font-semibold apple-fluid-item ${isScrollingDown ? 'opacity-0 scale-50 max-h-0 mt-0 overflow-hidden' : 'opacity-100 scale-100 max-h-4 mt-0.5 leading-none'} ${location.pathname === '/admin/submit' ? 'font-bold' : ''}`}>เพิ่มเคลม</span>
-               </Link>
+               {/* Submit Claim or Add Finance dynamic tab */}
+               {location.pathname === '/admin/finance' ? (
+                 <button 
+                   onClick={() => { 
+                     isScrollingDownRef.current = false; 
+                     setIsScrollingDown(false); 
+                     window.dispatchEvent(new CustomEvent('open-finance-modal'));
+                   }} 
+                   className="flex flex-col items-center justify-center h-full transition-all duration-200 text-[#007aff] active:scale-90"
+                 >
+                   <div className={`transition-all duration-300 ${isScrollingDown ? 'scale-90' : 'scale-100'}`}>
+                     <div className="scale-110">
+                       <PlusCircle className="w-[19px] h-[19px] text-[#007aff]" strokeWidth={2.2} />
+                     </div>
+                   </div>
+                   <span className={`text-[9px] font-bold apple-fluid-item ${isScrollingDown ? 'opacity-0 scale-50 max-h-0 mt-0 overflow-hidden' : 'opacity-100 scale-100 max-h-4 mt-0.5 leading-none'}`}>เพิ่มบันทึก</span>
+                 </button>
+               ) : (
+                 <Link to="/admin/submit" onClick={() => { isScrollingDownRef.current = false; setIsScrollingDown(false); }} className={`flex flex-col items-center justify-center h-full transition-all duration-200 ${location.pathname === '/admin/submit' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>
+                   <div className={`transition-all duration-300 ${isScrollingDown ? 'scale-90' : 'scale-100'}`}>
+                     <div className={`transition-all duration-200 ${location.pathname === '/admin/submit' ? 'scale-110' : ''}`}><PlusCircle className="w-[19px] h-[19px]" strokeWidth={location.pathname === '/admin/submit' ? 2.2 : 1.8} /></div>
+                   </div>
+                   <span className={`text-[9px] font-semibold apple-fluid-item ${isScrollingDown ? 'opacity-0 scale-50 max-h-0 mt-0 overflow-hidden' : 'opacity-100 scale-100 max-h-4 mt-0.5 leading-none'} ${location.pathname === '/admin/submit' ? 'font-bold' : ''}`}>เพิ่มเคลม</span>
+                 </Link>
+               )}
   
                {/* Notifications */}
                <Link to="/admin/incoming" onClick={() => { isScrollingDownRef.current = false; setIsScrollingDown(false); }} className={`flex flex-col items-center justify-center h-full relative transition-all duration-200 ${location.pathname === '/admin/incoming' ? 'text-[#007aff]' : 'text-[#8e8e93] active:text-[#007aff]'}`}>

@@ -63,6 +63,18 @@ export const FinanceLedger: React.FC = () => {
     fetchData();
   }, [currentUser, navigate]);
 
+  useEffect(() => {
+    const handleOpenModal = () => {
+      setSelectedTx(undefined);
+      setShowModal(true);
+    };
+
+    window.addEventListener('open-finance-modal', handleOpenModal);
+    return () => {
+      window.removeEventListener('open-finance-modal', handleOpenModal);
+    };
+  }, []);
+
   // Filter transactions
   const filteredTransactions = transactions.filter(tx => {
     // Search filter
