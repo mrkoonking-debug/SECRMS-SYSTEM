@@ -267,49 +267,64 @@ export const ClaimsList: React.FC = () => {
             </div>
 
             {/* ── Search + Filters ── */}
-            <div className="bg-white dark:bg-[#16161a] rounded-xl md:rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-200/60 dark:border-white/[0.08] p-1.5 mb-5 md:mb-6 sticky top-14 md:top-0 z-30 flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
-                <div className="relative flex-grow group"><Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" /><input type="text" placeholder={t('claimsList.searchPlaceholder')} value={search} onChange={(e) => handleSearchChange(e.target.value)} className="w-full bg-transparent border-none rounded-xl md:rounded-2xl py-2.5 md:py-3 pl-9 md:pl-11 pr-4 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0" /></div>
-                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide w-full md:w-auto px-1 pb-1 md:pb-0">
-                    <button onClick={handleExpandAll} className="hidden md:flex p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06] flex-shrink-0 transition-colors"><ChevronsUpDown className="w-4 h-4" /></button>
-                    <div className="hidden md:block h-5 w-px bg-gray-200 dark:bg-white/10 flex-shrink-0 animate-fade-in"></div>
-                    
-                    {/* iOS Segmented Control style with Sliding Indicator */}
-                    <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full grid grid-cols-4 items-center relative w-full md:max-w-[420px] flex-shrink-0">
-                        {/* Sliding Indicator with Dynamic Colors */}
-                        <div 
-                          className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform translate-z-0 ${getStatusColorClass(statusFilter)}`}
-                          style={{
-                            width: 'calc(25% - 4px)',
-                            left: `calc(${['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].indexOf(statusFilter) * 25}% + 2px)`
-                          }}
+            <div className="bg-white dark:bg-[#16161a] rounded-xl md:rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-200/60 dark:border-white/[0.08] p-1.5 mb-5 md:mb-6 sticky top-14 md:top-0 z-30 flex flex-col gap-2">
+                <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 w-full">
+                    <div className="relative flex-grow group">
+                        <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <input 
+                            type="text" 
+                            placeholder={t('claimsList.searchPlaceholder')} 
+                            value={search} 
+                            onChange={(e) => handleSearchChange(e.target.value)} 
+                            className="w-full bg-transparent border-none rounded-xl md:rounded-2xl py-2.5 md:py-3 pl-9 md:pl-11 pr-4 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0" 
                         />
-                        {['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].map((s) => (
-                            <button 
-                                key={s} 
-                                onClick={() => setStatusFilter(s as typeof statusFilter)} 
-                                className={`relative z-10 px-1 md:px-3.5 py-1.5 md:py-2 text-[10px] md:text-xs font-semibold rounded-full transition-colors duration-200 whitespace-nowrap text-center outline-none focus:outline-none ${
-                                    statusFilter === s 
-                                        ? 'text-white' 
-                                        : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
-                                }`}
-                            >
-                                {language === 'en' 
-                                    ? (s === 'ALL' ? 'All' : s === 'PENDING' ? 'Received' : s === 'IN_PROGRESS' ? 'Progress' : 'Done')
-                                    : (s === 'ALL' ? 'ทั้งหมด' : s === 'PENDING' ? 'รับเรื่อง' : s === 'IN_PROGRESS' ? 'ดำเนินการ' : 'เสร็จสิ้น')
-                                }
-                            </button>
-                        ))}
                     </div>
+                    <div className="flex items-center gap-2 w-full md:w-auto px-1 pb-1 md:pb-0">
+                        <button onClick={handleExpandAll} className="hidden md:flex p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06] flex-shrink-0 transition-colors">
+                            <ChevronsUpDown className="w-4 h-4" />
+                        </button>
+                        <div className="hidden md:block h-5 w-px bg-gray-200 dark:bg-white/10 flex-shrink-0"></div>
+                        
+                        {/* iOS Segmented Control style with Sliding Indicator */}
+                        <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full grid grid-cols-4 items-center relative w-full md:max-w-[420px] flex-shrink-0">
+                            {/* Sliding Indicator with Dynamic Colors */}
+                            <div 
+                              className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform translate-z-0 ${getStatusColorClass(statusFilter)}`}
+                              style={{
+                                width: 'calc(25% - 4px)',
+                                left: `calc(${['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].indexOf(statusFilter) * 25}% + 2px)`
+                              }}
+                            />
+                            {['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].map((s) => (
+                                <button 
+                                    key={s} 
+                                    onClick={() => setStatusFilter(s as typeof statusFilter)} 
+                                    className={`relative z-10 px-1 md:px-3.5 py-1.5 md:py-2 text-[10px] md:text-xs font-semibold rounded-full transition-colors duration-200 whitespace-nowrap text-center outline-none focus:outline-none ${
+                                        statusFilter === s 
+                                            ? 'text-white' 
+                                            : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                                    }`}
+                                >
+                                    {language === 'en' 
+                                        ? (s === 'ALL' ? 'All' : s === 'PENDING' ? 'Received' : s === 'IN_PROGRESS' ? 'Progress' : 'Done')
+                                        : (s === 'ALL' ? 'ทั้งหมด' : s === 'PENDING' ? 'รับเรื่อง' : s === 'IN_PROGRESS' ? 'ดำเนินการ' : 'เสร็จสิ้น')
+                                    }
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
 
-                    {isAnyFilterActive && (
+                {isAnyFilterActive && (
+                    <div className="w-full px-1 pb-1 flex justify-center animate-fade-in border-t border-gray-150/10 dark:border-white/5 pt-1.5">
                         <button 
                             onClick={handleClearFilters} 
-                            className="flex-shrink-0 px-3.5 py-1.5 text-[10px] md:text-xs font-bold rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 transition-all whitespace-nowrap flex items-center justify-center gap-1"
+                            className="w-full md:w-auto px-4 py-2 text-xs font-bold rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 transition-all flex items-center justify-center gap-1.5"
                         >
-                            <X className="w-2.5 h-2.5" /> {t('claimsList.clearFilters')}
+                            <X className="w-4 h-4" /> {t('claimsList.clearFilters')}
                         </button>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
 
             {/* ── Job List ── */}
