@@ -250,13 +250,15 @@ export const MockDb = {
       if (!settings?.enableOverdueEmailAlerts) return;
 
       const rmasRef = collection(db, 'rmas');
-      const q = query(rmasRef, where('isDeleted', '!=', true));
-      const snap = await getDocs(q);
+      const snap = await getDocs(rmasRef);
+      const docs = snap.docs.map(doc => doc.data() as RMA).filter(r => !r.isDeleted);
       const now = Date.now();
       const overdueLimit = 15 * 24 * 60 * 60 * 1000; // 15 days
 
-      for (const docSnap of snap.docs) {
-        const rma = docSnap.data() as RMA;
+      for (const rma of docs) {
+        // Find document reference from Firestore list to update it later
+        const docSnap = snap.docs.find(d => d.id === rma.id || d.data().id === rma.id);
+        if (!docSnap) continue;
         const isOverdue = ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(rma.status) &&
           (now - new Date(rma.createdAt).getTime() > overdueLimit);
 
@@ -336,47 +338,93 @@ export const MockDb = {
     const usersSnap = await getDocs(usersRef);
     const usersList = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
     
-    // 2. Fetch active RMAs
+    // 2. Fetch all RMAs
     const rmasRef = collection(db, 'rmas');
-    const q = query(rmasRef, where('isDeleted', '!=', true));
-    const rmasSnap = await getDocs(q);
+    const rmasSnap = await getDocs(rmasRef);
     const activeRmas = rmasSnap.docs
       .map(doc => doc.data() as RMA)
-      .filter(rma => ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(rma.status));
+      .filter(rma => !rma.isDeleted && ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(rma.status));
 
     if (activeRmas.length === 0) {
       return { sentCount: 0, status: 'No active RMAs found' };
     }
 
     let sentCount = 0;
-    
-    // 3. For each user, find their active RMAs and trigger email
+    const unassignedRmas: RMA[] = [];
+    const userRmaMap = new Map<string, RMA[]>();
+
+    // Initialize map keys for all user emails in lowercase
+    for (const user of usersList) {
+      if (user.email) {
+        userRmaMap.set(user.email.toLowerCase(), []);
+      }
+    }
+
+    // Map active RMAs to user lists
+    for (const rma of activeRmas) {
+      let matched = false;
+      
+      // Map by creatorEmail first
+      if (rma.creatorEmail) {
+        const emailKey = rma.creatorEmail.toLowerCase();
+        if (userRmaMap.has(emailKey)) {
+          userRmaMap.get(emailKey)!.push(rma);
+          matched = true;
+        }
+      }
+      
+      // If not matched, try matching createdBy name to user name
+      if (!matched && rma.createdBy) {
+        const creatorNameLower = rma.createdBy.toLowerCase();
+        const matchedUser = usersList.find(u => u.name && u.name.toLowerCase() === creatorNameLower);
+        if (matchedUser && matchedUser.email) {
+          const emailKey = matchedUser.email.toLowerCase();
+          userRmaMap.get(emailKey)!.push(rma);
+          matched = true;
+        }
+      }
+      
+      if (!matched) {
+        unassignedRmas.push(rma);
+      }
+    }
+
+    // 3. For each user, send summary email
     for (const user of usersList) {
       if (!user.email) continue;
       
-      const userRmas = activeRmas.filter(rma => 
-        (rma.creatorEmail && rma.creatorEmail.toLowerCase() === user.email.toLowerCase()) ||
-        (rma.createdBy && rma.createdBy.toLowerCase() === user.name.toLowerCase())
-      );
+      const emailKey = user.email.toLowerCase();
+      const userRmas = userRmaMap.get(emailKey) || [];
       
-      if (userRmas.length === 0) continue;
+      // If user is an admin, append the unassigned RMAs list to their email
+      const isAdmin = user.role === 'admin';
+      const rmasToInclude = [...userRmas];
+      if (isAdmin && unassignedRmas.length > 0) {
+        rmasToInclude.push(...unassignedRmas);
+      }
+
+      if (rmasToInclude.length === 0) continue;
 
       // 4. Construct table rows
-      const rmasListHtml = userRmas.map(rma => `
-        <tr style="border-bottom: 1px solid #f1f5f9;">
-          <td style="padding: 10px; font-family: monospace; font-size: 13px; font-weight: bold; color: #1d1d1f;">${rma.id}</td>
-          <td style="padding: 10px; font-size: 13px; color: #434345;">${rma.brand} ${rma.productModel}</td>
-          <td style="padding: 10px; font-family: monospace; font-size: 12px; color: #86868b;">${rma.serialNumber}</td>
-          <td style="padding: 10px; font-size: 12px;">
-            <span style="background-color: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px;">
-              ${rma.status}
-            </span>
-          </td>
-          <td style="padding: 10px; font-size: 12px; color: #86868b;">
-            ${new Date(rma.createdAt).toLocaleDateString('th-TH')}
-          </td>
-        </tr>
-      `).join('');
+      const rmasListHtml = rmasToInclude.map(rma => {
+        const isUnassigned = unassignedRmas.includes(rma);
+        return `
+          <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 10px; font-family: monospace; font-size: 13px; font-weight: bold; color: #1d1d1f;">${rma.id}</td>
+            <td style="padding: 10px; font-size: 13px; color: #434345;">${rma.brand} ${rma.productModel}</td>
+            <td style="padding: 10px; font-family: monospace; font-size: 12px; color: #86868b;">${rma.serialNumber}</td>
+            <td style="padding: 10px; font-size: 12px;">
+              <span style="background-color: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px;">
+                ${rma.status}
+              </span>
+              ${isUnassigned ? `<br/><span style="color: #ef4444; font-size: 9px; font-weight: bold;">(ไม่มีผู้สร้างในระบบ)</span>` : ''}
+            </td>
+            <td style="padding: 10px; font-size: 12px; color: #86868b;">
+              ${new Date(rma.createdAt).toLocaleDateString('th-TH')}
+            </td>
+          </tr>
+        `;
+      }).join('');
 
       const emailHtml = `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 700px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
@@ -386,7 +434,7 @@ export const MockDb = {
             <p style="color: #86868b; font-size: 14px; margin: 0;">เรียนคุณ ${user.name} - ข้อมูลสรุป ณ วันที่ ${new Date().toLocaleDateString('th-TH')}</p>
           </div>
           
-          <p style="color: #434345; font-size: 14px; line-height: 1.6;">ระบบได้รวบรวมรายการใบงานเคลมที่คุณเป็นผู้บันทึก ซึ่งยังคง<strong>ค้างดำเนินการอยู่ในระบบทั้งหมดจำนวน ${userRmas.length} รายการ</strong> ดังรายละเอียดตารางด้านล่างนี้:</p>
+          <p style="color: #434345; font-size: 14px; line-height: 1.6;">ระบบได้รวบรวมรายการใบงานเคลมที่ค้างดำเนินการในระบบจำนวนทั้งหมด <strong>${rmasToInclude.length} รายการ</strong> ดังรายละเอียดตารางด้านล่างนี้:</p>
           
           <table style="width: 100%; border-collapse: collapse; margin: 20px 0; text-align: left;">
             <thead>
@@ -416,7 +464,7 @@ export const MockDb = {
       await addDoc(mailRef, {
         to: user.email,
         message: {
-          subject: `[SEC RMS] สรุปรายการงานเคลมค้างดำเนินการของคุณ ${user.name} (จำนวน ${userRmas.length} รายการ)`,
+          subject: `[SEC RMS] สรุปรายการงานเคลมค้างดำเนินการของคุณ ${user.name} (จำนวน ${rmasToInclude.length} รายการ)`,
           html: emailHtml
         }
       });
