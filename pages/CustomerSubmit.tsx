@@ -104,9 +104,9 @@ export const CustomerSubmit: React.FC = () => {
                 setTimeout(() => reject(new Error('Request timed out')), 15000);
             });
 
-            const submissionPromise = async () => {
-                for (const item of items) {
-                    await MockDb.addRMA({
+            const submissionPromise = () => {
+                const promises = items.map(item => 
+                    MockDb.addRMA({
                         groupRequestId,
                         customerName: customer.companyName,
                         contactPerson: customer.contactName,
@@ -129,8 +129,9 @@ export const CustomerSubmit: React.FC = () => {
                         team: null as any,
                         attachments: [],
                         createdBy: 'Customer (Web)'
-                    });
-                }
+                    })
+                );
+                return Promise.all(promises);
             };
 
             await Promise.race([submissionPromise(), timeoutPromise]);

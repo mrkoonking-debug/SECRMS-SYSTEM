@@ -78,8 +78,7 @@ export const SubmitClaim: React.FC = () => {
     let firstId = '';
 
     try {
-      for (let i = 0; i < basket.length; i++) {
-        const item = basket[i];
+      const promises = basket.map(async (item, i) => {
         const rmaData = {
           groupRequestId,
           quotationNumber: customer.quotationNumber,
@@ -104,7 +103,8 @@ export const SubmitClaim: React.FC = () => {
 
         const newRMA = await MockDb.addRMA(rmaData);
         if (i === 0) firstId = newRMA.id;
-      }
+      });
+      await Promise.all(promises);
 
       if (firstId) {
         setSubmittedRef(groupRequestId);
