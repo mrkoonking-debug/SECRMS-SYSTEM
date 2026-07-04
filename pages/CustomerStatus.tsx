@@ -103,6 +103,7 @@ export const CustomerStatus: React.FC = () => {
         <div className="space-y-4 md:space-y-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
           {validRmas.map((rma) => {
             const currentStep = getStepStatus(rma.status);
+            const isCancelled = rma.status === RMAStatus.CANCELLED;
             const steps = [
               { label: t('statusSteps.received'), icon: Package },
               { label: t('statusSteps.checking'), icon: Search },
@@ -111,7 +112,7 @@ export const CustomerStatus: React.FC = () => {
             ];
 
             return (
-              <div key={rma.id} className="glass-panel p-4 sm:p-6 md:p-8">
+              <div key={rma.id} className={`glass-panel p-4 sm:p-6 md:p-8 ${isCancelled ? 'opacity-50 grayscale bg-gray-50/20' : ''}`}>
                 <div className="flex justify-between items-start mb-6 md:mb-10">
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-[#1d1d1f] dark:text-white mb-1">{rma.productModel}</h3>

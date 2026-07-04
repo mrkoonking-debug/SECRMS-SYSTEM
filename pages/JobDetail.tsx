@@ -571,7 +571,8 @@ export const JobDetail: React.FC = () => {
                     </button>
                 </div>
                 {rmas.map((item, index) => {
-                    const isClosed = [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REJECTED, RMAStatus.CANCELLED].includes(item.status);
+                    const isCancelled = item.status === RMAStatus.CANCELLED;
+                    const isClosed = [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REJECTED].includes(item.status);
                     const isExpanded = expandedRMAs.has(item.id);
                     const isSelected = selectedIds.has(item.id);
 
@@ -579,7 +580,15 @@ export const JobDetail: React.FC = () => {
                     const sortedHistory = item.history ? [...item.history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) : [];
 
                     return (
-                        <div key={item.id} className={`bg-white dark:bg-[#1c1c1e] rounded-2xl md:rounded-[20px] p-3.5 md:p-6 transition-all hover:bg-gray-50 dark:hover:bg-[#2c2c2e] border-2 ${isSelected ? 'border-[#0071e3] ring-2 ring-[#0071e3]/20' : 'border-gray-100 dark:border-[#333]'}`}>
+                        <div 
+                            key={item.id} 
+                            className={`rounded-2xl md:rounded-[20px] p-3.5 md:p-6 transition-all border-2 
+                                ${isCancelled 
+                                    ? 'bg-gray-100/40 dark:bg-[#161617]/50 border-gray-200/50 dark:border-white/[0.04] opacity-50 grayscale hover:bg-gray-100/50 dark:hover:bg-[#161617]/60'
+                                    : isSelected 
+                                        ? 'bg-white dark:bg-[#1e1e1f] border-[#0071e3] ring-2 ring-[#0071e3]/20 hover:bg-gray-50 dark:hover:bg-[#282a2c]' 
+                                        : 'bg-white dark:bg-[#1e1e1f] border-gray-100 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-[#282a2c]'}`}
+                        >
                             <div className="flex flex-col md:flex-row items-center gap-3 md:gap-6">
                                 <div className="flex-shrink-0 flex items-center gap-3">
                                     {rmas.length > 1 && (
@@ -587,7 +596,13 @@ export const JobDetail: React.FC = () => {
                                             {isSelected ? <CheckSquare className="w-5 h-5 text-[#0071e3]" /> : <Square className="w-5 h-5 text-gray-300 dark:text-gray-600" />}
                                         </button>
                                     )}
-                                    {isClosed ? <div className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center"><CheckCircle2 className="w-5 h-5" /></div> : <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold">{index + 1}</div>}
+                                    {isCancelled ? (
+                                        <div className="w-10 h-10 rounded-full bg-gray-200/50 dark:bg-white/5 text-gray-400 dark:text-gray-600 flex items-center justify-center font-bold">{index + 1}</div>
+                                    ) : isClosed ? (
+                                        <div className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center"><CheckCircle2 className="w-5 h-5" /></div>
+                                    ) : (
+                                        <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold">{index + 1}</div>
+                                    )}
                                 </div>
                                 <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                                     <div><div className="font-bold text-base md:text-lg text-[#1d1d1f] dark:text-white">{item.productModel}</div><div className="text-xs md:text-sm text-gray-500">{item.brand}</div><div className="mt-0.5 md:mt-1 inline-block text-[10px] md:text-xs font-mono bg-black/5 dark:bg-white/10 px-1.5 md:px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">S/N: {item.serialNumber}</div></div>

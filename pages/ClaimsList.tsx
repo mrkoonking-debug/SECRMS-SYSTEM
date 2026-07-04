@@ -359,14 +359,15 @@ export const ClaimsList: React.FC = () => {
                                              const jobTeam = jobItems[0]?.team;
                                              const customerName = jobItems[0]?.customerName || 'Unknown';
                                              const quotationNumber = jobItems[0]?.quotationNumber;
+                                             const isJobCancelled = jobItems.every(i => i.status === RMAStatus.CANCELLED);
                                              const isJobDone = jobItems.every(i => [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(i.status));
 
                                              return (
-                                                 <div key={jobKey} onClick={() => handleJobClick(jobKey)} className="p-4 flex items-center justify-between gap-4 cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors duration-150 group">
+                                                 <div key={jobKey} onClick={() => handleJobClick(jobKey)} className={`p-4 flex items-center justify-between gap-4 cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors duration-150 group ${isJobCancelled ? 'opacity-50 grayscale bg-gray-50/30 dark:bg-black/10' : ''}`}>
                                                      <div className="flex items-center gap-3.5 min-w-0 flex-grow">
                                                          {/* macOS-style Icon Badge */}
-                                                         <div className={`w-8.5 h-8.5 rounded-lg flex items-center justify-center flex-shrink-0 text-white shadow-sm transition-transform group-hover:scale-105 ${isJobDone ? 'bg-[#34c759]' : jobItems.some(i => isRMAOverdue(i)) ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>
-                                                             {isJobDone ? <CheckCircle2 className="w-4 h-4 text-white" /> : <Package className="w-4 h-4 text-white" />}
+                                                         <div className={`w-8.5 h-8.5 rounded-lg flex items-center justify-center flex-shrink-0 text-white shadow-sm transition-transform group-hover:scale-105 ${isJobCancelled ? 'bg-gray-400 dark:bg-gray-600' : isJobDone ? 'bg-[#34c759]' : jobItems.some(i => isRMAOverdue(i)) ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>
+                                                             {isJobCancelled ? <X className="w-4 h-4 text-white" /> : isJobDone ? <CheckCircle2 className="w-4 h-4 text-white" /> : <Package className="w-4 h-4 text-white" />}
                                                          </div>
                                                          
                                                          <div className="min-w-0 flex-1">
@@ -377,7 +378,11 @@ export const ClaimsList: React.FC = () => {
                                                                  {/* Team badge */}
                                                                  {jobTeam && getTeamBadge(jobTeam)}
                                                                  {/* Status indicators */}
-                                                                 {isJobDone && <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-emerald-500/20 font-bold flex items-center gap-0.5"><CheckCircle2 className="w-3 h-3" /> เสร็จสิ้น</span>}
+                                                                 {isJobCancelled ? (
+                                                                     <span className="bg-gray-500/10 text-gray-500 dark:text-gray-400 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-gray-500/20 font-bold">ยกเลิกแล้ว</span>
+                                                                 ) : isJobDone ? (
+                                                                     <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-emerald-500/20 font-bold flex items-center gap-0.5"><CheckCircle2 className="w-3 h-3" /> เสร็จสิ้น</span>
+                                                                 ) : null}
                                                                  {!isJobDone && jobItems.some(i => isRMAOverdue(i)) && <span className="bg-[#ff3b30]/10 text-[#ff3b30] text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border border-[#ff3b30]/15 font-bold">Overdue</span>}
                                                              </div>
                                                              <div className="text-[11px] md:text-[13px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5 md:gap-2 mt-0.5">
