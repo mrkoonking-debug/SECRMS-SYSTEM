@@ -138,16 +138,16 @@ export const IncomingClaims: React.FC = () => {
                                     {/* Summary Row */}
                                     <div className="flex flex-col gap-3 md:gap-6">
                                         <div className="flex-1 space-y-2 md:space-y-4 cursor-pointer" onClick={() => toggleExpand(job.groupId)}>
-                                            <div className="flex justify-between items-start gap-2">
+                                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2.5">
                                                 <div className="min-w-0 flex-1">
                                                     <div className="text-[9px] md:text-[10px] font-bold text-[#0071e3] uppercase tracking-widest mb-0.5 md:mb-1 flex items-center gap-1.5">
                                                         <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0"></div>
                                                         {t('incoming.receivedFrom')}
                                                     </div>
-                                                    <h3 className="text-base md:text-2xl font-bold text-[#1d1d1f] dark:text-white truncate">
+                                                    <h3 className="text-base md:text-2xl font-bold text-[#1d1d1f] dark:text-white break-words">
                                                         {job.customerName}
                                                     </h3>
-                                                    <div className="flex items-center gap-2 mt-0.5">
+                                                    <div className="flex items-center gap-2 mt-1.5">
                                                         <span className="inline-flex items-center gap-1 px-2 py-0.5 md:px-3 md:py-1 bg-[#0071e3]/10 text-[#0071e3] rounded-full text-[11px] md:text-sm font-bold">
                                                             <Package className="w-3 h-3 md:w-4 md:h-4" />
                                                             {job.rmas.length} {job.rmas.length === 1 ? 'item' : 'items'}
@@ -156,8 +156,8 @@ export const IncomingClaims: React.FC = () => {
                                                     {/* Email hidden on mobile to save space */}
                                                     <div className="hidden md:block text-sm text-gray-500 mt-1">{job.customerEmail}</div>
                                                 </div>
-                                                <div className="text-right flex-shrink-0">
-                                                    <div className="text-[9px] md:text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">Ref ID</div>
+                                                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-1 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-none border-gray-150/10 dark:border-white/5 mt-1 sm:mt-0 w-full sm:w-auto">
+                                                    <div className="text-[9px] md:text-xs font-bold text-gray-400 uppercase tracking-wider mr-1 sm:mr-0">REF ID</div>
                                                     <div className="text-[11px] md:text-sm font-mono font-bold dark:text-gray-300 whitespace-nowrap">{job.groupId}</div>
                                                 </div>
                                             </div>

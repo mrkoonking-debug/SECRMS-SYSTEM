@@ -108,8 +108,8 @@ export const Dashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-5 md:py-8">
             <div className="flex flex-col justify-between mb-6 md:mb-12 gap-4 md:gap-6">
                 <div>
-                    <h1 className="text-lg md:text-4xl lg:text-5xl font-bold text-[#1d1d1f] dark:text-white tracking-tight mb-1">{t('dashboard.title')}</h1>
-                    <p className="text-[11px] md:text-lg text-gray-450 dark:text-gray-500">{t('dashboard.welcome')}</p>
+                    <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-[#1d1d1f] dark:text-white tracking-tight mb-1">{t('dashboard.title')}</h1>
+                    <p className="text-xs md:text-lg text-gray-450 dark:text-gray-500">{t('dashboard.welcome')}</p>
                 </div>
 
                 <div className="flex flex-col gap-3">
@@ -166,24 +166,24 @@ export const Dashboard: React.FC = () => {
                 <StatCard label={t('dashboard.overdue')} value={stats.overdueCount} icon={<AlertOctagon className="w-6 h-6 text-red-600 dark:text-red-400" />} color="bg-red-500" />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 glass-panel p-8">
-                    <div className="mb-8">
-                        <h3 className="text-xl font-bold text-[#1d1d1f] dark:text-white flex items-center gap-3"><Layers className="w-6 h-6 text-blue-500" /> สรุปงานแยกตามสถานะ</h3>
-                        <p className="text-sm text-gray-500 mt-1">จำนวนงานเคลมในแต่ละสถานะ</p>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                <div className="lg:col-span-2 glass-panel p-3.5 sm:p-6 md:p-8">
+                    <div className="mb-4 md:mb-8">
+                        <h3 className="text-base md:text-xl font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2 md:gap-3"><Layers className="w-5 h-5 md:w-6 md:h-6 text-blue-500" /> สรุปงานแยกตามสถานะ</h3>
+                        <p className="text-xs md:text-sm text-gray-500 mt-1">จำนวนงานเคลมในแต่ละสถานะ</p>
                     </div>
-                    <div className="h-80 w-full">
+                    <div className="h-64 sm:h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={statusData} barSize={60}>
+                            <BarChart data={statusData} maxBarSize={40}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(150,150,150,0.1)" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#86868b', fontWeight: 500 }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 13, fill: '#86868b', fontWeight: 500 }} allowDecimals={false} />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#86868b', fontWeight: 500 }} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#86868b', fontWeight: 500 }} allowDecimals={false} />
                                 <Tooltip
-                                    contentStyle={{ borderRadius: '16px', background: '#fff', border: 'none', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', color: '#1d1d1f' }}
-                                    cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                                    contentStyle={{ borderRadius: '16px', background: '#1e1e1f', border: '1px solid rgba(255,255,255,0.08)', color: '#fff' }}
+                                    cursor={{ fill: 'rgba(255,255,255,0.02)' }}
                                     formatter={(value: number) => [`${value} งาน`, 'จำนวน']}
                                 />
-                                <Bar dataKey="value" radius={[12, 12, 12, 12]}>
+                                <Bar dataKey="value" radius={[6, 6, 6, 6]}>
                                     {statusData.map((entry, index) => (
                                         <Cell key={index} fill={entry.fill} />
                                     ))}
@@ -192,22 +192,22 @@ export const Dashboard: React.FC = () => {
                         </ResponsiveContainer>
                     </div>
                 </div>
-                <div className="glass-panel p-8 flex flex-col">
-                    <div className="mb-6">
-                        <h3 className="text-xl font-bold text-[#1d1d1f] dark:text-white flex items-center gap-3"><AlertTriangle className="w-6 h-6 text-red-500 animate-pulse" /> {t('dashboard.urgentAttention')}</h3>
-                        <p className="text-sm text-gray-500 mt-1">Requires immediate action</p>
+                <div className="glass-panel p-3.5 sm:p-6 md:p-8 flex flex-col">
+                    <div className="mb-4 md:mb-6">
+                        <h3 className="text-base md:text-xl font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2 md:gap-3"><AlertTriangle className="w-5 h-5 md:w-6 md:h-6 text-red-500 animate-pulse" /> {t('dashboard.urgentAttention')}</h3>
+                        <p className="text-xs md:text-sm text-gray-500 mt-1">Requires immediate action</p>
                     </div>
-                    <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar max-h-[400px]">
+                    <div className="flex-1 overflow-y-auto pr-1 space-y-3.5 custom-scrollbar max-h-[300px] sm:max-h-[400px]">
                         {stats.urgentRMAs.map(rma => (
-                            <Link key={rma.id} to={`/admin/job/${encodeURIComponent(rma.quotationNumber || rma.groupRequestId || rma.id)}`} className="block bg-[#f5f5f7] dark:bg-[#2c2c2e] hover:bg-gray-100 dark:hover:bg-[#3a3a3c] p-5 rounded-3xl transition-all group">
-                                <div className="flex justify-between items-start mb-2">
-                                    <div className="font-bold text-[#1d1d1f] dark:text-white group-hover:text-[#0071e3] transition-colors">{rma.productModel}</div>
-                                    <div className="text-[10px] font-mono text-gray-400 bg-white dark:bg-black/20 px-2 py-1 rounded-lg">{rma.id}</div>
+                            <Link key={rma.id} to={`/admin/job/${encodeURIComponent(rma.quotationNumber || rma.groupRequestId || rma.id)}`} className="block bg-gray-50 dark:bg-[#1e1e1f] border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-[#282a2c] p-3.5 md:p-5 rounded-2xl md:rounded-3xl transition-all group outline-none focus:outline-none">
+                                <div className="flex justify-between items-start mb-2 gap-2">
+                                    <div className="font-bold text-xs md:text-sm text-[#1d1d1f] dark:text-white group-hover:text-[#0071e3] transition-colors line-clamp-1">{rma.productModel}</div>
+                                    <div className="text-[9px] font-mono text-gray-400 bg-white dark:bg-black/20 px-1.5 py-0.5 rounded-md flex-shrink-0">{rma.id}</div>
                                 </div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2 leading-relaxed">{rma.issueDescription}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mb-3 line-clamp-2 leading-relaxed">{rma.issueDescription}</div>
                                 <div className="flex justify-between items-center">
                                     <StatusBadge status={rma.status} />
-                                    <div className="text-[11px] font-medium text-red-500 bg-red-50 dark:bg-red-900/20 px-3 py-1 rounded-full">
+                                    <div className="text-[10px] md:text-[11px] font-medium text-red-500 bg-red-50 dark:bg-red-900/20 px-2.5 py-0.5 rounded-full">
                                         {Math.floor((Date.now() - new Date(rma.createdAt).getTime()) / (86400000))}d ago
                                     </div>
                                 </div>
