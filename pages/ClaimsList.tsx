@@ -394,11 +394,30 @@ export const ClaimsList: React.FC = () => {
                                                                   <span className="text-gray-300 dark:text-gray-700">·</span>
                                                                   <span>{jobItems.length} {t('claimsList.items')}</span>
                                                               </div>
-                                                              <div className="flex flex-wrap gap-1 mt-1.5">
-                                                                  {jobItems.slice(0, 5).map((item) => (
-                                                                      <StatusBadge key={item.id} status={item.status} isOverdue={isRMAOverdue(item)} />
+                                                              {/* Detailed Items Preview */}
+                                                              <div className="mt-2 space-y-1.5 bg-gray-50/50 dark:bg-white/[0.01] border border-gray-100 dark:border-white/5 rounded-xl p-2.5 max-w-full overflow-hidden">
+                                                                  {jobItems.slice(0, 3).map((item) => (
+                                                                      <div key={item.id} className="flex items-center justify-between text-[11px] gap-2 flex-wrap sm:flex-nowrap border-b border-gray-100/50 dark:border-white/5 last:border-0 pb-1.5 last:pb-0">
+                                                                          <div className="min-w-0 flex-1 flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
+                                                                              <span className="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">{item.brand}</span>
+                                                                              <span className="text-gray-500 dark:text-gray-400 truncate">{item.productModel}</span>
+                                                                              <span className="text-gray-400 dark:text-gray-500 font-mono text-[10px]">({item.serialNumber})</span>
+                                                                          </div>
+                                                                          <div className="flex items-center gap-2 flex-shrink-0 ml-auto sm:ml-0">
+                                                                              {item.issueDescription && (
+                                                                                  <span className="text-gray-400 dark:text-gray-500 truncate max-w-[120px] sm:max-w-[200px]" title={item.issueDescription}>
+                                                                                      อาการ: {item.issueDescription}
+                                                                                  </span>
+                                                                              )}
+                                                                              <StatusBadge status={item.status} isOverdue={isRMAOverdue(item)} />
+                                                                          </div>
+                                                                      </div>
                                                                   ))}
-                                                                  {jobItems.length > 5 && <span className="text-[10px] text-gray-400 font-medium self-center">+{jobItems.length - 5}</span>}
+                                                                  {jobItems.length > 3 && (
+                                                                      <div className="text-[10px] text-gray-400 dark:text-gray-500 font-medium pt-1 text-center border-t border-gray-100/50 dark:border-white/5">
+                                                                          + มีสินค้าอีก {jobItems.length - 3} รายการในใบงานนี้
+                                                                      </div>
+                                                                  )}
                                                               </div>
                                                           </div>
                                                       </div>

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, Minus, ScanBarcode, X, Box, Wifi, Zap, ShoppingBag, Layers, HardDrive, Check } from 'lucide-react';
+import { Plus, Minus, ScanBarcode, X, Box, Wifi, Zap, ShoppingBag, Layers, HardDrive, Check, Info } from 'lucide-react';
 import { ProductType, Team } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { GlassSelect } from './GlassSelect';
@@ -230,7 +230,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
 
                 <div className={mode === 'customer' ? 'col-span-2' : ''} data-tour="tour-accessories">
                     <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('submit.accessories')} <span className="text-red-500">*</span></label>
-                    {mode === 'customer' && <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mb-2 ml-2 flex items-center gap-1">💡 เลือกสิ่งที่ส่งมาพร้อมเครื่อง (ไม่จำเป็นต้องเลือก ข้ามได้)</p>}
+                    {mode === 'customer' && <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mb-2 ml-2 flex items-center gap-1"><Info className="w-3 h-3 text-blue-500 flex-shrink-0" /> เลือกสิ่งที่ส่งมาพร้อมเครื่อง (ไม่จำเป็นต้องเลือก ข้ามได้)</p>}
                     <div className="flex flex-wrap gap-2 mb-2">
                         <button
                             type="button"
@@ -277,7 +277,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                 <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('submit.issueDesc')} <span className="text-red-500">*</span></label>
                 <textarea value={currentItem.issue} onChange={e => setCurrentItem({ ...currentItem, issue: e.target.value })} rows={3} className={getInputClass(!!errors.issue)} placeholder={mode === 'customer' ? t('placeholders.issueCustomer') : t('placeholders.issueAdmin')} />
                 {mode === 'customer'
-                    ? <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mt-1 ml-2 flex items-center gap-1">💡 เช่น &quot;ภาพมืด&quot;, &quot;เชื่อมต่อไม่ได้&quot;, &quot;มีเสียงดัง&quot;</p>
+                    ? <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mt-1 ml-2 flex items-center gap-1"><Info className="w-3 h-3 text-blue-500 flex-shrink-0" /> เช่น &quot;ภาพมืด&quot;, &quot;เชื่อมต่อไม่ได้&quot;, &quot;มีเสียงดัง&quot;</p>
                     : <p className="text-[11px] text-gray-400 mt-1 ml-2">{t('submit.issueHint')}</p>
                 }
             </div>
@@ -288,7 +288,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                     <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('submit.deviceUsername')}</label>
                     <input value={currentItem.deviceUsername} onChange={e => setCurrentItem({ ...currentItem, deviceUsername: e.target.value })} className={getInputClass(false)} placeholder={t('placeholders.username')} />
                     {mode === 'customer'
-                        ? <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mt-1 ml-2 flex items-center gap-1">💡 ถ้ามีรหัสเข้าเครื่อง กรุณาแจ้งด้วย ช่วยให้ซ่อมเร็วขึ้น</p>
+                        ? <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mt-1 ml-2 flex items-center gap-1"><Info className="w-3 h-3 text-blue-500 flex-shrink-0" /> ถ้ามีรหัสเข้าเครื่อง กรุณาแจ้งด้วย ช่วยให้ซ่อมเร็วขึ้น</p>
                         : <p className="text-[11px] text-gray-400 mt-1 ml-2">{t('submit.usernameHint')}</p>
                     }
                 </div>
