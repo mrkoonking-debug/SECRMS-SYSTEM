@@ -1,5 +1,5 @@
 
-import { RMA, RMAStatus, DashboardStats, Team, TimelineEvent, Brand, Distributor } from '../types';
+import { RMA, RMAStatus, DashboardStats, Team, TimelineEvent, Brand, Distributor, PettyCashTransaction, PettyCashSummary } from '../types';
 import { db, auth, isConfigured, firebaseConfig } from './firebaseConfig';
 import { initializeApp, deleteApp } from 'firebase/app';
 import {
@@ -35,6 +35,8 @@ let OFFLINE_USERS: any[] = [
     team: 'ALL'
   }
 ];
+
+let OFFLINE_PETTY_CASH: PettyCashTransaction[] = [];
 
 let OFFLINE_BRANDS: any[] = BRAND_OPTIONS.filter(b => b.value !== 'Other').map((b, i) => ({ id: `brand-${i}`, value: b.value, label: b.label }));
 let OFFLINE_DISTRIBUTORS: any[] = DISTRIBUTOR_OPTIONS.filter(d => d.value !== 'Other').map((d, i) => ({ id: `dist-${i}`, value: d.value, label: d.label }));
@@ -1453,5 +1455,102 @@ export const MockDb = {
     };
     _statsCache = { key: cacheKey, data: result, ts: cacheNow };
     return result;
+  },
+
+  // ==========================================
+  // FINANCE / PETTY CASH CRUD METHODS
+  // ==========================================
+
+  async getPettyCashTransactions(): Promise<PettyCashTransaction[]> {
+    if (!isConfigured || !db) {
+      return OFFLINE_PETTY_CASH.filter(tx => !tx.isDeleted).sort((a, b) => b.date.localeCompare(a.date));
+    }
+    const q = query(collection(db, 'pettycash'), orderBy('date', 'desc'), orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    const results: PettyCashTransaction[] = [];
+    snap.forEach(docSnap => {
+      const data = docSnap.data();
+      if (!data.isDeleted) {
+        results.push({ id: docSnap.id, ...data } as PettyCashTransaction);
+      }
+    });
+    return results;
+  },
+
+  async addPettyCashTransaction(tx: Omit<PettyCashTransaction, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    const nowStr = new Date().toISOString();
+    const newTx = {
+      ...tx,
+      createdAt: nowStr,
+      updatedAt: nowStr,
+      isDeleted: false
+    };
+
+    if (!isConfigured || !db) {
+      const id = 'tx-' + Math.random().toString(36).substr(2, 9);
+      OFFLINE_PETTY_CASH.push({ id, ...newTx });
+      return id;
+    }
+
+    const docRef = await addDoc(collection(db, 'pettycash'), newTx);
+    return docRef.id;
+  },
+
+  async updatePettyCashTransaction(id: string, updates: Partial<PettyCashTransaction>): Promise<void> {
+    const nowStr = new Date().toISOString();
+    const cleanUpdates = {
+      ...updates,
+      updatedAt: nowStr
+    };
+
+    if (!isConfigured || !db) {
+      const idx = OFFLINE_PETTY_CASH.findIndex(tx => tx.id === id);
+      if (idx !== -1) {
+        OFFLINE_PETTY_CASH[idx] = { ...OFFLINE_PETTY_CASH[idx], ...cleanUpdates };
+      }
+      return;
+    }
+
+    const docRef = doc(db, 'pettycash', id);
+    await updateDoc(docRef, cleanUpdates);
+  },
+
+  async deletePettyCashTransaction(id: string): Promise<void> {
+    await MockDb.updatePettyCashTransaction(id, { isDeleted: true });
+  },
+
+  async getPettyCashSummary(): Promise<PettyCashSummary> {
+    const txs = await MockDb.getPettyCashTransactions();
+    
+    let pettyCashBalance = 0;
+    let totalPersonalAdvance = 0;
+    const personalAdvanceByStaff: Record<string, number> = {};
+
+    txs.forEach(tx => {
+      if (tx.type === 'INCOME') {
+        pettyCashBalance += tx.amount;
+      } else {
+        // EXPENSE
+        if (tx.paidBy === 'PETTY_CASH') {
+          pettyCashBalance -= tx.amount;
+        } else {
+          // PERSONAL_CASH or PERSONAL_TRANSFER (advance payments)
+          if (!tx.isReimbursed) {
+            totalPersonalAdvance += tx.amount;
+            const staff = tx.staffName || 'Unknown';
+            personalAdvanceByStaff[staff] = (personalAdvanceByStaff[staff] || 0) + tx.amount;
+          } else {
+            // Reimbursed advance acts as a deduction from the Petty Cash fund
+            pettyCashBalance -= tx.amount;
+          }
+        }
+      }
+    });
+
+    return {
+      pettyCashBalance,
+      totalPersonalAdvance,
+      personalAdvanceByStaff
+    };
   }
 };

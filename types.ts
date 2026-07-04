@@ -176,3 +176,32 @@ export interface Distributor {
   contactPerson?: string;  // ชื่อผู้ติดต่อ
   phone?: string;          // เบอร์โทรติดต่อ
 }
+
+// ===== FINANCE MODULE (แยกขาดจาก RMA) =====
+
+export interface PettyCashTransaction {
+  id: string;
+  date: string;                    // YYYY-MM-DD
+  type: 'INCOME' | 'EXPENSE';
+  amount: number;                  // จำนวนเงิน (บาท)
+  description: string;             // เช่น "ค่าส่งปลายทาง Hikvision"
+  category?: string;               // หมวดหมู่ เช่น 'ค่าขนส่ง', 'ค่าบรรจุภัณฑ์', 'เติมเงินกองกลาง'
+  paidBy: 'PETTY_CASH' | 'PERSONAL_CASH' | 'PERSONAL_TRANSFER';
+  staffName: string;               // ใครเป็นคนจ่าย/รับเงิน
+  isReimbursed: boolean;           // สำรองจ่าย → คืนเงินแล้วหรือยัง?
+  reimbursedAt?: string;
+  reimbursedBy?: string;           // ใครเป็นคนอนุมัติคืน
+  receiptUrl?: string;             // รูปใบเสร็จ/สลิป (ถ้ามี)
+  note?: string;                   // หมายเหตุเพิ่มเติม
+  refRmaId?: string;               // รหัส RMA ที่เกี่ยวข้อง (Optional)
+  isDeleted?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PettyCashSummary {
+  pettyCashBalance: number;        // Current cash in the common box
+  totalPersonalAdvance: number;    // Unreimbursed personal advances (to be repaid)
+  personalAdvanceByStaff: Record<string, number>; // Breakdown per employee
+}
+

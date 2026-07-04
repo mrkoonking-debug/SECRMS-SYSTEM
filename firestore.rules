@@ -59,5 +59,13 @@ service cloud.firestore {
     match /mail/{mailId} {
       allow create: if isAuth();
     }
+
+    // 6. Petty Cash Collection — staff read/write, admin delete
+    match /pettycash/{txId} {
+      allow read: if isAuth();
+      allow create: if isAuth();
+      allow update: if isAuth();
+      allow delete: if isAdmin();
+    }
   }
 }

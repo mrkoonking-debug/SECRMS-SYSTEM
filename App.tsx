@@ -27,6 +27,7 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ defa
 const ReportsPage = lazy(() => import('./pages/ReportsPage').then(m => ({ default: m.ReportsPage })));
 const IncomingClaims = lazy(() => import('./pages/IncomingClaims').then(m => ({ default: m.IncomingClaims })));
 const EditRMA = lazy(() => import('./pages/EditRMA').then(m => ({ default: m.EditRMA })));
+const FinanceLedger = lazy(() => import('./pages/FinanceLedger').then(m => ({ default: m.FinanceLedger })));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-full w-full">
@@ -75,6 +76,7 @@ const AppContent: React.FC = () => {
                   <Route path="/admin/distributors" element={<ProtectedRoute><DistributorManagement /></ProtectedRoute>} />
                   <Route path="/admin/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
                   <Route path="/admin/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+                  <Route path="/admin/finance" element={<ProtectedRoute><FinanceLedger /></ProtectedRoute>} />
                 </Routes>
               </Suspense>
             </div>

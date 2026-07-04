@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, useRef } from 'react';
-import { ShieldCheck, LogOut, Globe, LayoutGrid, List, PlusCircle, Plus, User, Users, Menu, X, Truck, Settings, BarChart3, Tag, Building2, Bell, History, RefreshCw } from 'lucide-react';
+import { ShieldCheck, LogOut, Globe, LayoutGrid, List, PlusCircle, Plus, User, Users, Menu, X, Truck, Settings, BarChart3, Tag, Building2, Bell, History, RefreshCw, Wallet } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -214,6 +214,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
           <NavLink to="/admin/rmas" label={t('nav.claims')} icon={List} />
           <NavLink to="/admin/submit" label={t('nav.newRequest')} icon={PlusCircle} />
           <NavLink to="/admin/reports" label={t('nav.reports')} icon={BarChart3} />
+          <NavLink to="/admin/finance" label="การเงิน / บันทึกรายจ่าย" icon={Wallet} />
 
           {user.role === 'admin' && (
             <>
@@ -346,12 +347,14 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
                     <NavLink to="/admin/distributors" label={t('nav.distributors')} icon={Building2} />
                     <NavLink to="/admin/settings" label={t('nav.settings')} icon={Settings} />
                     <NavLink to="/admin/reports" label={t('nav.reports')} icon={BarChart3} />
+                    <NavLink to="/admin/finance" label="การเงิน / บันทึกรายจ่าย" icon={Wallet} />
                   </>
                 ) : (
                   <>
                     <div className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-2 mb-1.5">การจัดการ</div>
                     <NavLink to="/admin/reports" label={t('nav.reports')} icon={BarChart3} />
                     <NavLink to="/admin/settings" label={t('nav.settings')} icon={Settings} />
+                    <NavLink to="/admin/finance" label="การเงิน / บันทึกรายจ่าย" icon={Wallet} />
                   </>
                 )}
               </div>
