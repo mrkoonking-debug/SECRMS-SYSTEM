@@ -191,7 +191,7 @@ export const FinanceLedger: React.FC = () => {
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 animate-fade-in px-4 pb-20 md:pb-8">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 bg-white/70 dark:bg-[#1e1e24]/40 border border-gray-200/50 dark:border-white/[0.08] rounded-2xl p-4 shadow-[0_8px_32px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-2xl p-4 backdrop-blur-xl">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
             <Landmark className="w-5 h-5" />
@@ -222,7 +222,7 @@ export const FinanceLedger: React.FC = () => {
       {/* Summary Widgets Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {/* Petty Cash Balance */}
-        <div className="bg-white/70 dark:bg-[#1e1e24]/45 border border-gray-200/50 dark:border-white/[0.08] rounded-2xl p-3.5 sm:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
+        <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
           <div className="absolute right-3 top-3 text-emerald-500 bg-emerald-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
             <Coins className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
@@ -241,7 +241,7 @@ export const FinanceLedger: React.FC = () => {
         {(() => {
           const netBalance = summary.pettyCashBalance - summary.totalPersonalAdvance;
           return (
-            <div className="bg-white/70 dark:bg-[#1e1e24]/45 border border-gray-200/50 dark:border-white/[0.08] rounded-2xl p-3.5 sm:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
+            <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
               <div className="absolute right-3 top-3 text-blue-500 bg-blue-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
                 <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
@@ -259,7 +259,7 @@ export const FinanceLedger: React.FC = () => {
         })()}
 
         {/* Unpaid Advance Payments */}
-        <div className="bg-white/70 dark:bg-[#1e1e24]/45 border border-gray-200/50 dark:border-white/[0.08] rounded-2xl p-3.5 sm:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
+        <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
           <div className="absolute right-3 top-3 text-orange-500 bg-orange-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
             <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
@@ -275,7 +275,7 @@ export const FinanceLedger: React.FC = () => {
         </div>
 
         {/* Staff Breakdown settlement card */}
-        <div className="bg-white/70 dark:bg-[#1e1e24]/45 border border-gray-200/50 dark:border-white/[0.08] rounded-2xl p-3.5 sm:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px]">
+        <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px]">
           <span className="text-[9px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block mb-1 truncate whitespace-nowrap">ยอดค้างคืนแยกรายคน</span>
           <div className="flex-1 overflow-y-auto max-h-[60px] sm:max-h-[85px] space-y-1 custom-scrollbar pr-0.5">
             {Object.keys(summary.personalAdvanceByStaff).length === 0 ? (
@@ -301,7 +301,7 @@ export const FinanceLedger: React.FC = () => {
       </div>
 
       {/* Filter and Table Section */}
-      <div className="bg-white/70 dark:bg-[#1e1e24]/40 border border-gray-200/50 dark:border-white/[0.08] rounded-3xl p-4 md:p-6 shadow-[0_8px_32px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl space-y-6">
+      <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-4 md:p-6 backdrop-blur-xl space-y-6">
         {/* Filters Row */}
         <div className="flex flex-col xl:flex-row xl:items-center gap-4">
           {/* Search bar */}

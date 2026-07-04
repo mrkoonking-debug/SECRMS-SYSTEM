@@ -154,13 +154,13 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           {/* Transaction Type Selector */}
           <div>
             <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1">ประเภทรายการ</label>
-            <div className="relative flex bg-gray-100 dark:bg-black/20 p-1 rounded-full w-full h-11 items-center border border-gray-200/20 dark:border-white/5 select-none">
+            <div className="relative flex bg-gray-100 dark:bg-black/20 p-0.5 rounded-full w-full h-11 items-center border border-gray-200/20 dark:border-white/5 select-none">
               {/* Sliding Highlight Pill */}
               <div 
-                className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full transition-all duration-300 ease-out shadow-sm bg-white dark:bg-[#2c2c2e] border border-gray-200/20 dark:border-white/5 ${
+                className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded-full transition-all duration-300 ease-out shadow-sm bg-white dark:bg-[#2c2c2e] border border-gray-200/20 dark:border-white/5 ${
                   type === 'EXPENSE' 
-                    ? 'left-1' 
-                    : 'left-[calc(50%+3px)]'
+                    ? 'left-0.5' 
+                    : 'left-1/2'
                 }`}
               />
               
