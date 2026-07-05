@@ -69,10 +69,7 @@ export const ClaimsList: React.FC = () => {
         const saved = sessionStorage.getItem('rmas_expandedDates');
         return saved ? new Set(JSON.parse(saved)) : new Set(['Today', 'Yesterday', 'This Week']);
     });
-    const [isTeamCExpanded, setIsTeamCExpanded] = useState(() => sessionStorage.getItem('rmas_isTeamCExpanded') === 'true');
-    const [hasMore, setHasMore] = useState(false);
-    const [lastDoc, setLastDoc] = useState<any>(null);
-    const [loadingMore, setLoadingMore] = useState(false);
+        const [isTeamCExpanded, setIsTeamCExpanded] = useState(() => sessionStorage.getItem('rmas_isTeamCExpanded') === 'true');
     const { t, language } = useLanguage();
     const navigate = useNavigate();
     const searchTimerRef = useRef<any>(null);
@@ -106,38 +103,41 @@ export const ClaimsList: React.FC = () => {
     }, [isTeamCExpanded]);
 
     useEffect(() => {
-        const fetchInitial = async () => {
+        const fetchInitialAndRemaining = async () => {
             try {
+                // 1. Initial Load: Fetch first 50 items and display immediately
                 const result = await MockDb.getRMAsPaginated(PAGE_SIZE, null);
                 const assignedRMAs = result.rmas.filter(c => c && c.id && c.team && (c.team as any) !== 'UNASSIGNED');
                 setRMAs(assignedRMAs);
-                setLastDoc(result.lastDoc);
-                setHasMore(result.hasMore);
+                setLoading(false); // Render initial screen instantly
+                
+                // 2. Background Load: Fetch remaining items recursively
+                if (result.hasMore) {
+                    let cursor = result.lastDoc;
+                    let more = true;
+                    
+                    while (more) {
+                        const nextResult = await MockDb.getRMAsPaginated(PAGE_SIZE, cursor);
+                        const nextAssigned = nextResult.rmas.filter(c => c && c.id && c.team && (c.team as any) !== 'UNASSIGNED');
+                        if (nextAssigned.length > 0) {
+                            setRMAs(prev => {
+                                const existingIds = new Set(prev.map(r => r.id));
+                                const newUnique = nextAssigned.filter(r => !existingIds.has(r.id));
+                                return [...prev, ...newUnique];
+                            });
+                        }
+                        cursor = nextResult.lastDoc;
+                        more = nextResult.hasMore;
+                    }
+                }
             } catch (err: unknown) {
                 console.error('ClaimsList fetch failed:', err);
                 setError(err instanceof Error ? err.message : 'ไม่สามารถโหลดข้อมูลได้');
-            } finally {
                 setLoading(false);
             }
         };
-        fetchInitial();
+        fetchInitialAndRemaining();
     }, []);
-
-    const loadMore = async () => {
-        if (loadingMore || !hasMore) return;
-        setLoadingMore(true);
-        try {
-            const result = await MockDb.getRMAsPaginated(PAGE_SIZE, lastDoc);
-            const assignedRMAs = result.rmas.filter(c => c && c.id && c.team && (c.team as any) !== 'UNASSIGNED');
-            setRMAs(prev => [...prev, ...assignedRMAs]);
-            setLastDoc(result.lastDoc);
-            setHasMore(result.hasMore);
-        } catch (err) {
-            console.error('Load more failed:', err);
-        } finally {
-            setLoadingMore(false);
-        }
-    };
 
 
     const toggleDateGroup = (dateLabel: string) => {
@@ -466,22 +466,6 @@ export const ClaimsList: React.FC = () => {
                             </div>
                         );
                     })
-                )}
-                {hasMore && (
-                    <div className="flex justify-center mt-6">
-                        <button
-                            onClick={loadMore}
-                            disabled={loadingMore}
-                            className="px-6 py-2.5 bg-white dark:bg-[#1c1c1e] hover:bg-gray-100 dark:hover:bg-white/[0.04] border border-gray-200 dark:border-white/10 rounded-xl text-sm font-bold shadow-sm transition-all flex items-center gap-2 text-gray-700 dark:text-gray-300 disabled:opacity-50"
-                        >
-                            {loadingMore ? (
-                                <RefreshCw className="w-4 h-4 animate-spin text-gray-400" />
-                            ) : (
-                                <ChevronDown className="w-4 h-4 text-gray-500" />
-                            )}
-                            โหลดรายการเพิ่มเติม
-                        </button>
-                    </div>
                 )}
             </div>
 
