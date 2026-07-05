@@ -101,7 +101,7 @@ export const LogsManagement: React.FC = () => {
           </div>
         ) : (
           filteredLogs.map((log) => (
-            <div key={log.id} className="glass-panel p-6 hover:bg-gray-50 dark:hover:bg-white/5 transition-all group border border-gray-100 dark:border-[#333]">
+            <div key={log.id} className="glass-panel p-4 md:p-5 hover:bg-gray-50 dark:hover:bg-white/5 transition-all group border border-gray-100 dark:border-[#333]">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-start gap-4 flex-1">
                   <div className="mt-1 p-2 bg-gray-100 dark:bg-white/10 rounded-xl flex-shrink-0">

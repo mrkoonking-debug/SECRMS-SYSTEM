@@ -221,7 +221,7 @@ export const UserManagement: React.FC = () => {
                 const isSelf = MockDb.getCurrentUser()?.uid === user.uid;
 
                 return (
-                  <div key={user.uid} className={`glass-panel p-5 transition-all ${isEditing ? 'ring-2 ring-[#0071e3]/30 shadow-lg' : ''}`}>
+                  <div key={user.uid} className={`glass-panel p-3.5 md:p-4.5 transition-all ${isEditing ? 'ring-2 ring-[#0071e3]/30 shadow-lg' : ''}`}>
                     {isEditing ? (
                       // ── Edit Mode ──
                       <div className="space-y-3 animate-fade-in">
@@ -288,35 +288,35 @@ export const UserManagement: React.FC = () => {
                     ) : (
                       // ── View Mode ──
                       <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${user.role === 'admin' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
-                            {user.role === 'admin' ? <Shield className="w-6 h-6" /> : <User className="w-6 h-6" />}
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${user.role === 'admin' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'} flex-shrink-0`}>
+                            {user.role === 'admin' ? <Shield className="w-5 h-5" /> : <User className="w-5 h-5" />}
                           </div>
                           <div>
-                            <div className="font-bold dark:text-white">{user.name}</div>
-                            <div className="text-xs text-gray-500">{user.email}</div>
-                            <div className="mt-1 flex gap-2 flex-wrap">
-                              <span className={`text-[10px] px-2 py-0.5 rounded uppercase font-bold ${getRoleBadge(user.role)}`}>{user.role}</span>
-                              <span className={`text-[10px] px-2 py-0.5 rounded uppercase font-bold ${getTeamBadge(user.team)}`}>{user.team}</span>
-                              {user.canAccessFinance && <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-amber-100 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400">FINANCE</span>}
+                            <div className="font-bold text-sm md:text-base dark:text-white">{user.name}</div>
+                            <div className="text-[11px] text-gray-500 leading-tight truncate max-w-[150px] sm:max-w-[200px]">{user.email}</div>
+                            <div className="mt-1 flex gap-1.5 flex-wrap">
+                              <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold ${getRoleBadge(user.role)}`}>{user.role}</span>
+                              <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold ${getTeamBadge(user.team)}`}>{user.team}</span>
+                              {user.canAccessFinance && <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-amber-100 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400">FINANCE</span>}
                             </div>
                           </div>
                         </div>
                         {!isSelf && (
-                          <div className="flex gap-1 flex-shrink-0">
+                          <div className="flex gap-1 flex-shrink-0 ml-2">
                             <button
                               onClick={() => startEdit(user)}
-                              className="p-2 text-gray-400 hover:text-blue-500 transition-colors"
+                              className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors"
                               title="แก้ไขสิทธิ์"
                             >
-                              <Edit2 className="w-4.5 h-4.5" />
+                              <Edit2 className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDelete(user.uid)}
-                              className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                              className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"
                               title="ลบพนักงาน"
                             >
-                              <Trash2 className="w-4.5 h-4.5" />
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
                         )}

@@ -149,7 +149,7 @@ export const DistributorManagement: React.FC = () => {
         {loading ? <div className="p-20 text-center"><Loader2 className="animate-spin mx-auto" /></div> : (
           <div className="divide-y divide-gray-100 dark:divide-[#333]">
             {distributors.map((d) => (
-              <div key={d.id} className="p-6 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+              <div key={d.id} className="p-4 md:p-5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                 {editingId === d.id ? (
                   <div className="space-y-3 animate-fade-in">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -175,10 +175,10 @@ export const DistributorManagement: React.FC = () => {
                 ) : (
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="font-bold text-lg dark:text-white">{d.value}</div>
-                      <div className="text-sm text-gray-500">{d.label}</div>
+                      <div className="font-bold text-base dark:text-white">{d.value}</div>
+                      <div className="text-xs md:text-sm text-gray-550 dark:text-gray-450">{d.label}</div>
                       {(d.address || d.contactPerson || d.phone) && (
-                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400">
+                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] md:text-xs text-gray-450 dark:text-gray-500">
                           {d.contactPerson && (
                             <span className="flex items-center gap-1"><User className="w-3 h-3" /> {d.contactPerson}</span>
                           )}
@@ -192,8 +192,8 @@ export const DistributorManagement: React.FC = () => {
                       )}
                     </div>
                     <div className="flex gap-2 flex-shrink-0 ml-4">
-                      <button onClick={() => startEdit(d)} className="p-2 text-gray-400 hover:text-blue-500 transition-colors"><Edit2 className="w-5 h-5" /></button>
-                      <button onClick={() => handleDelete(d.id)} className="p-2 text-gray-300 hover:text-red-500 transition-colors"><Trash2 className="w-5 h-5" /></button>
+                      <button onClick={() => startEdit(d)} className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors"><Edit2 className="w-4 h-4" /></button>
+                      <button onClick={() => handleDelete(d.id)} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   </div>
                 )}
