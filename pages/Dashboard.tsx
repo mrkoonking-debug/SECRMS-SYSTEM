@@ -142,17 +142,19 @@ export const Dashboard: React.FC = () => {
                     {isGroupCActive && (
                         <div className="bg-gray-100 dark:bg-white/[0.04] p-0.5 rounded-full grid grid-cols-3 items-center relative w-full max-w-[280px] md:max-w-[360px] flex-shrink-0 animate-fade-in">
                             {/* Sliding Indicator for Sub Teams */}
-                            <div 
-                              className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform translate-z-0 ${getSubTeamColorClass(selectedTeam)}`}
-                              style={{
-                                width: 'calc(33.333% - 4px)',
-                                left: `calc(${
-                                  (selectedTeam === Team.TEAM_C ? 0 : 
-                                   selectedTeam === Team.TEAM_E ? 1 : 
-                                   selectedTeam === Team.TEAM_G ? 2 : 0) * 33.333
-                                }% + 2px)`
-                              }}
-                            />
+                            {selectedTeam !== 'GROUP_C' && (
+                                <div 
+                                  className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform translate-z-0 ${getSubTeamColorClass(selectedTeam)}`}
+                                  style={{
+                                    width: 'calc(33.333% - 4px)',
+                                    left: `calc(${
+                                      (selectedTeam === Team.TEAM_C ? 0 : 
+                                       selectedTeam === Team.TEAM_E ? 1 : 
+                                       selectedTeam === Team.TEAM_G ? 2 : 0) * 33.333
+                                    }% + 2px)`
+                                  }}
+                                />
+                            )}
                             <button onClick={() => setSelectedTeam(Team.TEAM_C)} className={`relative z-10 py-1.5 rounded-full text-[10px] md:text-xs font-semibold text-center transition-colors duration-200 outline-none focus:outline-none ${selectedTeam === Team.TEAM_C ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>Network</button>
                             <button onClick={() => setSelectedTeam(Team.TEAM_E)} className={`relative z-10 py-1.5 rounded-full text-[10px] md:text-xs font-semibold text-center transition-colors duration-200 outline-none focus:outline-none ${selectedTeam === Team.TEAM_E ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>UPS</button>
                             <button onClick={() => setSelectedTeam(Team.TEAM_G)} className={`relative z-10 py-1.5 rounded-full text-[10px] md:text-xs font-semibold text-center transition-colors duration-200 outline-none focus:outline-none ${selectedTeam === Team.TEAM_G ? 'text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'}`}>Online</button>

@@ -281,7 +281,7 @@ export const ClaimsList: React.FC = () => {
                         <div className="hidden xl:block h-5 w-px bg-gray-200 dark:bg-white/10 flex-shrink-0"></div>
                         
                         {/* iOS Segmented Control style with Sliding Indicator */}
-                        <div className="bg-gray-100 dark:bg-[#2c2c2e]/60 border border-gray-200/50 dark:border-white/[0.04] p-0.5 rounded-full grid grid-cols-4 items-center relative w-full xl:max-w-[420px] flex-shrink-0">
+                        <div className="bg-gray-100 dark:bg-[#2c2c2e]/60 border border-gray-200/50 dark:border-white/[0.04] p-0.5 rounded-full grid grid-cols-4 items-center relative w-full xl:w-[560px] flex-shrink-0">
                             {/* Sliding Indicator with Dynamic Colors */}
                             <div 
                               className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform translate-z-0 ${getStatusColorClass(statusFilter)}`}

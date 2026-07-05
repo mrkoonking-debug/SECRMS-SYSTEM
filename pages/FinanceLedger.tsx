@@ -311,7 +311,7 @@ export const FinanceLedger: React.FC = () => {
               type="text"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-8.5 pr-4 py-1.5 bg-gray-50/50 dark:bg-[#1c1c1e]/60 border border-gray-200/50 dark:border-white/5 rounded-xl text-xs outline-none focus:border-[#0071e3] focus:bg-white dark:focus:bg-[#1c1c1e] text-[#1d1d1f] dark:text-white transition-all shadow-sm"
+              className="w-full pl-9 pr-4 py-1.5 bg-gray-50/50 dark:bg-[#1c1c1e]/60 border border-gray-200/50 dark:border-white/5 rounded-xl text-xs outline-none focus:border-[#0071e3] focus:bg-white dark:focus:bg-[#1c1c1e] text-[#1d1d1f] dark:text-white transition-all shadow-sm"
               placeholder="ค้นหาข้อความ..."
             />
           </div>
