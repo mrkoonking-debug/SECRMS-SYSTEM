@@ -54,11 +54,11 @@ const AppContent: React.FC = () => {
 
 
   return (
-    <div className="relative w-full h-screen flex flex-col overflow-hidden bg-gradient-to-br from-[#f5f5f7] via-[#eef0f5] to-[#f0f2f8] dark:bg-gradient-to-br dark:from-[#131314] dark:via-[#0e0e0f] dark:to-[#131314] transition-colors duration-300">
+    <div className="relative w-full h-screen h-[100dvh] flex flex-col overflow-hidden bg-gradient-to-br from-[#f5f5f7] via-[#eef0f5] to-[#f0f2f8] dark:bg-gradient-to-br dark:from-[#131314] dark:via-[#0e0e0f] dark:to-[#131314] transition-colors duration-300">
       {isAdmin ? (
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden w-full h-full md:p-4 md:gap-4">
           <Navbar embedded={true} />
-          <main className="flex-1 overflow-y-auto overflow-x-hidden relative bg-[#f2f2f7]/80 dark:bg-[#17171e]/80 backdrop-blur-xl md:rounded-2xl border-t md:border border-gray-200/50 dark:border-white/[0.08] shadow-sm custom-scrollbar pb-24 md:pb-0">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden relative bg-[#f2f2f7]/80 dark:bg-[#17171e]/80 backdrop-blur-xl md:rounded-2xl border-t md:border border-gray-200/50 dark:border-white/[0.08] shadow-sm custom-scrollbar pb-36 md:pb-0">
             {/* Ambient Background Glows inspired by modern UI design */}
             <div className="absolute bottom-[-150px] left-[-150px] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-amber-500/15 via-orange-500/5 to-transparent blur-[120px] pointer-events-none -z-10 dark:opacity-75 opacity-25" />
             <div className="absolute top-[-200px] right-[-150px] w-[450px] h-[450px] rounded-full bg-blue-500/10 dark:bg-blue-600/[0.05] blur-[120px] pointer-events-none -z-10 dark:opacity-70 opacity-20" />

@@ -748,6 +748,7 @@ export const JobDetail: React.FC = () => {
                                          </button>
                                          )}
 
+{item.status !== RMAStatus.CANCELLED && (
                                         <button
                                             onClick={() => handleEditClick(item)}
                                             className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg text-gray-400 hover:text-[#0071e3] transition-colors"
@@ -755,6 +756,7 @@ export const JobDetail: React.FC = () => {
                                         >
                                             <Edit3 className="w-4 h-4" />
                                         </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
