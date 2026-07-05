@@ -1,6 +1,6 @@
 
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 const env = import.meta.env;
@@ -25,7 +25,11 @@ let auth: any = null;
 if (isConfigured) {
   try {
     const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
+    });
     auth = getAuth(app);
     console.log("🚀 SEC-CLAIM: Connected to Firebase Cloud");
   } catch (e) {

@@ -686,17 +686,44 @@ export const MockDb = {
     if (_navCountsCache && cacheNow - _navCountsCache.ts < NAV_COUNTS_CACHE_TTL_MS) {
       return _navCountsCache.data;
     }
-    const all = await MockDb.getRMAs();
-    const now = Date.now();
+
     let unassigned = 0;
     let overdue = 0;
-    for (const c of all) {
-      if (!c.team || (c.team as any) === 'UNASSIGNED') unassigned++;
-      if (![RMAStatus.CLOSED, RMAStatus.CANCELLED, RMAStatus.REPAIRED, RMAStatus.REJECTED, RMAStatus.RETURNED_FROM_VENDOR].includes(c.status)) {
-        const daysOpen = Math.floor((now - new Date(c.createdAt).getTime()) / 86400000);
-        if (daysOpen > OVERDUE_DAYS) overdue++;
+    const now = Date.now();
+    let serverQuerySucceeded = false;
+
+    if (isConfigured && db) {
+      try {
+        const unassignedQuery = query(
+          collection(db, 'rmas'),
+          where('team', '==', 'UNASSIGNED'),
+          where('isDeleted', '==', false)
+        );
+        const unassignedSnap = await getCountFromServer(unassignedQuery);
+        unassigned = unassignedSnap.data().count;
+        serverQuerySucceeded = true;
+      } catch (err) {
+        console.error("Failed to get unassigned count from server:", err);
       }
     }
+
+    try {
+      const all = await MockDb.getRMAs();
+      
+      if (!serverQuerySucceeded) {
+        unassigned = all.filter(c => !c.team || (c.team as any) === 'UNASSIGNED').length;
+      }
+
+      for (const c of all) {
+        if (![RMAStatus.CLOSED, RMAStatus.CANCELLED, RMAStatus.REPAIRED, RMAStatus.REJECTED, RMAStatus.RETURNED_FROM_VENDOR].includes(c.status)) {
+          const daysOpen = Math.floor((now - new Date(c.createdAt).getTime()) / 86400000);
+          if (daysOpen > OVERDUE_DAYS) overdue++;
+        }
+      }
+    } catch (err) {
+      console.error("getNavCounts fallback failed:", err);
+    }
+
     const data = { unassigned, overdue };
     _navCountsCache = { data, ts: cacheNow };
     return data;
