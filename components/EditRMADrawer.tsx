@@ -302,6 +302,17 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             newDiffs.push({ field: 'อุปกรณ์ที่ส่งเคลม', old: fmtSent(rma.distributorSentItems || []), new: fmtSent(formData.distributorSentItems || []) });
         }
 
+        // Attachments (รูปภาพแนบ)
+        const oldAtts = (rma.attachments || []).map(a => a.id).sort().join(',');
+        const newAtts = (formData.attachments || []).map(a => a.id).sort().join(',');
+        if (oldAtts !== newAtts) {
+            newDiffs.push({
+                field: 'รูปภาพแนบตัวเครื่อง/อาการเสีย',
+                old: `${(rma.attachments || []).length} รูป`,
+                new: `${(formData.attachments || []).length} รูป`
+            });
+        }
+
         return newDiffs;
     };
 
