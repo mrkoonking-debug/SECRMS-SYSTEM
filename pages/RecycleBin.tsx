@@ -11,6 +11,8 @@ export const RecycleBin: React.FC = () => {
   const [search, setSearch] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const navigate = useNavigate();
+  const currentUser = MockDb.getCurrentUser();
+  const isAdmin = currentUser?.role === 'admin';
 
   const fetchDeletedRMAs = async () => {
     setLoading(true);
@@ -25,13 +27,12 @@ export const RecycleBin: React.FC = () => {
   };
 
   useEffect(() => {
-    const user = MockDb.getCurrentUser();
-    if (!user || user.role !== 'admin') {
-      navigate('/admin/dashboard', { replace: true });
+    if (!currentUser) {
+      navigate('/login', { replace: true });
       return;
     }
     fetchDeletedRMAs();
-  }, [navigate]);
+  }, [navigate, currentUser]);
 
   const handleRestore = async (id: string) => {
     if (!confirm('คุณต้องการกู้คืนรายการเคลมนี้กลับสู่รายการปกติใช่หรือไม่?')) return;
@@ -90,7 +91,7 @@ export const RecycleBin: React.FC = () => {
           <h1 className="text-3xl font-bold text-[#1d1d1f] dark:text-white mb-2 flex items-center gap-2">
             <Trash2 className="w-8 h-8 text-red-500" /> ถังขยะระบบ (Recycle Bin)
           </h1>
-          <p className="text-gray-500">จัดการและกู้คืนรายการใบเคลมสินค้าที่ถูกลบออกจากระบบ (สิทธิ์ Admin เท่านั้น)</p>
+          <p className="text-gray-500">จัดการและกู้คืนรายการใบเคลมสินค้าที่ถูกลบออกจากระบบ</p>
         </div>
         <button
           onClick={() => navigate('/admin/settings')}
@@ -153,6 +154,7 @@ export const RecycleBin: React.FC = () => {
                   )}
                   กู้คืนข้อมูล
                 </button>
+                {isAdmin && (
                 <button
                   onClick={() => handlePermanentDelete(rma.id)}
                   disabled={actionLoading !== null}
@@ -162,6 +164,7 @@ export const RecycleBin: React.FC = () => {
                   <Trash2 className="w-4 h-4" />
                   ลบถาวร
                 </button>
+                )}
               </div>
             </div>
           ))

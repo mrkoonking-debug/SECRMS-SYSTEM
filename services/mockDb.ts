@@ -1268,7 +1268,7 @@ export const MockDb = {
 
   getDeletedRMAs: async (): Promise<RMA[]> => {
     if (!isConfigured || !db) throw new Error("Firebase Disconnected");
-    if (currentUser?.role !== 'admin') throw new Error('Unauthorized: ต้องเป็น admin เท่านั้นถึงจะจัดการถังขยะได้');
+    if (!currentUser) throw new Error('Unauthorized: ต้องเข้าสู่ระบบก่อน');
     try {
       const q = query(collection(db, 'rmas'), where('isDeleted', '==', true));
       const snap = await getDocs(q);
@@ -1281,7 +1281,7 @@ export const MockDb = {
 
   restoreRMA: async (id: string) => {
     if (!isConfigured || !db) throw new Error("Firebase Disconnected");
-    if (currentUser?.role !== 'admin') throw new Error('Unauthorized: ต้องเป็น admin เท่านั้นถึงจะกู้คืนข้อมูลได้');
+    if (!currentUser) throw new Error('Unauthorized: ต้องเข้าสู่ระบบก่อน');
     try {
       const event = {
         id: `evt-${Date.now()}`,
