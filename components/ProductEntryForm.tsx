@@ -21,9 +21,7 @@ const getInputClass = (hasError: boolean) => `
   text-[#1d1d1f] dark:text-white
   placeholder-gray-400 dark:placeholder-gray-500
   focus:bg-white dark:focus:bg-[#1e1e1f]
-  focus:ring-2 focus:ring-[#0071e3] focus:border-[#0071e3]
-  hover:bg-gray-50 dark:hover:bg-[#282a2c]
-  hover:border-blue-400/50 dark:hover:border-white/30
+  focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]
   ${hasError ? 'border-red-500 focus:ring-red-500' : ''}
 `;
 
