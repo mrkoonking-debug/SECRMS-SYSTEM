@@ -349,19 +349,55 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
     };
 
     const handleFinalSave = async () => {
+        if (!formData) return;
         setIsSaving(true);
-        const updates: Partial<RMA> = {
-            ...formData,
-            team: tempTeam as Team,
-            brand: formData.brand === 'Other' ? customBrand : formData.brand,
-            distributor: formData.distributor === 'Other' ? customDist : formData.distributor,
+        const updates: Partial<RMA> = {};
+
+        // Helper to check and assign if field changed
+        const checkAndAssign = (key: keyof RMA, val: any) => {
+            if (JSON.stringify(val) !== JSON.stringify(rma[key])) {
+                updates[key] = val as any;
+            }
         };
 
+        checkAndAssign('issueDescription', formData.issueDescription);
+        checkAndAssign('deviceUsername', formData.deviceUsername);
+        checkAndAssign('devicePassword', formData.devicePassword);
+        
+        const currentBrand = formData.brand === 'Other' ? customBrand : formData.brand;
+        checkAndAssign('brand', currentBrand);
+        
+        checkAndAssign('productModel', formData.productModel);
+        checkAndAssign('serialNumber', formData.serialNumber);
+        
+        const currentDist = formData.distributor === 'Other' ? customDist : formData.distributor;
+        checkAndAssign('distributor', currentDist);
+        
+        checkAndAssign('team', tempTeam as Team);
+        checkAndAssign('status', formData.status);
+        checkAndAssign('delayReason', formData.delayReason);
+        checkAndAssign('notes', formData.notes);
+        checkAndAssign('accessories', formData.accessories);
+        checkAndAssign('distributorSentItems', formData.distributorSentItems);
+        checkAndAssign('attachments', formData.attachments);
+
+        if (formData.repairCosts) {
+            const costDiffers = JSON.stringify(formData.repairCosts) !== JSON.stringify(rma.repairCosts);
+            if (costDiffers) {
+                updates.repairCosts = formData.repairCosts;
+            }
+        }
+
         if (formData.resolution) {
-            updates.resolution = {
+            const currentAction = formData.resolution.actionTaken === 'Other' ? customAction : formData.resolution.actionTaken;
+            const updatedResolution = {
                 ...formData.resolution,
-                actionTaken: formData.resolution.actionTaken === 'Other' ? customAction : (formData.resolution.actionTaken || '')
+                actionTaken: currentAction || ''
             };
+            const resDiffers = JSON.stringify(updatedResolution) !== JSON.stringify(rma.resolution);
+            if (resDiffers) {
+                updates.resolution = updatedResolution;
+            }
         }
 
         // Firebase Firestore does not accept 'undefined' values.

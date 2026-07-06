@@ -5,7 +5,7 @@ import { initializeApp, deleteApp } from 'firebase/app';
 import {
   collection, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc,
   query, where, orderBy, Timestamp, limit, serverTimestamp, startAfter, QueryDocumentSnapshot,
-  getCountFromServer, runTransaction, addDoc
+  getCountFromServer, runTransaction, addDoc, writeBatch
 } from 'firebase/firestore';
 import {
   signInWithEmailAndPassword, signOut, onAuthStateChanged,
@@ -14,6 +14,7 @@ import {
 import { BRAND_OPTIONS, DISTRIBUTOR_OPTIONS } from '../constants/options';
 import { MAX_LOGIN_ATTEMPTS, LOGIN_LOCK_DURATION_MS, STATS_CACHE_TTL_MS, NAV_COUNTS_CACHE_TTL_MS, BATCH_SIZE, MAX_ID_RETRIES, OVERDUE_DAYS, AGING_BUCKET_1, AGING_BUCKET_2 } from '../constants/config';
 import { withRetry } from './retry';
+import { flattenRMAUpdates } from './flattenUpdates';
 
 import { SEED_CLAIMS } from './seedData';
 
@@ -243,16 +244,31 @@ export const MockDb = {
   },
   updateSettings: async (s: any) => {
     if (!isConfigured || !db) throw new Error("Firebase Not Configured");
+    if (currentUser?.role !== 'admin') throw new Error('Unauthorized: admin access required');
     try { await setDoc(doc(db, 'settings', 'config'), s); } catch (e) { console.error("updateSettings failed", e); throw e; }
   },
   checkAndSendOverdueEmails: async () => {
     if (!isConfigured || !db) return;
+    
+    // Prevent running if checked in the last 1 hour (cooldown check to avoid duplicate mail triggers)
+    try {
+      const lastCheck = localStorage.getItem('lastOverdueCheck');
+      const now = Date.now();
+      if (lastCheck && now - parseInt(lastCheck, 10) < 60 * 60 * 1000) {
+        return;
+      }
+      localStorage.setItem('lastOverdueCheck', now.toString());
+    } catch (e) {
+      console.warn("Storage access failed:", e);
+    }
+
     try {
       const settings = await MockDb.getSettings();
       if (!settings?.enableOverdueEmailAlerts) return;
 
       const rmasRef = collection(db, 'rmas');
-      const snap = await getDocs(rmasRef);
+      // Fetch only active status documents (where status is not closed/repaired/cancelled) to avoid full scans
+      const snap = await getDocs(query(rmasRef, where('status', 'not-in', [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED])));
       const docs = snap.docs.map(doc => doc.data() as RMA).filter(r => !r.isDeleted);
       const now = Date.now();
       const overdueLimit = 15 * 24 * 60 * 60 * 1000; // 15 days
@@ -261,8 +277,7 @@ export const MockDb = {
         // Find document reference from Firestore list to update it later
         const docSnap = snap.docs.find(d => d.id === rma.id || d.data().id === rma.id);
         if (!docSnap) continue;
-        const isOverdue = ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(rma.status) &&
-          (now - new Date(rma.createdAt).getTime() > overdueLimit);
+        const isOverdue = now - new Date(rma.createdAt).getTime() > overdueLimit;
 
         if (isOverdue && rma.creatorEmail && !rma.overdueEmailSent) {
           // 1. Write to standard firebase 'mail' collection
@@ -275,7 +290,7 @@ export const MockDb = {
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eef2f6; border-radius: 12px;">
                   <h2 style="color: #ef4444; margin-top: 0;">⚠️ แจ้งเตือนงานเคลมล่าช้า (Overdue Alert)</h2>
                   <p>สวัสดีครับคุณ <strong>${rma.createdBy || 'Staff'}</strong>,</p>
-                  <p>งานเคลมที่คุณเป็นผู้สร้างเข้าระบบมีอายุงานเกิน <strong>15 วัน</strong> แล้วและยังดำเนินการไม่เสร็จสิ้น กรุณาตรวจสอบและติดตามงานโดยเร็ว:</p>
+                  <p>งานเคลมที่คุณเป็นผู้สร้างเข้าระระบบมีอายุงานเกิน <strong>15 วัน</strong> แล้วและยังดำเนินการไม่เสร็จสิ้น กรุณาตรวจสอบและติดตามงานโดยเร็ว:</p>
                   <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
                     <tr>
                       <td style="padding: 8px 0; font-weight: bold; width: 120px; border-bottom: 1px solid #f1f5f9;">รหัสงานเคลม:</td>
@@ -332,6 +347,7 @@ export const MockDb = {
       console.error("checkAndSendOverdueEmails failed:", err);
     }
   },
+
   sendOverdueSummaryToEveryone: async (): Promise<{ sentCount: number; status: string }> => {
     if (!isConfigured || !db) throw new Error("Firebase Not Configured");
     
@@ -340,12 +356,12 @@ export const MockDb = {
     const usersSnap = await getDocs(usersRef);
     const usersList = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
     
-    // 2. Fetch all RMAs
+    // 2. Fetch only active RMAs to avoid full collection scan
     const rmasRef = collection(db, 'rmas');
-    const rmasSnap = await getDocs(rmasRef);
-    const activeRmas = rmasSnap.docs
+    const activeRmasSnap = await getDocs(query(rmasRef, where('status', 'not-in', [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED, RMAStatus.REJECTED, RMAStatus.RETURNED_FROM_VENDOR])));
+    const activeRmas = activeRmasSnap.docs
       .map(doc => doc.data() as RMA)
-      .filter(rma => !rma.isDeleted && ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED, RMAStatus.REJECTED, RMAStatus.RETURNED_FROM_VENDOR].includes(rma.status));
+      .filter(rma => !rma.isDeleted);
 
     if (activeRmas.length === 0) {
       return { sentCount: 0, status: 'No active RMAs found' };
@@ -534,6 +550,7 @@ export const MockDb = {
   },
   createStaffAccount: async (data: any) => {
     if (!isConfigured) throw new Error("Firebase Not Configured");
+    if (currentUser?.role !== 'admin') throw new Error('Unauthorized: admin access required');
     const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
     const secondaryAuth = getAuth(secondaryApp);
     try {
@@ -617,23 +634,60 @@ export const MockDb = {
 
   // Paginated version — returns { rmas, lastDoc, hasMore }
    getRMAsPaginated: async (pageSize: number = 50, lastDocSnapshot?: any): Promise<{ rmas: RMA[], lastDoc: any, hasMore: boolean }> => {
-    if (!isConfigured || !db) throw new Error('Firebase Not Configured');
-    try {
-      let q;
-      if (lastDocSnapshot) {
-        q = query(collection(db, 'rmas'), orderBy('createdAt', 'desc'), startAfter(lastDocSnapshot), limit(pageSize));
-      } else {
-        q = query(collection(db, 'rmas'), orderBy('createdAt', 'desc'), limit(pageSize));
-      }
-      const snap = await getDocs(q);
-      const rmas = snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
-      const lastDoc = snap.docs.length > 0 ? snap.docs[snap.docs.length - 1] : null;
-      return { rmas, lastDoc, hasMore: snap.docs.length === pageSize };
-    } catch (e) {
-      console.error('getRMAsPaginated failed:', e);
-      throw e;
-    }
-  },
+     if (!isConfigured || !db) throw new Error('Firebase Not Configured');
+     try {
+       const rmas: RMA[] = [];
+       let currentLastDoc = lastDocSnapshot;
+       let hasMore = true;
+       
+       // Loop to fetch until we have enough active documents or there are no more documents
+       while (rmas.length < pageSize && hasMore) {
+         const limitToFetch = pageSize - rmas.length;
+         const batchLimit = limitToFetch + 10;
+         
+         let q = query(
+           collection(db, 'rmas'),
+           orderBy('createdAt', 'desc'),
+           limit(batchLimit)
+         );
+         if (currentLastDoc) {
+           q = query(
+             collection(db, 'rmas'),
+             orderBy('createdAt', 'desc'),
+             startAfter(currentLastDoc),
+             limit(batchLimit)
+           );
+         }
+         
+         const snap = await getDocs(q);
+         if (snap.docs.length === 0) {
+           hasMore = false;
+           break;
+         }
+         
+         const batchRmas = snap.docs.map(mapDocToRMA);
+         const activeBatch = batchRmas.filter(r => !r.isDeleted);
+         
+         // Add active items to our results, up to the pageSize limit
+         for (const rma of activeBatch) {
+           if (rmas.length < pageSize) {
+             rmas.push(rma);
+           }
+         }
+         
+         currentLastDoc = snap.docs[snap.docs.length - 1];
+         // If we fetched fewer documents than requested, it means we reached the end
+         if (snap.docs.length < batchLimit) {
+           hasMore = false;
+         }
+       }
+       
+       return { rmas, lastDoc: currentLastDoc, hasMore };
+     } catch (e) {
+       console.error('getRMAsPaginated failed:', e);
+       throw e;
+     }
+   },
 
   // Get RMAs by Job ID — queries Firestore directly instead of fetching all
   getRMAsByJobId: async (jobId: string): Promise<RMA[]> => {
@@ -874,8 +928,9 @@ export const MockDb = {
   },
   updateRMA: async (id: string, updates: Partial<RMA>) => {
     if (!isConfigured || !db) throw new Error("Firebase Disconnected");
+    const flattened = flattenRMAUpdates(updates);
     await withRetry(async () => {
-      await updateDoc(doc(db, 'rmas', id), { ...updates, updatedAt: serverTimestamp() });
+      await updateDoc(doc(db, 'rmas', id), { ...flattened, updatedAt: serverTimestamp() });
     });
   },
   addTimelineEvent: async (id: string, evt: any) => {
@@ -895,59 +950,67 @@ export const MockDb = {
   // Bulk update status for multiple RMAs at once
   bulkUpdateStatus: async (ids: string[], newStatus: RMAStatus, userName: string, additionalUpdates?: Partial<RMA>): Promise<number> => {
     if (!isConfigured || !db) throw new Error("Firebase Disconnected");
+    
+    // 1. Fetch all docs in parallel
+    const snapPromises = ids.map(id => getDoc(doc(db, 'rmas', id)));
+    const snaps = await Promise.all(snapPromises);
+    
+    const batch = writeBatch(db);
     let updated = 0;
-    for (const id of ids) {
-      try {
-        const snap = await getDoc(doc(db, 'rmas', id));
-        if (!snap.exists()) continue;
-        const oldStatus = snap.data().status || '';
-        const currentHistory = snap.data().history || [];
-        
-        const targetStatus = newStatus === RMAStatus.RETURNED_FROM_VENDOR
-          ? (oldStatus === RMAStatus.REPLACED_FROM_STOCK ? RMAStatus.RETURNED_FROM_VENDOR : RMAStatus.REPAIRED)
-          : newStatus;
+    
+    snaps.forEach((snap, idx) => {
+      if (!snap.exists()) return;
+      const id = ids[idx];
+      const data = snap.data();
+      const oldStatus = data.status || '';
+      const currentHistory = data.history || [];
+      
+      const targetStatus = newStatus === RMAStatus.RETURNED_FROM_VENDOR
+        ? (oldStatus === RMAStatus.REPLACED_FROM_STOCK ? RMAStatus.RETURNED_FROM_VENDOR : RMAStatus.REPAIRED)
+        : newStatus;
 
-        const flatUpdates: any = {
-          status: targetStatus,
-          history: [...currentHistory, {
-            id: `evt-${Date.now()}-${updated}`,
-            date: Timestamp.now(),
-            type: 'STATUS_CHANGE',
-            description: `Bulk: ${oldStatus} → ${targetStatus}`,
-            user: userName
-          }],
-          updatedAt: serverTimestamp()
-        };
+      const flatUpdates: any = {
+        status: targetStatus,
+        history: [...currentHistory, {
+          id: `evt-${Date.now()}-${updated}`,
+          date: Timestamp.now(),
+          type: 'STATUS_CHANGE',
+          description: `Bulk: ${oldStatus} → ${targetStatus}`,
+          user: userName
+        }],
+        updatedAt: serverTimestamp()
+      };
 
-        if (additionalUpdates) {
-          if (additionalUpdates.serviceType !== undefined) flatUpdates.serviceType = additionalUpdates.serviceType;
-          if (additionalUpdates.resolution) {
-            if (additionalUpdates.resolution.actionTaken !== undefined) {
-              flatUpdates["resolution.actionTaken"] = additionalUpdates.resolution.actionTaken;
-            }
-            if (additionalUpdates.resolution.actionDetails !== undefined) {
-              flatUpdates["resolution.actionDetails"] = additionalUpdates.resolution.actionDetails;
-            }
-            if (additionalUpdates.resolution.replacedSerialNumber !== undefined) {
-              flatUpdates["resolution.replacedSerialNumber"] = additionalUpdates.resolution.replacedSerialNumber;
-            }
-            if (additionalUpdates.resolution.vendorTicketRef !== undefined) {
-              flatUpdates["resolution.vendorTicketRef"] = additionalUpdates.resolution.vendorTicketRef;
-            }
-            if (additionalUpdates.resolution.restockCondition !== undefined) {
-              flatUpdates["resolution.restockCondition"] = additionalUpdates.resolution.restockCondition;
-            }
-            if (additionalUpdates.resolution.rootCause !== undefined) {
-              flatUpdates["resolution.rootCause"] = additionalUpdates.resolution.rootCause;
-            }
+      if (additionalUpdates) {
+        if (additionalUpdates.serviceType !== undefined) flatUpdates.serviceType = additionalUpdates.serviceType;
+        if (additionalUpdates.resolution) {
+          if (additionalUpdates.resolution.actionTaken !== undefined) {
+            flatUpdates["resolution.actionTaken"] = additionalUpdates.resolution.actionTaken;
+          }
+          if (additionalUpdates.resolution.actionDetails !== undefined) {
+            flatUpdates["resolution.actionDetails"] = additionalUpdates.resolution.actionDetails;
+          }
+          if (additionalUpdates.resolution.replacedSerialNumber !== undefined) {
+            flatUpdates["resolution.replacedSerialNumber"] = additionalUpdates.resolution.replacedSerialNumber;
+          }
+          if (additionalUpdates.resolution.vendorTicketRef !== undefined) {
+            flatUpdates["resolution.vendorTicketRef"] = additionalUpdates.resolution.vendorTicketRef;
+          }
+          if (additionalUpdates.resolution.restockCondition !== undefined) {
+            flatUpdates["resolution.restockCondition"] = additionalUpdates.resolution.restockCondition;
+          }
+          if (additionalUpdates.resolution.rootCause !== undefined) {
+            flatUpdates["resolution.rootCause"] = additionalUpdates.resolution.rootCause;
           }
         }
-
-        await updateDoc(doc(db, 'rmas', id), flatUpdates);
-        updated++;
-      } catch (e) {
-        console.error(`bulkUpdateStatus failed for ${id}:`, e);
       }
+
+      batch.update(doc(db, 'rmas', id), flatUpdates);
+      updated++;
+    });
+
+    if (updated > 0) {
+      await batch.commit();
     }
     return updated;
   },
@@ -956,66 +1019,73 @@ export const MockDb = {
   bulkUpdateFields: async (ids: string[], updates: Partial<RMA>, userName: string): Promise<number> => {
     if (!isConfigured || !db) throw new Error("Firebase Disconnected");
     const fieldNames = Object.keys(updates).join(', ');
+    
+    // 1. Fetch all docs in parallel
+    const snapPromises = ids.map(id => getDoc(doc(db, 'rmas', id)));
+    const snaps = await Promise.all(snapPromises);
+    
+    const batch = writeBatch(db);
     let updated = 0;
-    for (const id of ids) {
-      try {
-        const snap = await getDoc(doc(db, 'rmas', id));
-        if (!snap.exists()) continue;
-        
-        // Flatten the updates to dot notation to prevent overwriting nested objects
-        const flatUpdates: any = {};
-        if (updates.brand !== undefined) flatUpdates.brand = updates.brand;
-        if (updates.productModel !== undefined) flatUpdates.productModel = updates.productModel;
-        if (updates.serialNumber !== undefined) flatUpdates.serialNumber = updates.serialNumber;
-        if (updates.distributor !== undefined) flatUpdates.distributor = updates.distributor;
-        if (updates.issueDescription !== undefined) flatUpdates.issueDescription = updates.issueDescription;
-        
-        if (updates.resolution) {
-          if (updates.resolution.rootCause !== undefined) {
-            flatUpdates["resolution.rootCause"] = updates.resolution.rootCause;
-          }
-          if (updates.resolution.technicalNotes !== undefined) {
-            flatUpdates["resolution.technicalNotes"] = updates.resolution.technicalNotes;
-          }
-          if (updates.resolution.actionTaken !== undefined) {
-            flatUpdates["resolution.actionTaken"] = updates.resolution.actionTaken;
-          }
-          if (updates.resolution.actionDetails !== undefined) {
-            flatUpdates["resolution.actionDetails"] = updates.resolution.actionDetails;
-          }
-          if (updates.resolution.replacedSerialNumber !== undefined) {
-            flatUpdates["resolution.replacedSerialNumber"] = updates.resolution.replacedSerialNumber;
-          }
-          if (updates.resolution.vendorTicketRef !== undefined) {
-            flatUpdates["resolution.vendorTicketRef"] = updates.resolution.vendorTicketRef;
-          }
-          if (updates.resolution.restockCondition !== undefined) {
-            flatUpdates["resolution.restockCondition"] = updates.resolution.restockCondition;
-          }
+    
+    snaps.forEach((snap, idx) => {
+      if (!snap.exists()) return;
+      const id = ids[idx];
+      
+      // Flatten the updates to dot notation to prevent overwriting nested objects
+      const flatUpdates: any = {};
+      if (updates.brand !== undefined) flatUpdates.brand = updates.brand;
+      if (updates.productModel !== undefined) flatUpdates.productModel = updates.productModel;
+      if (updates.serialNumber !== undefined) flatUpdates.serialNumber = updates.serialNumber;
+      if (updates.distributor !== undefined) flatUpdates.distributor = updates.distributor;
+      if (updates.issueDescription !== undefined) flatUpdates.issueDescription = updates.issueDescription;
+      
+      if (updates.resolution) {
+        if (updates.resolution.rootCause !== undefined) {
+          flatUpdates["resolution.rootCause"] = updates.resolution.rootCause;
         }
-        
-        if (updates.repairCosts) {
-          if (updates.repairCosts.warrantyStatus !== undefined) {
-            flatUpdates["repairCosts.warrantyStatus"] = updates.repairCosts.warrantyStatus;
-          }
+        if (updates.resolution.technicalNotes !== undefined) {
+          flatUpdates["resolution.technicalNotes"] = updates.resolution.technicalNotes;
         }
-
-        const currentHistory = snap.data().history || [];
-        await updateDoc(doc(db, 'rmas', id), {
-          ...flatUpdates,
-          history: [...currentHistory, {
-            id: `evt-${Date.now()}-${updated}`,
-            date: Timestamp.now(),
-            type: 'SYSTEM',
-            description: `Bulk edit: ${fieldNames}`,
-            user: userName
-          }],
-          updatedAt: serverTimestamp()
-        });
-        updated++;
-      } catch (e) {
-        console.error(`bulkUpdateFields failed for ${id}:`, e);
+        if (updates.resolution.actionTaken !== undefined) {
+          flatUpdates["resolution.actionTaken"] = updates.resolution.actionTaken;
+        }
+        if (updates.resolution.actionDetails !== undefined) {
+          flatUpdates["resolution.actionDetails"] = updates.resolution.actionDetails;
+        }
+        if (updates.resolution.replacedSerialNumber !== undefined) {
+          flatUpdates["resolution.replacedSerialNumber"] = updates.resolution.replacedSerialNumber;
+        }
+        if (updates.resolution.vendorTicketRef !== undefined) {
+          flatUpdates["resolution.vendorTicketRef"] = updates.resolution.vendorTicketRef;
+        }
+        if (updates.resolution.restockCondition !== undefined) {
+          flatUpdates["resolution.restockCondition"] = updates.resolution.restockCondition;
+        }
       }
+      
+      if (updates.repairCosts) {
+        if (updates.repairCosts.warrantyStatus !== undefined) {
+          flatUpdates["repairCosts.warrantyStatus"] = updates.repairCosts.warrantyStatus;
+        }
+      }
+
+      const currentHistory = snap.data().history || [];
+      batch.update(doc(db, 'rmas', id), {
+        ...flatUpdates,
+        history: [...currentHistory, {
+          id: `evt-${Date.now()}-${updated}`,
+          date: Timestamp.now(),
+          type: 'SYSTEM',
+          description: `Bulk edit: ${fieldNames}`,
+          user: userName
+        }],
+        updatedAt: serverTimestamp()
+      });
+      updated++;
+    });
+
+    if (updated > 0) {
+      await batch.commit();
     }
     return updated;
   },
@@ -1035,73 +1105,79 @@ export const MockDb = {
     fields.add('replacedSerialNumber');
     const fieldNames = Array.from(fields).join(', ');
 
+    // 1. Fetch all docs in parallel
+    const snapPromises = ids.map(id => getDoc(doc(db, 'rmas', id)));
+    const snaps = await Promise.all(snapPromises);
+    
+    const batch = writeBatch(db);
     let updated = 0;
-    for (const id of ids) {
-      try {
-        const snap = await getDoc(doc(db, 'rmas', id));
-        if (!snap.exists()) continue;
-        
-        // Flatten the updates to dot notation to prevent overwriting nested objects
-        const flatUpdates: any = {};
-        if (commonUpdates.brand !== undefined) flatUpdates.brand = commonUpdates.brand;
-        if (commonUpdates.productModel !== undefined) flatUpdates.productModel = commonUpdates.productModel;
-        if (commonUpdates.distributor !== undefined) flatUpdates.distributor = commonUpdates.distributor;
-        if (commonUpdates.issueDescription !== undefined) flatUpdates.issueDescription = commonUpdates.issueDescription;
-        
-        if (commonUpdates.resolution) {
-          if (commonUpdates.resolution.rootCause !== undefined) {
-            flatUpdates["resolution.rootCause"] = commonUpdates.resolution.rootCause;
-          }
-          if (commonUpdates.resolution.technicalNotes !== undefined) {
-            flatUpdates["resolution.technicalNotes"] = commonUpdates.resolution.technicalNotes;
-          }
-          if (commonUpdates.resolution.actionTaken !== undefined) {
-            flatUpdates["resolution.actionTaken"] = commonUpdates.resolution.actionTaken;
-          }
-          if (commonUpdates.resolution.actionDetails !== undefined) {
-            flatUpdates["resolution.actionDetails"] = commonUpdates.resolution.actionDetails;
-          }
-          if (commonUpdates.resolution.vendorTicketRef !== undefined) {
-            flatUpdates["resolution.vendorTicketRef"] = commonUpdates.resolution.vendorTicketRef;
-          }
-          if (commonUpdates.resolution.restockCondition !== undefined) {
-            flatUpdates["resolution.restockCondition"] = commonUpdates.resolution.restockCondition;
-          }
+    
+    snaps.forEach((snap, idx) => {
+      if (!snap.exists()) return;
+      const id = ids[idx];
+      
+      // Flatten the updates to dot notation to prevent overwriting nested objects
+      const flatUpdates: any = {};
+      if (commonUpdates.brand !== undefined) flatUpdates.brand = commonUpdates.brand;
+      if (commonUpdates.productModel !== undefined) flatUpdates.productModel = commonUpdates.productModel;
+      if (commonUpdates.distributor !== undefined) flatUpdates.distributor = commonUpdates.distributor;
+      if (commonUpdates.issueDescription !== undefined) flatUpdates.issueDescription = commonUpdates.issueDescription;
+      
+      if (commonUpdates.resolution) {
+        if (commonUpdates.resolution.rootCause !== undefined) {
+          flatUpdates["resolution.rootCause"] = commonUpdates.resolution.rootCause;
         }
-        
-        if (commonUpdates.repairCosts) {
-          if (commonUpdates.repairCosts.warrantyStatus !== undefined) {
-            flatUpdates["repairCosts.warrantyStatus"] = commonUpdates.repairCosts.warrantyStatus;
-          }
+        if (commonUpdates.resolution.technicalNotes !== undefined) {
+          flatUpdates["resolution.technicalNotes"] = commonUpdates.resolution.technicalNotes;
         }
-
-        // Apply individual serial numbers if present
-        const ind = individualSns[id];
-        if (ind) {
-          if (ind.serialNumber !== undefined) {
-            flatUpdates.serialNumber = ind.serialNumber.trim();
-          }
-          if (ind.replacedSerialNumber !== undefined) {
-            flatUpdates["resolution.replacedSerialNumber"] = ind.replacedSerialNumber.trim();
-          }
+        if (commonUpdates.resolution.actionTaken !== undefined) {
+          flatUpdates["resolution.actionTaken"] = commonUpdates.resolution.actionTaken;
         }
-
-        const currentHistory = snap.data().history || [];
-        await updateDoc(doc(db, 'rmas', id), {
-          ...flatUpdates,
-          history: [...currentHistory, {
-            id: `evt-${Date.now()}-${updated}`,
-            date: Timestamp.now(),
-            type: 'SYSTEM',
-            description: `Bulk edit: ${fieldNames}`,
-            user: userName
-          }],
-          updatedAt: serverTimestamp()
-        });
-        updated++;
-      } catch (e) {
-        console.error(`bulkUpdateFieldsIndividual failed for ${id}:`, e);
+        if (commonUpdates.resolution.actionDetails !== undefined) {
+          flatUpdates["resolution.actionDetails"] = commonUpdates.resolution.actionDetails;
+        }
+        if (commonUpdates.resolution.vendorTicketRef !== undefined) {
+          flatUpdates["resolution.vendorTicketRef"] = commonUpdates.resolution.vendorTicketRef;
+        }
+        if (commonUpdates.resolution.restockCondition !== undefined) {
+          flatUpdates["resolution.restockCondition"] = commonUpdates.resolution.restockCondition;
+        }
       }
+      
+      if (commonUpdates.repairCosts) {
+        if (commonUpdates.repairCosts.warrantyStatus !== undefined) {
+          flatUpdates["repairCosts.warrantyStatus"] = commonUpdates.repairCosts.warrantyStatus;
+        }
+      }
+
+      // Apply individual serial numbers if present
+      const ind = individualSns[id];
+      if (ind) {
+        if (ind.serialNumber !== undefined) {
+          flatUpdates.serialNumber = ind.serialNumber.trim();
+        }
+        if (ind.replacedSerialNumber !== undefined) {
+          flatUpdates["resolution.replacedSerialNumber"] = ind.replacedSerialNumber.trim();
+        }
+      }
+
+      const currentHistory = snap.data().history || [];
+      batch.update(doc(db, 'rmas', id), {
+        ...flatUpdates,
+        history: [...currentHistory, {
+          id: `evt-${Date.now()}-${updated}`,
+          date: Timestamp.now(),
+          type: 'SYSTEM',
+          description: `Bulk edit: ${fieldNames}`,
+          user: userName
+        }],
+        updatedAt: serverTimestamp()
+      });
+      updated++;
+    });
+
+    if (updated > 0) {
+      await batch.commit();
     }
     return updated;
   },
@@ -1170,6 +1246,7 @@ export const MockDb = {
   // --- One-time counter fix ---
   resetJobCounter: async (newSequence: number): Promise<string> => {
     if (!isConfigured || !db) throw new Error("Firebase Disconnected");
+    if (currentUser?.role !== 'admin') throw new Error('Unauthorized: admin access required');
     const year = String(new Date().getFullYear());
     const counterRef = doc(db, 'counters', 'jobCounter');
     await setDoc(counterRef, { currentYear: year, sequence: newSequence });
@@ -1179,6 +1256,7 @@ export const MockDb = {
   // --- One-time migration: fix all fallback groupRequestIds ---
   fixGroupRequestIds: async (): Promise<string> => {
     if (!isConfigured || !db) throw new Error("Firebase Disconnected");
+    if (currentUser?.role !== 'admin') throw new Error('Unauthorized: admin access required');
     const year = String(new Date().getFullYear());
     const prefix = `SECRMA-${year}-`;
 
@@ -1329,12 +1407,9 @@ export const MockDb = {
     const cutoffDate = new Date();
     cutoffDate.setFullYear(cutoffDate.getFullYear() - yearsOld);
 
-    const snap = await getDocs(collection(db, 'rmas'));
-    const oldDocs = snap.docs.filter(d => {
-      const data = d.data();
-      const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
-      return createdAt < cutoffDate;
-    });
+    // Fetch only documents older than the cutoff date directly from Firestore (avoids full scan)
+    const snap = await getDocs(query(collection(db, 'rmas'), where('createdAt', '<', Timestamp.fromDate(cutoffDate))));
+    const oldDocs = snap.docs.filter(d => !d.data().isDeleted);
 
     return oldDocs.map(d => {
       const data = d.data();
@@ -1358,12 +1433,9 @@ export const MockDb = {
     const cutoffDate = new Date();
     cutoffDate.setFullYear(cutoffDate.getFullYear() - yearsOld);
 
-    const snap = await getDocs(collection(db, 'rmas'));
-    const oldDocs = snap.docs.filter(d => {
-      const data = d.data();
-      const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
-      return createdAt < cutoffDate;
-    });
+    // Fetch only documents older than the cutoff date directly from Firestore (avoids full scan)
+    const snap = await getDocs(query(collection(db, 'rmas'), where('createdAt', '<', Timestamp.fromDate(cutoffDate))));
+    const oldDocs = snap.docs.filter(d => !d.data().isDeleted);
 
     if (oldDocs.length === 0) return 0;
 
@@ -1442,24 +1514,44 @@ export const MockDb = {
     if (!isConfigured || !db) throw new Error('Firebase Not Configured');
 
     const rmasRef = collection(db, 'rmas');
-
-    // Strategy: use single-field query (no composite index needed)
-    // then count statuses client-side from loaded docs
+    let totalRMAs = 0;
     let teamDocs: RMA[] = [];
 
     try {
+      // 1. Get total count using server-side aggregation (doesn't load full documents, saves costs)
+      let countQuery: any = rmasRef;
       if (teamFilter === 'GROUP_C') {
-        const snap = await getDocs(query(rmasRef, where('team', 'in', [Team.TEAM_C, Team.TEAM_E, Team.TEAM_G])));
-        teamDocs = snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
-        // @ts-ignore
-      } else if (teamFilter && teamFilter !== 'ALL') {
-        const snap = await getDocs(query(rmasRef, where('team', '==', teamFilter)));
-        teamDocs = snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
+        countQuery = query(rmasRef, where('team', 'in', [Team.TEAM_C, Team.TEAM_E, Team.TEAM_G]));
+      } else if (teamFilter && (teamFilter as string) !== 'ALL') {
+        countQuery = query(rmasRef, where('team', '==', teamFilter));
+      }
+      const countSnap = await getCountFromServer(countQuery);
+      totalRMAs = countSnap.data().count;
+
+      // 2. Fetch active documents (status NOT IN ['CLOSED', 'CANCELLED', 'REJECTED'])
+      // Uses a single-field query that does not require a composite index
+      const activeSnap = await getDocs(query(rmasRef, where('status', 'not-in', [RMAStatus.CLOSED, RMAStatus.CANCELLED, RMAStatus.REJECTED])));
+      const activeDocs = activeSnap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
+
+      // 3. Fetch recently updated documents (updatedAt >= start of this month) to calculate recent resolutions
+      // Uses a single-field index query on updatedAt
+      const thisMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      const recentSnap = await getDocs(query(rmasRef, where('updatedAt', '>=', Timestamp.fromDate(thisMonthStart))));
+      const recentDocs = recentSnap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
+
+      // 4. Merge results client-side by ID
+      const mergedMap = new Map<string, RMA>();
+      activeDocs.forEach(d => mergedMap.set(d.id, d));
+      recentDocs.forEach(d => mergedMap.set(d.id, d));
+
+      // 5. Filter by team client-side to avoid composite indexes requirement
+      const allDocs = Array.from(mergedMap.values());
+      if (teamFilter === 'GROUP_C') {
+        teamDocs = allDocs.filter(r => [Team.TEAM_C, Team.TEAM_E, Team.TEAM_G].includes(r.team));
+      } else if (teamFilter && (teamFilter as string) !== 'ALL') {
+        teamDocs = allDocs.filter(r => r.team === teamFilter);
       } else {
-        // Load all RMAs if no specific team is filtered, bypassing complex where clauses 
-        // that could cause missing index errors or hang operations without composite indexes
-        const snap = await getDocs(rmasRef);
-        teamDocs = snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
+        teamDocs = allDocs;
       }
     } catch (dbErr) {
       console.error("getStats query failed:", dbErr);
@@ -1468,15 +1560,10 @@ export const MockDb = {
 
     // Client-side counting from loaded docs
     const now = new Date();
-    // activeDocs includes everything except CLOSED, REPAIRED, RETURNED_FROM_VENDOR, and CANCELLED
-    // if it's REPLACED_FROM_STOCK, the customer is already satisfied, so we should NOT count it as an active/overdue issue FOR THE CUSTOMER.
-    // However, the admin still needs to track it. So we keep it in activeDocs but we calculate aging differently.
     const activeDocs = teamDocs.filter(c => ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.CANCELLED, RMAStatus.REJECTED].includes(c.status));
     const aging = { bucket0_7: 0, bucket8_15: 0, bucket15plus: 0 };
     
     activeDocs.forEach(c => {
-      // If it's REPLACED_FROM_STOCK, stop the clock at the time it was replaced (we approximate by using updatedAt or history)
-      // Since history might not be perfectly parsed here, we can use the difference between now and createdAt unless it's replaced.
       let endTime = now.getTime();
       if (c.status === RMAStatus.REPLACED_FROM_STOCK && c.updatedAt) {
           endTime = new Date(c.updatedAt).getTime();
@@ -1495,7 +1582,6 @@ export const MockDb = {
       })
       .slice(0, 10);
 
-    // Filter CLOSED RMAs that were resolved THIS month only
     const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const resolvedThisMonth = teamDocs.filter(c => {
       if (c.status !== RMAStatus.CLOSED && c.status !== RMAStatus.RETURNED_FROM_VENDOR) return false;
@@ -1504,7 +1590,7 @@ export const MockDb = {
     }).length;
 
     const result: DashboardStats = {
-      totalRMAs: teamDocs.length,
+      totalRMAs,
       pendingRMAs: activeDocs.length,
       resolvedThisMonth,
       criticalIssues: aging.bucket15plus,
@@ -1516,8 +1602,6 @@ export const MockDb = {
         if (completedDocs.length === 0) return 0;
         const totalHours = completedDocs.reduce((sum, c) => {
           const created = new Date(c.createdAt).getTime();
-          // For REPLACED_FROM_STOCK and RETURNED_FROM_VENDOR, the turnaround ends when they got the stock unit. 
-          // We use updatedAt.
           const updated = new Date(c.updatedAt).getTime();
           return sum + Math.max(0, (updated - created) / 3600000);
         }, 0);

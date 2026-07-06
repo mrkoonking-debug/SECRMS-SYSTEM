@@ -11,6 +11,14 @@ service cloud.firestore {
     function isAdmin() {
       return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
+
+    // Finance Helper — checks if user is admin OR has explicit finance access
+    function canAccessFinance() {
+      return isAuth() && (
+        isAdmin() || 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.canAccessFinance == true
+      );
+    }
     
     // 1. Users Collection — read: any authenticated, write: admin only
     match /users/{userId} {
@@ -42,7 +50,17 @@ service cloud.firestore {
         // Prevent guest from setting admin-only fields
         !('serviceType' in request.resource.data) &&
         !('resolution' in request.resource.data) &&
-        !('repairCosts' in request.resource.data)
+        !('repairCosts' in request.resource.data) &&
+        // Schema Validation for guest creations
+        request.resource.data.customerName is string && request.resource.data.customerName.size() > 0 &&
+        request.resource.data.contactPerson is string && request.resource.data.contactPerson.size() > 0 &&
+        request.resource.data.customerPhone is string && request.resource.data.customerPhone.size() > 0 &&
+        request.resource.data.customerAddress is string && request.resource.data.customerAddress.size() > 0 &&
+        request.resource.data.lineAccount is string && request.resource.data.lineAccount.size() > 0 &&
+        request.resource.data.brand is string && request.resource.data.brand.size() > 0 &&
+        request.resource.data.productModel is string && request.resource.data.productModel.size() > 0 &&
+        request.resource.data.serialNumber is string && request.resource.data.serialNumber.size() > 0 &&
+        request.resource.data.issueDescription is string && request.resource.data.issueDescription.size() > 0
       );
     }
     
@@ -60,11 +78,16 @@ service cloud.firestore {
       allow create: if isAuth();
     }
 
-    // 6. Petty Cash Collection — staff read/write, admin delete
+    // 6. Petty Cash Collection — staff with finance access, admin delete
     match /pettycash/{txId} {
-      allow read: if isAuth();
-      allow create: if isAuth();
-      allow update: if isAuth();
+      allow read: if canAccessFinance();
+      allow create: if canAccessFinance();
+      allow update: if canAccessFinance() && (
+        // Soft delete: setting isDeleted to true requires Admin role
+        (request.resource.data.get('isDeleted', false) == resource.data.get('isDeleted', false) || isAdmin()) &&
+        // Prevent editing already reimbursed transactions unless Admin
+        (resource.data.get('isReimbursed', false) == false || isAdmin())
+      );
       allow delete: if isAdmin();
     }
   }

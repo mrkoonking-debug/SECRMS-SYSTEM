@@ -30,10 +30,12 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const keys = path.split('.');
     let current: any = translations[language];
     for (const key of keys) {
-      if (current[key] === undefined) return path;
+      if (current === null || typeof current !== 'object' || current[key] === undefined) {
+        return path;
+      }
       current = current[key];
     }
-    return current;
+    return typeof current === 'string' ? current : path;
   };
 
   return (
