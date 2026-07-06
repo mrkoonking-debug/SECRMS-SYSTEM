@@ -8,8 +8,8 @@
   --bg-secondary: #eef0f5;
   --text-primary: #1d1d1f;
   --text-secondary: #86868b;
-  --surface: rgba(255, 255, 255, 0.88);
-  --surface-hover: rgba(255, 255, 255, 0.95);
+  --surface: #ffffff;
+  --surface-hover: #f5f5f7;
   --border: rgba(0, 0, 0, 0.05);
   --border-hover: rgba(0, 113, 227, 0.25);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.03);
@@ -68,13 +68,7 @@ body {
   transition: box-shadow var(--transition-smooth), transform var(--transition-smooth), border-color var(--transition-smooth);
 }
 
-/* Disable heavy backdrop blurs on mobile devices to solve scroll lag issues */
-@media (min-width: 769px) {
-  .glass-panel {
-    backdrop-filter: blur(24px) saturate(1.6);
-    -webkit-backdrop-filter: blur(24px) saturate(1.6);
-  }
-}
+/* Blurs disabled globally for performance */
 
 .glass-panel:hover {
   box-shadow: var(--shadow-md);
@@ -337,4 +331,42 @@ html.performance-mode span {
               max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
               margin 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity, transform, max-height;
+}
+
+/* ===== Disable Backdrop Filters Globally to Eliminate Rendering Lag ===== */
+* {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Force solid card/panel backgrounds to maintain readability without blur */
+.bg-white\/40,
+.bg-white\/50,
+.bg-white\/60,
+.bg-white\/70,
+.bg-white\/80,
+.bg-white\/90,
+.bg-white\/95,
+.bg-white\/98 {
+  background-color: #ffffff !important;
+}
+
+.dark .bg-white\/40,
+.dark .bg-white\/50,
+.dark .bg-white\/60,
+.dark .bg-white\/70,
+.dark .bg-white\/80,
+.dark .bg-white\/90,
+.dark .bg-white\/95,
+.dark .bg-white\/98,
+.dark .bg-white\/\[0\.02\],
+.dark .bg-white\/0\.02 {
+  background-color: #1e1e1f !important;
+}
+
+.bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+.dark .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.1) !important;
 }
