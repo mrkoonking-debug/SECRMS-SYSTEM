@@ -1266,6 +1266,62 @@ export const MockDb = {
     }
   },
 
+  getDeletedRMAs: async (): Promise<RMA[]> => {
+    if (!isConfigured || !db) throw new Error("Firebase Disconnected");
+    if (currentUser?.role !== 'admin') throw new Error('Unauthorized: ต้องเป็น admin เท่านั้นถึงจะจัดการถังขยะได้');
+    try {
+      const q = query(collection(db, 'rmas'), where('isDeleted', '==', true));
+      const snap = await getDocs(q);
+      return snap.docs.map(mapDocToRMA);
+    } catch (e) {
+      console.error("getDeletedRMAs failed:", e);
+      throw e;
+    }
+  },
+
+  restoreRMA: async (id: string) => {
+    if (!isConfigured || !db) throw new Error("Firebase Disconnected");
+    if (currentUser?.role !== 'admin') throw new Error('Unauthorized: ต้องเป็น admin เท่านั้นถึงจะกู้คืนข้อมูลได้');
+    try {
+      const event = {
+        id: `evt-${Date.now()}`,
+        date: Timestamp.now(),
+        type: 'STATUS_CHANGE',
+        description: 'กู้คืนรายการจากการลบ (Restored)',
+        user: currentUser?.name || 'Admin'
+      };
+
+      const rmaSnap = await getDoc(doc(db, 'rmas', id));
+      let currentHistory = [];
+      if (rmaSnap.exists()) {
+        currentHistory = rmaSnap.data().history || [];
+      }
+
+      await updateDoc(doc(db, 'rmas', id), {
+        isDeleted: false,
+        status: RMAStatus.PENDING,
+        updatedAt: serverTimestamp(),
+        history: [...currentHistory, event]
+      });
+      console.log(`Restored RMA: ${id}`);
+    } catch (e) {
+      console.error("restoreRMA failed", e);
+      throw e;
+    }
+  },
+
+  permanentlyDeleteRMA: async (id: string) => {
+    if (!isConfigured || !db) throw new Error("Firebase Disconnected");
+    if (currentUser?.role !== 'admin') throw new Error('Unauthorized: ต้องเป็น admin เท่านั้นถึงจะลบข้อมูลถาวรได้');
+    try {
+      await deleteDoc(doc(db, 'rmas', id));
+      console.log(`Permanently deleted RMA: ${id}`);
+    } catch (e) {
+      console.error("permanentlyDeleteRMA failed", e);
+      throw e;
+    }
+  },
+
   scanOldRMAs: async (yearsOld: number = 5): Promise<{ id: string; brand: string; model: string; serial: string; customer: string; createdAt: string; jobId: string }[]> => {
     if (!isConfigured || !db) throw new Error("Firebase Not Configured");
     if (currentUser?.role !== 'admin') throw new Error('Unauthorized: admin access required');

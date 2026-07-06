@@ -21,6 +21,7 @@ const CustomerStatus = lazy(() => import('./pages/CustomerStatus').then(m => ({ 
 const CustomerSubmit = lazy(() => import('./pages/CustomerSubmit').then(m => ({ default: m.CustomerSubmit })));
 const UserManagement = lazy(() => import('./pages/UserManagement').then(m => ({ default: m.UserManagement })));
 const LogsManagement = lazy(() => import('./pages/LogsManagement').then(m => ({ default: m.LogsManagement })));
+const RecycleBin = lazy(() => import('./pages/RecycleBin').then(m => ({ default: m.RecycleBin })));
 const BrandManagement = lazy(() => import('./pages/BrandManagement').then(m => ({ default: m.BrandManagement })));
 const DistributorManagement = lazy(() => import('./pages/DistributorManagement').then(m => ({ default: m.DistributorManagement })));
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
@@ -75,6 +76,7 @@ const AppContent: React.FC = () => {
                   <Route path="/admin/document/:type/:id" element={<ProtectedRoute><DocumentPreview /></ProtectedRoute>} />
                   <Route path="/admin/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
                   <Route path="/admin/logs" element={<ProtectedRoute><LogsManagement /></ProtectedRoute>} />
+                  <Route path="/admin/recycle-bin" element={<ProtectedRoute><RecycleBin /></ProtectedRoute>} />
                   <Route path="/admin/brands" element={<ProtectedRoute><BrandManagement /></ProtectedRoute>} />
                   <Route path="/admin/distributors" element={<ProtectedRoute><DistributorManagement /></ProtectedRoute>} />
                   <Route path="/admin/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />

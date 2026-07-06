@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, useRef } from 'react';
-import { ShieldCheck, LogOut, Globe, LayoutGrid, List, PlusCircle, Plus, User, Users, Menu, X, Truck, Settings, BarChart3, Tag, Building2, Bell, History, RefreshCw, Wallet } from 'lucide-react';
+import { ShieldCheck, LogOut, Globe, LayoutGrid, List, PlusCircle, Plus, User, Users, Menu, X, Truck, Settings, BarChart3, Tag, Building2, Bell, History, RefreshCw, Wallet, Trash2 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -183,6 +183,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
         case '/admin/brands': return 'bg-[#ff2d55]'; // Rose
         case '/admin/distributors': return 'bg-[#30b0c7]'; // Teal
         case '/admin/settings': return 'bg-[#555]'; // Gear Gray
+        case '/admin/recycle-bin': return 'bg-[#ef4444]'; // Red for Trash
         default: return 'bg-[#007aff]';
       }
     };
@@ -230,6 +231,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
               <NavLink to="/admin/brands" label={t('nav.brands')} icon={Tag} />
               <NavLink to="/admin/distributors" label={t('nav.distributors')} icon={Building2} />
               <NavLink to="/admin/settings" label={t('nav.settings')} icon={Settings} />
+              <NavLink to="/admin/recycle-bin" label="ถังขยะระบบ" icon={Trash2} />
             </>
           )}
         </>
@@ -370,6 +372,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
                     <NavLink to="/admin/brands" label={t('nav.brands')} icon={Tag} />
                     <NavLink to="/admin/distributors" label={t('nav.distributors')} icon={Building2} />
                     <NavLink to="/admin/settings" label={t('nav.settings')} icon={Settings} />
+                    <NavLink to="/admin/recycle-bin" label="ถังขยะระบบ" icon={Trash2} />
                     <NavLink to="/admin/reports" label={t('nav.reports')} icon={BarChart3} />
                     <NavLink to="/admin/finance" label="การเงิน / บันทึกรายจ่าย" icon={Wallet} />
                   </>
