@@ -1252,12 +1252,13 @@ export const MockDb = {
       }
 
       await updateDoc(doc(db, 'rmas', id), {
+        isDeleted: true,
         status: RMAStatus.CANCELLED,
         updatedAt: serverTimestamp(),
         history: [...currentHistory, event]
       });
       // Counter is NOT recalculated — it only goes up, never down.
-      console.log(`Cancelled RMA: ${id}`);
+      console.log(`Cancelled/Deleted RMA: ${id}`);
     }
     catch (e) {
       console.error("deleteRMA failed", e);

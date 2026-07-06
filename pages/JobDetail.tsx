@@ -717,7 +717,7 @@ export const JobDetail: React.FC = () => {
                                         {isAdmin && (
                                         <button
                                             onClick={async () => {
-                                                if (!confirm('คุณต้องการยกเลิกรายการนี้ใช่หรือไม่? รายการนี้จะถูกเปลี่ยนสถานะเป็นยกเลิก (Cancelled) และจัดเก็บประวัติไว้ในระบบ')) return;
+                                                if (!confirm('คุณต้องการลบรายการนี้ใช่หรือไม่? รายการนี้จะถูกซ่อนจากการแสดงผลในระบบ แต่ยังคงบันทึกประวัติการยกเลิกไว้ในระบบ')) return;
                                                 try {
                                                     setLoading(true);
                                                     await MockDb.deleteRMA(item.id);
