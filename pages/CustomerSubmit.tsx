@@ -11,7 +11,7 @@ import { ProductEntryForm } from '../components/ProductEntryForm';
 import { showToast, showValidationError } from '../services/toast';
 
 
-const INPUT_CLASS = "w-full bg-white dark:bg-[#1e1e1f] hover:bg-gray-50 dark:hover:bg-[#282a2c] border border-gray-200 dark:border-white/10 hover:border-blue-400/50 dark:hover:border-white/30 rounded-xl md:rounded-2xl px-3 py-1.5 md:px-4 md:py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1e1e1f] focus:ring-2 focus:ring-[#0071e3]/50 focus:border-[#0071e3] transition-all outline-none";
+const INPUT_CLASS = "w-full bg-white dark:bg-[#1e1e1f] border border-gray-200 dark:border-white/10 rounded-xl md:rounded-2xl px-3 py-1.5 md:px-4 md:py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1e1e1f] focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3] transition-all outline-none";
 
 export const CustomerSubmit: React.FC = () => {
     const navigate = useNavigate();
@@ -585,7 +585,7 @@ export const CustomerSubmit: React.FC = () => {
                                         <input
                                             value={altSender.name}
                                             onChange={e => setAltSender(p => ({ ...p, name: e.target.value }))}
-                                            className="w-full bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-[#2c2c2e] border border-gray-200 dark:border-[#333] rounded-xl px-4 py-3 text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c1e] focus:ring-2 focus:ring-[#0071e3]/50 focus:border-[#0071e3] transition-all outline-none"
+                                            className="w-full bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-[#333] rounded-xl px-4 py-3 text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c1e] focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3] transition-all outline-none"
                                             placeholder={t('publicSubmit.senderNamePlaceholder')}
                                         />
                                     </div>
@@ -594,7 +594,7 @@ export const CustomerSubmit: React.FC = () => {
                                         <input
                                             value={altSender.phone}
                                             onChange={e => setAltSender(p => ({ ...p, phone: e.target.value }))}
-                                            className="w-full bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-[#2c2c2e] border border-gray-200 dark:border-[#333] rounded-xl px-4 py-3 text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c1e] focus:ring-2 focus:ring-[#0071e3]/50 focus:border-[#0071e3] transition-all outline-none"
+                                            className="w-full bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-[#333] rounded-xl px-4 py-3 text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c1e] focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3] transition-all outline-none"
                                             placeholder={t('publicSubmit.senderPhonePlaceholder')}
                                         />
                                     </div>
@@ -604,7 +604,7 @@ export const CustomerSubmit: React.FC = () => {
                                             value={altSender.address}
                                             onChange={e => setAltSender(p => ({ ...p, address: e.target.value }))}
                                             rows={2}
-                                            className="w-full bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-[#2c2c2e] border border-gray-200 dark:border-[#333] rounded-xl px-4 py-3 text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c1e] focus:ring-2 focus:ring-[#0071e3]/50 focus:border-[#0071e3] transition-all outline-none"
+                                            className="w-full bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-[#333] rounded-xl px-4 py-3 text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c1e] focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3] transition-all outline-none"
                                             placeholder={t('publicSubmit.senderAddressPlaceholder')}
                                         />
                                     </div>
@@ -613,7 +613,7 @@ export const CustomerSubmit: React.FC = () => {
                                         <input
                                             value={altSender.postalCode}
                                             onChange={e => setAltSender(p => ({ ...p, postalCode: e.target.value }))}
-                                            className="w-full bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-[#2c2c2e] border border-gray-200 dark:border-[#333] rounded-xl px-4 py-3 text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c1e] focus:ring-2 focus:ring-[#0071e3]/50 focus:border-[#0071e3] transition-all outline-none"
+                                            className="w-full bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-[#333] rounded-xl px-4 py-3 text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c1e] focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3] transition-all outline-none"
                                             placeholder={t('publicSubmit.senderPostalCodePlaceholder')}
                                         />
                                     </div>
