@@ -246,7 +246,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
   return (
     <>
       {/* ===== Mobile Top Bar — Glassmorphism ===== */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-white/70 dark:bg-[#1e1e24]/85 backdrop-blur-xl border-b border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between px-4 nav-glass">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-white dark:bg-[#1e1e24] border-b border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between px-4 nav-glass">
         <Link to={user ? "/admin/dashboard" : "/"} className="flex items-center gap-2.5">
           <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
           <span className="font-bold text-[15px] text-[#1d1d1f] dark:text-white tracking-tight">SEC RMS</span>
@@ -270,8 +270,8 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
              {/* Glass capsule bar */}
              <div 
                className={`
-                 apple-fluid-transition relative bg-white/70 dark:bg-[#121214]/75 backdrop-blur-xl border border-white/20 dark:border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.4)] grid grid-cols-5 items-center pointer-events-auto px-1 rounded-full nav-glass
-                  ${isScrollingDown ? 'h-[40px] px-2 w-[50%] max-w-[200px]' : 'h-[56px] w-[90%] max-w-[380px]'}
+                  apple-fluid-transition relative bg-white dark:bg-[#121214] border border-white/20 dark:border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.4)] grid grid-cols-5 items-center pointer-events-auto px-1 rounded-full nav-glass
+                   ${isScrollingDown ? 'h-[40px] px-2 w-[50%] max-w-[200px]' : 'h-[56px] w-[90%] max-w-[380px]'}
                `}
              >
   
@@ -347,7 +347,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
            {isMobileOpen && (
              <div 
                id="mobile-more-popup" 
-               className="md:hidden fixed right-3 w-[250px] bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-2xl border border-gray-200/50 dark:border-white/[0.08] rounded-2xl shadow-xl z-50 pointer-events-auto flex flex-col overflow-hidden animate-slide-up transition-all duration-300"
+               className="md:hidden fixed right-3 w-[250px] bg-white dark:bg-[#16161a] border border-gray-200/50 dark:border-white/[0.08] rounded-2xl shadow-xl z-50 pointer-events-auto flex flex-col overflow-hidden animate-slide-up transition-all duration-300"
                style={{ bottom: isScrollingDown ? 'calc(66px + env(safe-area-inset-bottom))' : 'calc(78px + env(safe-area-inset-bottom))' }}
              >
               {/* Quick Settings */}

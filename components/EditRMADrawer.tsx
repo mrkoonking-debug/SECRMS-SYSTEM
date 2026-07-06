@@ -766,7 +766,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                 <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowFlowFullscreen(false)}>
                     <div className="bg-white dark:bg-[#1c1c1e] rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
                         {/* Header */}
-                        <div className="sticky top-0 bg-white/90 dark:bg-[#1c1c1e]/90 backdrop-blur-md px-6 py-4 border-b border-gray-100 dark:border-gray-800 rounded-t-3xl flex items-center justify-between z-10">
+                        <div className="sticky top-0 bg-white dark:bg-[#1c1c1e] px-6 py-4 border-b border-gray-100 dark:border-gray-800 rounded-t-3xl flex items-center justify-between z-10">
                             <h2 className="text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
                                     <ArrowRight className="w-4 h-4 text-white" />

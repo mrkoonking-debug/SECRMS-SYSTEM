@@ -923,7 +923,7 @@ export const JobDetail: React.FC = () => {
                 return (
                     <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex flex-col animate-in fade-in duration-200">
                         {/* Toolbar */}
-                        <div className="flex-shrink-0 flex items-center justify-between gap-1.5 px-3 md:px-6 py-2 bg-white/90 dark:bg-[#1c1c1e]/95 backdrop-blur border-b border-gray-200 dark:border-white/10 shadow-sm w-full overflow-x-auto scrollbar-none">
+                        <div className="flex-shrink-0 flex items-center justify-between gap-1.5 px-3 md:px-6 py-2 bg-white dark:bg-[#1c1c1e] border-b border-gray-200 dark:border-white/10 shadow-sm w-full overflow-x-auto scrollbar-none">
                             <h2 className="text-gray-800 dark:text-white font-bold text-xs sm:text-base flex-shrink-0 whitespace-nowrap mr-1">📋 Preview</h2>
                             
                             {/* Distributor Selector Tabs */}
@@ -1292,7 +1292,7 @@ export const JobDetail: React.FC = () => {
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => !isAddingItem && setShowAddItemModal(false)}>
                     <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
                         {/* Header */}
-                        <div className="sticky top-0 bg-white/95 dark:bg-[#1c1c1e]/95 backdrop-blur-md px-8 py-5 border-b border-gray-100 dark:border-gray-800 rounded-t-[2rem] flex items-center justify-between z-10">
+                        <div className="sticky top-0 bg-white dark:bg-[#1c1c1e] px-8 py-5 border-b border-gray-100 dark:border-gray-800 rounded-t-[2rem] flex items-center justify-between z-10">
                             <div>
                                 <h2 className="text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center">

@@ -571,7 +571,7 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
         {previewHtml && (
             <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex flex-col animate-in fade-in duration-200">
                 {/* Toolbar */}
-                <div className="flex-shrink-0 flex items-center justify-between gap-1.5 px-3 md:px-6 py-2 bg-white/90 dark:bg-[#1c1c1e]/95 backdrop-blur border-b border-gray-200 dark:border-white/10 shadow-sm w-full overflow-x-auto scrollbar-none">
+                <div className="flex-shrink-0 flex items-center justify-between gap-1.5 px-3 md:px-6 py-2 bg-white dark:bg-[#1c1c1e] border-b border-gray-200 dark:border-white/10 shadow-sm w-full overflow-x-auto scrollbar-none">
                     <h2 className="text-gray-800 dark:text-white font-bold text-xs sm:text-base flex-shrink-0 whitespace-nowrap mr-1">📋 Preview</h2>
                     
                     <div className="flex items-center gap-1 sm:gap-2">
