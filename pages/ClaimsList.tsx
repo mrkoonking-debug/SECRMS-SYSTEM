@@ -263,15 +263,11 @@ export const ClaimsList: React.FC = () => {
 
     const handleJobClick = useCallback((jobId: string) => navigate(`/admin/job/${encodeURIComponent(jobId)}`), [navigate]);
 
-    const groupedByDate = useMemo(() => {
+    const groupedJobsByDate = useMemo(() => {
         const matchesSearch = (c: RMA) => {
             if (!c || !c.id) return false;
-
-            // If search is empty, show all (handled by other filters)
             if (!debouncedSearch.trim()) return true;
-
             const term = debouncedSearch.toLowerCase().trim();
-
             const matchCustomer = c.customerName && c.customerName.toLowerCase().includes(term);
             const matchSN = c.serialNumber && c.serialNumber.toLowerCase().includes(term);
             const matchModel = c.productModel && c.productModel.toLowerCase().includes(term);
@@ -279,7 +275,6 @@ export const ClaimsList: React.FC = () => {
             const matchQuote = c.quotationNumber && c.quotationNumber.toLowerCase().includes(term);
             const matchGroup = c.groupRequestId && c.groupRequestId.toLowerCase().includes(term);
             const matchBrand = c.brand && c.brand.toLowerCase().includes(term);
-
             return matchId || matchCustomer || matchSN || matchModel || matchQuote || matchGroup || matchBrand;
         };
 
@@ -309,24 +304,40 @@ export const ClaimsList: React.FC = () => {
             return 'Earlier';
         };
 
-        const groups: Record<string, RMA[]> = { 'Today': [], 'Yesterday': [], 'This Week': [], 'Earlier': [] };
+        const dateGroups: Record<string, RMA[]> = { 'Today': [], 'Yesterday': [], 'This Week': [], 'Earlier': [] };
         filteredRMAs.forEach(c => {
             const label = getDateLabel(c.createdAt);
-            if (groups[label]) groups[label].push(c);
-            else groups['Earlier'].push(c);
+            if (dateGroups[label]) dateGroups[label].push(c);
+            else dateGroups['Earlier'].push(c);
         });
-        Object.keys(groups).forEach(key => { if (groups[key].length === 0) delete groups[key]; });
-        return groups;
+
+        const finalGroups: Record<string, { jobs: Record<string, RMA[]>; sortedJobKeys: string[]; count: number }> = {};
+
+        Object.keys(dateGroups).forEach(dateLabel => {
+            const rmasInDate = dateGroups[dateLabel];
+            if (rmasInDate.length === 0) return;
+
+            const jobs = rmasInDate.reduce((acc, rma) => {
+                const jobKey = rma.groupRequestId || rma.quotationNumber || 'Unassigned';
+                if (!acc[jobKey]) acc[jobKey] = [];
+                acc[jobKey].push(rma);
+                return acc;
+            }, {} as Record<string, RMA[]>);
+
+            const sortedJobKeys = Object.keys(jobs).sort((a, b) => 
+                new Date(jobs[b][0].createdAt).getTime() - new Date(jobs[a][0].createdAt).getTime()
+            );
+
+            finalGroups[dateLabel] = {
+                jobs,
+                sortedJobKeys,
+                count: rmasInDate.length
+            };
+        });
+
+        return finalGroups;
     }, [rmas, debouncedSearch, statusFilter, teamFilter]);
 
-    const getJobsForDate = (rmasInDate: RMA[]) => {
-        return rmasInDate.reduce((acc, rma) => {
-            const jobKey = rma.groupRequestId || rma.quotationNumber || 'Unassigned';
-            if (!acc[jobKey]) acc[jobKey] = [];
-            acc[jobKey].push(rma);
-            return acc;
-        }, {} as Record<string, RMA[]>);
-    };
 
     const getTeamCount = (team: Team) => rmas.filter(c => c.team === team && !DONE_STATUSES.includes(c.status)).length;
     const getGroupCCount = () => rmas.filter(c => [Team.TEAM_C, Team.TEAM_E, Team.TEAM_G].includes(c.team) && !DONE_STATUSES.includes(c.status)).length;
@@ -444,15 +455,13 @@ export const ClaimsList: React.FC = () => {
 
             {/* ── Job List ── */}
             <div className="space-y-6 md:space-y-8">
-                {Object.keys(groupedByDate).length === 0 ? (
+                {Object.keys(groupedJobsByDate).length === 0 ? (
                     <div className="text-center py-20 md:py-24 bg-gray-50 dark:bg-white/[0.02] rounded-2xl md:rounded-3xl border border-gray-200/80 dark:border-white/[0.08]"><Search className="w-10 h-10 md:w-12 md:h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" /><p className="text-gray-400 dark:text-gray-500 text-sm">{t('claimsList.noClaims')}</p></div>
                 ) : (
                     ['Today', 'Yesterday', 'This Week', 'Earlier'].map(dateLabel => {
-                        const rmasInDate = groupedByDate[dateLabel];
-                        if (!rmasInDate) return null;
+                        const dateGroup = groupedJobsByDate[dateLabel];
+                        if (!dateGroup) return null;
                         const isDateExpanded = expandedDates.has(dateLabel);
-                        const jobsInDate = getJobsForDate(rmasInDate);
-                        const sortedJobKeys = Object.keys(jobsInDate).sort((a, b) => new Date(jobsInDate[b][0].createdAt).getTime() - new Date(jobsInDate[a][0].createdAt).getTime());
 
                         return (
                             <div key={dateLabel} className="animate-fade-in">
@@ -462,24 +471,24 @@ export const ClaimsList: React.FC = () => {
                                         {dateLabel === 'Today' ? t('claimsList.today') :
                                             dateLabel === 'Yesterday' ? t('claimsList.yesterday') :
                                                 dateLabel === 'This Week' ? t('claimsList.thisWeek') :
-                                                    dateLabel === 'Earlier' ? t('claimsList.earlier') : dateLabel} <span className="text-xs font-medium text-gray-400 dark:text-gray-500 ml-1">({rmasInDate.length})</span>
+                                                    dateLabel === 'Earlier' ? t('claimsList.earlier') : dateLabel} <span className="text-xs font-medium text-gray-400 dark:text-gray-500 ml-1">({dateGroup.count})</span>
                                     </h2>
                                     <div className="flex-grow h-px bg-gradient-to-r from-gray-200 dark:from-white/10 to-transparent group-hover:from-blue-300 dark:group-hover:from-blue-500/20 transition-colors"></div>
                                 </button>
 
                                 {isDateExpanded && (
-                                      <div className="space-y-3">
-                                          {sortedJobKeys.map(jobKey => (
-                                               <JobCard
-                                                   key={jobKey}
-                                                   jobKey={jobKey}
-                                                   jobItems={jobsInDate[jobKey]}
-                                                   onJobClick={handleJobClick}
-                                                   t={t}
-                                               />
-                                           ))}
-                                      </div>
-                                  )}
+                                    <div className="space-y-3">
+                                        {dateGroup.sortedJobKeys.map(jobKey => (
+                                            <JobCard
+                                                key={jobKey}
+                                                jobKey={jobKey}
+                                                jobItems={dateGroup.jobs[jobKey]}
+                                                onJobClick={handleJobClick}
+                                                t={t}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         );
                     })
