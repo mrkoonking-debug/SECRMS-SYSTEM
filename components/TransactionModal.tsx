@@ -421,11 +421,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 {/* Breakdown Grid (Always visible for Expense to prevent layout shift) */}
                 {type === 'EXPENSE' && (
                   <div className="grid grid-cols-2 gap-3.5 bg-gray-50/50 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/5 rounded-2xl p-4 transition-all duration-300">
-                    <div className="col-span-2">
-                      <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium leading-tight">
+                    <div className="col-span-2 overflow-hidden">
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold truncate" title={paidBy === 'SPLIT' ? '*กรอกยอดกองกลาง ระบบจะคำนวณยอดสำรองจ่ายให้อัตโนมัติ' : '*สรุปยอดจัดสรรเงินของรายการนี้'}>
                         {paidBy === 'SPLIT' 
-                          ? '*กรอกเฉพาะยอดจ่ายจากเงินกองกลาง ระบบจะคำนวณยอดสำรองจ่ายให้อัตโนมัติ' 
-                          : '*สรุปยอดการจัดสรรเงินสำหรับรายการนี้'}
+                          ? '*กรอกยอดกองกลาง ระบบจะคำนวณยอดสำรองจ่ายให้อัตโนมัติ' 
+                          : '*สรุปยอดจัดสรรเงินของรายการนี้'}
                       </p>
                     </div>
                     <div>
