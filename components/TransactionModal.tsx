@@ -175,7 +175,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black/60 sm:p-4 animate-fade-in">
-      <div className="bg-white dark:bg-[#1c1c1e] w-full h-full sm:h-auto sm:max-h-[90vh] md:max-w-3xl sm:max-w-lg rounded-none sm:rounded-2xl shadow-2xl border-t sm:border border-gray-200 dark:border-[#333] flex flex-col overflow-hidden transition-all duration-300">
+      <div 
+        className="bg-white dark:bg-[#1c1c1e] w-full h-full sm:h-auto sm:max-h-[90vh] rounded-none sm:rounded-2xl shadow-2xl border-t sm:border border-gray-200 dark:border-[#333] flex flex-col overflow-hidden transition-all duration-300"
+        style={{ maxWidth: '820px' }}
+      >
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-[#333] flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3">
@@ -233,7 +236,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
+                {/* Date & Time Row */}
+                <div className="grid grid-cols-2 gap-3.5">
                   {/* Date */}
                   <div className="col-span-1">
                     <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1 flex items-center gap-1">
@@ -279,21 +283,21 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     </div>
                     {errors.time && <p className="text-red-500 text-[10px] mt-1 ml-1">{errors.time}</p>}
                   </div>
+                </div>
 
-                  {/* Amount */}
-                  <div className="col-span-2 sm:col-span-1">
-                    <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1 truncate">จำนวนเงินรวม <span className="text-red-500">*</span></label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      value={amount}
-                      onChange={e => setAmount(e.target.value)}
-                      className={inputClass(!!errors.amount)}
-                      placeholder="0.00"
-                    />
-                    {errors.amount && <p className="text-red-500 text-[10px] mt-1">{errors.amount}</p>}
-                  </div>
+                {/* Amount Row */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1 truncate">จำนวนเงินรวม <span className="text-red-500">*</span></label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    value={amount}
+                    onChange={e => setAmount(e.target.value)}
+                    className={inputClass(!!errors.amount)}
+                    placeholder="0.00"
+                  />
+                  {errors.amount && <p className="text-red-500 text-[10px] mt-1">{errors.amount}</p>}
                 </div>
 
                 {/* Description */}
