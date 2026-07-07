@@ -60,6 +60,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!date) newErrors.date = 'กรุณาเลือกวันที่';
+    if (!time.trim()) {
+      newErrors.time = 'กรุณาระบุเวลา';
+    } else {
+      const parts = time.split(':');
+      if (parts.length !== 2 || isNaN(Number(parts[0])) || isNaN(Number(parts[1])) || Number(parts[0]) > 23 || Number(parts[1]) > 59) {
+        newErrors.time = 'กรุณาระบุเวลาให้ถูกต้อง (เช่น 15:30)';
+      }
+    }
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
       newErrors.amount = 'กรุณากรอกจำนวนเงินให้ถูกต้อง (> 0)';
     }
@@ -205,12 +213,31 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1 flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5 text-[#0071e3]" /> เวลา
               </label>
-              <input
-                type="time"
-                value={time}
-                onChange={e => setTime(e.target.value)}
-                className={inputClass(false)}
-              />
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  maxLength={5}
+                  value={time}
+                  onChange={e => {
+                    let val = e.target.value.replace(/[^0-9]/g, '');
+                    if (val.length > 2) {
+                      val = val.substring(0, 2) + ':' + val.substring(2, 4);
+                    }
+                    setTime(val);
+                  }}
+                  placeholder="15:30"
+                  className={inputClass(!!errors.time) + " pr-14 font-mono"}
+                />
+                <button
+                  type="button"
+                  onClick={() => setTime(new Date().toTimeString().split(' ')[0].substring(0, 5))}
+                  className="absolute right-1.5 px-2 py-1 text-[10px] font-bold bg-[#0071e3]/10 hover:bg-[#0071e3]/20 dark:bg-blue-500/20 dark:hover:bg-blue-500/30 text-[#0071e3] dark:text-blue-400 rounded-lg transition-all"
+                  title="ใช้เวลาปัจจุบัน"
+                >
+                  ตอนนี้
+                </button>
+              </div>
+              {errors.time && <p className="text-red-500 text-[10px] mt-1 ml-1">{errors.time}</p>}
             </div>
 
             {/* Amount */}
