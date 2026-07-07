@@ -342,7 +342,7 @@ export const FinanceLedger: React.FC = () => {
 
   const handleExportCSV = () => {
     try {
-      const headers = ['วันที่', 'ประเภท', 'จำนวนเงิน', 'รายละเอียด', 'หมวดหมู่', 'จ่ายโดย', 'ผู้ทำรายการ', 'คืนเงินแล้ว', 'ใบงานเคลมที่อ้างอิง', 'หมายเหตุ'];
+      const headers = ['วันที่', 'ประเภท', 'จำนวนเงิน', 'รายละเอียด', 'หมวดหมู่', 'จ่ายโดย', 'ผู้ทำรายการ', 'คืนเงินแล้ว', 'หมายเหตุ'];
       const rows = filteredTransactions.map(t => [
         t.date,
         t.type === 'INCOME' ? 'รายรับ' : 'รายจ่าย',
@@ -352,7 +352,6 @@ export const FinanceLedger: React.FC = () => {
         t.paidBy === 'PETTY_CASH' ? 'เงินกองกลาง' : t.paidBy === 'PERSONAL_CASH' ? 'เงินสดส่วนตัวพนักงาน' : 'เงินโอนส่วนตัวพนักงาน',
         t.staffName,
         t.type === 'INCOME' ? 'N/A' : t.paidBy === 'PETTY_CASH' ? 'N/A' : t.isReimbursed ? 'คืนแล้ว' : 'ยังไม่คืน',
-        t.refRmaId || '',
         t.note || ''
       ]);
 
