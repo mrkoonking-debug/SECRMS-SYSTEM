@@ -187,7 +187,9 @@ export interface PettyCashTransaction {
   amount: number;                  // จำนวนเงิน (บาท)
   description: string;             // เช่น "ค่าส่งปลายทาง Hikvision"
   category?: string;               // หมวดหมู่ เช่น 'ค่าขนส่ง', 'ค่าบรรจุภัณฑ์', 'เติมเงินกองกลาง'
-  paidBy: 'PETTY_CASH' | 'PERSONAL_CASH' | 'PERSONAL_TRANSFER';
+  paidBy: 'PETTY_CASH' | 'PERSONAL_CASH' | 'PERSONAL_TRANSFER' | 'SPLIT';
+  splitPettyCashAmount?: number;   // จ่ายจากเงินกองกลาง (สำหรับแบบผสม)
+  splitPersonalAmount?: number;    // จ่ายจากเงินส่วนตัว (สำหรับแบบผสม)
   staffName: string;               // ใครเป็นคนจ่าย/รับเงิน
   isReimbursed: boolean;           // สำรองจ่าย → คืนเงินแล้วหรือยัง?
   reimbursedAt?: string;

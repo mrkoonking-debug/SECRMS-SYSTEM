@@ -1929,6 +1929,21 @@ export const MockDb = {
         // EXPENSE
         if (tx.paidBy === 'PETTY_CASH') {
           pettyCashBalance -= tx.amount;
+        } else if (tx.paidBy === 'SPLIT') {
+          const pettyAmt = tx.splitPettyCashAmount || 0;
+          const personalAmt = tx.splitPersonalAmount || 0;
+          
+          // Portion from petty cash is deducted
+          pettyCashBalance -= pettyAmt;
+          
+          if (!tx.isReimbursed) {
+            totalPersonalAdvance += personalAmt;
+            const staff = tx.staffName || 'Unknown';
+            personalAdvanceByStaff[staff] = (personalAdvanceByStaff[staff] || 0) + personalAmt;
+          } else {
+            // Reimbursed portion is also deducted from the petty cash box
+            pettyCashBalance -= personalAmt;
+          }
         } else {
           // PERSONAL_CASH or PERSONAL_TRANSFER (advance payments)
           if (!tx.isReimbursed) {

@@ -25,8 +25,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [amount, setAmount] = useState<string>(transaction?.amount ? String(transaction.amount) : '');
   const [description, setDescription] = useState(transaction?.description || '');
   const [category, setCategory] = useState(transaction?.category || 'ค่าขนส่ง');
-  const [paidBy, setPaidBy] = useState<'PETTY_CASH' | 'PERSONAL_CASH' | 'PERSONAL_TRANSFER'>(
+  const [paidBy, setPaidBy] = useState<'PETTY_CASH' | 'PERSONAL_CASH' | 'PERSONAL_TRANSFER' | 'SPLIT'>(
     transaction?.paidBy || 'PETTY_CASH'
+  );
+  const [splitPettyCashAmount, setSplitPettyCashAmount] = useState<string>(
+    transaction?.splitPettyCashAmount ? String(transaction.splitPettyCashAmount) : ''
+  );
+  const [splitPersonalAmount, setSplitPersonalAmount] = useState<string>(
+    transaction?.splitPersonalAmount ? String(transaction.splitPersonalAmount) : ''
   );
   
   const currentUser = MockDb.getCurrentUser();
@@ -71,6 +77,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
       newErrors.amount = 'กรุณากรอกจำนวนเงินให้ถูกต้อง (> 0)';
     }
+    if (paidBy === 'SPLIT') {
+      const pAmt = Number(splitPettyCashAmount) || 0;
+      const persAmt = Number(splitPersonalAmount) || 0;
+      const totAmt = Number(amount) || 0;
+      if (pAmt <= 0 || persAmt <= 0) {
+        newErrors.splitSum = 'จำนวนเงินแต่ละส่วนต้องมากกว่า 0';
+      } else if (Math.abs((pAmt + persAmt) - totAmt) > 0.01) {
+        newErrors.splitSum = `ยอดรวมสองส่วน (${pAmt + persAmt} บาท) ต้องเท่ากับจำนวนเงินรวม (${totAmt} บาท)`;
+      }
+    }
     if (!description.trim()) newErrors.description = 'กรุณากรอกรายละเอียดรายการ';
     if (!staffName.trim()) newErrors.staffName = 'กรุณาระบุชื่อผู้ทำรายการ';
     
@@ -113,7 +129,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         isReimbursed: transaction?.isReimbursed || false,
         note: note.trim(),
         receiptUrl: receiptUrl || undefined,
-        ...(type === 'INCOME' ? { paidBy: 'PETTY_CASH' as const } : {}) // Income is always funded to Petty Cash
+        ...(type === 'INCOME' ? { paidBy: 'PETTY_CASH' as const } : {}), // Income is always funded to Petty Cash
+        ...(paidBy === 'SPLIT' ? {
+          splitPettyCashAmount: Number(splitPettyCashAmount),
+          splitPersonalAmount: Number(splitPersonalAmount)
+        } : {
+          splitPettyCashAmount: null as any,
+          splitPersonalAmount: null as any
+        })
       };
 
       if (isEdit && transaction) {
@@ -335,77 +358,105 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
           {/* Paid By (Only visible for Expense) */}
           {type === 'EXPENSE' && (
-            <div>
-              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1">จ่ายด้วยเงินก้อนไหน?</label>
-              
-              <div className="flex items-center gap-3 bg-gray-50/50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 rounded-2xl p-2.5">
-                {/* Playful Toggle Switch */}
-                <div 
-                  onClick={() => setPaidBy(paidBy === 'PETTY_CASH' ? 'PERSONAL_CASH' : 'PETTY_CASH')}
-                  className={`relative w-32 h-11 rounded-full cursor-pointer p-1 transition-all duration-500 select-none border shadow-inner flex-shrink-0 ${
-                    paidBy === 'PETTY_CASH' 
-                      ? 'bg-blue-500/10 dark:bg-blue-900/20 border-blue-200/40 dark:border-blue-800/20' 
-                      : 'bg-orange-500/15 dark:bg-orange-950/20 border-orange-200/40 dark:border-orange-900/20'
-                  }`}
-                >
-                  {/* Track Illustration - Company (Visible when Personal is selected on the left) */}
-                  <div className={`absolute left-2 top-1/2 -translate-y-1/2 transition-all duration-500 ${paidBy === 'PETTY_CASH' ? 'opacity-0 scale-75 rotate-12' : 'opacity-100 scale-100 rotate-0'}`}>
-                    <svg className="w-5 h-5 text-orange-400/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="3" width="18" height="18" rx="2" />
-                      <circle cx="12" cy="12" r="5" />
-                      <line x1="12" y1="3" x2="12" y2="7" />
-                      <line x1="12" y1="17" x2="12" y2="21" />
-                      <line x1="3" y1="12" x2="7" y2="12" />
-                      <line x1="17" y1="12" x2="21" y2="12" />
-                    </svg>
-                  </div>
+            <div className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2 ml-1">
+                  จ่ายด้วยเงินก้อนไหน?
+                </label>
+                
+                <div className="grid grid-cols-3 gap-2 bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/5 rounded-xl p-1">
+                  {[
+                    { value: 'PETTY_CASH', label: 'เงินกองกลาง' },
+                    { value: 'PERSONAL_CASH', label: 'สำรองจ่าย' },
+                    { value: 'SPLIT', label: 'จ่ายแบบผสม' },
+                  ].map(opt => {
+                    const isSelected = 
+                      (opt.value === 'PETTY_CASH' && paidBy === 'PETTY_CASH') ||
+                      (opt.value === 'PERSONAL_CASH' && (paidBy === 'PERSONAL_CASH' || paidBy === 'PERSONAL_TRANSFER')) ||
+                      (opt.value === 'SPLIT' && paidBy === 'SPLIT');
 
-                  {/* Track Illustration - Employee (Visible when Petty Cash is selected on the right) */}
-                  <div className={`absolute right-2 top-1/2 -translate-y-1/2 transition-all duration-500 ${paidBy === 'PERSONAL_CASH' ? 'opacity-0 scale-75 -rotate-12' : 'opacity-100 scale-100 rotate-0'}`}>
-                    <svg className="w-5 h-5 text-blue-500/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M19 8v6M22 11h-6" />
-                    </svg>
-                  </div>
-
-                  {/* Sliding Thumb: represents the active selector */}
-                  <div 
-                    className={`absolute top-1 w-8 h-8 rounded-full bg-white dark:bg-[#2c2c2e] shadow-md flex items-center justify-center transition-all duration-500 ease-out ${
-                      paidBy === 'PETTY_CASH' 
-                        ? 'left-1 border border-blue-300 dark:border-blue-700 shadow-blue-500/10' 
-                        : 'left-[calc(100%-36px)] border border-orange-300 dark:border-orange-700 shadow-orange-500/10'
-                    }`}
-                  >
-                    {paidBy === 'PETTY_CASH' ? (
-                      <svg className="w-5 h-5 text-blue-600 animate-fade-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                      </svg>
-                    ) : (
-                      <svg className="w-5 h-5 text-orange-600 animate-fade-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M18 8a3 3 0 1 0-6 0 3 3 0 0 0 6 0ZM6 21v-2a4 4 0 0 1 4-4h5" />
-                        <path d="m20 18 2 2-2 2" />
-                        <path d="M12 21h8" />
-                      </svg>
-                    )}
-                  </div>
-                </div>
-
-                {/* Label and Explanations */}
-                <div className="flex-grow flex flex-col justify-center min-w-0">
-                  <span className="font-bold text-xs sm:text-sm text-gray-800 dark:text-gray-200 leading-tight">
-                    {paidBy === 'PETTY_CASH' ? 'เงินสดกองกลาง (เงินบริษัท)' : 'พนักงานสำรองจ่าย (เบิกคืนทีหลัง)'}
-                  </span>
-                  <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight mt-0.5">
-                    {paidBy === 'PETTY_CASH' 
-                      ? 'จ่ายตรงจากเงินสดส่วนกลาง' 
-                      : 'พนักงานจ่ายส่วนตัวไปก่อนเพื่อเบิกคืน'}
-                  </span>
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => {
+                          if (opt.value === 'PERSONAL_CASH') {
+                            setPaidBy('PERSONAL_CASH');
+                          } else {
+                            setPaidBy(opt.value as any);
+                          }
+                        }}
+                        className={`py-2.5 text-xs font-bold rounded-lg transition-all text-center leading-tight ${
+                          isSelected
+                            ? 'bg-[#0071e3] text-white shadow-sm'
+                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
+
+              {/* Sub-options for Personal Cash / Personal Transfer */}
+              {(paidBy === 'PERSONAL_CASH' || paidBy === 'PERSONAL_TRANSFER') && (
+                <div className="flex gap-4.5 bg-gray-50/50 dark:bg-white/[0.01] border border-gray-100 dark:border-white/5 rounded-xl p-2.5 justify-center animate-fade-in">
+                  {[
+                    { value: 'PERSONAL_CASH', label: 'จ่ายด้วยเงินสดส่วนตัว' },
+                    { value: 'PERSONAL_TRANSFER', label: 'โอนเงินส่วนตัว' },
+                  ].map(sub => (
+                    <label key={sub.value} className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="radio"
+                        name="personal_sub"
+                        checked={paidBy === sub.value}
+                        onChange={() => setPaidBy(sub.value as any)}
+                        className="text-[#0071e3] focus:ring-[#0071e3]/30 animate-fade-in"
+                      />
+                      <span className="text-xs text-gray-600 dark:text-gray-400">{sub.label}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              {/* Split details inputs */}
+              {paidBy === 'SPLIT' && (
+                <div className="grid grid-cols-2 gap-3.5 bg-blue-50/30 dark:bg-blue-950/10 border border-blue-100/50 dark:border-blue-950/30 rounded-2xl p-4.5 animate-fade-in">
+                  <div className="col-span-2">
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">
+                      กรุณาระบุจำนวนเงินของแต่ละส่วน (รวมกันแล้วต้องเท่ากับยอดเงินรวม {amount || '0'} บาท)
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-blue-700 dark:text-blue-400 mb-1.5 ml-1">
+                      จ่ายจากเงินกองกลาง (บาท)
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="0.00"
+                      value={splitPettyCashAmount}
+                      onChange={e => setSplitPettyCashAmount(e.target.value)}
+                      className="w-full bg-white dark:bg-[#1e1e1f] border border-blue-200 dark:border-blue-900/50 rounded-xl px-3 py-2 text-sm text-[#1d1d1f] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0071e3]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-orange-700 dark:text-orange-400 mb-1.5 ml-1">
+                      พนักงานสำรองจ่าย (บาท)
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="0.00"
+                      value={splitPersonalAmount}
+                      onChange={e => setSplitPersonalAmount(e.target.value)}
+                      className="w-full bg-white dark:bg-[#1e1e1f] border border-orange-200 dark:border-orange-900/50 rounded-xl px-3 py-2 text-sm text-[#1d1d1f] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0071e3]"
+                    />
+                  </div>
+                  {errors.splitSum && (
+                    <p className="col-span-2 text-red-500 text-[10px] mt-1 ml-1">{errors.splitSum}</p>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

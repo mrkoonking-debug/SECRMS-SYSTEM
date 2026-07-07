@@ -27,8 +27,87 @@ export const FinanceLedger: React.FC = () => {
   
   // Modal states
   const [showModal, setShowModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'records' | 'dashboard'>('records');
+  const [dashboardMonth, setDashboardMonth] = useState<string>(''); // YYYY-MM or 'ALL'
   const [selectedTx, setSelectedTx] = useState<PettyCashTransaction | undefined>(undefined);
   const [activeReceiptUrl, setActiveReceiptUrl] = useState<string | null>(null);
+
+  const getAvailableMonths = () => {
+    const months = new Set<string>();
+    transactions.forEach(t => {
+      if (t.date) {
+        const [year, month] = t.date.split('-');
+        if (year && month) {
+          months.add(`${year}-${month}`);
+        }
+      }
+    });
+    return Array.from(months).sort((a, b) => b.localeCompare(a));
+  };
+
+  const getDashboardData = () => {
+    const filtered = transactions.filter(t => {
+      if (dashboardMonth === 'ALL') return true;
+      return t.date.startsWith(dashboardMonth);
+    });
+
+    let totalIncome = 0;
+    let totalExpense = 0;
+    let pettyCashSpent = 0;
+    let personalAdvance = 0;
+
+    const categoryBreakdown: Record<string, number> = {};
+    const staffBreakdown: Record<string, number> = {};
+
+    filtered.forEach(t => {
+      if (t.type === 'INCOME') {
+        totalIncome += t.amount;
+      } else {
+        totalExpense += t.amount;
+        
+        // Category breakdown
+        const cat = t.category || 'อื่นๆ';
+        categoryBreakdown[cat] = (categoryBreakdown[cat] || 0) + t.amount;
+
+        // Staff breakdown
+        const staff = t.staffName || 'Unknown';
+        staffBreakdown[staff] = (staffBreakdown[staff] || 0) + t.amount;
+
+        // Paid by breakdown
+        if (t.paidBy === 'PETTY_CASH') {
+          pettyCashSpent += t.amount;
+        } else if (t.paidBy === 'SPLIT') {
+          pettyCashSpent += t.splitPettyCashAmount || 0;
+          personalAdvance += t.splitPersonalAmount || 0;
+        } else {
+          personalAdvance += t.amount;
+        }
+      }
+    });
+
+    return {
+      totalIncome,
+      totalExpense,
+      pettyCashSpent,
+      personalAdvance,
+      categoryBreakdown,
+      staffBreakdown
+    };
+  };
+
+  const formatMonthTh = (yearMonthStr: string) => {
+    if (yearMonthStr === 'ALL') return 'ข้อมูลทั้งหมด';
+    const parts = yearMonthStr.split('-');
+    if (parts.length !== 2) return yearMonthStr;
+    const [year, month] = parts;
+    const monthNames = [
+      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+    ];
+    const monthIdx = parseInt(month, 10) - 1;
+    const thaiYear = parseInt(year, 10) + 543;
+    return `${monthNames[monthIdx]} ${thaiYear}`;
+  };
 
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -373,6 +452,178 @@ export const FinanceLedger: React.FC = () => {
     return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(val);
   };
 
+  const renderDashboard = () => {
+    const data = getDashboardData();
+    const netCashflow = data.totalIncome - data.totalExpense;
+    
+    const getPercent = (amount: number, total: number) => {
+      if (total <= 0) return 0;
+      return Math.round((amount / total) * 100);
+    };
+
+    return (
+      <div className="space-y-6 animate-fade-in">
+        {/* Dashboard Header & Month Selector */}
+        <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-4 md:p-6 backdrop-blur-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-base sm:text-lg font-bold text-[#1d1d1f] dark:text-white leading-tight">รายงานสรุปการเงิน</h2>
+            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5">วิเคราะห์สัดส่วนรายรับ-รายจ่ายของเงินกองกลางประจำเดือน</p>
+          </div>
+          
+          {/* Month Filter Selector */}
+          <div className="w-full md:w-60 shrink-0">
+            <GlassSelect
+              value={dashboardMonth}
+              onChange={val => setDashboardMonth(val)}
+              options={[
+                { value: 'ALL', label: 'ทั้งหมด (ทุกเดือน)' },
+                ...getAvailableMonths().map(m => ({
+                  value: m,
+                  label: formatMonthTh(m)
+                }))
+              ]}
+            />
+          </div>
+        </div>
+
+        {/* Metrics Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          {/* Total Income */}
+          <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/5 dark:from-emerald-500/5 dark:to-teal-500/0 border border-emerald-200/40 dark:border-emerald-900/10 rounded-3xl p-4 sm:p-5 flex flex-col justify-between min-h-[110px] sm:min-h-[135px]">
+            <span className="text-[9px] sm:text-xs text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider block">รายรับทั้งหมด</span>
+            <span className="text-base sm:text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2 block tabular-nums">
+              {formatCurrency(data.totalIncome)}
+            </span>
+            <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-1 leading-tight block">
+              *รวมยอดเบิกแอดวานซ์/เติมเงินกองกลาง
+            </span>
+          </div>
+
+          {/* Total Expense */}
+          <div className="bg-gradient-to-br from-red-500/10 to-rose-500/5 dark:from-red-500/5 dark:to-rose-500/0 border border-red-200/40 dark:border-red-900/10 rounded-3xl p-4 sm:p-5 flex flex-col justify-between min-h-[110px] sm:min-h-[135px]">
+            <span className="text-[9px] sm:text-xs text-red-700 dark:text-red-400 font-bold uppercase tracking-wider block">รายจ่ายทั้งหมด</span>
+            <span className="text-base sm:text-xl md:text-2xl font-black text-red-600 dark:text-red-400 mt-2 block tabular-nums">
+              {formatCurrency(data.totalExpense)}
+            </span>
+            <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-1 leading-tight block">
+              *ยอดใช้จ่ายรวมทุกประเภทเงิน
+            </span>
+          </div>
+
+          {/* Petty Cash Portion */}
+          <div className="bg-gradient-to-br from-blue-500/10 to-indigo-500/5 dark:from-blue-500/5 dark:to-indigo-500/0 border border-blue-200/40 dark:border-blue-900/10 rounded-3xl p-4 sm:p-5 flex flex-col justify-between min-h-[110px] sm:min-h-[135px]">
+            <span className="text-[9px] sm:text-xs text-blue-700 dark:text-blue-400 font-bold uppercase tracking-wider block">จ่ายจากเงินกองกลาง</span>
+            <span className="text-base sm:text-xl md:text-2xl font-black text-blue-600 dark:text-blue-400 mt-2 block tabular-nums">
+              {formatCurrency(data.pettyCashSpent)}
+            </span>
+            <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-1 leading-tight block">
+              คิดเป็น {getPercent(data.pettyCashSpent, data.totalExpense)}% ของยอดจ่ายทั้งหมด
+            </span>
+          </div>
+
+          {/* Personal Advance Portion */}
+          <div className="bg-gradient-to-br from-orange-500/10 to-amber-500/5 dark:from-orange-500/5 dark:to-amber-500/0 border border-orange-200/40 dark:border-orange-900/10 rounded-3xl p-4 sm:p-5 flex flex-col justify-between min-h-[110px] sm:min-h-[135px]">
+            <span className="text-[9px] sm:text-xs text-orange-700 dark:text-orange-400 font-bold uppercase tracking-wider block">พนักงานสำรองจ่าย</span>
+            <span className="text-base sm:text-xl md:text-2xl font-black text-orange-600 dark:text-orange-400 mt-2 block tabular-nums">
+              {formatCurrency(data.personalAdvance)}
+            </span>
+            <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-1 leading-tight block">
+              คิดเป็น {getPercent(data.personalAdvance, data.totalExpense)}% ของยอดจ่ายทั้งหมด
+            </span>
+          </div>
+        </div>
+
+        {/* Net Cashflow Banner */}
+        <div className={`p-4 rounded-2xl border flex items-center justify-between ${
+          netCashflow >= 0 
+            ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
+            : 'bg-red-500/5 border-red-500/20 text-red-600 dark:text-red-400'
+        }`}>
+          <div className="flex items-center gap-2 min-w-0">
+            <Coins className="w-4 h-4 shrink-0" />
+            <span className="text-[10px] sm:text-xs font-bold truncate">กระแสเงินสดสุทธิประจำเดือน (รายรับ - รายจ่าย)</span>
+          </div>
+          <span className="text-xs sm:text-sm md:text-base font-black tabular-nums shrink-0">
+            {netCashflow >= 0 ? '+' : ''}{formatCurrency(netCashflow)}
+          </span>
+        </div>
+
+        {/* Two Column Breakdown Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Category Breakdown card */}
+          <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-5 md:p-6 backdrop-blur-xl space-y-4">
+            <h3 className="text-xs sm:text-sm font-bold text-gray-800 dark:text-white border-b border-gray-100 dark:border-white/5 pb-3">
+              รายจ่ายแยกตามหมวดหมู่ (Expense by Category)
+            </h3>
+            
+            {Object.keys(data.categoryBreakdown).length === 0 ? (
+              <p className="text-xs text-gray-400 italic text-center py-6">ไม่มีรายการบันทึกรายจ่ายในช่วงเวลานี้</p>
+            ) : (
+              <div className="space-y-4">
+                {(Object.entries(data.categoryBreakdown) as [string, number][])
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([cat, amt]) => {
+                    const percent = getPercent(amt, data.totalExpense);
+                    return (
+                      <div key={cat} className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-semibold text-gray-700 dark:text-gray-300">{cat}</span>
+                          <span className="font-bold text-[#1d1d1f] dark:text-white tabular-nums">
+                            {formatCurrency(amt)} <span className="text-gray-400 font-normal ml-1">({percent}%)</span>
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-blue-500 dark:bg-blue-400 rounded-full transition-all duration-500" 
+                            style={{ width: `${percent}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+
+          {/* Staff Breakdown card */}
+          <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-5 md:p-6 backdrop-blur-xl space-y-4">
+            <h3 className="text-xs sm:text-sm font-bold text-gray-800 dark:text-white border-b border-gray-100 dark:border-white/5 pb-3">
+              รายจ่ายแยกตามผู้ทำรายการ (Expense by Staff)
+            </h3>
+            
+            {Object.keys(data.staffBreakdown).length === 0 ? (
+              <p className="text-xs text-gray-400 italic text-center py-6">ไม่มีรายการบันทึกรายจ่ายในช่วงเวลานี้</p>
+            ) : (
+              <div className="space-y-4">
+                {(Object.entries(data.staffBreakdown) as [string, number][])
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([staff, amt]) => {
+                    const percent = getPercent(amt, data.totalExpense);
+                    return (
+                      <div key={staff} className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-semibold text-gray-700 dark:text-gray-300">คุณ{staff}</span>
+                          <span className="font-bold text-[#1d1d1f] dark:text-white tabular-nums">
+                            {formatCurrency(amt)} <span className="text-gray-400 font-normal ml-1">({percent}%)</span>
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-orange-500 dark:bg-orange-400 rounded-full transition-all duration-500" 
+                            style={{ width: `${percent}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 animate-fade-in px-4 pb-20 md:pb-8">
       {/* Top Banner */}
@@ -404,7 +655,33 @@ export const FinanceLedger: React.FC = () => {
         </div>
       </div>
 
-      {/* Summary Widgets Row */}
+      {/* Tab Switcher */}
+      <div className="flex gap-2 p-1 bg-gray-100/50 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/5 rounded-2xl w-fit">
+        <button
+          onClick={() => setActiveTab('records')}
+          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+            activeTab === 'records'
+              ? 'bg-white dark:bg-[#2c2c2e] text-[#0071e3] shadow-sm'
+              : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
+          }`}
+        >
+          รายการบันทึก
+        </button>
+        <button
+          onClick={() => setActiveTab('dashboard')}
+          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+            activeTab === 'dashboard'
+              ? 'bg-white dark:bg-[#2c2c2e] text-[#0071e3] shadow-sm'
+              : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
+          }`}
+        >
+          สถิติ & แดชบอร์ด
+        </button>
+      </div>
+
+      {activeTab === 'records' ? (
+        <>
+          {/* Summary Widgets Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {/* Petty Cash Balance */}
         <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
@@ -538,7 +815,7 @@ export const FinanceLedger: React.FC = () => {
             </div>
 
             {/* Source Filter Segmented Control */}
-            <div className="grid grid-cols-3 bg-gray-100/60 dark:bg-white/[0.03] p-0.5 rounded-lg w-full md:w-auto shrink-0 select-none border border-gray-200/20 dark:border-white/[0.03]">
+            <div className="grid grid-cols-4 bg-gray-100/60 dark:bg-white/[0.03] p-0.5 rounded-lg w-full md:w-auto shrink-0 select-none border border-gray-200/20 dark:border-white/[0.03]">
               <button
                 onClick={() => setSourceFilter('ALL')}
                 className={`py-1 px-2.5 rounded-md text-[11px] font-bold transition-all text-center ${
@@ -568,6 +845,16 @@ export const FinanceLedger: React.FC = () => {
                 }`}
               >
                 สำรองจ่าย
+              </button>
+              <button
+                onClick={() => setSourceFilter('SPLIT')}
+                className={`py-1 px-2.5 rounded-md text-[11px] font-bold transition-all text-center ${
+                  sourceFilter === 'SPLIT'
+                    ? 'bg-white dark:bg-white/10 text-purple-600 dark:text-purple-400 shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
+                }`}
+              >
+                แบบผสม
               </button>
             </div>
           </div>
@@ -688,10 +975,26 @@ export const FinanceLedger: React.FC = () => {
                               <span className="text-gray-400">เบิกเงินพี่เกษม</span>
                             ) : tx.paidBy === 'PETTY_CASH' ? (
                               <span className="text-blue-500 font-medium">เงินกองกลาง</span>
+                            ) : tx.paidBy === 'SPLIT' ? (
+                              <div className="space-y-1">
+                                <span className="text-purple-500 font-semibold block">จ่ายแบบผสม</span>
+                                <span className="text-[10px] text-gray-400 block leading-tight">
+                                  (กองกลาง {tx.splitPettyCashAmount} / ส่วนตัว {tx.splitPersonalAmount})
+                                </span>
+                                {tx.isReimbursed ? (
+                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.2 rounded-md">
+                                    <Check className="w-2.5 h-2.5" /> คืนส่วนต่างแล้ว
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.2 rounded-md animate-pulse">
+                                    <AlertCircle className="w-2.5 h-2.5" /> ค้างคืน {tx.splitPersonalAmount} บ.
+                                  </span>
+                                )}
+                              </div>
                             ) : (
                               <div className="space-y-1">
                                 <span className="text-amber-500 font-semibold block">
-                                  พนักงานสำรองจ่าย
+                                  {tx.paidBy === 'PERSONAL_CASH' ? 'สำรองจ่าย (เงินสด)' : 'สำรองจ่าย (เงินโอน)'}
                                 </span>
                                 {tx.isReimbursed ? (
                                   <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.2 rounded-md">
@@ -806,6 +1109,22 @@ export const FinanceLedger: React.FC = () => {
                           <span className="text-[10px] text-gray-400">เบิกเงินพี่เกษม</span>
                         ) : tx.paidBy === 'PETTY_CASH' ? (
                           <span className="text-[10px] text-blue-500 font-semibold">จ่ายจากกองกลาง</span>
+                        ) : tx.paidBy === 'SPLIT' ? (
+                          <div className="space-y-0.5">
+                            <span className="text-[10px] text-purple-500 font-semibold block">จ่ายแบบผสม</span>
+                            <span className="text-[9px] text-gray-400 block">
+                              (กองกลาง {tx.splitPettyCashAmount} / ส่วนตัว {tx.splitPersonalAmount})
+                            </span>
+                            {tx.isReimbursed ? (
+                              <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.2 rounded-md">
+                                คืนส่วนต่างแล้ว
+                              </span>
+                            ) : (
+                              <span className="text-[9px] font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.2 rounded-md animate-pulse">
+                                ค้างคืน {tx.splitPersonalAmount} บ.
+                              </span>
+                            )}
+                          </div>
                         ) : (
                           <div className="flex flex-wrap items-center gap-1.5">
                             <span className="text-[10px] text-amber-500 font-semibold">
@@ -857,6 +1176,10 @@ export const FinanceLedger: React.FC = () => {
           </>
         )}
       </div>
+        </>
+      ) : (
+        renderDashboard()
+      )}
 
       {/* Transaction Entry/Edit Modal popup */}
       {showModal && (
