@@ -418,24 +418,39 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   </div>
                 )}
 
-                {/* Split details inputs */}
-                {paidBy === 'SPLIT' && type === 'EXPENSE' && (
-                  <div className="grid grid-cols-2 gap-3.5 bg-blue-50/30 dark:bg-blue-950/10 border border-blue-100/50 dark:border-blue-950/30 rounded-2xl p-4 animate-fade-in">
+                {/* Breakdown Grid (Always visible for Expense to prevent layout shift) */}
+                {type === 'EXPENSE' && (
+                  <div className="grid grid-cols-2 gap-3.5 bg-gray-50/50 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/5 rounded-2xl p-4 transition-all duration-300">
                     <div className="col-span-2">
-                      <p className="text-[11px] text-[#0071e3] dark:text-blue-400 font-bold leading-tight">
-                        *ระบบจะหักลบยอดส่วนต่างให้พนักงานสำรองจ่ายอัตโนมัติ
+                      <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium leading-tight">
+                        {paidBy === 'SPLIT' 
+                          ? '*กรอกเฉพาะยอดจ่ายจากเงินกองกลาง ระบบจะคำนวณยอดสำรองจ่ายให้อัตโนมัติ' 
+                          : '*สรุปยอดการจัดสรรเงินสำหรับรายการนี้'}
                       </p>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-blue-700 dark:text-blue-400 mb-1.5 ml-1">
+                      <label className={`block text-[11px] font-bold mb-1.5 ml-1 transition-colors ${
+                        paidBy === 'SPLIT' ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-gray-400 dark:text-gray-500'
+                      }`}>
                         จ่ายจากเงินกองกลาง (บาท)
                       </label>
                       <input
                         type="number"
                         placeholder="0.00"
-                        value={splitPettyCashAmount}
+                        disabled={paidBy !== 'SPLIT'}
+                        value={
+                          paidBy === 'PETTY_CASH' 
+                            ? amount 
+                            : paidBy === 'PERSONAL_CASH' 
+                            ? '0.00' 
+                            : splitPettyCashAmount
+                        }
                         onChange={e => setSplitPettyCashAmount(e.target.value)}
-                        className="w-full bg-white dark:bg-[#1e1e1f] border border-blue-200 dark:border-blue-900/50 rounded-xl px-3 py-2 text-sm text-[#1d1d1f] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0071e3]"
+                        className={`w-full rounded-xl px-3 py-2 text-sm transition-all ${
+                          paidBy === 'SPLIT'
+                            ? 'bg-white dark:bg-[#1e1e1f] border border-blue-200 dark:border-blue-900/50 text-[#1d1d1f] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0071e3]'
+                            : 'bg-gray-100/50 dark:bg-white/[0.01] border border-gray-200/20 dark:border-white/[0.02] text-gray-400 dark:text-gray-500 cursor-not-allowed select-none'
+                        }`}
                       />
                     </div>
                     <div>
@@ -445,11 +460,17 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       <input
                         type="text"
                         disabled
-                        value={splitPersonalAmount}
-                        className="w-full bg-gray-100 dark:bg-white/[0.02] border border-gray-200 dark:border-white/5 rounded-xl px-3 py-2 text-sm text-gray-500 dark:text-gray-400 font-semibold cursor-not-allowed select-none"
+                        value={
+                          paidBy === 'PETTY_CASH' 
+                            ? '0.00' 
+                            : paidBy === 'PERSONAL_CASH' 
+                            ? amount || '0.00' 
+                            : splitPersonalAmount
+                        }
+                        className="w-full bg-gray-100/50 dark:bg-white/[0.01] border border-gray-200/20 dark:border-white/[0.02] rounded-xl px-3 py-2 text-sm text-gray-400 dark:text-gray-500 font-semibold cursor-not-allowed select-none"
                       />
                     </div>
-                    {errors.splitSum && (
+                    {paidBy === 'SPLIT' && errors.splitSum && (
                       <p className="col-span-2 text-red-500 text-[10px] mt-1 ml-1">{errors.splitSum}</p>
                     )}
                   </div>
