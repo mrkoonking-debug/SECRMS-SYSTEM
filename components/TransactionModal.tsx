@@ -399,26 +399,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 </div>
               </div>
 
-              {/* Sub-options for Personal Cash / Personal Transfer */}
-              {(paidBy === 'PERSONAL_CASH' || paidBy === 'PERSONAL_TRANSFER') && (
-                <div className="flex gap-4.5 bg-gray-50/50 dark:bg-white/[0.01] border border-gray-100 dark:border-white/5 rounded-xl p-2.5 justify-center animate-fade-in">
-                  {[
-                    { value: 'PERSONAL_CASH', label: 'จ่ายด้วยเงินสดส่วนตัว' },
-                    { value: 'PERSONAL_TRANSFER', label: 'โอนเงินส่วนตัว' },
-                  ].map(sub => (
-                    <label key={sub.value} className="flex items-center gap-2 cursor-pointer select-none">
-                      <input
-                        type="radio"
-                        name="personal_sub"
-                        checked={paidBy === sub.value}
-                        onChange={() => setPaidBy(sub.value as any)}
-                        className="text-[#0071e3] focus:ring-[#0071e3]/30 animate-fade-in"
-                      />
-                      <span className="text-xs text-gray-600 dark:text-gray-400">{sub.label}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
 
               {/* Split details inputs */}
               {paidBy === 'SPLIT' && (
