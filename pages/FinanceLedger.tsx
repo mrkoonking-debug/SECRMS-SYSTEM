@@ -656,12 +656,18 @@ export const FinanceLedger: React.FC = () => {
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex gap-2 p-1 bg-gray-100/50 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/5 rounded-2xl w-fit">
+      <div className="relative flex p-1 bg-gray-100/50 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/5 rounded-2xl w-72 h-10 select-none">
+        {/* Sliding background pill */}
+        <div 
+          className={`absolute top-1 bottom-1 w-[calc(50%-6px)] bg-white dark:bg-[#2c2c2e] rounded-xl shadow-sm border border-gray-200/20 dark:border-white/5 transition-all duration-300 ease-out ${
+            activeTab === 'records' ? 'left-1' : 'left-[calc(50%+2px)]'
+          }`}
+        />
         <button
           onClick={() => setActiveTab('records')}
-          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+          className={`relative z-10 flex-1 py-1.5 text-xs font-bold text-center rounded-xl transition-colors duration-300 ${
             activeTab === 'records'
-              ? 'bg-white dark:bg-[#2c2c2e] text-[#0071e3] shadow-sm'
+              ? 'text-[#0071e3]'
               : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
@@ -669,9 +675,9 @@ export const FinanceLedger: React.FC = () => {
         </button>
         <button
           onClick={() => setActiveTab('dashboard')}
-          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+          className={`relative z-10 flex-1 py-1.5 text-xs font-bold text-center rounded-xl transition-colors duration-300 ${
             activeTab === 'dashboard'
-              ? 'bg-white dark:bg-[#2c2c2e] text-[#0071e3] shadow-sm'
+              ? 'text-[#0071e3]'
               : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
@@ -781,12 +787,21 @@ export const FinanceLedger: React.FC = () => {
           {/* Filter Chips Container */}
           <div className="flex flex-col md:flex-row md:items-center gap-3 w-full">
             {/* Type Filter Segmented Control */}
-            <div className="grid grid-cols-3 bg-gray-100/60 dark:bg-white/[0.03] p-0.5 rounded-lg w-full md:w-auto shrink-0 select-none border border-gray-200/20 dark:border-white/[0.03]">
+            <div className="relative grid grid-cols-3 bg-gray-100/60 dark:bg-white/[0.03] p-0.5 rounded-lg w-full md:w-56 shrink-0 select-none border border-gray-200/20 dark:border-white/[0.03] h-9">
+              <div 
+                className={`absolute top-0.5 bottom-0.5 w-[calc(33.333%-4px)] bg-white dark:bg-[#2c2c2e] rounded-md shadow-sm border border-gray-200/20 dark:border-white/5 transition-all duration-300 ease-out ${
+                  typeFilter === 'ALL' 
+                    ? 'left-0.5' 
+                    : typeFilter === 'INCOME' 
+                    ? 'left-[calc(33.333%+0.5px)]' 
+                    : 'left-[calc(66.666%+0.5px)]'
+                }`}
+              />
               <button
                 onClick={() => setTypeFilter('ALL')}
-                className={`py-1 px-2.5 rounded-md text-[11px] font-bold transition-all text-center ${
+                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 ${
                   typeFilter === 'ALL'
-                    ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-sm'
+                    ? 'text-gray-900 dark:text-white'
                     : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
                 }`}
               >
@@ -794,9 +809,9 @@ export const FinanceLedger: React.FC = () => {
               </button>
               <button
                 onClick={() => setTypeFilter('INCOME')}
-                className={`py-1 px-2.5 rounded-md text-[11px] font-bold transition-all text-center ${
+                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 ${
                   typeFilter === 'INCOME'
-                    ? 'bg-white dark:bg-white/10 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                    ? 'text-emerald-600 dark:text-emerald-400'
                     : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
                 }`}
               >
@@ -804,9 +819,9 @@ export const FinanceLedger: React.FC = () => {
               </button>
               <button
                 onClick={() => setTypeFilter('EXPENSE')}
-                className={`py-1 px-2.5 rounded-md text-[11px] font-bold transition-all text-center ${
+                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 ${
                   typeFilter === 'EXPENSE'
-                    ? 'bg-white dark:bg-white/10 text-orange-600 dark:text-[#ff9500] shadow-sm'
+                    ? 'text-orange-600 dark:text-[#ff9500]'
                     : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
                 }`}
               >
@@ -815,12 +830,23 @@ export const FinanceLedger: React.FC = () => {
             </div>
 
             {/* Source Filter Segmented Control */}
-            <div className="grid grid-cols-4 bg-gray-100/60 dark:bg-white/[0.03] p-0.5 rounded-lg w-full md:w-auto shrink-0 select-none border border-gray-200/20 dark:border-white/[0.03]">
+            <div className="relative grid grid-cols-4 bg-gray-100/60 dark:bg-white/[0.03] p-0.5 rounded-lg w-full md:w-72 shrink-0 select-none border border-gray-200/20 dark:border-white/[0.03] h-9">
+              <div 
+                className={`absolute top-0.5 bottom-0.5 w-[calc(25%-4px)] bg-white dark:bg-[#2c2c2e] rounded-md shadow-sm border border-gray-200/20 dark:border-white/5 transition-all duration-300 ease-out ${
+                  sourceFilter === 'ALL' 
+                    ? 'left-0.5' 
+                    : sourceFilter === 'PETTY_CASH' 
+                    ? 'left-[calc(25%+0.5px)]' 
+                    : sourceFilter === 'PERSONAL_CASH' 
+                    ? 'left-[calc(50%+0.5px)]' 
+                    : 'left-[calc(75%+0.5px)]'
+                }`}
+              />
               <button
                 onClick={() => setSourceFilter('ALL')}
-                className={`py-1 px-2.5 rounded-md text-[11px] font-bold transition-all text-center ${
+                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 ${
                   sourceFilter === 'ALL'
-                    ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-sm'
+                    ? 'text-gray-900 dark:text-white'
                     : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
                 }`}
               >
@@ -828,9 +854,9 @@ export const FinanceLedger: React.FC = () => {
               </button>
               <button
                 onClick={() => setSourceFilter('PETTY_CASH')}
-                className={`py-1 px-2.5 rounded-md text-[11px] font-bold transition-all text-center ${
+                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 ${
                   sourceFilter === 'PETTY_CASH'
-                    ? 'bg-white dark:bg-white/10 text-blue-600 dark:text-blue-400 shadow-sm'
+                    ? 'text-blue-600 dark:text-blue-400'
                     : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
                 }`}
               >
@@ -838,9 +864,9 @@ export const FinanceLedger: React.FC = () => {
               </button>
               <button
                 onClick={() => setSourceFilter('PERSONAL_CASH')}
-                className={`py-1 px-2.5 rounded-md text-[11px] font-bold transition-all text-center ${
+                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 ${
                   sourceFilter === 'PERSONAL_CASH'
-                    ? 'bg-white dark:bg-white/10 text-amber-600 dark:text-amber-400 shadow-sm'
+                    ? 'text-amber-600 dark:text-amber-400'
                     : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
                 }`}
               >
@@ -848,9 +874,9 @@ export const FinanceLedger: React.FC = () => {
               </button>
               <button
                 onClick={() => setSourceFilter('SPLIT')}
-                className={`py-1 px-2.5 rounded-md text-[11px] font-bold transition-all text-center ${
+                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 ${
                   sourceFilter === 'SPLIT'
-                    ? 'bg-white dark:bg-white/10 text-purple-600 dark:text-purple-400 shadow-sm'
+                    ? 'text-purple-600 dark:text-purple-400'
                     : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
                 }`}
               >
