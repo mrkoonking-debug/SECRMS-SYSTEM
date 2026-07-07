@@ -38,7 +38,193 @@ export const FinanceLedger: React.FC = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const txList = await MockDb.getPettyCashTransactions();
+      let txList = await MockDb.getPettyCashTransactions();
+      
+      // Auto-seed if Firestore is empty and configured
+      if (txList.length === 0 && MockDb.isConfigured) {
+        console.log("Firestore pettycash collection is empty, auto-seeding initial Excel transactions...");
+        const seedData = [
+          {
+            date: '2026-07-01',
+            type: 'INCOME' as const,
+            amount: 1850,
+            description: 'ยอดคงเหลือยกมา',
+            category: 'เติมเงินกองกลาง',
+            paidBy: 'PETTY_CASH' as const,
+            staffName: 'ไอซ์',
+            isReimbursed: false,
+            note: 'ยอดยกมาเริ่มต้น'
+          },
+          {
+            date: '2026-07-01',
+            type: 'EXPENSE' as const,
+            amount: 780,
+            description: 'ค่าส่งของเก็บปลายทาง (NTC HIP)',
+            category: 'ค่าขนส่ง',
+            paidBy: 'PETTY_CASH' as const,
+            staffName: 'ไอซ์',
+            isReimbursed: false,
+            note: 'Brand: HIP&ZK'
+          },
+          {
+            date: '2026-07-01',
+            type: 'EXPENSE' as const,
+            amount: 200,
+            description: 'ค่าส่งของเก็บปลายทาง (NTC Bennex)',
+            category: 'ค่าขนส่ง',
+            paidBy: 'PETTY_CASH' as const,
+            staffName: 'ไอซ์',
+            isReimbursed: false,
+            note: 'Brand: HIP&ZK'
+          },
+          {
+            date: '2026-07-01',
+            type: 'EXPENSE' as const,
+            amount: 180,
+            description: 'ค่าส่งของเก็บปลายทาง (NTC TCT)',
+            category: 'ค่าขนส่ง',
+            paidBy: 'PETTY_CASH' as const,
+            staffName: 'ไอซ์',
+            isReimbursed: false,
+            note: 'Brand: VISION Dahua...'
+          },
+          {
+            date: '2026-07-02',
+            type: 'EXPENSE' as const,
+            amount: 90,
+            description: 'ค่าส่งของเก็บปลายทาง (NTC HIP)',
+            category: 'ค่าขนส่ง',
+            paidBy: 'PETTY_CASH' as const,
+            staffName: 'ไอซ์',
+            isReimbursed: false,
+            note: 'Brand: HIP&ZK'
+          },
+          {
+            date: '2026-07-02',
+            type: 'EXPENSE' as const,
+            amount: 270,
+            description: 'ค่าส่งของเก็บปลายทาง (NTC HIK)',
+            category: 'ค่าขนส่ง',
+            paidBy: 'PETTY_CASH' as const,
+            staffName: 'ไอซ์',
+            isReimbursed: false,
+            note: 'Brand: HIKVISION'
+          },
+          {
+            date: '2026-07-02',
+            type: 'EXPENSE' as const,
+            amount: 150,
+            description: 'ค่าของใช้สำนักงาน (SHOPEE น้ำยาเช็ดกระจก 2 ขวด)',
+            category: 'ค่าของใช้สำนักงาน',
+            paidBy: 'PERSONAL_CASH' as const,
+            staffName: 'ไอซ์',
+            isReimbursed: true,
+            note: 'ไอซ์ออกให้ 1 บาท (151 ยอดเดิม)',
+            reimbursedAt: new Date('2026-07-02T12:00:00Z').toISOString(),
+            reimbursedBy: 'SEC Admin'
+          },
+          {
+            date: '2026-07-02',
+            type: 'EXPENSE' as const,
+            amount: 210,
+            description: 'ค่าส่งของเก็บปลายทาง (NTC TCT)',
+            category: 'ค่าขนส่ง',
+            paidBy: 'PETTY_CASH' as const,
+            staffName: 'ไอซ์',
+            isReimbursed: false,
+            note: 'Brand: HIKVISION'
+          },
+          {
+            date: '2026-07-02',
+            type: 'EXPENSE' as const,
+            amount: 500,
+            description: 'ค่าป้าแม่บ้าน (Sunee)',
+            category: 'ค่าบริการ',
+            paidBy: 'PETTY_CASH' as const,
+            staffName: 'ไอซ์',
+            isReimbursed: false,
+            note: 'Brand: HIKVISION'
+          },
+          {
+            date: '2026-07-03',
+            type: 'INCOME' as const,
+            amount: 6000,
+            description: 'เบิกเงิน Advance',
+            category: 'เติมเงินกองกลาง',
+            paidBy: 'PETTY_CASH' as const,
+            staffName: 'ไอซ์',
+            isReimbursed: false,
+            note: 'เติมเงินกองกลางเข้ากล่อง'
+          },
+          {
+            date: '2026-07-04',
+            type: 'EXPENSE' as const,
+            amount: 90,
+            description: 'ค่าส่งของเก็บปลายทาง (มาส่ง HIP)',
+            category: 'ค่าขนส่ง',
+            paidBy: 'PETTY_CASH' as const,
+            staffName: 'คง',
+            isReimbursed: false
+          },
+          {
+            date: '2026-07-05',
+            type: 'EXPENSE' as const,
+            amount: 90,
+            description: 'ค่าส่งของเก็บปลายทาง (NTC TCT)',
+            category: 'ค่าขนส่ง',
+            paidBy: 'PETTY_CASH' as const,
+            staffName: 'คง',
+            isReimbursed: false
+          },
+          {
+            date: '2026-07-06',
+            type: 'EXPENSE' as const,
+            amount: 90,
+            description: 'ค่าส่งของเก็บปลายทาง (NTC TCT)',
+            category: 'ค่าขนส่ง',
+            paidBy: 'PETTY_CASH' as const,
+            staffName: 'ไอซ์',
+            isReimbursed: false
+          },
+          {
+            date: '2026-07-06',
+            type: 'EXPENSE' as const,
+            amount: 1800,
+            description: 'จ่ายเบี้ยเลี้ยง (ค่าเงินน้องฝึกงาน ย้อนหลัง 3/7/26)',
+            category: 'ค่าแรง/เบี้ยเลี้ยง',
+            paidBy: 'PETTY_CASH' as const,
+            staffName: 'ส่วนกลาง',
+            isReimbursed: false
+          },
+          {
+            date: '2026-07-06',
+            type: 'EXPENSE' as const,
+            amount: 500,
+            description: 'ค่าป้าแม่บ้าน (Sunee)',
+            category: 'ค่าบริการ',
+            paidBy: 'PETTY_CASH' as const,
+            staffName: 'ไอซ์',
+            isReimbursed: false
+          },
+          {
+            date: '2026-07-06',
+            type: 'EXPENSE' as const,
+            amount: 100,
+            description: 'ค่าส่งของเก็บปลายทาง (TB Part Express / HIP)',
+            category: 'ค่าขนส่ง',
+            paidBy: 'PETTY_CASH' as const,
+            staffName: 'ไอซ์',
+            isReimbursed: false,
+            note: 'Brand: HIP&ZK'
+          }
+        ];
+
+        for (const tx of seedData) {
+          await MockDb.addPettyCashTransaction(tx);
+        }
+        txList = await MockDb.getPettyCashTransactions();
+      }
+
       const summ = await MockDb.getPettyCashSummary();
       setTransactions(txList);
       setSummary(summ);

@@ -37,7 +37,227 @@ let OFFLINE_USERS: any[] = [
   }
 ];
 
-let OFFLINE_PETTY_CASH: PettyCashTransaction[] = [];
+let OFFLINE_PETTY_CASH: PettyCashTransaction[] = [
+  {
+    id: 'tx-seed-1',
+    date: '2026-07-01',
+    type: 'INCOME',
+    amount: 1850,
+    description: 'ยอดคงเหลือยกมา',
+    category: 'เติมเงินกองกลาง',
+    paidBy: 'PETTY_CASH',
+    staffName: 'ไอซ์',
+    isReimbursed: false,
+    createdAt: '2026-07-01T00:00:00.000Z',
+    updatedAt: '2026-07-01T00:00:00.000Z'
+  },
+  {
+    id: 'tx-seed-2',
+    date: '2026-07-01',
+    type: 'EXPENSE',
+    amount: 780,
+    description: 'ค่าส่งของเก็บปลายทาง (NTC HIP)',
+    category: 'ค่าขนส่ง',
+    paidBy: 'PETTY_CASH',
+    staffName: 'ไอซ์',
+    isReimbursed: false,
+    note: 'Brand: HIP&ZK',
+    createdAt: '2026-07-01T01:00:00.000Z',
+    updatedAt: '2026-07-01T01:00:00.000Z'
+  },
+  {
+    id: 'tx-seed-3',
+    date: '2026-07-01',
+    type: 'EXPENSE',
+    amount: 200,
+    description: 'ค่าส่งของเก็บปลายทาง (NTC Bennex)',
+    category: 'ค่าขนส่ง',
+    paidBy: 'PETTY_CASH',
+    staffName: 'ไอซ์',
+    isReimbursed: false,
+    note: 'Brand: HIP&ZK',
+    createdAt: '2026-07-01T02:00:00.000Z',
+    updatedAt: '2026-07-01T02:00:00.000Z'
+  },
+  {
+    id: 'tx-seed-4',
+    date: '2026-07-01',
+    type: 'EXPENSE',
+    amount: 180,
+    description: 'ค่าส่งของเก็บปลายทาง (NTC TCT)',
+    category: 'ค่าขนส่ง',
+    paidBy: 'PETTY_CASH',
+    staffName: 'ไอซ์',
+    isReimbursed: false,
+    note: 'Brand: VISION Dahua...',
+    createdAt: '2026-07-01T03:00:00.000Z',
+    updatedAt: '2026-07-01T03:00:00.000Z'
+  },
+  {
+    id: 'tx-seed-5',
+    date: '2026-07-02',
+    type: 'EXPENSE',
+    amount: 90,
+    description: 'ค่าส่งของเก็บปลายทาง (NTC HIP)',
+    category: 'ค่าขนส่ง',
+    paidBy: 'PETTY_CASH',
+    staffName: 'ไอซ์',
+    isReimbursed: false,
+    note: 'Brand: HIP&ZK',
+    createdAt: '2026-07-02T01:00:00.000Z',
+    updatedAt: '2026-07-02T01:00:00.000Z'
+  },
+  {
+    id: 'tx-seed-6',
+    date: '2026-07-02',
+    type: 'EXPENSE',
+    amount: 270,
+    description: 'ค่าส่งของเก็บปลายทาง (NTC HIK)',
+    category: 'ค่าขนส่ง',
+    paidBy: 'PETTY_CASH',
+    staffName: 'ไอซ์',
+    isReimbursed: false,
+    note: 'Brand: HIKVISION',
+    createdAt: '2026-07-02T02:00:00.000Z',
+    updatedAt: '2026-07-02T02:00:00.000Z'
+  },
+  {
+    id: 'tx-seed-7',
+    date: '2026-07-02',
+    type: 'EXPENSE',
+    amount: 150,
+    description: 'ค่าของใช้สำนักงาน (SHOPEE น้ำยาเช็ดกระจก 2 ขวด)',
+    category: 'ค่าของใช้สำนักงาน',
+    paidBy: 'PERSONAL_CASH',
+    staffName: 'ไอซ์',
+    isReimbursed: true,
+    note: 'ไอซ์ออกให้ 1 บาท (151 ยอดเดิม)',
+    reimbursedAt: '2026-07-02T05:00:00.000Z',
+    reimbursedBy: 'SEC Admin',
+    createdAt: '2026-07-02T03:00:00.000Z',
+    updatedAt: '2026-07-02T05:00:00.000Z'
+  },
+  {
+    id: 'tx-seed-8',
+    date: '2026-07-02',
+    type: 'EXPENSE',
+    amount: 210,
+    description: 'ค่าส่งของเก็บปลายทาง (NTC TCT)',
+    category: 'ค่าขนส่ง',
+    paidBy: 'PETTY_CASH',
+    staffName: 'ไอซ์',
+    isReimbursed: false,
+    note: 'Brand: HIKVISION',
+    createdAt: '2026-07-02T04:00:00.000Z',
+    updatedAt: '2026-07-02T04:00:00.000Z'
+  },
+  {
+    id: 'tx-seed-9',
+    date: '2026-07-03',
+    type: 'EXPENSE',
+    amount: 500,
+    description: 'ค่าป้าแม่บ้าน (Sunee)',
+    category: 'ค่าบริการ',
+    paidBy: 'PETTY_CASH',
+    staffName: 'ไอซ์',
+    isReimbursed: false,
+    note: 'Brand: HIKVISION',
+    createdAt: '2026-07-03T01:00:00.000Z',
+    updatedAt: '2026-07-03T01:00:00.000Z'
+  },
+  {
+    id: 'tx-seed-10',
+    date: '2026-07-03',
+    type: 'INCOME',
+    amount: 6000,
+    description: 'เบิกเงิน Advance',
+    category: 'เติมเงินกองกลาง',
+    paidBy: 'PETTY_CASH',
+    staffName: 'ไอซ์',
+    isReimbursed: false,
+    createdAt: '2026-07-03T02:00:00.000Z',
+    updatedAt: '2026-07-03T02:00:00.000Z'
+  },
+  {
+    id: 'tx-seed-11',
+    date: '2026-07-04',
+    type: 'EXPENSE',
+    amount: 90,
+    description: 'ค่าส่งของเก็บปลายทาง (มาส่ง HIP)',
+    category: 'ค่าขนส่ง',
+    paidBy: 'PETTY_CASH',
+    staffName: 'คง',
+    isReimbursed: false,
+    createdAt: '2026-07-04T01:00:00.000Z',
+    updatedAt: '2026-07-04T01:00:00.000Z'
+  },
+  {
+    id: 'tx-seed-12',
+    date: '2026-07-05',
+    type: 'EXPENSE',
+    amount: 90,
+    description: 'ค่าส่งของเก็บปลายทาง (NTC TCT)',
+    category: 'ค่าขนส่ง',
+    paidBy: 'PETTY_CASH',
+    staffName: 'คง',
+    isReimbursed: false,
+    createdAt: '2026-07-05T01:00:00.000Z',
+    updatedAt: '2026-07-05T01:00:00.000Z'
+  },
+  {
+    id: 'tx-seed-13',
+    date: '2026-07-06',
+    type: 'EXPENSE',
+    amount: 90,
+    description: 'ค่าส่งของเก็บปลายทาง (NTC TCT)',
+    category: 'ค่าขนส่ง',
+    paidBy: 'PETTY_CASH',
+    staffName: 'ไอซ์',
+    isReimbursed: false,
+    createdAt: '2026-07-06T01:00:00.000Z',
+    updatedAt: '2026-07-06T01:00:00.000Z'
+  },
+  {
+    id: 'tx-seed-14',
+    date: '2026-07-06',
+    type: 'EXPENSE',
+    amount: 1800,
+    description: 'จ่ายเบี้ยเลี้ยง (ค่าเงินน้องฝึกงาน ย้อนหลัง 3/7/26)',
+    category: 'ค่าแรง/เบี้ยเลี้ยง',
+    paidBy: 'PETTY_CASH',
+    staffName: 'ส่วนกลาง',
+    isReimbursed: false,
+    createdAt: '2026-07-06T02:00:00.000Z',
+    updatedAt: '2026-07-06T02:00:00.000Z'
+  },
+  {
+    id: 'tx-seed-15',
+    date: '2026-07-06',
+    type: 'EXPENSE',
+    amount: 500,
+    description: 'ค่าป้าแม่บ้าน (Sunee)',
+    category: 'ค่าบริการ',
+    paidBy: 'PETTY_CASH',
+    staffName: 'ไอซ์',
+    isReimbursed: false,
+    createdAt: '2026-07-06T03:00:00.000Z',
+    updatedAt: '2026-07-06T03:00:00.000Z'
+  },
+  {
+    id: 'tx-seed-16',
+    date: '2026-07-06',
+    type: 'EXPENSE',
+    amount: 100,
+    description: 'ค่าส่งของเก็บปลายทาง (TB Part Express / HIP)',
+    category: 'ค่าขนส่ง',
+    paidBy: 'PETTY_CASH',
+    staffName: 'ไอซ์',
+    isReimbursed: false,
+    note: 'Brand: HIP&ZK',
+    createdAt: '2026-07-06T04:00:00.000Z',
+    updatedAt: '2026-07-06T04:00:00.000Z'
+  }
+];
 
 let OFFLINE_BRANDS: any[] = BRAND_OPTIONS.filter(b => b.value !== 'Other').map((b, i) => ({ id: `brand-${i}`, value: b.value, label: b.label }));
 let OFFLINE_DISTRIBUTORS: any[] = DISTRIBUTOR_OPTIONS.filter(d => d.value !== 'Other').map((d, i) => ({ id: `dist-${i}`, value: d.value, label: d.label }));
@@ -103,6 +323,7 @@ const mapDocToRMA = (d: any): RMA => {
 };
 
 export const MockDb = {
+  isConfigured,
   login: async (u: string, p: string): Promise<{ success: boolean; error?: string }> => {
     if (!isConfigured || !auth) {
       return { success: false, error: "Firebase Authentication not configured" };
