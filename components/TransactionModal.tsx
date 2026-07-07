@@ -382,7 +382,17 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 {type === 'EXPENSE' && (
                   <div>
                     <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2 ml-1">จ่ายด้วยเงินก้อนไหน?</label>
-                    <div className="grid grid-cols-3 bg-gray-100 dark:bg-black/20 p-0.5 rounded-xl border border-gray-200/20 dark:border-white/5 select-none h-11 items-center">
+                    <div className="relative flex bg-gray-100 dark:bg-black/20 p-0.5 rounded-full border border-gray-200/20 dark:border-white/5 select-none h-11 items-center">
+                      {/* Sliding Highlight Pill */}
+                      <div 
+                        className={`absolute top-0.5 bottom-0.5 w-[calc(33.333%-2px)] rounded-full bg-[#0071e3] shadow-sm transition-all duration-300 ease-out ${
+                          paidBy === 'PETTY_CASH' 
+                            ? 'left-0.5' 
+                            : paidBy === 'PERSONAL_CASH' 
+                            ? 'left-[calc(33.333%+0.5px)]' 
+                            : 'left-[calc(66.666%+0.5px)]'
+                        }`}
+                      />
                       {[
                         { value: 'PETTY_CASH', label: 'เงินกองกลาง' },
                         { value: 'PERSONAL_CASH', label: 'สำรองจ่าย' },
@@ -404,9 +414,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                                 setPaidBy(opt.value as any);
                               }
                             }}
-                            className={`py-2 text-xs font-bold rounded-lg transition-all text-center leading-tight h-9 ${
+                            className={`relative z-10 flex-1 py-2 text-xs font-bold text-center rounded-full transition-colors duration-300 leading-tight h-9 ${
                               isSelected
-                                ? 'bg-[#0071e3] text-white shadow-sm font-bold'
+                                ? 'text-white font-bold'
                                 : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
                             }`}
                           >
