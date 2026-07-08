@@ -392,7 +392,7 @@ export const FinanceLedger: React.FC = () => {
   };
 
   const handleReimburseAllForStaff = async (staffName: string) => {
-    if (!confirm(`ยืนยันคืนเงินสำรองจ่ายทั้งหมดให้กับคุณ ${staffName} หรือไม่?`)) return;
+    if (!confirm(`ยืนยันคืนเงินสำรองจ่ายทั้งหมดให้กับ ${staffName} หรือไม่?`)) return;
     try {
       // Find all unpaid advance transactions for this staff
       const unpaid = transactions.filter(
@@ -518,7 +518,7 @@ export const FinanceLedger: React.FC = () => {
     })).sort((a, b) => b.value - a.value);
 
     const staffData = Object.entries(data.staffBreakdown).map(([name, value]) => ({
-      name: `คุณ${name}`,
+      name,
       value
     })).sort((a, b) => b.value - a.value);
 
@@ -838,7 +838,7 @@ export const FinanceLedger: React.FC = () => {
                       {staffName.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <h3 className="text-sm sm:text-base font-bold text-[#1d1d1f] dark:text-white">คุณ{staffName}</h3>
+                      <h3 className="text-sm sm:text-base font-bold text-[#1d1d1f] dark:text-white">{staffName}</h3>
                       <p className="text-[10px] text-gray-400 mt-0.5">{data.txs.length} รายการที่รอคืน</p>
                     </div>
                   </div>
@@ -852,9 +852,10 @@ export const FinanceLedger: React.FC = () => {
                     </div>
                     <button
                       onClick={() => handleReimburseAllForStaff(staffName)}
-                      className="px-4 py-2 bg-gradient-to-r from-blue-500 to-[#0071e3] hover:from-blue-600 hover:to-[#0077ed] text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-md shadow-blue-500/10 outline-none"
+                      className="px-4 py-2.5 bg-gradient-to-r from-blue-500 to-[#0071e3] hover:from-blue-600 hover:to-[#0077ed] text-white font-black rounded-xl text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-md shadow-blue-500/10 outline-none"
                     >
-                      คืนเงินทั้งหมด
+                      <Coins className="w-3.5 h-3.5" />
+                      <span>คืนเงินทั้งหมด ({formatCurrency(data.total)})</span>
                     </button>
                   </div>
                 </div>
@@ -865,6 +866,7 @@ export const FinanceLedger: React.FC = () => {
                     <thead>
                       <tr className="border-b border-gray-150/30 dark:border-white/5 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider text-left">
                         <th className="pb-2 pl-2">วันที่ / เวลา</th>
+                        <th className="pb-2">ใบเสร็จ</th>
                         <th className="pb-2">รายละเอียดรายการ</th>
                         <th className="pb-2">หมวดหมู่</th>
                         <th className="pb-2">วิธีจ่ายเงิน</th>
@@ -883,10 +885,40 @@ export const FinanceLedger: React.FC = () => {
                               {tx.time && <div className="text-[10px] text-gray-400 mt-0.5">{tx.time}</div>}
                             </td>
 
+                            {/* Receipt Thumbnail */}
+                            <td className="py-3">
+                              {tx.receiptUrl ? (
+                                <button
+                                  onClick={() => setActiveReceiptUrl(tx.receiptUrl!)}
+                                  className="w-10 h-10 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-transform shadow-sm"
+                                  title="ดูใบเสร็จ"
+                                >
+                                  <img src={tx.receiptUrl} className="w-full h-full object-cover" alt="Receipt" />
+                                </button>
+                              ) : (
+                                <span className="text-gray-400 italic text-[10px]">ไม่มีรูป</span>
+                              )}
+                            </td>
+
                             {/* Description */}
-                            <td className="py-3 max-w-[250px] truncate">
-                              <span className="font-semibold block truncate" title={tx.description}>{tx.description}</span>
-                              {tx.note && <span className="text-[10px] text-gray-400 italic block mt-0.5">Note: {tx.note}</span>}
+                            <td className="py-3 max-w-[250px]">
+                              <div className="space-y-1">
+                                <span className="font-semibold text-gray-800 dark:text-gray-200 block truncate" title={tx.description}>
+                                  {tx.description}
+                                </span>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  {tx.refRmaId && (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-md font-mono text-[9px] font-bold">
+                                      RMA: {tx.refRmaId}
+                                    </span>
+                                  )}
+                                  {tx.note && (
+                                    <span className="text-[10px] text-gray-400 dark:text-gray-500 italic block">
+                                      หมายเหตุ: {tx.note}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
                             </td>
 
                             {/* Category */}
@@ -912,9 +944,11 @@ export const FinanceLedger: React.FC = () => {
                             <td className="py-3 text-right pr-2">
                               <button
                                 onClick={() => handleReimburse(tx.id)}
-                                className="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg text-[10px] transition-colors active:scale-95 shadow-sm outline-none"
+                                className="px-4 py-2 bg-[#34c759] hover:bg-[#30b34f] text-white font-bold rounded-xl text-xs shadow-sm shadow-emerald-500/10 hover:shadow-emerald-500/20 active:scale-95 transition-all outline-none inline-flex items-center gap-1.5"
+                                title="กดบันทึกคืนเงินพนักงาน"
                               >
-                                คืนเงิน
+                                <Check className="w-3.5 h-3.5" />
+                                <span>คืนเงินพนักงาน</span>
                               </button>
                             </td>
                           </tr>
@@ -925,32 +959,49 @@ export const FinanceLedger: React.FC = () => {
                 </div>
 
                 {/* Mobile List View of items */}
-                <div className="sm:hidden space-y-2.5">
+                <div className="sm:hidden space-y-3">
                   {data.txs.map(tx => {
                     const personalAmount = tx.paidBy === 'SPLIT' ? (tx.splitPersonalAmount || 0) : tx.amount;
                     return (
-                      <div key={tx.id} className="p-3 bg-gray-50/50 dark:bg-[#1c1c1e]/40 border border-gray-200/30 dark:border-white/5 rounded-2xl flex items-center justify-between gap-3 text-xs">
-                        <div className="min-w-0 flex-1">
-                          <span className="font-semibold text-gray-700 dark:text-gray-200 block truncate">{tx.description}</span>
-                          <div className="text-[10px] text-gray-400 mt-1 flex items-center gap-1.5 flex-wrap">
-                            <span className="font-mono">{tx.date}</span>
-                            <span>•</span>
-                            <span>{tx.category}</span>
-                            <span>•</span>
-                            <span className="text-[#ff9500] font-medium">
-                              {tx.paidBy === 'PERSONAL_CASH' ? 'เงินสด' : tx.paidBy === 'PERSONAL_TRANSFER' ? 'เงินโอน' : 'จ่ายแบบผสม'}
-                            </span>
+                      <div key={tx.id} className="p-4 bg-gray-50/50 dark:bg-[#1c1c1e]/40 border border-gray-200/30 dark:border-white/5 rounded-2xl space-y-3 text-xs">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <span className="font-semibold text-gray-700 dark:text-gray-200 block truncate">{tx.description}</span>
+                            <div className="text-[10px] text-gray-400 flex items-center gap-1.5 flex-wrap">
+                              <span className="font-mono">{tx.date}</span>
+                              <span>•</span>
+                              <span>{tx.category}</span>
+                              <span>•</span>
+                              <span className="text-[#ff9500] font-medium">
+                                {tx.paidBy === 'PERSONAL_CASH' ? 'เงินสด' : tx.paidBy === 'PERSONAL_TRANSFER' ? 'เงินโอน' : 'จ่ายแบบผสม'}
+                              </span>
+                            </div>
+                            {tx.refRmaId && (
+                              <span className="inline-block px-1.5 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-md font-mono text-[9px] font-bold">
+                                RMA: {tx.refRmaId}
+                              </span>
+                            )}
+                            {tx.note && <p className="text-[10px] text-gray-400 italic">หมายเหตุ: {tx.note}</p>}
                           </div>
+                          {tx.receiptUrl && (
+                            <button
+                              onClick={() => setActiveReceiptUrl(tx.receiptUrl!)}
+                              className="w-12 h-12 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 shrink-0 shadow-sm"
+                            >
+                              <img src={tx.receiptUrl} className="w-full h-full object-cover" alt="Receipt" />
+                            </button>
+                          )}
                         </div>
-                        <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
-                          <span className="font-bold text-[#1d1d1f] dark:text-white tabular-nums">
+                        <div className="pt-2 border-t border-gray-150/30 dark:border-white/5 flex items-center justify-between">
+                          <span className="font-bold text-sm text-[#1d1d1f] dark:text-white tabular-nums">
                             {formatCurrency(personalAmount)}
                           </span>
                           <button
                             onClick={() => handleReimburse(tx.id)}
-                            className="px-2 py-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg text-[9px] transition-colors active:scale-95 outline-none"
+                            className="px-4 py-2 bg-[#34c759] hover:bg-[#30b34f] text-white font-bold rounded-xl text-[11px] shadow-sm transition-colors active:scale-95 flex items-center gap-1"
                           >
-                            คืนเงิน
+                            <Check className="w-3.5 h-3.5" />
+                            <span>คืนเงิน</span>
                           </button>
                         </div>
                       </div>
