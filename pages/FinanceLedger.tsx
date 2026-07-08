@@ -35,6 +35,8 @@ export const FinanceLedger: React.FC = () => {
   const [dashboardMonth, setDashboardMonth] = useState<string>(''); // YYYY-MM or 'ALL'
   const [selectedTx, setSelectedTx] = useState<PettyCashTransaction | undefined>(undefined);
   const [activeReceiptUrl, setActiveReceiptUrl] = useState<string | null>(null);
+  const [execMode, setExecMode] = useState(false);
+  const [targetFloat, setTargetFloat] = useState<number>(5000);
 
   const getAvailableMonths = () => {
     const months = new Set<string>();
@@ -517,7 +519,7 @@ export const FinanceLedger: React.FC = () => {
     })).sort((a, b) => b.value - a.value);
 
     const staffData = Object.entries(data.staffBreakdown).map(([name, value]) => ({
-      name,
+      name: name,
       value
     })).sort((a, b) => b.value - a.value);
 
@@ -555,6 +557,168 @@ export const FinanceLedger: React.FC = () => {
       return null;
     };
 
+    // Calculate pending advances
+    const pendingTxs = transactions.filter(
+      tx => tx.type === 'EXPENSE' && !tx.isReimbursed &&
+      (tx.paidBy === 'PERSONAL_CASH' || tx.paidBy === 'PERSONAL_TRANSFER' || tx.paidBy === 'SPLIT')
+    );
+
+    const netRemaining = summary.pettyCashBalance - summary.totalPersonalAdvance;
+    const requestedAmount = Math.max(0, targetFloat - netRemaining);
+
+    if (execMode) {
+      return (
+        <div className="space-y-6 animate-fade-in">
+          {/* Executive Control bar inside the view */}
+          <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-4 md:p-6 backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-[#1d1d1f] dark:text-white">ใบสรุปเสนอเบิกเงินสำหรับผู้บริหาร</h3>
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5">จับภาพหน้าจอนี้เพื่อส่งรายงานเบิกเติมเงินกองกลาง</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500 dark:text-gray-400">วงเงินกองกลางเป้าหมาย:</span>
+                <input
+                  type="number"
+                  value={targetFloat}
+                  onChange={e => setTargetFloat(Number(e.target.value) || 0)}
+                  className="w-24 px-2.5 py-1.5 bg-white dark:bg-[#1c1c1e] border border-gray-205 dark:border-white/10 rounded-xl text-xs font-bold text-center text-[#1d1d1f] dark:text-white outline-none focus:border-[#0071e3] shadow-sm"
+                />
+              </div>
+              <button
+                onClick={() => setExecMode(false)}
+                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold transition-all active:scale-95 shadow-md shadow-orange-500/10"
+              >
+                ปิดโหมดผู้บริหาร
+              </button>
+            </div>
+          </div>
+
+          {/* Screenshot Card Container */}
+          <div className="bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-[#333] rounded-3xl p-6 md:p-8 shadow-2xl space-y-6 text-[#1d1d1f] dark:text-white">
+            
+            {/* Report Header */}
+            <div className="flex justify-between items-start border-b border-gray-200 dark:border-white/10 pb-6">
+              <div className="space-y-1">
+                <span className="px-2.5 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-black rounded-lg uppercase tracking-wider">
+                  รายงานการเงินภายใน
+                </span>
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight mt-1.5">ใบขออนุมัติเติมเงินกองกลางร้าน</h1>
+                <p className="text-xs text-gray-400">สรุปรายงานยอดคงเหลือและรายการค้างคืนพนักงาน ณ วันที่ {new Date().toLocaleDateString('th-TH')}</p>
+              </div>
+              <div className="text-right">
+                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 ml-auto">
+                  <Landmark className="w-6 h-6" />
+                </div>
+              </div>
+            </div>
+
+            {/* Calculations and replenishments */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 bg-gray-50 dark:bg-white/[0.02] border border-gray-150 dark:border-white/5 rounded-2xl">
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block">1. เงินสดปัจจุบันในกล่อง</span>
+                <span className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white block mt-1.5 tabular-nums">
+                  {formatCurrency(summary.pettyCashBalance)}
+                </span>
+                <span className="text-[9px] text-gray-400 block mt-1 leading-tight">*ยอดเงินสดที่นับได้ในกล่องจริง</span>
+              </div>
+              <div className="p-4 bg-gray-50 dark:bg-white/[0.02] border border-gray-150 dark:border-white/5 rounded-2xl">
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block text-red-500">2. หัก: ยอดค้างจ่ายคืนพนักงาน</span>
+                <span className="text-lg sm:text-xl font-bold text-red-500 block mt-1.5 tabular-nums">
+                  -{formatCurrency(summary.totalPersonalAdvance)}
+                </span>
+                <span className="text-[9px] text-gray-400 block mt-1 leading-tight">*เงินส่วนตัวที่พนักงานช่วยสำรองจ่ายล่วงหน้า</span>
+              </div>
+              <div className="p-4 bg-orange-500/5 dark:bg-orange-500/[0.03] border border-orange-500/20 rounded-2xl">
+                <span className="text-[10px] text-orange-500 font-bold uppercase tracking-wider block">3. ยอดเงินคงเหลือสุทธิ</span>
+                <span className={`text-lg sm:text-xl font-black block mt-1.5 tabular-nums ${netRemaining >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                  {formatCurrency(netRemaining)}
+                </span>
+                <span className="text-[9px] text-gray-400 block mt-1 leading-tight">*ยอดจริงหลังหักหนี้ค้างคืนพนักงานแล้ว</span>
+              </div>
+            </div>
+
+            {/* replenishments calculation sheet */}
+            <div className="p-5 bg-blue-500/5 dark:bg-blue-500/[0.02] border border-blue-500/20 rounded-2xl space-y-3.5">
+              <h3 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">สูตรคำนวณขออนุมัติเติมเงินกองกลาง</h3>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
+                  <span>วงเงินกองกลางที่ควรมี (Standard float):</span>
+                  <span className="font-semibold tabular-nums">{formatCurrency(targetFloat)}</span>
+                </div>
+                <div className="flex justify-between items-center text-gray-600 dark:text-gray-400 border-b border-gray-200/50 dark:border-white/5 pb-2">
+                  <span>หัก ยอดเงินคงเหลือสุทธิ (Net remaining fund):</span>
+                  <span className="font-semibold tabular-nums">({formatCurrency(netRemaining)})</span>
+                </div>
+                <div className="flex justify-between items-center text-sm font-black pt-1">
+                  <span className="text-blue-600 dark:text-blue-400">จำนวนเงินที่ต้องอนุมัติเบิกเติมใหม่:</span>
+                  <span className="text-base text-blue-600 dark:text-blue-400 tabular-nums bg-blue-500/10 px-3 py-1 rounded-xl">
+                    {formatCurrency(requestedAmount)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* breakdown of pending items */}
+            <div className="space-y-3">
+              <div>
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">รายละเอียดรายการค้างคืนพนักงานที่รอการเบิกจ่ายจริง</h3>
+                <p className="text-[9px] text-gray-400">รายการสำรองจ่ายพนักงานและเบี้ยเลี้ยงที่ยังไม่ได้เคลียร์ตู้เงินสด</p>
+              </div>
+
+              {pendingTxs.length === 0 ? (
+                <p className="text-xs text-gray-400 italic text-center py-4 border border-dashed border-gray-200 dark:border-white/10 rounded-2xl">ไม่มีรายการสำรองจ่ายค้างคืน</p>
+              ) : (
+                <div className="overflow-hidden border border-gray-200 dark:border-white/10 rounded-2xl">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-gray-50 dark:bg-white/[0.02] border-b border-gray-200 dark:border-white/10 text-[10px] font-bold text-gray-400 uppercase">
+                        <th className="py-2.5 px-3">วันที่</th>
+                        <th className="py-2.5 px-3">พนักงาน</th>
+                        <th className="py-2.5 px-3">รายละเอียดรายการ</th>
+                        <th className="py-2.5 px-3">หมวดหมู่</th>
+                        <th className="py-2.5 px-3 text-right">จำนวนเงิน</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-150 dark:divide-white/5">
+                      {pendingTxs.map(tx => {
+                        const personalAmount = tx.paidBy === 'SPLIT' ? (tx.splitPersonalAmount || 0) : tx.amount;
+                        return (
+                          <tr key={tx.id} className="hover:bg-gray-50/50 dark:hover:bg-white/[0.01]">
+                            <td className="py-2.5 px-3 font-mono text-[11px] text-gray-400">{tx.date}</td>
+                            <td className="py-2.5 px-3 font-semibold">{tx.staffName}</td>
+                            <td className="py-2.5 px-3 text-gray-600 dark:text-gray-300">
+                              <div>{tx.description}</div>
+                              {tx.note && <div className="text-[9px] text-gray-400 italic">หมายเหตุ: {tx.note}</div>}
+                            </td>
+                            <td className="py-2.5 px-3 text-gray-400">{tx.category}</td>
+                            <td className="py-2.5 px-3 text-right font-bold tabular-nums">{formatCurrency(personalAmount)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Signature Area */}
+            <div className="pt-8 flex justify-between text-xs text-gray-400">
+              <div className="space-y-1">
+                <p>ผู้ทำรายการรายงาน: .......................................</p>
+                <p className="pl-4">({currentUser?.name || 'พนักงาน'})</p>
+              </div>
+              <div className="space-y-1 text-right">
+                <p>ผู้อนุมัติเติมเงิน: .......................................</p>
+                <p className="pr-4">(ผู้บริหาร/ผู้มีอำนาจอนุมัติ)</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-6 animate-fade-in">
         {/* Dashboard Header & Month Selector */}
@@ -564,19 +728,28 @@ export const FinanceLedger: React.FC = () => {
             <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5">วิเคราะห์สัดส่วนรายรับ-รายจ่ายของเงินกองกลางประจำเดือน</p>
           </div>
           
-          {/* Month Filter Selector */}
-          <div className="w-full md:w-60 shrink-0">
-            <GlassSelect
-              value={dashboardMonth}
-              onChange={val => setDashboardMonth(val)}
-              options={[
-                { value: 'ALL', label: 'ทั้งหมด (ทุกเดือน)' },
-                ...getAvailableMonths().map(m => ({
-                  value: m,
-                  label: formatMonthTh(m)
-                }))
-              ]}
-            />
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto shrink-0">
+            <button
+              onClick={() => setExecMode(true)}
+              className="px-3.5 py-2.5 bg-orange-500/10 hover:bg-orange-500 hover:text-white border border-orange-500/20 text-orange-500 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5"
+              title="เปิดมุมมองเสนอผู้บริหารเพื่อเติมเงิน"
+            >
+              <Coins className="w-3.5 h-3.5" />
+              <span>เสนอเบิกเงินผู้บริหาร</span>
+            </button>
+            <div className="w-full sm:w-48 shrink-0">
+              <GlassSelect
+                value={dashboardMonth}
+                onChange={val => setDashboardMonth(val)}
+                options={[
+                  { value: 'ALL', label: 'ทั้งหมด (ทุกเดือน)' },
+                  ...getAvailableMonths().map(m => ({
+                    value: m,
+                    label: formatMonthTh(m)
+                  }))
+                ]}
+              />
+            </div>
           </div>
         </div>
 
