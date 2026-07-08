@@ -378,7 +378,10 @@ export const FinanceLedger: React.FC = () => {
   });
 
   const handleReimburse = async (txId: string) => {
-    if (!confirm('ยืนยันว่าทำการคืนเงินสด/เงินโอนส่วนตัวคืนให้กับพนักงานเรียบร้อยแล้วใช่หรือไม่?')) return;
+    const tx = transactions.find(t => t.id === txId);
+    if (!tx) return;
+    const amountToReimburse = tx.paidBy === 'SPLIT' ? (tx.splitPersonalAmount || 0) : tx.amount;
+    if (!confirm(`ยืนยันการคืนเงินสำรองจ่ายจำนวน ${formatCurrency(amountToReimburse)} ให้กับ ${tx.staffName} เรียบร้อยแล้วใช่หรือไม่?`)) return;
     try {
       await MockDb.updatePettyCashTransaction(txId, {
         isReimbursed: true,
@@ -1574,12 +1577,12 @@ export const FinanceLedger: React.FC = () => {
                                   (กองกลาง {tx.splitPettyCashAmount} / ส่วนตัว {tx.splitPersonalAmount})
                                 </span>
                                 {tx.isReimbursed ? (
-                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.2 rounded-md">
-                                    <Check className="w-2.5 h-2.5" /> คืนส่วนต่างแล้ว
+                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded-md">
+                                    <Check className="w-2.5 h-2.5" /> คืนส่วนต่าง {tx.splitPersonalAmount} บ. แล้ว
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.2 rounded-md animate-pulse">
-                                    <AlertCircle className="w-2.5 h-2.5" /> ค้างคืน {tx.splitPersonalAmount} บ.
+                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded-md animate-pulse">
+                                    <AlertCircle className="w-2.5 h-2.5" /> ค้างคืนพนักงาน {tx.splitPersonalAmount} บ.
                                   </span>
                                 )}
                               </div>
@@ -1708,12 +1711,12 @@ export const FinanceLedger: React.FC = () => {
                               (กองกลาง {tx.splitPettyCashAmount} / ส่วนตัว {tx.splitPersonalAmount})
                             </span>
                             {tx.isReimbursed ? (
-                              <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.2 rounded-md">
-                                คืนส่วนต่างแล้ว
+                              <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded-md">
+                                คืนส่วนต่าง {tx.splitPersonalAmount} บ. แล้ว
                               </span>
                             ) : (
-                              <span className="text-[9px] font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.2 rounded-md animate-pulse">
-                                ค้างคืน {tx.splitPersonalAmount} บ.
+                              <span className="text-[9px] font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded-md animate-pulse">
+                                ค้างคืนพนักงาน {tx.splitPersonalAmount} บ.
                               </span>
                             )}
                           </div>
