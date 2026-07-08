@@ -1411,13 +1411,13 @@ export const FinanceLedger: React.FC = () => {
               <p className="text-[9px] sm:text-xs text-purple-600/70 dark:text-purple-400/50 italic mt-1 sm:mt-2 truncate whitespace-nowrap">ไม่มีค้างจ่ายพนักงาน</p>
             ) : (
               Object.entries(summary.personalAdvanceByStaff).map(([name, amount]) => (
-                <div key={name} className="flex items-center justify-between text-[10px] sm:text-xs py-0.5 border-b border-purple-200/30 dark:border-purple-500/5 last:border-0">
-                  <span className="font-semibold text-purple-800 dark:text-purple-300 truncate max-w-[50px] sm:max-w-none">{name}</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-purple-600 dark:text-purple-400 tabular-nums">{formatCurrency(amount)}</span>
+                <div key={name} className="flex flex-col gap-1 py-1 border-b border-purple-200/30 dark:border-purple-500/5 last:border-0">
+                  <span className="font-semibold text-purple-800 dark:text-purple-300 truncate text-[10px] sm:text-xs">{name}</span>
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-bold text-purple-600 dark:text-purple-400 tabular-nums text-[10px] sm:text-xs">{formatCurrency(amount)}</span>
                     <button
                       onClick={() => handleReimburseAllForStaff(name)}
-                      className="text-[8px] sm:text-[9px] px-1.5 py-0.5 bg-purple-500/10 hover:bg-[#0071e3] hover:text-white text-purple-600 dark:text-purple-400 font-bold rounded transition-colors"
+                      className="text-[8px] sm:text-[9px] px-2 py-0.5 bg-purple-500/10 hover:bg-[#0071e3] hover:text-white text-purple-600 dark:text-purple-400 font-bold rounded transition-colors active:scale-95 shrink-0"
                     >
                       คืนเงิน
                     </button>
@@ -1454,7 +1454,7 @@ export const FinanceLedger: React.FC = () => {
                   {formatThaiDate(startDate)} — {formatThaiDate(endDate)}
                 </span>
                 <span className="text-[9px] text-gray-400 dark:text-gray-500 block mt-0.5 font-normal">
-                  แสดงรายการของสัปดาห์นี้ (จันทร์ - อาทิตย์) · 📱 ปัดซ้าย/ขวาเพื่อเปลี่ยนสัปดาห์
+                  แสดงรายการของสัปดาห์นี้ · 📱 ปัดเพื่อเปลี่ยนสัปดาห์
                 </span>
               </>
             ) : (
@@ -1600,22 +1600,24 @@ export const FinanceLedger: React.FC = () => {
           </div>
 
           {/* Date range pickers */}
-          <div className="flex gap-1.5 items-center w-full xl:w-auto flex-shrink-0">
-            <div className="flex-1 sm:flex-initial sm:w-28">
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center w-full xl:w-auto flex-shrink-0">
+            <div className="flex items-center gap-1.5 flex-1 sm:flex-initial">
+              <span className="text-[10px] text-gray-400 font-semibold w-7 sm:hidden shrink-0">จาก</span>
               <input
                 type="date"
                 value={startDate}
                 onChange={e => setStartDate(e.target.value)}
-                className="w-full px-1.5 py-1.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-[11px] outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white shadow-sm"
+                className="w-full sm:w-28 px-2 py-1.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-[11px] outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white shadow-sm"
               />
             </div>
-            <span className="text-gray-400 text-[10px] font-semibold shrink-0">ถึง</span>
-            <div className="flex-1 sm:flex-initial sm:w-28">
+            <span className="hidden sm:inline text-gray-400 text-[10px] font-semibold shrink-0">ถึง</span>
+            <div className="flex items-center gap-1.5 flex-1 sm:flex-initial">
+              <span className="text-[10px] text-gray-400 font-semibold w-7 sm:hidden shrink-0">ถึง</span>
               <input
                 type="date"
                 value={endDate}
                 onChange={e => setEndDate(e.target.value)}
-                className="w-full px-1.5 py-1.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-[11px] outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white shadow-sm"
+                className="w-full sm:w-28 px-2 py-1.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-[11px] outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white shadow-sm"
               />
             </div>
           </div>
