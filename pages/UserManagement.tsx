@@ -142,7 +142,7 @@ export const UserManagement: React.FC = () => {
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                 className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
-                placeholder="สมชาย มั่นคง"
+                placeholder="กรอกชื่อ-นามสกุลจริง"
               />
             </div>
             <div>
@@ -151,7 +151,7 @@ export const UserManagement: React.FC = () => {
                 value={formData.nickname}
                 onChange={e => setFormData({ ...formData, nickname: e.target.value })}
                 className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
-                placeholder="เช่น ป้อง, ไอซ์"
+                placeholder="กรอกชื่อเล่น"
               />
             </div>
             <div>
@@ -162,7 +162,7 @@ export const UserManagement: React.FC = () => {
                 value={formData.email}
                 onChange={e => setFormData({ ...formData, email: e.target.value })}
                 className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
-                placeholder="staff01@sec-claim.com"
+                placeholder="กรอกอีเมลสำหรับเข้าระบบ"
               />
             </div>
             <div>
@@ -253,7 +253,7 @@ export const UserManagement: React.FC = () => {
                             value={editNickname}
                             onChange={e => setEditNickname(e.target.value)}
                             className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-2.5 text-xs text-[#1d1d1f] dark:text-white outline-none"
-                            placeholder="ป้อง"
+                            placeholder="กรอกชื่อเล่น"
                           />
                         </div>
 
@@ -326,15 +326,15 @@ export const UserManagement: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                        {!isSelf && (
-                          <div className="flex gap-1 flex-shrink-0 ml-2">
-                            <button
-                              onClick={() => startEdit(user)}
-                              className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors"
-                              title="แก้ไขสิทธิ์"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
+                        <div className="flex gap-1 flex-shrink-0 ml-2">
+                          <button
+                            onClick={() => startEdit(user)}
+                            className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors"
+                            title="แก้ไขข้อมูล"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          {!isSelf && (
                             <button
                               onClick={() => handleDelete(user.uid)}
                               className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"
@@ -342,8 +342,8 @@ export const UserManagement: React.FC = () => {
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
