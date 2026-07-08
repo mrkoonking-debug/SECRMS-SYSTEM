@@ -1,5 +1,5 @@
 
-import { RMA, RMAStatus, DashboardStats, Team, TimelineEvent, Brand, Distributor, PettyCashTransaction, PettyCashSummary } from '../types';
+import { RMA, RMAStatus, DashboardStats, Team, TimelineEvent, Brand, Distributor, PettyCashTransaction, PettyCashSummary, PettyCashAudit } from '../types';
 import { db, auth, isConfigured, firebaseConfig } from './firebaseConfig';
 import { initializeApp, deleteApp } from 'firebase/app';
 import {
@@ -36,6 +36,8 @@ let OFFLINE_USERS: any[] = [
     team: 'ALL'
   }
 ];
+
+let OFFLINE_PETTY_CASH_AUDITS: PettyCashAudit[] = [];
 
 let OFFLINE_PETTY_CASH: PettyCashTransaction[] = [
   {
@@ -1979,5 +1981,33 @@ export const MockDb = {
       totalPersonalAdvance,
       personalAdvanceByStaff
     };
+  },
+
+  async addCashAudit(audit: Omit<PettyCashAudit, 'id' | 'timestamp'>): Promise<string> {
+    const timestamp = new Date().toISOString();
+    const rawData = {
+      ...audit,
+      timestamp
+    };
+    if (!isConfigured || !db) {
+      const id = 'audit-' + Math.random().toString(36).substr(2, 9);
+      OFFLINE_PETTY_CASH_AUDITS.push({ id, ...rawData } as PettyCashAudit);
+      return id;
+    }
+    const docRef = await addDoc(collection(db, 'pettycash_audits'), rawData);
+    return docRef.id;
+  },
+
+  async getCashAudits(): Promise<PettyCashAudit[]> {
+    if (!isConfigured || !db) {
+      return [...OFFLINE_PETTY_CASH_AUDITS].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    }
+    const q = query(collection(db, 'pettycash_audits'), orderBy('timestamp', 'desc'), limit(100));
+    const snap = await getDocs(q);
+    const results: PettyCashAudit[] = [];
+    snap.forEach(docSnap => {
+      results.push({ id: docSnap.id, ...docSnap.data() } as PettyCashAudit);
+    });
+    return results;
   }
 };

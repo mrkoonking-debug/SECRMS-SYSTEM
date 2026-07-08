@@ -208,3 +208,15 @@ export interface PettyCashSummary {
   personalAdvanceByStaff: Record<string, number>; // Breakdown per employee
 }
 
+export interface PettyCashAudit {
+  id: string;
+  date: string;
+  timestamp: string;
+  auditedBy: string;
+  systemBalance: number;
+  physicalBalance: number;
+  discrepancy: number;
+  status: 'MATCHED' | 'DISCREPANCY';
+  note?: string;
+}
+

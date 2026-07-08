@@ -4,11 +4,13 @@ import {
   Landmark, Plus, FileSpreadsheet, Search, RefreshCw, Trash2, Edit2, Check, 
   ArrowUpRight, ArrowDownLeft, AlertCircle, Coins, Clock, ChevronRight, ChevronLeft, Image as ImageIcon, X, Wallet, Calendar
 } from 'lucide-react';
-import { PettyCashTransaction, PettyCashSummary } from '../types';
+import { PettyCashTransaction, PettyCashSummary, PettyCashAudit } from '../types';
 import { MockDb } from '../services/mockDb';
 import { useLanguage } from '../contexts/LanguageContext';
 import { showToast } from '../services/toast';
 import { TransactionModal } from '../components/TransactionModal';
+import { CashAuditModal } from '../components/CashAuditModal';
+import { ReplenishmentPlanner } from '../components/ReplenishmentPlanner';
 import { GlassSelect } from '../components/GlassSelect';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -72,13 +74,17 @@ export const FinanceLedger: React.FC = () => {
   
   // Modal states
   const [showModal, setShowModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'records' | 'dashboard' | 'reimbursements'>('records');
+  const [activeTab, setActiveTab] = useState<'records' | 'dashboard' | 'reimbursements' | 'audit'>('records');
   const [dashboardMonth, setDashboardMonth] = useState<string>(''); // YYYY-MM or 'ALL'
   const [selectedTx, setSelectedTx] = useState<PettyCashTransaction | undefined>(undefined);
   const [activeReceiptUrl, setActiveReceiptUrl] = useState<string | null>(null);
   const [execMode, setExecMode] = useState(false);
   const [targetFloat, setTargetFloat] = useState<number>(5000);
   const [userMap, setUserMap] = useState<Record<string, string>>({});
+  
+  // Cash Audit states
+  const [auditLogs, setAuditLogs] = useState<PettyCashAudit[]>([]);
+  const [showAuditModal, setShowAuditModal] = useState(false);
 
   const getDisplayName = (fullName: string) => {
     if (!fullName) return '';
@@ -203,6 +209,14 @@ export const FinanceLedger: React.FC = () => {
         setUserMap(map);
       } catch (err) {
         console.error("Error building userMap:", err);
+      }
+
+      // Fetch cash audits
+      try {
+        const audits = await MockDb.getCashAudits();
+        setAuditLogs(audits);
+      } catch (err) {
+        console.error("Error fetching audits:", err);
       }
 
       setTransactions(normalizedTxList);
@@ -920,6 +934,102 @@ export const FinanceLedger: React.FC = () => {
     return map;
   };
 
+  const renderAuditTab = () => {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        {/* Smart Forecast Planner Component */}
+        <ReplenishmentPlanner 
+          currentBalance={summary.pettyCashBalance} 
+          transactions={transactions} 
+          targetFloat={targetFloat} 
+        />
+
+        {/* Audit Action Banner */}
+        <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-5 md:p-6 backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="space-y-1">
+            <h2 className="text-base sm:text-lg font-bold text-[#1d1d1f] dark:text-white leading-tight">ตรวจสอบและตรวจนับเงินสดจริง</h2>
+            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">ทำการตรวจนับเงินสดจริงในกล่องเก็บเงิน เพื่อกระทบยอดบัญชีและป้องกันความผิดพลาด</p>
+          </div>
+          <button
+            onClick={() => setShowAuditModal(true)}
+            className="px-5 py-3 bg-gradient-to-r from-blue-500 to-[#0071e3] hover:from-blue-600 hover:to-[#0077ed] text-white font-black rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 active:scale-95 transition-all shadow-md shadow-blue-500/10 outline-none w-full md:w-auto"
+          >
+            <Coins className="w-4.5 h-4.5" />
+            <span>เริ่มบันทึกตรวจนับเงินสด</span>
+          </button>
+        </div>
+
+        {/* Audit History Log */}
+        <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-5 md:p-6 backdrop-blur-xl space-y-4">
+          <div>
+            <h3 className="text-sm sm:text-base font-bold text-[#1d1d1f] dark:text-white">ประวัติการตรวจนับเงินสด (Audit Trail)</h3>
+            <p className="text-[10px] text-gray-400 mt-0.5">รายการตรวจสอบความถูกต้องของกล่องเงินสดย้อนหลัง</p>
+          </div>
+
+          {auditLogs.length === 0 ? (
+            <div className="p-12 text-center text-gray-400 dark:text-gray-500 italic text-xs">
+              ยังไม่มีประวัติการบันทึกตรวจนับเงินในระบบ
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-2xl border border-gray-200/60 dark:border-white/5">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-gray-50 dark:bg-[#1c1c1e] text-gray-400 font-bold border-b border-gray-150/40 dark:border-white/5">
+                    <th className="py-3.5 px-4">วันที่ / เวลา</th>
+                    <th className="py-3.5 px-3">ผู้ตรวจสอบ</th>
+                    <th className="py-3.5 px-3 text-right">ยอดในระบบ</th>
+                    <th className="py-3.5 px-3 text-right">ยอดนับจริง</th>
+                    <th className="py-3.5 px-3 text-right">ส่วนต่าง</th>
+                    <th className="py-3.5 px-3 text-center">สถานะ</th>
+                    <th className="py-3.5 px-4">หมายเหตุ</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-150/30 dark:divide-white/5">
+                  {auditLogs.map((log) => {
+                    const diff = log.discrepancy;
+                    return (
+                      <tr key={log.id} className="hover:bg-gray-50/50 dark:hover:bg-white/[0.01] transition-colors">
+                        <td className="py-3 px-4 font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                          {new Date(log.timestamp).toLocaleString('th-TH', { 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric', 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </td>
+                        <td className="py-3 px-3 font-semibold text-gray-700 dark:text-gray-200">{log.auditedBy}</td>
+                        <td className="py-3 px-3 text-right font-semibold tabular-nums text-gray-500 dark:text-gray-400">{formatCurrency(log.systemBalance)}</td>
+                        <td className="py-3 px-3 text-right font-bold tabular-nums text-gray-800 dark:text-gray-100">{formatCurrency(log.physicalBalance)}</td>
+                        <td className={`py-3 px-3 text-right font-extrabold tabular-nums ${
+                          diff === 0 ? 'text-emerald-500' : diff > 0 ? 'text-amber-500' : 'text-red-500'
+                        }`}>
+                          {diff > 0 ? `+${diff.toFixed(2)}` : diff === 0 ? '±0.00' : diff.toFixed(2)}
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold ${
+                            log.status === 'MATCHED'
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                          }`}>
+                            {log.status === 'MATCHED' ? '✓ ตรงกัน' : '⚠️ ไม่ตรง'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-gray-500 dark:text-gray-400 italic max-w-[200px] truncate" title={log.note}>
+                          {log.note || '-'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderReimbursements = () => {
     const pendingMap = getPendingReimbursementsByStaff();
     const staffList = Array.from(pendingMap.entries()).sort((a, b) => b[1].total - a[1].total);
@@ -1150,11 +1260,17 @@ export const FinanceLedger: React.FC = () => {
       </div>
 
       {/* Tab Switcher */}
-      <div className="relative flex p-1 bg-gray-100/50 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/5 rounded-2xl w-full sm:w-[450px] h-10 select-none">
+      <div className="relative flex p-1 bg-gray-100/50 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/5 rounded-2xl w-full sm:w-[580px] h-10 select-none">
         {/* Sliding background pill */}
         <div 
-          className={`absolute top-1 bottom-1 w-[calc(33.333%-6px)] bg-white dark:bg-[#2c2c2e] rounded-xl shadow-sm border border-gray-200/20 dark:border-white/5 transition-all duration-300 ease-out ${
-            activeTab === 'records' ? 'left-1' : activeTab === 'dashboard' ? 'left-[calc(33.333%+2px)]' : 'left-[calc(66.666%+2px)]'
+          className={`absolute top-1 bottom-1 w-[calc(25%-6px)] bg-white dark:bg-[#2c2c2e] rounded-xl shadow-sm border border-gray-200/20 dark:border-white/5 transition-all duration-300 ease-out ${
+            activeTab === 'records' 
+              ? 'left-1' 
+              : activeTab === 'dashboard' 
+                ? 'left-[calc(25%+2px)]' 
+                : activeTab === 'reimbursements' 
+                  ? 'left-[calc(50%+2px)]' 
+                  : 'left-[calc(75%+2px)]'
           }`}
         />
         <button
@@ -1186,6 +1302,16 @@ export const FinanceLedger: React.FC = () => {
           }`}
         >
           คนที่รอคืน ({Object.keys(summary.personalAdvanceByStaff).length})
+        </button>
+        <button
+          onClick={() => setActiveTab('audit')}
+          className={`relative z-10 flex-1 py-1.5 text-[10px] sm:text-xs font-bold text-center rounded-xl transition-colors duration-300 ${
+            activeTab === 'audit'
+              ? 'text-[#0071e3]'
+              : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
+          }`}
+        >
+          ตรวจนับ & แผนเงิน
         </button>
       </div>
 
@@ -1766,8 +1892,10 @@ export const FinanceLedger: React.FC = () => {
         </>
       ) : activeTab === 'dashboard' ? (
         renderDashboard()
-      ) : (
+      ) : activeTab === 'reimbursements' ? (
         renderReimbursements()
+      ) : (
+        renderAuditTab()
       )}
 
       {/* Transaction Entry/Edit Modal popup */}
@@ -1776,6 +1904,16 @@ export const FinanceLedger: React.FC = () => {
           onClose={() => { setShowModal(false); setSelectedTx(undefined); }}
           onSave={() => { setShowModal(false); setSelectedTx(undefined); fetchData(); }}
           transaction={selectedTx}
+        />
+      )}
+
+      {/* Cash Audit Modal popup */}
+      {showAuditModal && (
+        <CashAuditModal
+          isOpen={showAuditModal}
+          onClose={() => setShowAuditModal(false)}
+          currentBalance={summary.pettyCashBalance}
+          onSave={fetchData}
         />
       )}
 
