@@ -10,6 +10,10 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { showToast } from '../services/toast';
 import { TransactionModal } from '../components/TransactionModal';
 import { GlassSelect } from '../components/GlassSelect';
+import {
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  PieChart, Pie, Cell, BarChart, Bar
+} from 'recharts';
 
 export const FinanceLedger: React.FC = () => {
   const [transactions, setTransactions] = useState<PettyCashTransaction[]>([]);
@@ -452,13 +456,96 @@ export const FinanceLedger: React.FC = () => {
     return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(val);
   };
 
+  const getMonthlyTrendData = () => {
+    const monthlyMap = new Map<string, { month: string; income: number; expense: number }>();
+    
+    // Sort transactions chronologically
+    const sortedTxs = [...transactions].sort((a, b) => a.date.localeCompare(b.date));
+    
+    sortedTxs.forEach(t => {
+      if (!t.date) return;
+      const monthKey = t.date.substring(0, 7); // 'YYYY-MM'
+      if (!monthlyMap.has(monthKey)) {
+        monthlyMap.set(monthKey, { month: monthKey, income: 0, expense: 0 });
+      }
+      const data = monthlyMap.get(monthKey)!;
+      if (t.type === 'INCOME') {
+        data.income += t.amount;
+      } else {
+        data.expense += t.amount;
+      }
+    });
+    
+    return Array.from(monthlyMap.values());
+  };
+
+  const formatMonthShortTh = (yearMonthStr: string) => {
+    const parts = yearMonthStr.split('-');
+    if (parts.length !== 2) return yearMonthStr;
+    const [year, month] = parts;
+    const shortMonthNames = [
+      'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+      'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'
+    ];
+    const monthIdx = parseInt(month, 10) - 1;
+    const shortYear = (parseInt(year, 10) + 543).toString().slice(-2);
+    return `${shortMonthNames[monthIdx]} ${shortYear}`;
+  };
+
   const renderDashboard = () => {
     const data = getDashboardData();
     const netCashflow = data.totalIncome - data.totalExpense;
+    const monthlyTrend = getMonthlyTrendData();
     
     const getPercent = (amount: number, total: number) => {
       if (total <= 0) return 0;
       return Math.round((amount / total) * 100);
+    };
+
+    const COLORS = ['#0071e3', '#ff9500', '#af52de', '#34c759', '#ff3b30', '#5856d6', '#5ac8fa'];
+
+    const categoryData = Object.entries(data.categoryBreakdown).map(([name, value]) => ({
+      name,
+      value
+    })).sort((a, b) => b.value - a.value);
+
+    const staffData = Object.entries(data.staffBreakdown).map(([name, value]) => ({
+      name: `คุณ${name}`,
+      value
+    })).sort((a, b) => b.value - a.value);
+
+    const CustomTooltip = ({ active, payload, label }: any) => {
+      if (active && payload && payload.length) {
+        return (
+          <div className="bg-white/95 dark:bg-[#1c1c1e]/95 border border-gray-200 dark:border-white/10 p-3 rounded-2xl shadow-xl backdrop-blur-md">
+            <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-1.5">{formatMonthTh(label)}</p>
+            <div className="space-y-1 text-xs">
+              <div className="flex items-center gap-4 justify-between">
+                <span className="flex items-center gap-1.5 font-medium text-emerald-600 dark:text-emerald-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  รายรับ:
+                </span>
+                <span className="font-bold tabular-nums dark:text-white">{formatCurrency(payload[0].value)}</span>
+              </div>
+              <div className="flex items-center gap-4 justify-between">
+                <span className="flex items-center gap-1.5 font-medium text-red-600 dark:text-red-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                  รายจ่าย:
+                </span>
+                <span className="font-bold tabular-nums dark:text-white">{formatCurrency(payload[1].value)}</span>
+              </div>
+              <hr className="border-gray-200/50 dark:border-white/5 my-1" />
+              <div className="flex items-center gap-4 justify-between font-bold">
+                <span className="text-gray-700 dark:text-gray-300">สุทธิ:</span>
+                <span className={`tabular-nums ${payload[0].value - payload[1].value >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                  {formatCurrency(payload[0].value - payload[1].value)}
+                </span>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      return null;
     };
 
     return (
@@ -548,6 +635,38 @@ export const FinanceLedger: React.FC = () => {
           </span>
         </div>
 
+        {/* Monthly Trend Area Chart */}
+        {monthlyTrend.length > 0 && (
+          <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-5 md:p-6 backdrop-blur-xl space-y-4">
+            <div>
+              <h3 className="text-xs sm:text-sm font-bold text-gray-800 dark:text-white">แนวโน้มกระแสเงินสดกองกลาง (Cash Flow Trend)</h3>
+              <p className="text-[10px] text-gray-400 mt-0.5">การเปรียบเทียบรายรับและรายจ่ายในแต่ละเดือนเพื่อติดตามสภาพคล่องของร้าน</p>
+            </div>
+            <div className="w-full h-80 pt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={monthlyTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2}/>
+                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff10" />
+                  <XAxis dataKey="month" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} tickFormatter={formatMonthShortTh} />
+                  <YAxis stroke="#888888" fontSize={11} tickLine={false} axisLine={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area type="monotone" dataKey="income" stroke="#10b981" fillOpacity={1} fill="url(#colorIncome)" strokeWidth={2.5} name="รายรับ" />
+                  <Area type="monotone" dataKey="expense" stroke="#ef4444" fillOpacity={1} fill="url(#colorExpense)" strokeWidth={2.5} name="รายจ่าย" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
         {/* Two Column Breakdown Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Category Breakdown card */}
@@ -556,31 +675,50 @@ export const FinanceLedger: React.FC = () => {
               รายจ่ายแยกตามหมวดหมู่ (Expense by Category)
             </h3>
             
-            {Object.keys(data.categoryBreakdown).length === 0 ? (
+            {categoryData.length === 0 ? (
               <p className="text-xs text-gray-400 italic text-center py-6">ไม่มีรายการบันทึกรายจ่ายในช่วงเวลานี้</p>
             ) : (
-              <div className="space-y-4">
-                {(Object.entries(data.categoryBreakdown) as [string, number][])
-                  .sort((a, b) => b[1] - a[1])
-                  .map(([cat, amt]) => {
-                    const percent = getPercent(amt, data.totalExpense);
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                {/* Donut Chart */}
+                <div className="w-full sm:w-1/2 flex items-center justify-center shrink-0">
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={55}
+                        outerRadius={75}
+                        paddingAngle={3}
+                        dataKey="value"
+                      >
+                        {categoryData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: any) => formatCurrency(Number(value))} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Legend list */}
+                <div className="flex-1 w-full space-y-2.5 max-h-60 overflow-y-auto custom-scrollbar">
+                  {categoryData.map((item, index) => {
+                    const percent = getPercent(item.value, data.totalExpense);
                     return (
-                      <div key={cat} className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-semibold text-gray-700 dark:text-gray-300">{cat}</span>
-                          <span className="font-bold text-[#1d1d1f] dark:text-white tabular-nums">
-                            {formatCurrency(amt)} <span className="text-gray-400 font-normal ml-1">({percent}%)</span>
-                          </span>
+                      <div key={item.name} className="flex items-center justify-between text-xs py-1 border-b border-gray-100/30 dark:border-white/[0.02] last:border-0">
+                        <div className="flex items-center gap-2 truncate min-w-0 pr-2">
+                          <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                          <span className="font-semibold text-gray-700 dark:text-gray-300 truncate">{item.name}</span>
                         </div>
-                        <div className="w-full h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-blue-500 dark:bg-blue-400 rounded-full transition-all duration-500" 
-                            style={{ width: `${percent}%` }}
-                          />
+                        <div className="text-right shrink-0">
+                          <span className="font-bold text-[#1d1d1f] dark:text-white tabular-nums">{formatCurrency(item.value)}</span>
+                          <span className="text-[10px] text-gray-400 ml-1.5">({percent}%)</span>
                         </div>
                       </div>
                     );
                   })}
+                </div>
               </div>
             )}
           </div>
@@ -591,31 +729,45 @@ export const FinanceLedger: React.FC = () => {
               รายจ่ายแยกตามผู้ทำรายการ (Expense by Staff)
             </h3>
             
-            {Object.keys(data.staffBreakdown).length === 0 ? (
+            {staffData.length === 0 ? (
               <p className="text-xs text-gray-400 italic text-center py-6">ไม่มีรายการบันทึกรายจ่ายในช่วงเวลานี้</p>
             ) : (
-              <div className="space-y-4">
-                {(Object.entries(data.staffBreakdown) as [string, number][])
-                  .sort((a, b) => b[1] - a[1])
-                  .map(([staff, amt]) => {
-                    const percent = getPercent(amt, data.totalExpense);
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                {/* Horizontal Bar Chart */}
+                <div className="w-full sm:w-3/5 flex items-center justify-center shrink-0">
+                  <ResponsiveContainer width="100%" height={200}>
+                    <BarChart data={staffData} layout="vertical" margin={{ left: -10, right: 10, top: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#ffffff10" />
+                      <XAxis type="number" stroke="#888888" fontSize={9} tickLine={false} axisLine={false} />
+                      <YAxis type="category" dataKey="name" stroke="#888888" fontSize={9} tickLine={false} axisLine={false} width={75} />
+                      <Tooltip formatter={(value: any) => formatCurrency(Number(value))} />
+                      <Bar dataKey="value" fill="#ff9500" radius={[0, 6, 6, 0]} barSize={10}>
+                        {staffData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[(index + 1) % COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Legend list */}
+                <div className="flex-1 w-full space-y-2.5 max-h-60 overflow-y-auto custom-scrollbar">
+                  {staffData.map((item, index) => {
+                    const percent = getPercent(item.value, data.totalExpense);
                     return (
-                      <div key={staff} className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-semibold text-gray-700 dark:text-gray-300">คุณ{staff}</span>
-                          <span className="font-bold text-[#1d1d1f] dark:text-white tabular-nums">
-                            {formatCurrency(amt)} <span className="text-gray-400 font-normal ml-1">({percent}%)</span>
-                          </span>
+                      <div key={item.name} className="flex items-center justify-between text-xs py-1 border-b border-gray-100/30 dark:border-white/[0.02] last:border-0">
+                        <div className="flex items-center gap-2 truncate min-w-0 pr-2">
+                          <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[(index + 1) % COLORS.length] }} />
+                          <span className="font-semibold text-gray-700 dark:text-gray-300 truncate">{item.name}</span>
                         </div>
-                        <div className="w-full h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-orange-500 dark:bg-orange-400 rounded-full transition-all duration-500" 
-                            style={{ width: `${percent}%` }}
-                          />
+                        <div className="text-right shrink-0">
+                          <span className="font-bold text-[#1d1d1f] dark:text-white tabular-nums">{formatCurrency(item.value)}</span>
+                          <span className="text-[10px] text-gray-400 ml-1.5">({percent}%)</span>
                         </div>
                       </div>
                     );
                   })}
+                </div>
               </div>
             )}
           </div>
