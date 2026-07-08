@@ -44,6 +44,42 @@ const getInitialSunday = () => {
   return formatDateString(sunday);
 };
 
+const getInitialMonthFirstDay = () => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}-01`;
+};
+
+const getInitialMonthLastDay = () => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = d.getMonth() + 1;
+  const lastDayDate = new Date(year, month, 0);
+  const lastDayStr = String(lastDayDate.getDate()).padStart(2, '0');
+  const monthStr = String(month).padStart(2, '0');
+  return `${year}-${monthStr}-${lastDayStr}`;
+};
+
+const getMonthList = () => {
+  const list = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const val = `${y}-${m}`;
+    
+    let label = `${m}/${y}`;
+    if (i === 0) label = 'เดือนนี้';
+    else if (i === 1) label = 'เดือนที่แล้ว';
+    
+    list.push({ val, label });
+  }
+  return list;
+};
+
+
 const formatThaiDate = (dateStr: string) => {
   if (!dateStr) return '';
   const parts = dateStr.split('-');
@@ -69,8 +105,12 @@ export const FinanceLedger: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'INCOME' | 'EXPENSE'>('ALL');
   const [sourceFilter, setSourceFilter] = useState<string>('ALL');
-  const [startDate, setStartDate] = useState(getInitialMonday);
-  const [endDate, setEndDate] = useState(getInitialSunday);
+  const [startDate, setStartDate] = useState(getInitialMonthFirstDay);
+  const [endDate, setEndDate] = useState(getInitialMonthLastDay);
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
   
   // Modal states
   const [showModal, setShowModal] = useState(false);
@@ -254,22 +294,36 @@ export const FinanceLedger: React.FC = () => {
     };
   }, []);
 
-  const handlePrevWeek = () => {
-    let start = new Date(startDate || getInitialMonday());
-    start.setDate(start.getDate() - 7);
-    let end = new Date(endDate || getInitialSunday());
-    end.setDate(end.getDate() - 7);
-    setStartDate(formatDateString(start));
-    setEndDate(formatDateString(end));
+  // Sync selectedMonth to startDate & endDate
+  useEffect(() => {
+    if (selectedMonth && selectedMonth !== 'CUSTOM') {
+      const [yearStr, monthStr] = selectedMonth.split('-');
+      const year = parseInt(yearStr);
+      const month = parseInt(monthStr);
+      const firstDay = `${yearStr}-${monthStr}-01`;
+      const lastDayDate = new Date(year, month, 0);
+      const lastDayStr = String(lastDayDate.getDate()).padStart(2, '0');
+      const lastDay = `${yearStr}-${monthStr}-${lastDayStr}`;
+      
+      setStartDate(firstDay);
+      setEndDate(lastDay);
+    }
+  }, [selectedMonth]);
+
+  const handlePrevMonth = () => {
+    const list = getMonthList();
+    const idx = list.findIndex(item => item.val === selectedMonth);
+    if (idx > 0) {
+      setSelectedMonth(list[idx - 1].val);
+    }
   };
 
-  const handleNextWeek = () => {
-    let start = new Date(startDate || getInitialMonday());
-    start.setDate(start.getDate() + 7);
-    let end = new Date(endDate || getInitialSunday());
-    end.setDate(end.getDate() + 7);
-    setStartDate(formatDateString(start));
-    setEndDate(formatDateString(end));
+  const handleNextMonth = () => {
+    const list = getMonthList();
+    const idx = list.findIndex(item => item.val === selectedMonth);
+    if (idx >= 0 && idx < list.length - 1) {
+      setSelectedMonth(list[idx + 1].val);
+    }
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -292,9 +346,9 @@ export const FinanceLedger: React.FC = () => {
     // Only swipe if horizontal movement is dominant and meets minimum threshold
     if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
       if (diffX > 0) {
-        handleNextWeek();
+        handleNextMonth();
       } else {
-        handlePrevWeek();
+        handlePrevMonth();
       }
     }
   };
@@ -1407,53 +1461,37 @@ export const FinanceLedger: React.FC = () => {
         onTouchEnd={handleTouchEnd}
       >
         
-        {/* Weekly Navigation Controls */}
-        <div className="flex justify-center select-none w-full">
-          <div className="flex items-center gap-4 bg-white/70 dark:bg-white/[0.02] border border-gray-200/40 dark:border-white/5 rounded-full px-5 py-2.5 shadow-sm hover:shadow-md transition-all backdrop-blur-xl">
-            <button
-              onClick={handlePrevWeek}
-              className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full text-gray-600 dark:text-gray-400 active:scale-90 transition-all outline-none"
-              title="สัปดาห์ก่อนหน้า"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            
-            <div className="text-center px-2 min-w-[180px]">
-              {startDate && endDate ? (
-                <>
-                  <span className="text-xs text-[#1d1d1f] dark:text-white font-black block">
-                    {formatThaiDate(startDate)} — {formatThaiDate(endDate)}
-                  </span>
-                  <span className="text-[9px] text-gray-400 dark:text-gray-500 block mt-0.5 font-normal leading-tight">
-                    แสดงรายการรายสัปดาห์ · 📱 ปัดเพื่อเปลี่ยน
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="text-xs text-[#1d1d1f] dark:text-white font-black block">
-                    ตัวกรองกำหนดเอง
-                  </span>
-                  <button
-                    onClick={() => {
-                      setStartDate(getInitialMonday());
-                      setEndDate(getInitialSunday());
-                    }}
-                    className="text-[9px] text-blue-500 font-bold hover:underline block mt-0.5"
-                  >
-                    กลับไปแสดงรายสัปดาห์
-                  </button>
-                </>
-              )}
-            </div>
+        {/* Month Horizontal Selector Bar */}
+        <div className="flex justify-start sm:justify-center border-b border-gray-150/40 dark:border-white/5 pb-2 mb-4 overflow-x-auto scrollbar-none select-none w-full gap-6 px-2">
+          {getMonthList().map(item => {
+            const isActive = selectedMonth === item.val;
+            return (
+              <button
+                key={item.val}
+                type="button"
+                onClick={() => setSelectedMonth(item.val)}
+                className={`pb-1 text-xs sm:text-sm font-bold whitespace-nowrap transition-all relative outline-none cursor-pointer ${
+                  isActive 
+                    ? 'text-blue-500 dark:text-white' 
+                    : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
+                }`}
+              >
+                <span>{item.label}</span>
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 dark:bg-white rounded-full animate-fade-in" />
+                )}
+              </button>
+            );
+          })}
+        </div>
 
-            <button
-              onClick={handleNextWeek}
-              className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full text-gray-600 dark:text-gray-400 active:scale-90 transition-all outline-none"
-              title="สัปดาห์ถัดไป"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
+        {/* Date Range Subtext indicator */}
+        <div className="text-center select-none w-full">
+          {startDate && endDate && (
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wider block">
+              ช่วงเวลารอบบัญชี: {formatThaiDate(startDate)} — {formatThaiDate(endDate)} · 📱 ปัดซ้าย/ขวาเพื่อเลื่อนเดือน
+            </span>
+          )}
         </div>
 
         {/* Filters Row */}
@@ -1578,7 +1616,7 @@ export const FinanceLedger: React.FC = () => {
               <input
                 type="date"
                 value={startDate}
-                onChange={e => setStartDate(e.target.value)}
+                onChange={e => { setStartDate(e.target.value); setSelectedMonth('CUSTOM'); }}
                 className="w-full sm:w-28 px-2 py-1.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-[11px] outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white shadow-sm"
               />
             </div>
@@ -1588,7 +1626,7 @@ export const FinanceLedger: React.FC = () => {
               <input
                 type="date"
                 value={endDate}
-                onChange={e => setEndDate(e.target.value)}
+                onChange={e => { setEndDate(e.target.value); setSelectedMonth('CUSTOM'); }}
                 className="w-full sm:w-28 px-2 py-1.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-[11px] outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white shadow-sm"
               />
             </div>
@@ -1598,7 +1636,7 @@ export const FinanceLedger: React.FC = () => {
         {/* Clear Filters Helper */}
         {(searchTerm || typeFilter !== 'ALL' || sourceFilter !== 'ALL' || startDate || endDate) && (
           <button
-            onClick={() => { setSearchTerm(''); setTypeFilter('ALL'); setSourceFilter('ALL'); setStartDate(''); setEndDate(''); }}
+            onClick={() => { setSearchTerm(''); setTypeFilter('ALL'); setSourceFilter('ALL'); setStartDate(''); setEndDate(''); setSelectedMonth('CUSTOM'); }}
             className="text-xs text-blue-500 hover:text-blue-600 font-bold flex items-center gap-1 mt-1 pl-1"
           >
             <RefreshCw className="w-3 h-3" /> ล้างตัวกรองทั้งหมด
