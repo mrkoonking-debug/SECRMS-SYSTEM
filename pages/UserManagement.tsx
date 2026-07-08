@@ -20,10 +20,11 @@ export const UserManagement: React.FC = () => {
   const [editRole, setEditRole] = useState('');
   const [editTeam, setEditTeam] = useState('');
   const [editCanAccessFinance, setEditCanAccessFinance] = useState(false);
+  const [editNickname, setEditNickname] = useState('');
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: '', email: '', password: '', role: 'staff', team: 'ALL', canAccessFinance: false
+    name: '', nickname: '', email: '', password: '', role: 'staff', team: 'ALL', canAccessFinance: false
   });
 
   const fetchUsers = async () => {
@@ -51,7 +52,7 @@ export const UserManagement: React.FC = () => {
     try {
       await MockDb.createStaffAccount(formData);
       setSuccess('สร้างบัญชีพนักงานสำเร็จ!');
-      setFormData({ name: '', email: '', password: '', role: 'staff', team: 'ALL', canAccessFinance: false });
+      setFormData({ name: '', nickname: '', email: '', password: '', role: 'staff', team: 'ALL', canAccessFinance: false });
       fetchUsers();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'ไม่สามารถสร้างบัญชีได้');
@@ -72,18 +73,20 @@ export const UserManagement: React.FC = () => {
     setEditRole(user.role || 'staff');
     setEditTeam(user.team || 'ALL');
     setEditCanAccessFinance(user.canAccessFinance || false);
+    setEditNickname(user.nickname || '');
   };
 
   const cancelEdit = () => {
     setEditingUid(null);
     setEditRole('');
     setEditTeam('');
+    setEditNickname('');
   };
 
   const handleSaveEdit = async (uid: string) => {
     setIsSavingEdit(true);
     try {
-      await MockDb.updateStaffAccount(uid, { role: editRole, team: editTeam, canAccessFinance: editCanAccessFinance });
+      await MockDb.updateStaffAccount(uid, { role: editRole, team: editTeam, canAccessFinance: editCanAccessFinance, nickname: editNickname });
       showToast('อัพเดทสิทธิ์สำเร็จ', 'success');
       setEditingUid(null);
       fetchUsers();
@@ -140,6 +143,15 @@ export const UserManagement: React.FC = () => {
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                 className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
                 placeholder="สมชาย มั่นคง"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">ชื่อเล่น (ใช้แสดงหน้าการเงิน)</label>
+              <input
+                value={formData.nickname}
+                onChange={e => setFormData({ ...formData, nickname: e.target.value })}
+                className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                placeholder="เช่น ป้อง, ไอซ์"
               />
             </div>
             <div>
@@ -236,6 +248,16 @@ export const UserManagement: React.FC = () => {
                         </div>
 
                         <div>
+                          <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">ชื่อเล่น (ใช้แสดงหน้าการเงิน)</label>
+                          <input
+                            value={editNickname}
+                            onChange={e => setEditNickname(e.target.value)}
+                            className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-2.5 text-xs text-[#1d1d1f] dark:text-white outline-none"
+                            placeholder="ป้อง"
+                          />
+                        </div>
+
+                        <div>
                           <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">ระดับสิทธิ์</label>
                           <GlassSelect
                             value={editRole}
@@ -293,7 +315,9 @@ export const UserManagement: React.FC = () => {
                             {user.role === 'admin' ? <Shield className="w-5 h-5" /> : <User className="w-5 h-5" />}
                           </div>
                           <div>
-                            <div className="font-bold text-sm md:text-base dark:text-white">{user.name}</div>
+                            <div className="font-bold text-sm md:text-base dark:text-white">
+                              {user.name} {user.nickname && <span className="text-xs text-gray-400 font-normal">({user.nickname})</span>}
+                            </div>
                             <div className="text-[11px] text-gray-500 leading-tight truncate max-w-[150px] sm:max-w-[200px]">{user.email}</div>
                             <div className="mt-1 flex gap-1.5 flex-wrap">
                               <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold ${getRoleBadge(user.role)}`}>{user.role}</span>

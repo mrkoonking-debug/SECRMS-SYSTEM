@@ -777,7 +777,15 @@ export const MockDb = {
     try {
       const userCredential = await createUserWithEmailAndPassword(secondaryAuth, data.email, data.password);
       const uid = userCredential.user.uid;
-      await setDoc(doc(db, 'users', uid), { name: data.name, email: data.email, role: data.role, team: data.team, canAccessFinance: data.canAccessFinance || false, createdAt: serverTimestamp() });
+      await setDoc(doc(db, 'users', uid), { 
+        name: data.name, 
+        nickname: data.nickname || '',
+        email: data.email, 
+        role: data.role, 
+        team: data.team, 
+        canAccessFinance: data.canAccessFinance || false, 
+        createdAt: serverTimestamp() 
+      });
       await signOut(secondaryAuth);
       await deleteApp(secondaryApp);
       return true;
@@ -789,7 +797,15 @@ export const MockDb = {
           const existingCred = await signInWithEmailAndPassword(secondaryAuth, data.email, data.password);
           const uid = existingCred.user.uid;
           // Re-create the Firestore user document
-          await setDoc(doc(db, 'users', uid), { name: data.name, email: data.email, role: data.role, team: data.team, canAccessFinance: data.canAccessFinance || false, createdAt: serverTimestamp() });
+          await setDoc(doc(db, 'users', uid), { 
+            name: data.name, 
+            nickname: data.nickname || '',
+            email: data.email, 
+            role: data.role, 
+            team: data.team, 
+            canAccessFinance: data.canAccessFinance || false, 
+            createdAt: serverTimestamp() 
+          });
           await signOut(secondaryAuth);
           await deleteApp(secondaryApp);
           return true;
@@ -831,7 +847,7 @@ export const MockDb = {
     // the 'auth/email-already-in-use' case by re-signing in and re-creating the Firestore doc.
     console.info(`User ${userEmail || uid} removed from Firestore. Firebase Auth account still exists but has no profile.`);
   },
-  updateStaffAccount: async (uid: string, updates: { role?: string; team?: string; name?: string; canAccessFinance?: boolean }) => {
+  updateStaffAccount: async (uid: string, updates: { role?: string; team?: string; name?: string; nickname?: string; canAccessFinance?: boolean }) => {
     if (!isConfigured || !db) throw new Error("Firebase Not Configured");
     if (currentUser?.role !== 'admin') throw new Error('Unauthorized: admin access required');
     await updateDoc(doc(db, 'users', uid), updates);

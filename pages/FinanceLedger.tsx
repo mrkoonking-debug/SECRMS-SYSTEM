@@ -78,6 +78,13 @@ export const FinanceLedger: React.FC = () => {
   const [activeReceiptUrl, setActiveReceiptUrl] = useState<string | null>(null);
   const [execMode, setExecMode] = useState(false);
   const [targetFloat, setTargetFloat] = useState<number>(5000);
+  const [userMap, setUserMap] = useState<Record<string, string>>({});
+
+  const getDisplayName = (fullName: string) => {
+    if (!fullName) return '';
+    const trimmed = fullName.trim();
+    return userMap[trimmed] || fullName;
+  };
 
   // Swipe gesture states
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -366,6 +373,21 @@ export const FinanceLedger: React.FC = () => {
       });
 
       const summ = await MockDb.getPettyCashSummary();
+
+      // Fetch users to map names to nicknames in Finance
+      try {
+        const allUsers = await MockDb.getAllUsers();
+        const map: Record<string, string> = {};
+        allUsers.forEach((u: any) => {
+          if (u.name && u.nickname) {
+            map[u.name.trim()] = u.nickname.trim();
+          }
+        });
+        setUserMap(map);
+      } catch (err) {
+        console.error("Error building userMap:", err);
+      }
+
       setTransactions(normalizedTxList);
       setSummary(summ);
     } catch (err) {
@@ -473,7 +495,8 @@ export const FinanceLedger: React.FC = () => {
     const tx = transactions.find(t => t.id === txId);
     if (!tx) return;
     const amountToReimburse = tx.paidBy === 'SPLIT' ? (tx.splitPersonalAmount || 0) : tx.amount;
-    if (!confirm(`ยืนยันการคืนเงินสำรองจ่ายจำนวน ${formatCurrency(amountToReimburse)} ให้กับ ${tx.staffName} เรียบร้อยแล้วใช่หรือไม่?`)) return;
+    const displayName = userMap[tx.staffName.trim()] ? `${userMap[tx.staffName.trim()]} (${tx.staffName})` : tx.staffName;
+    if (!confirm(`ยืนยันการคืนเงินสำรองจ่ายจำนวน ${formatCurrency(amountToReimburse)} ให้กับ ${displayName} เรียบร้อยแล้วใช่หรือไม่?`)) return;
     try {
       await MockDb.updatePettyCashTransaction(txId, {
         isReimbursed: true,
@@ -488,7 +511,8 @@ export const FinanceLedger: React.FC = () => {
   };
 
   const handleReimburseAllForStaff = async (staffName: string) => {
-    if (!confirm(`ยืนยันคืนเงินสำรองจ่ายทั้งหมดให้กับ ${staffName} หรือไม่?`)) return;
+    const displayName = userMap[staffName.trim()] ? `${userMap[staffName.trim()]} (${staffName})` : staffName;
+    if (!confirm(`ยืนยันคืนเงินสำรองจ่ายทั้งหมดให้กับ ${displayName} หรือไม่?`)) return;
     try {
       // Find all unpaid advance transactions for this staff
       const unpaid = transactions.filter(
@@ -505,7 +529,7 @@ export const FinanceLedger: React.FC = () => {
           reimbursedBy: currentUser?.name || 'Admin'
         });
       }
-      showToast(`คืนเงินสำรองจ่ายของ ${staffName} เรียบร้อยแล้ว`, 'success');
+      showToast(`คืนเงินสำรองจ่ายของ ${displayName} เรียบร้อยแล้ว`, 'success');
       fetchData();
     } catch (err) {
       showToast('เกิดข้อผิดพลาดในการคืนเงินสะสม', 'error');
@@ -1106,7 +1130,9 @@ export const FinanceLedger: React.FC = () => {
                       {staffName.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <h3 className="text-sm sm:text-base font-bold text-[#1d1d1f] dark:text-white">{staffName}</h3>
+                      <h3 className="text-sm sm:text-base font-bold text-[#1d1d1f] dark:text-white">
+                        {getDisplayName(staffName)} {userMap[staffName.trim()] && <span className="text-xs text-gray-400 font-normal">({staffName})</span>}
+                      </h3>
                       <p className="text-[10px] text-gray-400 mt-0.5">{data.txs.length} รายการที่รอคืน</p>
                     </div>
                   </div>
@@ -1412,7 +1438,7 @@ export const FinanceLedger: React.FC = () => {
             ) : (
               Object.entries(summary.personalAdvanceByStaff).map(([name, amount]) => (
                 <div key={name} className="flex flex-col gap-1 py-1 border-b border-purple-200/30 dark:border-purple-500/5 last:border-0">
-                  <span className="font-semibold text-purple-800 dark:text-purple-300 truncate text-[10px] sm:text-xs">{name}</span>
+                  <span className="font-semibold text-purple-800 dark:text-purple-300 truncate text-[10px] sm:text-xs" title={name}>{getDisplayName(name)}</span>
                   <div className="flex items-center justify-between gap-1">
                     <span className="font-bold text-purple-600 dark:text-purple-400 tabular-nums text-[10px] sm:text-xs">{formatCurrency(amount)}</span>
                     <button
@@ -1755,7 +1781,7 @@ export const FinanceLedger: React.FC = () => {
                         </td>
 
                         {/* Staff Name */}
-                        <td className="py-3.5 whitespace-nowrap text-gray-500 dark:text-gray-400">{tx.staffName}</td>
+                        <td className="py-3.5 whitespace-nowrap text-gray-500 dark:text-gray-400" title={tx.staffName}>{getDisplayName(tx.staffName)}</td>
 
                         {/* Amount */}
                         <td className="py-3.5 text-right font-bold text-sm tabular-nums whitespace-nowrap">
@@ -1833,7 +1859,7 @@ export const FinanceLedger: React.FC = () => {
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
                         <h4 className="text-xs font-bold text-[#1d1d1f] dark:text-white leading-tight">{tx.description}</h4>
-                        <p className="text-[10px] text-gray-400 mt-0.5">{tx.category} · ทำโดย {tx.staffName}</p>
+                        <p className="text-[10px] text-gray-400 mt-0.5">{tx.category} · ทำโดย {getDisplayName(tx.staffName)}</p>
                       </div>
                       {tx.receiptUrl && (
                         <button
