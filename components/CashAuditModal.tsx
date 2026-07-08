@@ -87,6 +87,15 @@ export const CashAuditModal: React.FC<CashAuditModalProps> = ({
     }));
   };
 
+  const adjustQty = (val: string, amount: number) => {
+    const currentQty = parseInt(denoms[val]) || 0;
+    const nextQty = Math.max(0, currentQty + amount);
+    setDenoms(prev => ({
+      ...prev,
+      [val]: nextQty > 0 ? nextQty.toString() : ''
+    }));
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (mode === 'direct' && physicalBalance === '') {
@@ -223,16 +232,29 @@ export const CashAuditModal: React.FC<CashAuditModalProps> = ({
                     {billDenoms.map(val => (
                       <div key={val} className="flex items-center justify-between gap-3 bg-gray-50 dark:bg-[#2c2c2e] rounded-xl px-3 py-1.5 border border-gray-150/30 dark:border-white/5">
                         <span className="text-xs font-bold text-gray-600 dark:text-gray-300 w-16">฿{formatCurrency(parseFloat(val)).replace('฿', '')}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-gray-400">x</span>
+                        <div className="flex items-center gap-1 bg-white dark:bg-black/30 border border-gray-250 dark:border-white/10 rounded-xl p-0.5 shadow-sm">
+                          <button
+                            type="button"
+                            onClick={() => adjustQty(val, -1)}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 font-extrabold active:scale-90 transition-all select-none text-sm cursor-pointer"
+                          >
+                            -
+                          </button>
                           <input
                             type="number"
                             min="0"
                             placeholder="0"
                             value={denoms[val]}
                             onChange={e => handleDenomChange(val, e.target.value)}
-                            className="w-16 sm:w-20 bg-white dark:bg-black/40 border border-gray-250 dark:border-white/10 focus:border-blue-500 rounded-lg px-2 py-1 text-center text-xs font-bold tabular-nums outline-none"
+                            className="w-8 text-center bg-transparent border-0 font-black text-xs tabular-nums outline-none appearance-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
+                          <button
+                            type="button"
+                            onClick={() => adjustQty(val, 1)}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 font-extrabold active:scale-90 transition-all select-none text-sm cursor-pointer"
+                          >
+                            +
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -246,16 +268,29 @@ export const CashAuditModal: React.FC<CashAuditModalProps> = ({
                     {coinDenoms.map(val => (
                       <div key={val} className="flex items-center justify-between gap-3 bg-gray-50 dark:bg-[#2c2c2e] rounded-xl px-3 py-1.5 border border-gray-150/30 dark:border-white/5">
                         <span className="text-xs font-bold text-gray-600 dark:text-gray-300 w-16">฿{formatCurrency(parseFloat(val)).replace('฿', '')}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-gray-400">x</span>
+                        <div className="flex items-center gap-1 bg-white dark:bg-black/30 border border-gray-250 dark:border-white/10 rounded-xl p-0.5 shadow-sm">
+                          <button
+                            type="button"
+                            onClick={() => adjustQty(val, -1)}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 font-extrabold active:scale-90 transition-all select-none text-sm cursor-pointer"
+                          >
+                            -
+                          </button>
                           <input
                             type="number"
                             min="0"
                             placeholder="0"
                             value={denoms[val]}
                             onChange={e => handleDenomChange(val, e.target.value)}
-                            className="w-16 sm:w-20 bg-white dark:bg-black/40 border border-gray-250 dark:border-white/10 focus:border-blue-500 rounded-lg px-2 py-1 text-center text-xs font-bold tabular-nums outline-none"
+                            className="w-8 text-center bg-transparent border-0 font-black text-xs tabular-nums outline-none appearance-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
+                          <button
+                            type="button"
+                            onClick={() => adjustQty(val, 1)}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 font-extrabold active:scale-90 transition-all select-none text-sm cursor-pointer"
+                          >
+                            +
+                          </button>
                         </div>
                       </div>
                     ))}
