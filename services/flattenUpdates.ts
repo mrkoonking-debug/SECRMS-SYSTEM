@@ -18,7 +18,7 @@ export function flattenRMAUpdates(updates: Partial<RMA>): Record<string, any> {
     'issueDescription', 'customerName', 'customerEmail',
     'customerPhone', 'customerLineId', 'customerAddress',
     'customerReturnAddress', 'contactPerson', 'productType',
-    'serviceType', 'delayReason', 'notes', 'status',
+    'serviceType', 'delayReason', 'notes', 'status', 'team',
     'lineAccount', 'deviceUsername', 'devicePassword',
     'groupRequestId', 'quotationNumber', 'createdBy'
   ];
