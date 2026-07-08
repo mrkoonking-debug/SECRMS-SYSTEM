@@ -79,6 +79,12 @@ export const FinanceLedger: React.FC = () => {
   const [execMode, setExecMode] = useState(false);
   const [targetFloat, setTargetFloat] = useState<number>(5000);
 
+  // Swipe gesture states
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+  const [touchEndY, setTouchEndY] = useState<number | null>(null);
+
   const getAvailableMonths = () => {
     const months = new Set<string>();
     transactions.forEach(t => {
@@ -411,6 +417,33 @@ export const FinanceLedger: React.FC = () => {
     end.setDate(end.getDate() + 7);
     setStartDate(formatDateString(start));
     setEndDate(formatDateString(end));
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEndX(null);
+    setTouchEndY(null);
+    setTouchStartX(e.targetTouches[0].clientX);
+    setTouchStartY(e.targetTouches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+    setTouchEndY(e.targetTouches[0].clientY);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX === null || touchEndX === null || touchStartY === null || touchEndY === null) return;
+    const diffX = touchStartX - touchEndX;
+    const diffY = touchStartY - touchEndY;
+    
+    // Only swipe if horizontal movement is dominant and meets minimum threshold
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
+      if (diffX > 0) {
+        handleNextWeek();
+      } else {
+        handlePrevWeek();
+      }
+    }
   };
 
   // Filter transactions
@@ -1397,7 +1430,12 @@ export const FinanceLedger: React.FC = () => {
       </div>
 
       {/* Filter and Table Section */}
-      <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-4 md:p-6 backdrop-blur-xl space-y-6">
+      <div 
+        className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-4 md:p-6 backdrop-blur-xl space-y-6 select-none"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         
         {/* Weekly Navigation Controls */}
         <div className="flex items-center justify-between bg-white/40 dark:bg-white/[0.01] border border-gray-200/30 dark:border-white/5 rounded-2xl p-3 backdrop-blur-xl">
@@ -1416,7 +1454,7 @@ export const FinanceLedger: React.FC = () => {
                   {formatThaiDate(startDate)} — {formatThaiDate(endDate)}
                 </span>
                 <span className="text-[9px] text-gray-400 dark:text-gray-500 block mt-0.5 font-normal">
-                  แสดงรายการของสัปดาห์นี้ (จันทร์ - อาทิตย์)
+                  แสดงรายการของสัปดาห์นี้ (จันทร์ - อาทิตย์) · 📱 ปัดซ้าย/ขวาเพื่อเปลี่ยนสัปดาห์
                 </span>
               </>
             ) : (
@@ -1562,22 +1600,22 @@ export const FinanceLedger: React.FC = () => {
           </div>
 
           {/* Date range pickers */}
-          <div className="flex gap-2 items-center w-full xl:w-auto flex-shrink-0">
-            <div className="flex-1 sm:flex-initial sm:w-32">
+          <div className="flex gap-1.5 items-center w-full xl:w-auto flex-shrink-0">
+            <div className="flex-1 sm:flex-initial sm:w-28">
               <input
                 type="date"
                 value={startDate}
                 onChange={e => setStartDate(e.target.value)}
-                className="w-full px-2.5 py-1.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-xs outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white shadow-sm"
+                className="w-full px-1.5 py-1.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-[11px] outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white shadow-sm"
               />
             </div>
-            <span className="text-gray-400 text-xs font-semibold shrink-0">ถึง</span>
-            <div className="flex-1 sm:flex-initial sm:w-32">
+            <span className="text-gray-400 text-[10px] font-semibold shrink-0">ถึง</span>
+            <div className="flex-1 sm:flex-initial sm:w-28">
               <input
                 type="date"
                 value={endDate}
                 onChange={e => setEndDate(e.target.value)}
-                className="w-full px-2.5 py-1.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-xs outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white shadow-sm"
+                className="w-full px-1.5 py-1.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-xl text-[11px] outline-none focus:border-[#0071e3] text-[#1d1d1f] dark:text-white shadow-sm"
               />
             </div>
           </div>
