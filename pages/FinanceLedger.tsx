@@ -1438,50 +1438,52 @@ export const FinanceLedger: React.FC = () => {
       >
         
         {/* Weekly Navigation Controls */}
-        <div className="flex items-center justify-between bg-white/40 dark:bg-white/[0.01] border border-gray-200/30 dark:border-white/5 rounded-2xl p-3 backdrop-blur-xl">
-          <button
-            onClick={handlePrevWeek}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl text-gray-600 dark:text-gray-400 active:scale-95 transition-all outline-none"
-            title="สัปดาห์ก่อนหน้า"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          
-          <div className="text-center font-bold">
-            {startDate && endDate ? (
-              <>
-                <span className="text-xs text-gray-800 dark:text-white block">
-                  {formatThaiDate(startDate)} — {formatThaiDate(endDate)}
-                </span>
-                <span className="text-[9px] text-gray-400 dark:text-gray-500 block mt-0.5 font-normal">
-                  แสดงรายการของสัปดาห์นี้ · 📱 ปัดเพื่อเปลี่ยนสัปดาห์
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="text-xs text-gray-800 dark:text-white block">
-                  แสดงรายการตามตัวกรองที่เลือก
-                </span>
-                <button
-                  onClick={() => {
-                    setStartDate(getInitialMonday());
-                    setEndDate(getInitialSunday());
-                  }}
-                  className="text-[9px] text-blue-500 font-bold hover:underline block mt-0.5"
-                >
-                  กลับไปแสดงรายสัปดาห์
-                </button>
-              </>
-            )}
-          </div>
+        <div className="flex justify-center select-none w-full">
+          <div className="flex items-center gap-4 bg-white/70 dark:bg-white/[0.02] border border-gray-200/40 dark:border-white/5 rounded-full px-5 py-2.5 shadow-sm hover:shadow-md transition-all backdrop-blur-xl">
+            <button
+              onClick={handlePrevWeek}
+              className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full text-gray-600 dark:text-gray-400 active:scale-90 transition-all outline-none"
+              title="สัปดาห์ก่อนหน้า"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            
+            <div className="text-center px-2 min-w-[180px]">
+              {startDate && endDate ? (
+                <>
+                  <span className="text-xs text-[#1d1d1f] dark:text-white font-black block">
+                    {formatThaiDate(startDate)} — {formatThaiDate(endDate)}
+                  </span>
+                  <span className="text-[9px] text-gray-400 dark:text-gray-500 block mt-0.5 font-normal leading-tight">
+                    แสดงรายการรายสัปดาห์ · 📱 ปัดเพื่อเปลี่ยน
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="text-xs text-[#1d1d1f] dark:text-white font-black block">
+                    ตัวกรองกำหนดเอง
+                  </span>
+                  <button
+                    onClick={() => {
+                      setStartDate(getInitialMonday());
+                      setEndDate(getInitialSunday());
+                    }}
+                    className="text-[9px] text-blue-500 font-bold hover:underline block mt-0.5"
+                  >
+                    กลับไปแสดงรายสัปดาห์
+                  </button>
+                </>
+              )}
+            </div>
 
-          <button
-            onClick={handleNextWeek}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl text-gray-600 dark:text-gray-400 active:scale-95 transition-all outline-none"
-            title="สัปดาห์ถัดไป"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
+            <button
+              onClick={handleNextWeek}
+              className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full text-gray-600 dark:text-gray-400 active:scale-90 transition-all outline-none"
+              title="สัปดาห์ถัดไป"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Filters Row */}
