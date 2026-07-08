@@ -2,14 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== CSS Custom Properties — hoverstat.es-inspired theming ===== */
 :root {
-  --bg-primary: #f5f5f7;
-  --bg-secondary: #eef0f5;
+  --bg-primary: #f2f4f8;
+  --bg-secondary: #e7eaf0;
   --text-primary: #1d1d1f;
   --text-secondary: #86868b;
-  --surface: #ffffff;
-  --surface-hover: #f5f5f7;
+  --surface: #fafafd;
+  --surface-hover: #f1f3f8;
   --border: rgba(0, 0, 0, 0.05);
   --border-hover: rgba(0, 113, 227, 0.25);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.03);
