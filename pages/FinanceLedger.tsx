@@ -942,6 +942,7 @@ export const FinanceLedger: React.FC = () => {
           currentBalance={summary.pettyCashBalance} 
           transactions={transactions} 
           targetFloat={targetFloat} 
+          totalPersonalAdvance={summary.totalPersonalAdvance}
         />
 
         {/* Audit Action Banner */}

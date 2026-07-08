@@ -1,21 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, TrendingDown, DollarSign, Users, ChevronRight, Activity, HelpCircle } from 'lucide-react';
+import { Calendar, TrendingDown, DollarSign, Users, ChevronRight, Activity, Copy, Check, FileText } from 'lucide-react';
 import { PettyCashTransaction } from '../types';
+import { showToast } from '../services/toast';
 
 interface ReplenishmentPlannerProps {
   currentBalance: number;
   transactions: PettyCashTransaction[];
   targetFloat: number;
+  totalPersonalAdvance: number;
 }
 
 export const ReplenishmentPlanner: React.FC<ReplenishmentPlannerProps> = ({
   currentBalance,
   transactions,
-  targetFloat
+  targetFloat,
+  totalPersonalAdvance
 }) => {
-  const [hasInterns, setHasInterns] = useState<boolean>(false);
+  const [hasInterns, setHasInterns] = useState<boolean>(true);
   const [shippingLoad, setShippingLoad] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('MEDIUM');
   const [safetyBuffer, setSafetyBuffer] = useState<number>(500);
+
+  // LINE Request generator inputs
+  const [reqAmount, setReqAmount] = useState<string>('6000');
+  const [maidCost, setMaidCost] = useState<string>('1000');
+  const [shipCost, setShipCost] = useState<string>('1500');
+  const [internCost, setInternCost] = useState<string>('2200');
+  const [copied, setCopied] = useState<boolean>(false);
 
   // 1. Calculate actual baseline burn rate from past 14 days of transactions
   const [baseBurnRate, setBaseBurnRate] = useState<number>(150);
@@ -39,30 +49,44 @@ export const ReplenishmentPlanner: React.FC<ReplenishmentPlannerProps> = ({
     const totalExpense = recentExpenses.reduce((acc, t) => {
       if (t.paidBy === 'PETTY_CASH') return acc + t.amount;
       if (t.paidBy === 'SPLIT') return acc + (t.splitPettyCashAmount || 0);
-      // Personal advances are repaid later from petty cash, so they also burn petty cash
       return acc + t.amount;
     }, 0);
 
-    // Calculate unique days or default to 14 days
     const uniqueDays = new Set(transactions.map(t => t.date)).size;
     const daysDivider = Math.max(1, Math.min(14, uniqueDays));
     const calculatedRate = totalExpense / daysDivider;
     
-    // Set baseline rate, clamp between 50 and 1500 to keep it realistic
     setBaseBurnRate(Math.max(50, Math.min(1500, Math.round(calculatedRate))));
   }, [transactions]);
 
-  // 2. Adjust burn rate based on interactive modifiers
-  const internDailyCost = hasInterns ? (1800 / 7) : 0; // Intern allowance 1800/week
-  
-  let shippingDailyCost = 250; // Medium
-  if (shippingLoad === 'LOW') shippingDailyCost = 100;
-  if (shippingLoad === 'HIGH') shippingDailyCost = 500;
+  // Adjust inputs based on modifiers
+  useEffect(() => {
+    setInternCost(hasInterns ? '2200' : '0');
+  }, [hasInterns]);
+
+  useEffect(() => {
+    if (shippingLoad === 'LOW') setShipCost('700');
+    if (shippingLoad === 'MEDIUM') setShipCost('1500');
+    if (shippingLoad === 'HIGH') setShipCost('3000');
+  }, [shippingLoad]);
+
+  // Auto-calculate suggested replenishment (rounded to nearest 500)
+  useEffect(() => {
+    const calcInterns = parseFloat(internCost) || 0;
+    const calcMaid = parseFloat(maidCost) || 0;
+    const calcShip = parseFloat(shipCost) || 0;
+    
+    // replenishment needed = next week estimated + pending advance - drawer balance
+    const estimateNeeded = (calcInterns + calcMaid + calcShip) + totalPersonalAdvance - currentBalance;
+    const rounded = Math.max(1000, Math.ceil(estimateNeeded / 500) * 500);
+    setReqAmount(rounded.toString());
+  }, [currentBalance, totalPersonalAdvance, internCost, maidCost, shipCost]);
 
   // Final estimated daily burn rate (base + shipping + interns)
+  const internDailyCost = (parseFloat(internCost) || 0) / 7;
+  const shippingDailyCost = (parseFloat(shipCost) || 0) / 7;
   const estimatedDailyBurn = Math.round(baseBurnRate + shippingDailyCost + internDailyCost);
 
-  // 3. Forecast remaining days
   const remainingDays = estimatedDailyBurn > 0 
     ? Math.max(0, parseFloat(((currentBalance - safetyBuffer) / estimatedDailyBurn).toFixed(1)))
     : 99;
@@ -71,36 +95,27 @@ export const ReplenishmentPlanner: React.FC<ReplenishmentPlannerProps> = ({
     ? Math.max(0, parseFloat((currentBalance / estimatedDailyBurn).toFixed(1)))
     : 99;
 
-  // Calculate suggestion replenishment amount
-  const neededReplenishment = Math.max(0, targetFloat - currentBalance);
-  
-  // Forecast date
-  const getForecastDate = (days: number) => {
-    const d = new Date();
-    d.setDate(d.getDate() + Math.ceil(days));
-    return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+  // Generate LINE message template
+  const getLineMessage = () => {
+    const calcInterns = parseFloat(internCost) || 0;
+    const calcMaid = parseFloat(maidCost) || 0;
+    const calcShip = parseFloat(shipCost) || 0;
+
+    return `เวลาผมเบิก @KS. ผมขอเบิกเงินกองกลางเพิ่ม ${parseFloat(reqAmount) || 0} ครับ
+
+-ยอดเงินคงเหลือในลิ้นชัก ${currentBalance}
+-รอจ่าย ${totalPersonalAdvance}
+${calcInterns > 0 ? `-และค่าเบี้ยเลี้ยงน้องฝึกงาน ${calcInterns}\n` : ''}
+รายการของอาทิตย์หน้า
+${calcMaid > 0 ? `-ค่าป้าแม่บ้าน ${calcMaid}\n` : ''}${calcShip > 0 ? `-ค่าขนส่งประมาณ ${calcShip}` : ''}`;
   };
 
-  // Generate 10-day projection coordinates for the SVG path
-  const projectionDays = 10;
-  const points: { x: number; y: number; balance: number; label: string }[] = [];
-  
-  for (let i = 0; i <= projectionDays; i++) {
-    const projectedBalance = Math.max(0, Math.round(currentBalance - (estimatedDailyBurn * i)));
-    // Map to SVG coordinates (width: 400, height: 120)
-    const x = (i / projectionDays) * 380 + 10;
-    // Map balance (0 to targetFloat) to Y (110 to 10)
-    const y = 110 - ((projectedBalance / Math.max(1, targetFloat)) * 90);
-    
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    const dayLabel = d.toLocaleDateString('th-TH', { day: 'numeric' });
-
-    points.push({ x, y, balance: projectedBalance, label: dayLabel });
-  }
-
-  // Build SVG polyline path
-  const pathD = points.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const handleCopyText = () => {
+    navigator.clipboard.writeText(getLineMessage());
+    setCopied(true);
+    showToast('คัดลอกข้อความขอเบิกเงินสำเร็จ!', 'success');
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(val);
@@ -117,7 +132,7 @@ export const ReplenishmentPlanner: React.FC<ReplenishmentPlannerProps> = ({
             <span>แผนการเบิกเงินและการพยากรณ์เงินสด</span>
           </h2>
           <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            จำลองปริมาณการใช้จ่ายและคาดการณ์วันหมดอายุของเงินสดในกล่องล่วงหน้า
+            จำลองปริมาณการใช้จ่าย คาดการณ์ยอดเงิน และสร้างข้อความขอเบิกเสนอผู้บริหาร
           </p>
         </div>
         <div className="px-2.5 py-1 bg-blue-500/10 text-blue-500 text-[10px] font-bold rounded-lg uppercase tracking-wider flex items-center gap-1">
@@ -148,7 +163,7 @@ export const ReplenishmentPlanner: React.FC<ReplenishmentPlannerProps> = ({
               </div>
               <div className="text-left">
                 <span className="text-xs font-bold block">มีน้องฝึกงานมาทำงาน</span>
-                <span className="text-[9px] opacity-75 block mt-0.5">บวกเบี้ยเลี้ยงเฉลี่ย ฿1,800/สัปดาห์</span>
+                <span className="text-[9px] opacity-75 block mt-0.5">บวกเบี้ยเลี้ยงเฉลี่ย ฿2,200/สัปดาห์</span>
               </div>
             </div>
             <button
@@ -164,7 +179,7 @@ export const ReplenishmentPlanner: React.FC<ReplenishmentPlannerProps> = ({
             <div className="flex justify-between items-center">
               <span className="text-xs font-bold text-gray-700 dark:text-gray-300">ปริมาณการส่งของ (ค่าส่งเก็บปลายทาง)</span>
               <span className="text-[10px] px-2 py-0.5 bg-amber-500/10 text-amber-500 font-bold rounded">
-                {shippingLoad === 'LOW' ? 'น้อย (฿100/วัน)' : shippingLoad === 'MEDIUM' ? 'ปกติ (฿250/วัน)' : 'หนาแน่น (฿500/วัน)'}
+                {shippingLoad === 'LOW' ? 'น้อย (฿700/สัปดาห์)' : shippingLoad === 'MEDIUM' ? 'ปกติ (฿1,500/สัปดาห์)' : 'หนาแน่น (฿3,000/สัปดาห์)'}
               </span>
             </div>
             
@@ -206,113 +221,81 @@ export const ReplenishmentPlanner: React.FC<ReplenishmentPlannerProps> = ({
 
         </div>
 
-        {/* Right Side: Projections outputs & SVG graph */}
-        <div className="lg:col-span-7 flex flex-col justify-between gap-5">
+        {/* Right Side: LINE report generator & interactive preview */}
+        <div className="lg:col-span-7 flex flex-col gap-4">
           
-          {/* Projection Recommendation Text */}
-          <div className="p-4 bg-gradient-to-br from-blue-500/5 to-purple-500/5 dark:from-blue-500/[0.02] dark:to-purple-500/[0.02] border border-blue-500/10 dark:border-white/5 rounded-2xl space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
-                <DollarSign className="w-4 h-4" />
-              </div>
+          {/* Main Title of Creator */}
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">เครื่องมือสร้างรายงานเสนอขออนุมัติเบิกเงิน (@KS)</h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            {/* Form Fields to tweak the message parameters */}
+            <div className="bg-white/30 dark:bg-[#1c1c1e]/20 border border-gray-200/50 dark:border-white/5 rounded-2xl p-4 space-y-3">
               <div>
-                <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider block">อัตราจ่ายเฉลี่ยรวม (ประมาณการ)</span>
-                <span className="text-sm font-extrabold text-[#1d1d1f] dark:text-white tabular-nums">
-                  {formatCurrency(estimatedDailyBurn)} <span className="text-[10px] text-gray-500 font-normal">/ วัน</span>
-                </span>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">ยอดต้องการเบิก (฿)</label>
+                <input
+                  type="number"
+                  value={reqAmount}
+                  onChange={e => setReqAmount(e.target.value)}
+                  className="w-full bg-white dark:bg-black/30 border border-gray-250 dark:border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold tabular-nums outline-none focus:border-blue-500 text-[#1d1d1f] dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">ค่าเบี้ยเลี้ยงน้องฝึกงาน (฿)</label>
+                <input
+                  type="number"
+                  value={internCost}
+                  onChange={e => setInternCost(e.target.value)}
+                  className="w-full bg-white dark:bg-black/30 border border-gray-250 dark:border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold tabular-nums outline-none focus:border-blue-500 text-[#1d1d1f] dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">ค่าป้าแม่บ้านอาทิตย์หน้า (฿)</label>
+                <input
+                  type="number"
+                  value={maidCost}
+                  onChange={e => setMaidCost(e.target.value)}
+                  className="w-full bg-white dark:bg-black/30 border border-gray-250 dark:border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold tabular-nums outline-none focus:border-blue-500 text-[#1d1d1f] dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">ค่าขนส่งอาทิตย์หน้า (฿)</label>
+                <input
+                  type="number"
+                  value={shipCost}
+                  onChange={e => setShipCost(e.target.value)}
+                  className="w-full bg-white dark:bg-black/30 border border-gray-250 dark:border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold tabular-nums outline-none focus:border-blue-500 text-[#1d1d1f] dark:text-white"
+                />
               </div>
             </div>
 
-            <div className="text-xs leading-relaxed text-gray-600 dark:text-gray-300 border-t border-gray-150/40 dark:border-white/5 pt-2">
-              {currentBalance <= safetyBuffer ? (
-                <p className="text-red-500 font-bold">
-                  🚨 ยอดเงินสดคงเหลือปัจจุบันต่ำกว่าเงินสำรองขั้นต่ำแล้ว แนะนำให้ดำเนินการส่งคำเสนอเบิกเงิน 
-                  <span className="text-red-600 font-black px-1 text-sm">{formatCurrency(neededReplenishment)}</span> 
-                  ทันที เพื่อให้ยอดกลับมาเต็มตู้เป้าหมาย ({formatCurrency(targetFloat)})
-                </p>
-              ) : (
-                <p>
-                  💡 ยอดเงินสดในกล่องจะลดลงมาแตะยอดสำรองฉุกเฉินในอีกประมาณ 
-                  <span className="font-bold text-blue-500 text-sm px-1">{remainingDays} วัน</span> 
-                  (คาดว่าประมาณวันที่ <span className="font-bold">{getForecastDate(remainingDays)}</span>) 
-                  และยอดเงินจะหมดสนิทภายใน <span className="font-bold text-amber-500">{daysToZero} วัน</span>. 
-                  แนะนำให้ตั้งเบิกจำนวน <span className="font-bold text-gray-800 dark:text-gray-100">{formatCurrency(neededReplenishment)}</span> ล่วงหน้าก่อนเงินตู้หมด
-                </p>
-              )}
+            {/* Generated text preview and Copy Action */}
+            <div className="bg-gray-50/50 dark:bg-black/30 border border-gray-200/50 dark:border-white/5 rounded-2xl p-4 flex flex-col justify-between h-full space-y-3">
+              <div className="flex justify-between items-center border-b border-gray-150/40 dark:border-white/5 pb-2">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                  <FileText className="w-3.5 h-3.5 text-blue-500" />
+                  <span>ตัวอย่างข้อความ</span>
+                </span>
+                <span className="text-[9px] bg-green-500/10 text-green-600 font-bold px-1.5 py-0.5 rounded">Auto Calculated</span>
+              </div>
+
+              <pre className="text-[10px] sm:text-xs font-mono text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed flex-1 select-all select-none">
+                {getLineMessage()}
+              </pre>
+
+              <button
+                type="button"
+                onClick={handleCopyText}
+                className="w-full py-2.5 bg-gradient-to-r from-blue-500 to-[#0071e3] hover:from-blue-600 hover:to-[#0077ed] text-white rounded-xl text-xs font-black flex items-center justify-center gap-2 active:scale-95 transition-all shadow-md shadow-blue-500/5 outline-none"
+              >
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                <span>{copied ? 'คัดลอกสำเร็จ!' : 'คัดลอกเพื่อส่ง LINE'}</span>
+              </button>
             </div>
-          </div>
 
-          {/* Interactive SVG Projection Chart */}
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1 block">กราฟคาดการณ์แนวโน้มเงินสดคงเหลือในตู้ (10 วันล่วงหน้า)</span>
-            <div className="bg-gray-50/50 dark:bg-black/20 border border-gray-150/30 dark:border-white/5 rounded-2xl p-2.5">
-              <svg viewBox="0 0 400 120" className="w-full overflow-visible">
-                {/* Y-Axis guide lines */}
-                <line x1="10" y1="10" x2="390" y2="10" stroke="#888" strokeWidth="0.5" strokeDasharray="3,3" opacity="0.15" />
-                <line x1="10" y1="55" x2="390" y2="55" stroke="#888" strokeWidth="0.5" strokeDasharray="3,3" opacity="0.15" />
-                <line x1="10" y1="100" x2="390" y2="100" stroke="#888" strokeWidth="0.5" strokeDasharray="3,3" opacity="0.15" />
-
-                {/* Safety Buffer Indicator Line */}
-                {(() => {
-                  const bufferY = 110 - ((safetyBuffer / targetFloat) * 90);
-                  return (
-                    <g>
-                      <line x1="10" y1={bufferY} x2="390" y2={bufferY} stroke="#ff3b30" strokeWidth="0.75" strokeDasharray="4,2" opacity="0.65" />
-                      <text x="390" y={bufferY - 3} textAnchor="end" fill="#ff3b30" fontSize="6" fontWeight="bold">Buffer</text>
-                    </g>
-                  );
-                })()}
-
-                {/* Projected Line path */}
-                <path
-                  d={pathD}
-                  fill="none"
-                  stroke="#0071e3"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-
-                {/* Draw points & labels */}
-                {points.map((p, idx) => (
-                  <g key={idx}>
-                    <circle
-                      cx={p.x}
-                      cy={p.y}
-                      r={idx === 0 ? "3.5" : "2"}
-                      fill={idx === 0 ? "#0071e3" : p.balance <= safetyBuffer ? "#ff3b30" : "#30b34f"}
-                      stroke="#fff"
-                      strokeWidth="0.75"
-                    />
-                    {/* Render labels on key steps: start, middle, end */}
-                    {(idx === 0 || idx === 5 || idx === projectionDays) && (
-                      <>
-                        <text
-                          x={p.x}
-                          y={p.y - 6}
-                          fontSize="6.5"
-                          fontWeight="bold"
-                          textAnchor="middle"
-                          fill={p.balance <= safetyBuffer ? "#ff3b30" : "#1d1d1f"}
-                          className="dark:fill-gray-300"
-                        >
-                          {p.balance}
-                        </text>
-                        <text
-                          x={p.x}
-                          y="118"
-                          fontSize="6"
-                          textAnchor="middle"
-                          fill="#888"
-                        >
-                          {p.label}
-                        </text>
-                      </>
-                    )}
-                  </g>
-                ))}
-              </svg>
-            </div>
           </div>
 
         </div>
