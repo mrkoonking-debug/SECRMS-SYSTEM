@@ -101,7 +101,7 @@ export const ReplenishmentPlanner: React.FC<ReplenishmentPlannerProps> = ({
     const calcMaid = parseFloat(maidCost) || 0;
     const calcShip = parseFloat(shipCost) || 0;
 
-    return `เวลาผมเบิก @KS. ผมขอเบิกเงินกองกลางเพิ่ม ${parseFloat(reqAmount) || 0} ครับ
+    return `@KS. ผมขอเบิกเงินกองกลางเพิ่ม ${parseFloat(reqAmount) || 0} ครับ
 
 -ยอดเงินคงเหลือในลิ้นชัก ${currentBalance}
 -รอจ่าย ${totalPersonalAdvance}
