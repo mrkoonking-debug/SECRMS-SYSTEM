@@ -27,7 +27,7 @@ export const FinanceLedger: React.FC = () => {
   
   // Modal states
   const [showModal, setShowModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'records' | 'dashboard'>('records');
+  const [activeTab, setActiveTab] = useState<'records' | 'dashboard' | 'reimbursements'>('records');
   const [dashboardMonth, setDashboardMonth] = useState<string>(''); // YYYY-MM or 'ALL'
   const [selectedTx, setSelectedTx] = useState<PettyCashTransaction | undefined>(undefined);
   const [activeReceiptUrl, setActiveReceiptUrl] = useState<string | null>(null);
@@ -386,7 +386,7 @@ export const FinanceLedger: React.FC = () => {
       const unpaid = transactions.filter(
         tx => tx.staffName === staffName && 
         tx.type === 'EXPENSE' && 
-        (tx.paidBy === 'PERSONAL_CASH' || tx.paidBy === 'PERSONAL_TRANSFER') && 
+        (tx.paidBy === 'PERSONAL_CASH' || tx.paidBy === 'PERSONAL_TRANSFER' || tx.paidBy === 'SPLIT') && 
         !tx.isReimbursed
       );
 
@@ -624,6 +624,116 @@ export const FinanceLedger: React.FC = () => {
     );
   };
 
+  const getPendingReimbursementsByStaff = () => {
+    const map = new Map<string, { total: number; txs: PettyCashTransaction[] }>();
+    
+    transactions.forEach(tx => {
+      if (tx.type === 'EXPENSE' && !tx.isReimbursed) {
+        let personalAmount = 0;
+        if (tx.paidBy === 'PERSONAL_CASH' || tx.paidBy === 'PERSONAL_TRANSFER') {
+          personalAmount = tx.amount;
+        } else if (tx.paidBy === 'SPLIT') {
+          personalAmount = tx.splitPersonalAmount || 0;
+        }
+        
+        if (personalAmount > 0) {
+          const staff = tx.staffName || 'Unknown';
+          if (!map.has(staff)) {
+            map.set(staff, { total: 0, txs: [] });
+          }
+          const data = map.get(staff)!;
+          data.total += personalAmount;
+          data.txs.push(tx);
+        }
+      }
+    });
+    
+    return map;
+  };
+
+  const renderReimbursements = () => {
+    const pendingMap = getPendingReimbursementsByStaff();
+    const staffList = Array.from(pendingMap.entries()).sort((a, b) => b[1].total - a[1].total);
+
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-4 md:p-6 backdrop-blur-xl">
+          <h2 className="text-base sm:text-lg font-bold text-[#1d1d1f] dark:text-white leading-tight">รายชื่อพนักงานที่รอรับเงินคืน</h2>
+          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5">แสดงรายละเอียดรายการสำรองจ่ายส่วนตัวที่ยังไม่ได้ทำการคืนเงินแยกตามรายบุคคล</p>
+        </div>
+
+        {staffList.length === 0 ? (
+          <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-12 text-center text-gray-400 dark:text-gray-500 italic">
+             ไม่มีพนักงานที่ค้างเงินสำรองจ่ายในระบบ
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {staffList.map(([staffName, data]) => (
+              <div key={staffName} className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-5 md:p-6 backdrop-blur-xl flex flex-col justify-between space-y-4 hover:scale-[1.005] transition-all">
+                <div className="flex items-start justify-between border-b border-gray-150/50 dark:border-white/5 pb-4">
+                  <div>
+                    <h3 className="text-sm sm:text-base font-bold text-[#1d1d1f] dark:text-white">คุณ{staffName}</h3>
+                    <p className="text-[10px] text-gray-400 mt-1">{data.txs.length} รายการที่รอคืน</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">ยอดเงินรอคืนรวม</span>
+                    <span className="text-lg sm:text-xl font-black text-[#ff9500] block mt-0.5 tabular-nums">
+                      {formatCurrency(data.total)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* List of pending transactions for this staff */}
+                <div className="space-y-3 flex-1 overflow-y-auto max-h-72 pr-1 custom-scrollbar">
+                  {data.txs.map(tx => {
+                    const personalAmount = tx.paidBy === 'SPLIT' ? (tx.splitPersonalAmount || 0) : tx.amount;
+                    return (
+                      <div key={tx.id} className="p-3 bg-gray-50/50 dark:bg-[#1c1c1e]/40 border border-gray-200/30 dark:border-white/5 rounded-2xl flex items-center justify-between gap-3 text-xs">
+                        <div className="min-w-0 flex-1">
+                          <span className="font-semibold text-gray-700 dark:text-gray-200 block truncate" title={tx.description}>{tx.description}</span>
+                          <div className="text-[10px] text-gray-400 mt-1 flex items-center gap-1.5 flex-wrap">
+                            <span className="font-mono">{tx.date}</span>
+                            <span>•</span>
+                            <span>{tx.category}</span>
+                            <span>•</span>
+                            <span className="text-[#ff9500] font-medium">
+                              {tx.paidBy === 'PERSONAL_CASH' ? 'เงินสด' : tx.paidBy === 'PERSONAL_TRANSFER' ? 'เงินโอน' : 'จ่ายแบบผสม'}
+                            </span>
+                          </div>
+                          {tx.note && <p className="text-[10px] text-gray-400/80 italic mt-0.5 truncate">Note: {tx.note}</p>}
+                        </div>
+                        <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
+                          <span className="font-bold text-[#1d1d1f] dark:text-white tabular-nums">
+                            {formatCurrency(personalAmount)}
+                          </span>
+                          <button
+                            onClick={() => handleReimburse(tx.id)}
+                            className="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg text-[9px] transition-colors active:scale-95"
+                          >
+                            คืนเงิน
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="pt-2 border-t border-gray-150/50 dark:border-white/5 flex justify-end">
+                  <button
+                    onClick={() => handleReimburseAllForStaff(staffName)}
+                    className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-blue-500 to-[#0071e3] hover:from-blue-600 hover:to-[#0077ed] text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 active:scale-95 transition-all shadow-md shadow-blue-500/10"
+                  >
+                    คืนเงินทั้งหมด ({formatCurrency(data.total)})
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 animate-fade-in px-4 pb-20 md:pb-8">
       {/* Top Banner */}
@@ -656,16 +766,16 @@ export const FinanceLedger: React.FC = () => {
       </div>
 
       {/* Tab Switcher */}
-      <div className="relative flex p-1 bg-gray-100/50 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/5 rounded-2xl w-72 h-10 select-none">
+      <div className="relative flex p-1 bg-gray-100/50 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/5 rounded-2xl w-full sm:w-[450px] h-10 select-none">
         {/* Sliding background pill */}
         <div 
-          className={`absolute top-1 bottom-1 w-[calc(50%-6px)] bg-white dark:bg-[#2c2c2e] rounded-xl shadow-sm border border-gray-200/20 dark:border-white/5 transition-all duration-300 ease-out ${
-            activeTab === 'records' ? 'left-1' : 'left-[calc(50%+2px)]'
+          className={`absolute top-1 bottom-1 w-[calc(33.333%-6px)] bg-white dark:bg-[#2c2c2e] rounded-xl shadow-sm border border-gray-200/20 dark:border-white/5 transition-all duration-300 ease-out ${
+            activeTab === 'records' ? 'left-1' : activeTab === 'dashboard' ? 'left-[calc(33.333%+2px)]' : 'left-[calc(66.666%+2px)]'
           }`}
         />
         <button
           onClick={() => setActiveTab('records')}
-          className={`relative z-10 flex-1 py-1.5 text-xs font-bold text-center rounded-xl transition-colors duration-300 ${
+          className={`relative z-10 flex-1 py-1.5 text-[10px] sm:text-xs font-bold text-center rounded-xl transition-colors duration-300 ${
             activeTab === 'records'
               ? 'text-[#0071e3]'
               : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
@@ -675,13 +785,23 @@ export const FinanceLedger: React.FC = () => {
         </button>
         <button
           onClick={() => setActiveTab('dashboard')}
-          className={`relative z-10 flex-1 py-1.5 text-xs font-bold text-center rounded-xl transition-colors duration-300 ${
+          className={`relative z-10 flex-1 py-1.5 text-[10px] sm:text-xs font-bold text-center rounded-xl transition-colors duration-300 ${
             activeTab === 'dashboard'
               ? 'text-[#0071e3]'
               : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
           สถิติ & แดชบอร์ด
+        </button>
+        <button
+          onClick={() => setActiveTab('reimbursements')}
+          className={`relative z-10 flex-1 py-1.5 text-[10px] sm:text-xs font-bold text-center rounded-xl transition-colors duration-300 ${
+            activeTab === 'reimbursements'
+              ? 'text-[#0071e3]'
+              : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
+          }`}
+        >
+          คนที่รอคืน ({Object.keys(summary.personalAdvanceByStaff).length})
         </button>
       </div>
 
@@ -1203,8 +1323,10 @@ export const FinanceLedger: React.FC = () => {
         )}
       </div>
         </>
-      ) : (
+      ) : activeTab === 'dashboard' ? (
         renderDashboard()
+      ) : (
+        renderReimbursements()
       )}
 
       {/* Transaction Entry/Edit Modal popup */}
