@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Landmark, Plus, FileSpreadsheet, Search, RefreshCw, Trash2, Edit2, Check, 
-  ArrowUpRight, ArrowDownLeft, AlertCircle, Coins, Clock, ChevronRight, Image as ImageIcon, X, Wallet, Calendar
+  ArrowUpRight, ArrowDownLeft, AlertCircle, Coins, Clock, ChevronRight, ChevronLeft, Image as ImageIcon, X, Wallet, Calendar
 } from 'lucide-react';
 import { PettyCashTransaction, PettyCashSummary } from '../types';
 import { MockDb } from '../services/mockDb';
@@ -15,6 +15,47 @@ import {
   PieChart, Pie, Cell, BarChart, Bar
 } from 'recharts';
 
+const formatDateString = (d: Date) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const getInitialMonday = () => {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(d.setDate(diff));
+  monday.setHours(0, 0, 0, 0);
+  return formatDateString(monday);
+};
+
+const getInitialSunday = () => {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(d.setDate(diff));
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+  return formatDateString(sunday);
+};
+
+const formatThaiDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  const [year, month, day] = parts;
+  const thaiMonthsShort = [
+    'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+    'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'
+  ];
+  const monthIdx = parseInt(month, 10) - 1;
+  const yearTh = parseInt(year, 10) + 543;
+  return `${parseInt(day, 10)} ${thaiMonthsShort[monthIdx]} ${yearTh}`;
+};
+
 export const FinanceLedger: React.FC = () => {
   const [transactions, setTransactions] = useState<PettyCashTransaction[]>([]);
   const [summary, setSummary] = useState<PettyCashSummary>({
@@ -26,8 +67,8 @@ export const FinanceLedger: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'INCOME' | 'EXPENSE'>('ALL');
   const [sourceFilter, setSourceFilter] = useState<string>('ALL');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState(getInitialMonday);
+  const [endDate, setEndDate] = useState(getInitialSunday);
   
   // Modal states
   const [showModal, setShowModal] = useState(false);
@@ -353,6 +394,24 @@ export const FinanceLedger: React.FC = () => {
       window.removeEventListener('open-finance-modal', handleOpenModal);
     };
   }, []);
+
+  const handlePrevWeek = () => {
+    let start = new Date(startDate || getInitialMonday());
+    start.setDate(start.getDate() - 7);
+    let end = new Date(endDate || getInitialSunday());
+    end.setDate(end.getDate() - 7);
+    setStartDate(formatDateString(start));
+    setEndDate(formatDateString(end));
+  };
+
+  const handleNextWeek = () => {
+    let start = new Date(startDate || getInitialMonday());
+    start.setDate(start.getDate() + 7);
+    let end = new Date(endDate || getInitialSunday());
+    end.setDate(end.getDate() + 7);
+    setStartDate(formatDateString(start));
+    setEndDate(formatDateString(end));
+  };
 
   // Filter transactions
   const filteredTransactions = transactions.filter(tx => {
@@ -1339,6 +1398,54 @@ export const FinanceLedger: React.FC = () => {
 
       {/* Filter and Table Section */}
       <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-4 md:p-6 backdrop-blur-xl space-y-6">
+        
+        {/* Weekly Navigation Controls */}
+        <div className="flex items-center justify-between bg-white/40 dark:bg-white/[0.01] border border-gray-200/30 dark:border-white/5 rounded-2xl p-3 backdrop-blur-xl">
+          <button
+            onClick={handlePrevWeek}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl text-gray-600 dark:text-gray-400 active:scale-95 transition-all outline-none"
+            title="สัปดาห์ก่อนหน้า"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          
+          <div className="text-center font-bold">
+            {startDate && endDate ? (
+              <>
+                <span className="text-xs text-gray-800 dark:text-white block">
+                  {formatThaiDate(startDate)} — {formatThaiDate(endDate)}
+                </span>
+                <span className="text-[9px] text-gray-400 dark:text-gray-500 block mt-0.5 font-normal">
+                  แสดงรายการของสัปดาห์นี้ (จันทร์ - อาทิตย์)
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="text-xs text-gray-800 dark:text-white block">
+                  แสดงรายการตามตัวกรองที่เลือก
+                </span>
+                <button
+                  onClick={() => {
+                    setStartDate(getInitialMonday());
+                    setEndDate(getInitialSunday());
+                  }}
+                  className="text-[9px] text-blue-500 font-bold hover:underline block mt-0.5"
+                >
+                  กลับไปแสดงรายสัปดาห์
+                </button>
+              </>
+            )}
+          </div>
+
+          <button
+            onClick={handleNextWeek}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl text-gray-600 dark:text-gray-400 active:scale-95 transition-all outline-none"
+            title="สัปดาห์ถัดไป"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+
         {/* Filters Row */}
         <div className="flex flex-col xl:flex-row xl:items-center gap-4">
           {/* Search bar */}
