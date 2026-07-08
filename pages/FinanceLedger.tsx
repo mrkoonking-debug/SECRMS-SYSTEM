@@ -358,8 +358,7 @@ export const FinanceLedger: React.FC = () => {
     const matchesSearch = 
       tx.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tx.staffName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (tx.note && tx.note.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (tx.refRmaId && tx.refRmaId.toLowerCase().includes(searchTerm.toLowerCase()));
+      (tx.note && tx.note.toLowerCase().includes(searchTerm.toLowerCase()));
 
     // Type filter
     const matchesType = typeFilter === 'ALL' || tx.type === typeFilter;
@@ -907,11 +906,6 @@ export const FinanceLedger: React.FC = () => {
                                   {tx.description}
                                 </span>
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                  {tx.refRmaId && (
-                                    <span className="inline-flex items-center px-1.5 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-md font-mono text-[9px] font-bold">
-                                      RMA: {tx.refRmaId}
-                                    </span>
-                                  )}
                                   {tx.note && (
                                     <span className="text-[10px] text-gray-400 dark:text-gray-500 italic block">
                                       หมายเหตุ: {tx.note}
@@ -976,11 +970,6 @@ export const FinanceLedger: React.FC = () => {
                                 {tx.paidBy === 'PERSONAL_CASH' ? 'เงินสด' : tx.paidBy === 'PERSONAL_TRANSFER' ? 'เงินโอน' : 'จ่ายแบบผสม'}
                               </span>
                             </div>
-                            {tx.refRmaId && (
-                              <span className="inline-block px-1.5 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-md font-mono text-[9px] font-bold">
-                                RMA: {tx.refRmaId}
-                              </span>
-                            )}
                             {tx.note && <p className="text-[10px] text-gray-400 italic">หมายเหตุ: {tx.note}</p>}
                           </div>
                           {tx.receiptUrl && (
