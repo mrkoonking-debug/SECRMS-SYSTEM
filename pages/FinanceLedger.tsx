@@ -1255,17 +1255,17 @@ export const FinanceLedger: React.FC = () => {
           {/* Summary Widgets Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {/* Petty Cash Balance */}
-        <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
-          <div className="absolute right-3 top-3 text-emerald-500 bg-emerald-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
+        <div className="bg-emerald-500/5 dark:bg-emerald-500/[0.02] border border-emerald-500/20 dark:border-emerald-500/10 rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
+          <div className="absolute right-3 top-3 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
             <Coins className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div className="min-w-0">
-            <span className="text-[9px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">เงินสดกองกลาง</span>
-            <span className={`text-base sm:text-xl md:text-2xl font-black mt-1 sm:mt-2 block tabular-nums ${summary.pettyCashBalance >= 0 ? 'text-[#34c759]' : 'text-[#ff3b30]'}`}>
+            <span className="text-[9px] sm:text-xs text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">เงินสดกองกลาง</span>
+            <span className={`text-base sm:text-xl md:text-2xl font-black mt-1 sm:mt-2 block tabular-nums ${summary.pettyCashBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
               {formatCurrency(summary.pettyCashBalance)}
             </span>
           </div>
-          <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
+          <span className="text-[8px] sm:text-[10px] text-emerald-600/70 dark:text-emerald-400/60 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
             *เงินสดพร้อมหยิบจ่ายได้ทันที
           </span>
         </div>
@@ -1274,17 +1274,17 @@ export const FinanceLedger: React.FC = () => {
         {(() => {
           const netBalance = summary.pettyCashBalance - summary.totalPersonalAdvance;
           return (
-            <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
-              <div className="absolute right-3 top-3 text-blue-500 bg-blue-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
+            <div className="bg-blue-500/5 dark:bg-blue-500/[0.02] border border-blue-500/20 dark:border-blue-500/10 rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
+              <div className="absolute right-3 top-3 text-blue-600 dark:text-blue-400 bg-blue-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
                 <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div className="min-w-0">
-                <span className="text-[9px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">คงเหลือสุทธิ</span>
-                <span className={`text-base sm:text-xl md:text-2xl font-black mt-1 sm:mt-2 block tabular-nums ${netBalance >= 0 ? 'text-[#0071e3] dark:text-blue-400' : 'text-[#ff3b30]'}`}>
+                <span className="text-[9px] sm:text-xs text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">คงเหลือสุทธิ</span>
+                <span className={`text-base sm:text-xl md:text-2xl font-black mt-1 sm:mt-2 block tabular-nums ${netBalance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-500'}`}>
                   {formatCurrency(netBalance)}
                 </span>
               </div>
-              <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
+              <span className="text-[8px] sm:text-[10px] text-blue-600/70 dark:text-blue-400/60 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
                 *หักยอดค้างคืนพนักงานแล้ว
               </span>
             </div>
@@ -1292,36 +1292,36 @@ export const FinanceLedger: React.FC = () => {
         })()}
 
         {/* Unpaid Advance Payments */}
-        <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
-          <div className="absolute right-3 top-3 text-orange-500 bg-orange-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
+        <div className="bg-orange-500/5 dark:bg-orange-500/[0.02] border border-orange-500/20 dark:border-orange-500/10 rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
+          <div className="absolute right-3 top-3 text-orange-600 dark:text-orange-400 bg-orange-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
             <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div className="min-w-0">
-            <span className="text-[9px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">สำรองจ่ายค้างคืน</span>
-            <span className="text-base sm:text-xl md:text-2xl font-black text-[#ff9500] mt-1 sm:mt-2 block tabular-nums">
+            <span className="text-[9px] sm:text-xs text-orange-600 dark:text-orange-400 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">สำรองจ่ายค้างคืน</span>
+            <span className="text-base sm:text-xl md:text-2xl font-black text-orange-600 dark:text-orange-400 mt-1 sm:mt-2 block tabular-nums">
               {formatCurrency(summary.totalPersonalAdvance)}
             </span>
           </div>
-          <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
+          <span className="text-[8px] sm:text-[10px] text-orange-600/70 dark:text-orange-400/60 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
             *พนักงานสำรองจ่ายเงินส่วนตัว
           </span>
         </div>
 
         {/* Staff Breakdown settlement card */}
-        <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px]">
-          <span className="text-[9px] sm:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block mb-1 truncate whitespace-nowrap">ยอดค้างคืนแยกรายคน</span>
+        <div className="bg-purple-500/5 dark:bg-purple-500/[0.02] border border-purple-500/20 dark:border-purple-500/10 rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px]">
+          <span className="text-[9px] sm:text-xs text-purple-600 dark:text-purple-400 font-bold uppercase tracking-wider block mb-1 truncate whitespace-nowrap">ยอดค้างคืนแยกรายคน</span>
           <div className="flex-1 overflow-y-auto max-h-[60px] sm:max-h-[85px] space-y-1 custom-scrollbar pr-0.5">
             {Object.keys(summary.personalAdvanceByStaff).length === 0 ? (
-              <p className="text-[9px] sm:text-xs text-gray-400 dark:text-gray-500 italic mt-1 sm:mt-2 truncate whitespace-nowrap">ไม่มีค้างจ่ายพนักงาน</p>
+              <p className="text-[9px] sm:text-xs text-purple-600/70 dark:text-purple-400/50 italic mt-1 sm:mt-2 truncate whitespace-nowrap">ไม่มีค้างจ่ายพนักงาน</p>
             ) : (
               Object.entries(summary.personalAdvanceByStaff).map(([name, amount]) => (
-                <div key={name} className="flex items-center justify-between text-[10px] sm:text-xs py-0.5 border-b border-gray-100/50 dark:border-white/5 last:border-0">
-                  <span className="font-semibold text-[#1d1d1f] dark:text-gray-300 truncate max-w-[50px] sm:max-w-none">{name}</span>
+                <div key={name} className="flex items-center justify-between text-[10px] sm:text-xs py-0.5 border-b border-purple-200/30 dark:border-purple-500/5 last:border-0">
+                  <span className="font-semibold text-purple-800 dark:text-purple-300 truncate max-w-[50px] sm:max-w-none">{name}</span>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-[#ff9500] tabular-nums">{formatCurrency(amount)}</span>
+                    <span className="font-bold text-purple-600 dark:text-purple-400 tabular-nums">{formatCurrency(amount)}</span>
                     <button
                       onClick={() => handleReimburseAllForStaff(name)}
-                      className="text-[8px] sm:text-[9px] px-1.5 py-0.5 bg-blue-500/10 hover:bg-[#0071e3] hover:text-white text-[#0071e3] font-bold rounded transition-colors"
+                      className="text-[8px] sm:text-[9px] px-1.5 py-0.5 bg-purple-500/10 hover:bg-[#0071e3] hover:text-white text-purple-600 dark:text-purple-400 font-bold rounded transition-colors"
                     >
                       คืนเงิน
                     </button>
