@@ -24,7 +24,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>(transaction?.type || 'EXPENSE');
   const [amount, setAmount] = useState<string>(transaction?.amount ? String(transaction.amount) : '');
   const [description, setDescription] = useState(transaction?.description || '');
-  const [category, setCategory] = useState(transaction?.category || 'ค่าขนส่ง');
+  const [category, setCategory] = useState(
+    transaction?.category === 'ค่าเครื่องเขียน' 
+      ? 'ค่าของใช้สำนักงาน' 
+      : (transaction?.category || 'ค่าขนส่ง')
+  );
   const [paidBy, setPaidBy] = useState<'PETTY_CASH' | 'PERSONAL_CASH' | 'PERSONAL_TRANSFER' | 'SPLIT'>(
     transaction?.paidBy || 'PETTY_CASH'
   );
@@ -66,7 +70,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     if (lowerVal.includes('ส่งปลายทาง') || lowerVal.includes('ค่าส่ง')) {
       setCategory('ค่าขนส่ง');
     } else if (lowerVal.includes('ของใช้สำนักงาน') || lowerVal.includes('เครื่องเขียน')) {
-      setCategory('ค่าเครื่องเขียน');
+      setCategory('ค่าของใช้สำนักงาน');
     } else if (lowerVal.includes('กล่อง') || lowerVal.includes('บับเบิ้ล')) {
       setCategory('ค่าบรรจุภัณฑ์');
     } else if (lowerVal.includes('ป้าแม่บ้าน') || lowerVal.includes('เบี้ยเลี้ยง') || lowerVal.includes('ทอนเงิน')) {
@@ -336,7 +340,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     {[
                       { value: 'ค่าขนส่ง', label: 'ค่าขนส่ง / ปลายทาง' },
                       { value: 'ค่าบรรจุภัณฑ์', label: 'ค่ากล่อง / บับเบิ้ล' },
-                      { value: 'ค่าเครื่องเขียน', label: 'ค่าเครื่องเขียน / อุปกรณ์' },
+                      { value: 'ค่าของใช้สำนักงาน', label: 'ค่าของใช้สำนักงาน' },
                       { value: 'กองกลาง', label: 'เงินกองกลาง (เติมเข้า)' },
                       { value: 'อื่นๆ', label: 'อื่นๆ' },
                     ].map(opt => {

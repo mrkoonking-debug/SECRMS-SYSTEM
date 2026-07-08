@@ -308,8 +308,16 @@ export const FinanceLedger: React.FC = () => {
         txList = await MockDb.getPettyCashTransactions();
       }
 
+      // Normalize 'ค่าเครื่องเขียน' category to 'ค่าของใช้สำนักงาน'
+      const normalizedTxList = txList.map(tx => {
+        if (tx.category === 'ค่าเครื่องเขียน') {
+          return { ...tx, category: 'ค่าของใช้สำนักงาน' };
+        }
+        return tx;
+      });
+
       const summ = await MockDb.getPettyCashSummary();
-      setTransactions(txList);
+      setTransactions(normalizedTxList);
       setSummary(summ);
     } catch (err) {
       showToast('เกิดข้อผิดพลาดในการโหลดข้อมูลการเงิน', 'error');
