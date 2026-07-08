@@ -564,7 +564,8 @@ export const FinanceLedger: React.FC = () => {
     );
 
     const netRemaining = summary.pettyCashBalance - summary.totalPersonalAdvance;
-    const requestedAmount = Math.max(0, targetFloat - netRemaining);
+    const spentFromBox = Math.max(0, targetFloat - summary.pettyCashBalance);
+    const requestedAmount = spentFromBox + summary.totalPersonalAdvance;
 
     if (execMode) {
       return (
@@ -641,17 +642,17 @@ export const FinanceLedger: React.FC = () => {
             {/* replenishments calculation sheet */}
             <div className="p-5 bg-blue-500/5 dark:bg-blue-500/[0.02] border border-blue-500/20 rounded-2xl space-y-3.5">
               <h3 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">สูตรคำนวณขออนุมัติเติมเงินกองกลาง</h3>
-              <div className="space-y-2 text-xs">
+              <div className="space-y-2.5 text-xs">
                 <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
-                  <span>วงเงินกองกลางที่ควรมี (Standard float):</span>
-                  <span className="font-semibold tabular-nums">{formatCurrency(targetFloat)}</span>
+                  <span>ยอดเงินสดที่ใช้ไปจากกล่องกองกลาง (วงเงินเป้าหมาย {formatCurrency(targetFloat)} - เงินสดเหลือจริง {formatCurrency(summary.pettyCashBalance)}):</span>
+                  <span className="font-semibold tabular-nums text-gray-800 dark:text-gray-200">{formatCurrency(spentFromBox)}</span>
                 </div>
                 <div className="flex justify-between items-center text-gray-600 dark:text-gray-400 border-b border-gray-200/50 dark:border-white/5 pb-2">
-                  <span>หัก ยอดเงินคงเหลือสุทธิ (Net remaining fund):</span>
-                  <span className="font-semibold tabular-nums">({formatCurrency(netRemaining)})</span>
+                  <span className="text-orange-500">บวก: ยอดเงินสำรองจ่ายค้างจ่ายคืนพนักงาน (ที่พนักงานออกเงินไปก่อน):</span>
+                  <span className="font-bold text-orange-500 tabular-nums">+{formatCurrency(summary.totalPersonalAdvance)}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm font-black pt-1">
-                  <span className="text-blue-600 dark:text-blue-400">จำนวนเงินที่ต้องอนุมัติเบิกเติมใหม่:</span>
+                  <span className="text-blue-600 dark:text-blue-400">รวมยอดเงินที่ต้องขอเบิกเติมใหม่ทั้งหมด (เงินใช้ไป + สำรองจ่ายค้างคืน):</span>
                   <span className="text-base text-blue-600 dark:text-blue-400 tabular-nums bg-blue-500/10 px-3 py-1 rounded-xl">
                     {formatCurrency(requestedAmount)}
                   </span>
