@@ -1622,15 +1622,15 @@ export const FinanceLedger: React.FC = () => {
               </div>
               {/* Table inside the card */}
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse table-fixed min-w-[950px]">
+                <table className="w-full border-collapse table-fixed min-w-[1000px]">
                   <colgroup>
-                    <col className="w-[90px]" />
-                    <col className="w-[140px]" />
+                    <col className="w-[80px]" />
+                    <col className="w-[130px]" />
                     <col />
                     <col className="w-[240px]" />
+                    <col className="w-[110px]" />
                     <col className="w-[120px]" />
-                    <col className="w-[130px]" />
-                    <col className="w-[140px]" />
+                    <col className="w-[220px]" />
                   </colgroup>
                   <thead>
                     <tr className="border-b border-gray-100 dark:border-white/5 text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider text-left">
