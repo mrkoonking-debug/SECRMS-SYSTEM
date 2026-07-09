@@ -1472,7 +1472,7 @@ export const FinanceLedger: React.FC = () => {
     return (
       <div className="w-full flex flex-col">
         {/* Desktop Table View */}
-        <div className="hidden sm:block overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-b border-gray-100 dark:border-white/5 text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider text-left">
@@ -1623,102 +1623,82 @@ export const FinanceLedger: React.FC = () => {
           </table>
         </div>
 
-        {/* Mobile Cards List View */}
-        <div className="sm:hidden space-y-3.5">
+        {/* Mobile List View (2-line layout) */}
+        <div className="md:hidden space-y-3">
           {sortedTxs.map(tx => {
             const isExpense = tx.type === 'EXPENSE';
             const isPersonal = tx.paidBy !== 'PETTY_CASH';
             const showReimburseBtn = isExpense && isPersonal && !tx.isReimbursed;
 
+            let iconBg = 'bg-orange-500/10 text-[#ff9500]';
+            let IconComponent = ArrowDownLeft;
+            if (tx.type === 'INCOME') {
+              iconBg = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
+              IconComponent = ArrowUpRight;
+            } else if (tx.paidBy === 'PETTY_CASH') {
+              iconBg = 'bg-blue-500/10 text-blue-500';
+            } else if (tx.paidBy === 'SPLIT') {
+              iconBg = 'bg-purple-500/10 text-purple-500';
+            }
+
             return (
               <div 
                 key={tx.id} 
-                className={`bg-white dark:bg-[#1c1c1e] p-4 rounded-2xl border ${tx.type === 'INCOME' ? 'border-l-4 border-l-emerald-500' : tx.paidBy === 'PETTY_CASH' ? 'border-l-4 border-l-blue-500' : 'border-l-4 border-l-orange-500'} border-gray-200/50 dark:border-white/[0.05] space-y-3 shadow-sm`}
+                className="py-3.5 border-b border-gray-100/50 dark:border-white/5 flex items-center justify-between gap-3 bg-white dark:bg-[#1c1c1e] px-4 py-3.5 rounded-2xl border border-gray-200/50 dark:border-white/[0.05] shadow-sm"
               >
-                {/* Top Row: Date & Amount */}
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] text-gray-400 font-mono flex items-center gap-1.5">
-                    <Calendar className="w-3 h-3 text-gray-400/85" />
-                    <span>{tx.date}</span>
-                    {tx.time && (
-                      <>
-                        <span className="text-gray-300 dark:text-gray-700">|</span>
-                        <Clock className="w-3 h-3 text-gray-400/85" />
-                        <span>{tx.time}</span>
-                      </>
-                    )}
-                  </span>
-                  <span className="text-sm font-bold tabular-nums">
-                    {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
-                  </span>
-                </div>
-
-                {/* Middle Row: Description */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <h4 className="text-xs font-bold text-[#1d1d1f] dark:text-white leading-tight">{tx.description}</h4>
-                    <p className="text-[10px] text-gray-400 mt-0.5">{tx.category} · ทำโดย {getDisplayName(tx.staffName)}</p>
-                  </div>
-                  {tx.receiptUrl && (
+                {/* Left side: icon & 2 lines info */}
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  {tx.receiptUrl ? (
                     <button
                       onClick={() => setActiveReceiptUrl(tx.receiptUrl!)}
-                      className="w-10 h-10 rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-transform"
+                      className="w-10 h-10 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-transform"
                       title="ดูใบเสร็จ"
                     >
                       <img src={tx.receiptUrl} className="w-full h-full object-cover" alt="Receipt" />
                     </button>
+                  ) : (
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
+                      <IconComponent className="w-5 h-5" />
+                    </div>
                   )}
+                  <div className="min-w-0 flex-1">
+                    <span className="font-bold block text-xs text-[#1d1d1f] dark:text-white truncate" title={tx.description}>
+                      {tx.description}
+                    </span>
+                    <span className="text-[9px] text-gray-400 dark:text-gray-500 block mt-0.5 truncate">
+                      {tx.category} · {tx.date}{tx.time ? ` ${tx.time} น.` : ''} · โดย {getDisplayName(tx.staffName)}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Bottom Status Block */}
-                <div className="pt-2 border-t border-gray-100/50 dark:border-white/5 flex items-center justify-between gap-2 flex-wrap">
-                  <div>
-                    {tx.type === 'INCOME' ? (
-                      <span className="text-[10px] text-gray-400">เบิกเงินพี่เกษม</span>
-                    ) : tx.paidBy === 'PETTY_CASH' ? (
-                      <span className="text-[10px] text-blue-500 font-semibold">จ่ายจากกองกลาง</span>
-                    ) : tx.paidBy === 'SPLIT' ? (
-                      <div className="space-y-0.5">
-                        <span className="text-[10px] text-purple-500 font-semibold block">จ่ายแบบผสม</span>
-                        <span className="text-[9px] text-gray-400 block">
-                          (กองกลาง {tx.splitPettyCashAmount} / ส่วนตัว {tx.splitPersonalAmount})
-                        </span>
-                        {tx.isReimbursed ? (
-                          <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded-md">
-                            คืนส่วนต่าง {tx.splitPersonalAmount} บ. แล้ว
-                          </span>
-                        ) : (
-                          <span className="text-[9px] font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded-md animate-pulse">
-                            ค้างคืนพนักงาน {tx.splitPersonalAmount} บ.
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[10px] text-amber-500 font-semibold">
-                          สำรองจ่าย
-                        </span>
-                        {tx.isReimbursed ? (
-                          <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.2 rounded-md">
-                            คืนเงินแล้ว
-                          </span>
-                        ) : (
-                          <span className="text-[9px] font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.2 rounded-md animate-pulse">
-                            ยังไม่คืน
-                          </span>
-                        )}
-                      </div>
-                    )}
+                {/* Right side: amount & status/payment details & action buttons */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="text-right">
+                    <span className={`font-black text-xs tabular-nums block ${tx.type === 'INCOME' ? 'text-emerald-500' : 'text-[#1d1d1f] dark:text-white'}`}>
+                      {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
+                    </span>
+                    <span className="text-[9px] text-gray-400 dark:text-gray-500 block mt-0.5">
+                      {tx.type === 'INCOME' ? (
+                        'เบิกเงินพี่เกษม'
+                      ) : tx.paidBy === 'PETTY_CASH' ? (
+                        <span className="text-blue-500 font-semibold">กองกลาง</span>
+                      ) : tx.paidBy === 'SPLIT' ? (
+                        <span className="text-purple-500 font-semibold">ผสม ({tx.splitPersonalAmount} บ.)</span>
+                      ) : (
+                        <span className="text-amber-500 font-semibold">{tx.paidBy === 'PERSONAL_CASH' ? 'สด' : 'โอน'}</span>
+                      )}
+                    </span>
                   </div>
 
-                  {/* Action buttons */}
-                  <div className="flex gap-1.5 ml-auto">
+                  {/* Actions (compact group) */}
+                  <div className="flex items-center gap-1.5 pl-1.5 border-l border-gray-100 dark:border-white/5">
                     {showReimburseBtn && (
                       <button
                         onClick={() => handleReimburse(tx.id)}
-                        className="px-2 py-1 bg-[#34c759] hover:bg-[#30b34f] text-white font-bold rounded-lg text-[9px] transition-colors active:scale-95"
+                        className="px-2 py-1 bg-[#34c759] hover:bg-[#30b34f] text-white font-bold rounded-lg text-[9px] transition-colors active:scale-95 whitespace-nowrap"
+                        title="คืนเงิน"
                       >
-                        คืนเงินพนักงาน
+                        คืนเงิน
                       </button>
                     )}
                     <button
