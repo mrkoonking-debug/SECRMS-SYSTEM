@@ -1458,8 +1458,8 @@ export const FinanceLedger: React.FC = () => {
               <IconComponent className="w-5 h-5" />
             </div>
           )}
-          <div className="min-w-0">
-            <span className="font-semibold block text-sm text-gray-800 dark:text-gray-100 truncate" title={tx.description}>
+          <div className="min-w-0 flex-1">
+            <span className="font-semibold block text-sm text-gray-800 dark:text-gray-100 break-words whitespace-normal" title={tx.description}>
               {tx.description}
             </span>
             <span className="text-[10px] text-gray-400 dark:text-gray-500 block mt-0.5">
