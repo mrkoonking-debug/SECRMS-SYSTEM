@@ -1607,53 +1607,50 @@ export const FinanceLedger: React.FC = () => {
 
     return (
       <div className="w-full flex flex-col">
-        {/* Desktop Table View */}
-        <div className="hidden md:block overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b border-gray-100 dark:border-white/5 text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider text-left">
-                <th className="pb-3 pl-2">วันที่</th>
-                <th className="pb-3">ประเภท</th>
-                <th className="pb-3">รายละเอียดรายการ</th>
-                <th className="pb-3">วิธีจ่ายเงิน / สถานะ</th>
-                <th className="pb-3">ผู้ทำรายการ</th>
-                <th className="pb-3 text-right">จำนวนเงิน</th>
-                <th className="pb-3 text-right pr-2">การจัดการ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {groups.map((group, groupIdx) => (
-                <React.Fragment key={group.date}>
-                  {/* Date Group Header */}
-                  <tr>
-                    <td colSpan={7} className={`${groupIdx > 0 ? 'pt-5' : 'pt-1'} pb-2 pl-2`}>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/[0.06] px-3 py-1 rounded-lg">
-                          {formatThaiDate(group.date)}
-                        </span>
-                        <div className="h-px bg-gray-200/60 dark:bg-white/5 flex-1" />
-                        <span className="text-[10px] text-gray-400 dark:text-gray-500 pr-2">
-                          {group.txs.length} รายการ
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                  {/* Transactions for this date */}
-                  {group.txs.map(tx => {
+        {/* Desktop Table View — grouped by date in bordered cards */}
+        <div className="hidden md:block space-y-5">
+          {groups.map(group => (
+            <div key={group.date} className="bg-white dark:bg-[#1c1c1e] border border-gray-200/60 dark:border-white/[0.06] rounded-2xl overflow-hidden shadow-sm">
+              {/* Date Group Header */}
+              <div className="flex items-center justify-between px-5 py-3 bg-gray-50/80 dark:bg-white/[0.03] border-b border-gray-200/40 dark:border-white/5">
+                <span className="text-sm font-bold text-gray-700 dark:text-gray-200">
+                  📅 {formatThaiDate(group.date)}
+                </span>
+                <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">
+                  {group.txs.length} รายการ
+                </span>
+              </div>
+              {/* Table inside the card */}
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-100 dark:border-white/5 text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider text-left">
+                      <th className="py-2.5 pl-5">เวลา</th>
+                      <th className="py-2.5">ประเภท</th>
+                      <th className="py-2.5">รายละเอียดรายการ</th>
+                      <th className="py-2.5">วิธีจ่ายเงิน / สถานะ</th>
+                      <th className="py-2.5">ผู้ทำรายการ</th>
+                      <th className="py-2.5 text-right">จำนวนเงิน</th>
+                      <th className="py-2.5 text-right pr-5">การจัดการ</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100/50 dark:divide-white/5">
+                    {group.txs.map(tx => {
                 const isExpense = tx.type === 'EXPENSE';
                 const isPersonal = tx.paidBy !== 'PETTY_CASH';
                 const showReimburseBtn = isExpense && isPersonal && !tx.isReimbursed;
 
                 return (
-                  <tr key={tx.id} className="text-xs text-[#1d1d1f] dark:text-gray-200 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-all border-b border-gray-100/50 dark:border-white/5">
-                    {/* Date */}
-                    <td className="py-3.5 pl-2 font-mono whitespace-nowrap">
-                      <div className="text-gray-400 dark:text-gray-500">{tx.date}</div>
-                      {tx.time && (
-                        <div className="text-[10px] text-gray-400 flex items-center gap-0.5 mt-0.5">
-                          <Clock className="w-3 h-3 text-gray-400/80" />
+                  <tr key={tx.id} className="text-xs text-[#1d1d1f] dark:text-gray-200 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-all">
+                    {/* Time only */}
+                    <td className="py-3.5 pl-5 font-mono whitespace-nowrap text-gray-400 dark:text-gray-500 text-[11px]">
+                      {tx.time ? (
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
                           {tx.time}
                         </div>
+                      ) : (
+                        <span className="text-gray-300 dark:text-gray-600">--:--</span>
                       )}
                     </td>
                     
@@ -1740,7 +1737,7 @@ export const FinanceLedger: React.FC = () => {
                     </td>
 
                     {/* Actions */}
-                    <td className="py-3.5 text-right pr-2 whitespace-nowrap">
+                    <td className="py-3.5 text-right pr-5 whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1.5">
                         {showReimburseBtn && (
                           <button
@@ -1772,10 +1769,11 @@ export const FinanceLedger: React.FC = () => {
                   </tr>
                 );
               })}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Mobile Timeline View (Full width, no left column) */}
