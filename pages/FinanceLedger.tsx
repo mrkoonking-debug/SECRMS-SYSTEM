@@ -1463,7 +1463,7 @@ export const FinanceLedger: React.FC = () => {
               {tx.description}
             </span>
             <span className="text-[10px] text-gray-400 dark:text-gray-500 block mt-0.5">
-              {tx.category} · โดย {getDisplayName(tx.staffName)}
+              {tx.category} · {tx.time ? `${tx.time} น. · ` : ''}โดย {getDisplayName(tx.staffName)}
               {tx.note && <span className="italic"> ({tx.note})</span>}
             </span>
           </div>
@@ -1759,34 +1759,27 @@ export const FinanceLedger: React.FC = () => {
           </table>
         </div>
 
-        {/* Mobile Timeline View */}
-        <div className="md:hidden flex flex-col w-full select-none">
+        {/* Mobile Timeline View (Full width, no left column) */}
+        <div className="md:hidden flex flex-col w-full divide-y divide-gray-100/50 dark:divide-white/5 select-none">
           {groups.map(group => (
-            <React.Fragment key={group.date}>
-              {/* Date Header Row */}
-              <div className="ledger-date-header">
-                <div className="ledger-left-col text-gray-500 dark:text-gray-400 font-bold">
+            <div key={group.date} className="py-3">
+              {/* Date Header Separator Row */}
+              <div className="flex items-center gap-2 py-1.5 mb-2">
+                <span className="text-xs font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/5 px-2.5 py-1 rounded-lg shrink-0">
                   {formatThaiDate(group.date)}
-                </div>
-                <div className="ledger-right-col flex items-center">
-                  <div className="h-px bg-gray-200/50 dark:bg-white/5 w-full" />
-                </div>
+                </span>
+                <div className="h-px bg-gray-200/50 dark:bg-white/5 flex-1" />
               </div>
 
-              {/* Transactions for this Date */}
-              {group.txs.map(tx => (
-                <div key={tx.id} className="ledger-row group">
-                  <div className="ledger-left-col">
-                    <span className="font-mono text-[10px] text-gray-400 dark:text-gray-500">
-                      {tx.time ? `${tx.time} น.` : '--:-- น.'}
-                    </span>
-                  </div>
-                  <div className="ledger-right-col">
+              {/* Transactions list */}
+              <div className="space-y-3.5">
+                {group.txs.map(tx => (
+                  <div key={tx.id} className="bg-white dark:bg-[#1c1c1e] p-3 rounded-2xl border border-gray-200/50 dark:border-white/[0.05] shadow-sm">
                     {renderTransactionDetails(tx)}
                   </div>
-                </div>
-              ))}
-            </React.Fragment>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>
