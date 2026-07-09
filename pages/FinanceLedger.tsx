@@ -138,11 +138,19 @@ export const FinanceLedger: React.FC = () => {
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
   const [touchEndY, setTouchEndY] = useState<number | null>(null);
 
-  // Swipe transition animation states
-  const [swipeTransition, setSwipeTransition] = useState<'out-left' | 'out-right' | 'in-left' | 'in-right' | null>(null);
-  const [swipeDragX, setSwipeDragX] = useState(0);
+  // Carousel track state
+  const [carouselState, setCarouselState] = useState<'idle' | 'snapping-prev' | 'snapping-next' | 'snapping-back'>('idle');
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragX, setDragX] = useState(0);
+  const dragXRef = useRef(0);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+  const carouselContainerRef = useRef<HTMLDivElement>(null);
   const swipeContentRef = useRef<HTMLDivElement>(null);
-  const isSwipingRef = useRef(false);
+
+  // Overrides for sliding to non-adjacent months
+  const [overridePrevMonth, setOverridePrevMonth] = useState<string | null>(null);
+  const [overrideNextMonth, setOverrideNextMonth] = useState<string | null>(null);
 
   const getAvailableMonths = () => {
     const months = new Set<string>();
@@ -316,100 +324,174 @@ export const FinanceLedger: React.FC = () => {
     }
   }, [selectedMonth]);
 
-  const handlePrevMonth = useCallback(() => {
+  const getPrevAndNextMonths = useCallback(() => {
     const list = getMonthList();
-    const idx = list.findIndex(item => item.val === selectedMonth);
-    if (idx > 0) {
-      return list[idx - 1].val;
-    }
-    return null;
-  }, [selectedMonth]);
-
-  const handleNextMonth = useCallback(() => {
-    const list = getMonthList();
-    const idx = list.findIndex(item => item.val === selectedMonth);
-    if (idx >= 0 && idx < list.length - 1) {
-      return list[idx + 1].val;
-    }
-    return null;
+    const idx = list.findIndex(m => m.val === selectedMonth);
+    const prev = idx > 0 ? list[idx - 1].val : null;
+    const next = idx >= 0 && idx < list.length - 1 ? list[idx + 1].val : null;
+    return { prevMonth: prev, nextMonth: next };
   }, [selectedMonth]);
 
   const animateMonthChange = useCallback((direction: 'left' | 'right', newMonth: string) => {
-    // Phase 1: slide out current content
-    setSwipeTransition(direction === 'left' ? 'out-left' : 'out-right');
-    
-    setTimeout(() => {
-      // Phase 2: change data + slide in new content from opposite side
-      setSelectedMonth(newMonth);
-      setSwipeTransition(direction === 'left' ? 'in-left' : 'in-right');
-      
+    if (carouselState !== 'idle') return;
+
+    if (direction === 'right') {
+      // We want to slide to the previous panel, which will show newMonth
+      setOverridePrevMonth(newMonth);
+      setCarouselState('snapping-prev');
       setTimeout(() => {
-        setSwipeTransition(null);
-      }, 260);
-    }, 210);
-  }, []);
+        setSelectedMonth(newMonth);
+        setCarouselState('idle');
+        setOverridePrevMonth(null);
+      }, 280);
+    } else {
+      // We want to slide to the next panel, which will show newMonth
+      setOverrideNextMonth(newMonth);
+      setCarouselState('snapping-next');
+      setTimeout(() => {
+        setSelectedMonth(newMonth);
+        setCarouselState('idle');
+        setOverrideNextMonth(null);
+      }, 280);
+    }
+  }, [carouselState]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchEndX(null);
-    setTouchEndY(null);
-    setTouchStartX(e.targetTouches[0].clientX);
-    setTouchStartY(e.targetTouches[0].clientY);
-    setSwipeDragX(0);
-    isSwipingRef.current = false;
+    if (carouselState !== 'idle') return;
+    const tagName = (e.target as HTMLElement).tagName.toLowerCase();
+    if (tagName === 'input' || tagName === 'select' || tagName === 'button' || (e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('input')) {
+      return;
+    }
+    touchStartXRef.current = e.targetTouches[0].clientX;
+    touchStartYRef.current = e.targetTouches[0].clientY;
+    setIsDragging(true);
+    setDragX(0);
+    dragXRef.current = 0;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || touchStartXRef.current === null || touchStartYRef.current === null) return;
     const currentX = e.targetTouches[0].clientX;
     const currentY = e.targetTouches[0].clientY;
-    setTouchEndX(currentX);
-    setTouchEndY(currentY);
-    
-    if (touchStartX !== null && touchStartY !== null) {
-      const diffX = touchStartX - currentX;
-      const diffY = touchStartY - currentY;
+    const diffX = currentX - touchStartXRef.current;
+    const diffY = currentY - touchStartYRef.current;
+
+    // If vertical scroll is dominant, don't swipe
+    if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 10) {
+      setIsDragging(false);
+      setDragX(0);
+      dragXRef.current = 0;
+      return;
+    }
+
+    // Prevent horizontal bounce/drag default
+    if (Math.abs(diffX) > 10) {
+      if (e.cancelable) e.preventDefault();
       
-      // Only apply drag if horizontal movement is dominant
-      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
-        isSwipingRef.current = true;
-        // Dampen the drag to max ±40px for subtle feedback
-        const clampedDrag = Math.max(-40, Math.min(40, -diffX * 0.3));
-        setSwipeDragX(clampedDrag);
+      // Boundary resistance
+      const { prevMonth, nextMonth } = getPrevAndNextMonths();
+      let finalDiffX = diffX;
+      if (diffX > 0 && !prevMonth) {
+        finalDiffX = diffX * 0.3;
+      } else if (diffX < 0 && !nextMonth) {
+        finalDiffX = diffX * 0.3;
       }
+      
+      setDragX(finalDiffX);
+      dragXRef.current = finalDiffX;
     }
   };
 
   const handleTouchEnd = () => {
-    setSwipeDragX(0);
-    if (touchStartX === null || touchEndX === null || touchStartY === null || touchEndY === null) return;
-    const diffX = touchStartX - touchEndX;
-    const diffY = touchStartY - touchEndY;
+    if (!isDragging) return;
+    setIsDragging(false);
     
-    // Only swipe if horizontal movement is dominant and meets minimum threshold
-    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
-      if (diffX > 0) {
-        const newMonth = handleNextMonth();
-        if (newMonth) {
-          animateMonthChange('left', newMonth);
-        }
-      } else {
-        const newMonth = handlePrevMonth();
-        if (newMonth) {
-          animateMonthChange('right', newMonth);
-        }
-      }
+    const finalDragX = dragXRef.current;
+    const { prevMonth, nextMonth } = getPrevAndNextMonths();
+    const threshold = 60;
+
+    if (finalDragX > threshold && prevMonth) {
+      setCarouselState('snapping-prev');
+      setDragX(0);
+      setTimeout(() => {
+        setSelectedMonth(prevMonth);
+        setCarouselState('idle');
+      }, 280);
+    } else if (finalDragX < -threshold && nextMonth) {
+      setCarouselState('snapping-next');
+      setDragX(0);
+      setTimeout(() => {
+        setSelectedMonth(nextMonth);
+        setCarouselState('idle');
+      }, 280);
+    } else {
+      setCarouselState('snapping-back');
+      setDragX(0);
+      setTimeout(() => {
+        setCarouselState('idle');
+      }, 280);
     }
-    isSwipingRef.current = false;
   };
 
-  // Helper to get the CSS class for the swipe transition
-  const getSwipeTransitionClass = () => {
-    switch (swipeTransition) {
-      case 'out-left': return 'swipe-out-left';
-      case 'out-right': return 'swipe-out-right';
-      case 'in-left': return 'swipe-in-left';
-      case 'in-right': return 'swipe-in-right';
-      default: return '';
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (carouselState !== 'idle') return;
+    const tagName = (e.target as HTMLElement).tagName.toLowerCase();
+    if (tagName === 'input' || tagName === 'select' || tagName === 'button' || (e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('input')) {
+      return;
     }
+    touchStartXRef.current = e.clientX;
+    touchStartYRef.current = e.clientY;
+    setIsDragging(true);
+    setDragX(0);
+    dragXRef.current = 0;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || touchStartXRef.current === null || touchStartYRef.current === null) return;
+    const currentX = e.clientX;
+    const currentY = e.clientY;
+    const diffX = currentX - touchStartXRef.current;
+
+    const { prevMonth, nextMonth } = getPrevAndNextMonths();
+    let finalDiffX = diffX;
+    if (diffX > 0 && !prevMonth) {
+      finalDiffX = diffX * 0.3;
+    } else if (diffX < 0 && !nextMonth) {
+      finalDiffX = diffX * 0.3;
+    }
+    
+    setDragX(finalDiffX);
+    dragXRef.current = finalDiffX;
+  };
+
+  const handleMouseUp = () => {
+    handleTouchEnd();
+  };
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      handleTouchEnd();
+    }
+  };
+
+  const getCarouselTransitionClass = () => {
+    if (carouselState === 'idle') {
+      return isDragging ? 'carousel-dragging' : '';
+    }
+    return 'carousel-snapping';
+  };
+
+  const getCarouselTransformStyle = () => {
+    if (carouselState === 'idle') {
+      return `translate3d(calc(-33.33333% + ${dragX}px), 0, 0)`;
+    }
+    if (carouselState === 'snapping-prev') {
+      return 'translate3d(0%, 0, 0)';
+    }
+    if (carouselState === 'snapping-next') {
+      return 'translate3d(-66.66667%, 0, 0)';
+    }
+    return 'translate3d(-33.33333%, 0, 0)';
   };
 
   // Filter transactions
@@ -1342,6 +1424,220 @@ export const FinanceLedger: React.FC = () => {
     );
   };
 
+  const renderTransactionDetails = (tx: PettyCashTransaction) => {
+    const isExpense = tx.type === 'EXPENSE';
+    const isPersonal = tx.paidBy !== 'PETTY_CASH';
+    const showReimburseBtn = isExpense && isPersonal && !tx.isReimbursed;
+    
+    // Icon bg & color
+    let iconBg = 'bg-orange-500/10 text-[#ff9500]';
+    let IconComponent = ArrowDownLeft;
+    if (tx.type === 'INCOME') {
+      iconBg = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
+      IconComponent = ArrowUpRight;
+    } else if (tx.paidBy === 'PETTY_CASH') {
+      iconBg = 'bg-blue-500/10 text-blue-500';
+    } else if (tx.paidBy === 'SPLIT') {
+      iconBg = 'bg-purple-500/10 text-purple-500';
+    }
+
+    return (
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 w-full py-1">
+        {/* Description & Thumbnail/Icon */}
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          {tx.receiptUrl ? (
+            <button
+              onClick={() => setActiveReceiptUrl(tx.receiptUrl!)}
+              className="w-10 h-10 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-all shadow-sm"
+              title="ดูใบเสร็จ"
+            >
+              <img src={tx.receiptUrl} className="w-full h-full object-cover" alt="Receipt" />
+            </button>
+          ) : (
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
+              <IconComponent className="w-5 h-5" />
+            </div>
+          )}
+          <div className="min-w-0">
+            <span className="font-semibold block text-sm text-gray-800 dark:text-gray-100 truncate" title={tx.description}>
+              {tx.description}
+            </span>
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 block mt-0.5">
+              {tx.category} · โดย {getDisplayName(tx.staffName)}
+              {tx.note && <span className="italic"> ({tx.note})</span>}
+            </span>
+          </div>
+        </div>
+
+        {/* Status & Method Badge / Actions */}
+        <div className="flex items-center justify-between lg:justify-end gap-4 shrink-0">
+          {/* Payment source status */}
+          <div className="text-left lg:text-right">
+            {tx.type === 'INCOME' ? (
+              <span className="text-[10px] text-gray-400 block font-medium">เบิกเงินพี่เกษม</span>
+            ) : tx.paidBy === 'PETTY_CASH' ? (
+              <span className="text-[10px] text-blue-500 font-semibold block">เงินกองกลาง</span>
+            ) : tx.paidBy === 'SPLIT' ? (
+              <div className="space-y-0.5">
+                <span className="text-[10px] text-purple-500 font-semibold block">จ่ายแบบผสม</span>
+                <span className="text-[9px] text-gray-400 dark:text-gray-500 block leading-tight">
+                  (กองกลาง {tx.splitPettyCashAmount} / ส่วนตัว {tx.splitPersonalAmount})
+                </span>
+                {tx.isReimbursed ? (
+                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.2 rounded">
+                    <Check className="w-2.5 h-2.5" /> คืนพนักงาน {tx.splitPersonalAmount} บ.
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.2 rounded animate-pulse">
+                    <AlertCircle className="w-2.5 h-2.5" /> ค้างคืน {tx.splitPersonalAmount} บ.
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-0.5">
+                <span className="text-[10px] text-amber-500 font-semibold block">
+                  {tx.paidBy === 'PERSONAL_CASH' ? 'สำรองจ่าย (เงินสด)' : 'สำรองจ่าย (เงินโอน)'}
+                </span>
+                {tx.isReimbursed ? (
+                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.2 rounded">
+                    <Check className="w-2.5 h-2.5" /> คืนพนักงานแล้ว
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.2 rounded animate-pulse">
+                    <AlertCircle className="w-2.5 h-2.5" /> ยังไม่คืนเงิน
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Amount */}
+          <div className={`text-right font-black text-sm tabular-nums whitespace-nowrap min-w-[80px] ${tx.type === 'INCOME' ? 'text-emerald-500' : 'text-gray-700 dark:text-gray-200'}`}>
+            {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
+          </div>
+
+          {/* Actions Button Group */}
+          <div className="flex items-center gap-1">
+            {showReimburseBtn && (
+              <button
+                onClick={() => handleReimburse(tx.id)}
+                className="px-2 py-1 bg-[#34c759] hover:bg-[#30b34f] text-white font-bold rounded-lg text-[10px] shadow-sm transition-colors active:scale-95 whitespace-nowrap"
+                title="กดบันทึกคืนเงินพนักงาน"
+              >
+                คืนเงิน
+              </button>
+            )}
+            <button
+              onClick={() => { setSelectedTx(tx); setShowModal(true); }}
+              className="p-1 text-gray-400 hover:text-blue-500 hover:bg-gray-150 dark:hover:bg-white/5 rounded-lg transition-colors"
+              title="แก้ไขรายการ"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+            </button>
+            {isAdmin && (
+              <button
+                onClick={() => handleDelete(tx.id)}
+                className="p-1 text-gray-400 hover:text-red-500 hover:bg-gray-150 dark:hover:bg-white/5 rounded-lg transition-colors"
+                title="ลบรายการ"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderMonthPanel = (panelMonth: string) => {
+    const isCustomRange = panelMonth === 'CUSTOM';
+    
+    const panelTransactions = transactions.filter(tx => {
+      // 1. Date / Month matching
+      if (isCustomRange) {
+        const matchesStartDate = !startDate || tx.date >= startDate;
+        const matchesEndDate = !endDate || tx.date <= endDate;
+        if (!matchesStartDate || !matchesEndDate) return false;
+      } else {
+        if (!tx.date.startsWith(panelMonth)) return false;
+      }
+      
+      // 2. Search filter
+      const matchesSearch = 
+        tx.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tx.staffName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (tx.note && tx.note.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      // 3. Type filter
+      const matchesType = typeFilter === 'ALL' || tx.type === typeFilter;
+
+      // 4. Source filter
+      const matchesSource = sourceFilter === 'ALL' || 
+        (sourceFilter === 'PERSONAL_CASH' && (tx.paidBy === 'PERSONAL_CASH' || tx.paidBy === 'PERSONAL_TRANSFER')) ||
+        tx.paidBy === sourceFilter;
+
+      return matchesSearch && matchesType && matchesSource;
+    });
+
+    if (panelTransactions.length === 0) {
+      return (
+        <div className="py-12 text-center text-gray-400 italic">
+          ไม่มีรายการบันทึกสำหรับการค้นหานี้
+        </div>
+      );
+    }
+
+    // Sort transactions reverse-chronologically (newest first)
+    const sortedTxs = [...panelTransactions].sort((a, b) => {
+      const dateCompare = b.date.localeCompare(a.date);
+      if (dateCompare !== 0) return dateCompare;
+      return (b.time || '').localeCompare(a.time || '');
+    });
+
+    // Group transactions by date
+    const groups: { date: string; txs: PettyCashTransaction[] }[] = [];
+    sortedTxs.forEach(tx => {
+      const lastGroup = groups[groups.length - 1];
+      if (lastGroup && lastGroup.date === tx.date) {
+        lastGroup.txs.push(tx);
+      } else {
+        groups.push({ date: tx.date, txs: [tx] });
+      }
+    });
+
+    return (
+      <div className="ledger-container flex flex-col w-full select-none">
+        {groups.map(group => (
+          <React.Fragment key={group.date}>
+            {/* Date Header Row */}
+            <div className="ledger-date-header">
+              <div className="ledger-left-col text-gray-500 dark:text-gray-400 font-bold">
+                {formatThaiDate(group.date)}
+              </div>
+              <div className="ledger-right-col flex items-center">
+                <div className="h-px bg-gray-200/50 dark:bg-white/5 w-full" />
+              </div>
+            </div>
+
+            {/* Transactions for this Date */}
+            {group.txs.map(tx => (
+              <div key={tx.id} className="ledger-row group">
+                <div className="ledger-left-col">
+                  <span className="font-mono text-[10px] text-gray-400 dark:text-gray-500">
+                    {tx.time ? `${tx.time} น.` : '--:-- น.'}
+                  </span>
+                </div>
+                <div className="ledger-right-col">
+                  {renderTransactionDetails(tx)}
+                </div>
+              </div>
+            ))}
+          </React.Fragment>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 animate-fade-in px-4 pb-20 md:pb-8">
       {/* Top Banner */}
@@ -1560,17 +1856,7 @@ export const FinanceLedger: React.FC = () => {
           )}
         </div>
 
-        {/* Animated swipe content wrapper */}
-        <div
-          ref={swipeContentRef}
-          className={`overflow-hidden ${getSwipeTransitionClass()}`}
-          style={{
-            transform: swipeDragX !== 0 ? `translateX(${swipeDragX}px)` : undefined,
-            opacity: swipeDragX !== 0 ? 1 - Math.abs(swipeDragX) / 120 : undefined,
-            transition: swipeDragX !== 0 ? 'none' : undefined,
-            willChange: swipeTransition || swipeDragX !== 0 ? 'transform, opacity' : undefined,
-          }}
-        >
+
 
         {/* Filters Row */}
         <div className="flex flex-col xl:flex-row xl:items-center gap-4">
@@ -1727,285 +2013,52 @@ export const FinanceLedger: React.FC = () => {
             <RefreshCw className="w-8 h-8 animate-spin text-[#0071e3]" />
             <p className="text-sm font-medium">กำลังประมวลผลข้อมูลการเงิน...</p>
           </div>
-        ) : filteredTransactions.length === 0 ? (
-          <div className="py-12 text-center text-gray-400 italic">
-            ไม่พบข้อมูลบันทึกรายการการเงินที่ตรงกับตัวกรอง
-          </div>
-        ) : (
-          <>
-            {/* Desktop Table View */}
-            <div className="hidden sm:block overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b border-gray-100 dark:border-white/5 text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider text-left">
-                    <th className="pb-3 pl-2">วันที่</th>
-                    <th className="pb-3">ประเภท</th>
-                    <th className="pb-3">รายละเอียดรายการ</th>
-                    <th className="pb-3">วิธีจ่ายเงิน / สถานะ</th>
-                    <th className="pb-3">ผู้ทำรายการ</th>
-                    <th className="pb-3 text-right">จำนวนเงิน</th>
-                    <th className="pb-3 text-right pr-2">การจัดการ</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100/50 dark:divide-white/5">
-                  {filteredTransactions.map(tx => {
-                    const isExpense = tx.type === 'EXPENSE';
-                    const isPersonal = tx.paidBy !== 'PETTY_CASH';
-                    const showReimburseBtn = isExpense && isPersonal && !tx.isReimbursed;
+        ) : (() => {
+          const { prevMonth, nextMonth } = getPrevAndNextMonths();
+          return selectedMonth === 'CUSTOM' ? (
+            renderMonthPanel('CUSTOM')
+          ) : (
+            <div 
+              ref={carouselContainerRef} 
+              className="relative overflow-hidden w-full cursor-grab active:cursor-grabbing"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+            >
+              <div 
+                ref={swipeContentRef}
+                className={`carousel-track ${getCarouselTransitionClass()}`}
+                style={{
+                  transform: getCarouselTransformStyle(),
+                  willChange: isDragging || carouselState !== 'idle' ? 'transform' : undefined
+                }}
+              >
+                {/* Panel 1: Previous Month */}
+                <div className="carousel-panel">
+                  {prevMonth || overridePrevMonth ? renderMonthPanel(overridePrevMonth || prevMonth!) : (
+                    <div className="py-12 text-center text-gray-400 italic">ไม่มีข้อมูลเดือนก่อนหน้า</div>
+                  )}
+                </div>
 
-                    return (
-                      <tr key={tx.id} className="text-xs text-[#1d1d1f] dark:text-gray-200 hover:bg-gray-50/50 dark:hover:bg-white/[0.01] transition-all">
-                        {/* Date */}
-                        <td className="py-3.5 pl-2 font-mono whitespace-nowrap">
-                          <div>{tx.date}</div>
-                          {tx.time && (
-                            <div className="text-[10px] text-gray-400 flex items-center gap-0.5 mt-0.5">
-                              <Clock className="w-3 h-3 text-gray-400/80" />
-                              {tx.time}
-                            </div>
-                          )}
-                        </td>
-                        
-                        {/* Type Icon */}
-                        <td className="py-3.5 whitespace-nowrap">
-                          {tx.type === 'INCOME' ? (
-                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full font-bold text-[10px]">
-                              <ArrowUpRight className="w-3 h-3" /> เบิกเงินพี่เกษม
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-orange-500/10 text-[#ff9500] rounded-full font-bold text-[10px]">
-                              <ArrowDownLeft className="w-3 h-3" /> รายจ่าย
-                            </span>
-                          )}
-                        </td>
+                {/* Panel 2: Selected Month */}
+                <div className="carousel-panel">
+                  {renderMonthPanel(selectedMonth)}
+                </div>
 
-                        {/* Description & linked RMA */}
-                        <td className="py-3.5 max-w-[200px] md:max-w-[300px]">
-                          <div className="flex items-center gap-3">
-                            {tx.receiptUrl && (
-                              <button
-                                onClick={() => setActiveReceiptUrl(tx.receiptUrl!)}
-                                className="w-8 h-8 rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-transform"
-                                title="ดูใบเสร็จ"
-                              >
-                                <img src={tx.receiptUrl} className="w-full h-full object-cover" alt="Receipt" />
-                              </button>
-                            )}
-                            <div className="truncate">
-                              <span className="font-semibold block truncate" title={tx.description}>{tx.description}</span>
-                              <span className="text-[10px] text-gray-400 mt-0.5 block">{tx.category}</span>
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* Payment Method / Reimbursement */}
-                        <td className="py-3.5">
-                          <div>
-                            {tx.type === 'INCOME' ? (
-                              <span className="text-gray-400">เบิกเงินพี่เกษม</span>
-                            ) : tx.paidBy === 'PETTY_CASH' ? (
-                              <span className="text-blue-500 font-medium">เงินกองกลาง</span>
-                            ) : tx.paidBy === 'SPLIT' ? (
-                              <div className="space-y-1">
-                                <span className="text-purple-500 font-semibold block">จ่ายแบบผสม</span>
-                                <span className="text-[10px] text-gray-400 block leading-tight">
-                                  (กองกลาง {tx.splitPettyCashAmount} / ส่วนตัว {tx.splitPersonalAmount})
-                                </span>
-                                {tx.isReimbursed ? (
-                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded-md">
-                                    <Check className="w-2.5 h-2.5" /> คืนส่วนต่าง {tx.splitPersonalAmount} บ. แล้ว
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded-md animate-pulse">
-                                    <AlertCircle className="w-2.5 h-2.5" /> ค้างคืนพนักงาน {tx.splitPersonalAmount} บ.
-                                  </span>
-                                )}
-                              </div>
-                            ) : (
-                              <div className="space-y-1">
-                                <span className="text-amber-500 font-semibold block">
-                                  {tx.paidBy === 'PERSONAL_CASH' ? 'สำรองจ่าย (เงินสด)' : 'สำรองจ่าย (เงินโอน)'}
-                                </span>
-                                {tx.isReimbursed ? (
-                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.2 rounded-md">
-                                    <Check className="w-2.5 h-2.5" /> คืนพนักงานแล้ว
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.2 rounded-md animate-pulse">
-                                    <AlertCircle className="w-2.5 h-2.5" /> ยังไม่เบิกคืน
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-
-                        {/* Staff Name */}
-                        <td className="py-3.5 whitespace-nowrap text-gray-500 dark:text-gray-400" title={tx.staffName}>{getDisplayName(tx.staffName)}</td>
-
-                        {/* Amount */}
-                        <td className="py-3.5 text-right font-bold text-sm tabular-nums whitespace-nowrap">
-                          {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
-                        </td>
-
-                        {/* Actions */}
-                        <td className="py-3.5 text-right pr-2 whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-1.5">
-                            {showReimburseBtn && (
-                              <button
-                                onClick={() => handleReimburse(tx.id)}
-                                className="px-2 py-1 bg-[#34c759] hover:bg-[#30b34f] text-white font-bold rounded-lg text-[10px] shadow-sm transition-colors active:scale-95"
-                                title="กดบันทึกคืนเงินพนักงาน"
-                              >
-                                คืนเงินพนักงาน
-                              </button>
-                            )}
-                            <button
-                              onClick={() => { setSelectedTx(tx); setShowModal(true); }}
-                              className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-colors"
-                              title="แก้ไขรายการ"
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            {isAdmin && (
-                              <button
-                                onClick={() => handleDelete(tx.id)}
-                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-colors"
-                                title="ลบรายการ"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                {/* Panel 3: Next Month */}
+                <div className="carousel-panel">
+                  {nextMonth || overrideNextMonth ? renderMonthPanel(overrideNextMonth || nextMonth!) : (
+                    <div className="py-12 text-center text-gray-400 italic">ไม่มีข้อมูลเดือนถัดไป</div>
+                  )}
+                </div>
+              </div>
             </div>
-
-            {/* Mobile Cards List View */}
-            <div className="sm:hidden space-y-3.5">
-              {filteredTransactions.map(tx => {
-                const isExpense = tx.type === 'EXPENSE';
-                const isPersonal = tx.paidBy !== 'PETTY_CASH';
-                const showReimburseBtn = isExpense && isPersonal && !tx.isReimbursed;
-
-                return (
-                  <div 
-                    key={tx.id} 
-                    className={`bg-white dark:bg-[#1c1c1e] p-4 rounded-2xl border ${tx.type === 'INCOME' ? 'border-l-4 border-l-emerald-500' : tx.paidBy === 'PETTY_CASH' ? 'border-l-4 border-l-blue-500' : 'border-l-4 border-l-orange-500'} border-gray-200/50 dark:border-white/[0.05] space-y-3 shadow-sm`}
-                  >
-                    {/* Top Row: Date & Amount */}
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] text-gray-400 font-mono flex items-center gap-1.5">
-                        <Calendar className="w-3 h-3 text-gray-400/85" />
-                        <span>{tx.date}</span>
-                        {tx.time && (
-                          <>
-                            <span className="text-gray-300 dark:text-gray-700">|</span>
-                            <Clock className="w-3 h-3 text-gray-400/85" />
-                            <span>{tx.time}</span>
-                          </>
-                        )}
-                      </span>
-                      <span className="text-sm font-bold tabular-nums">
-                        {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
-                      </span>
-                    </div>
-
-                    {/* Middle Row: Description */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
-                        <h4 className="text-xs font-bold text-[#1d1d1f] dark:text-white leading-tight">{tx.description}</h4>
-                        <p className="text-[10px] text-gray-400 mt-0.5">{tx.category} · ทำโดย {getDisplayName(tx.staffName)}</p>
-                      </div>
-                      {tx.receiptUrl && (
-                        <button
-                          onClick={() => setActiveReceiptUrl(tx.receiptUrl!)}
-                          className="w-10 h-10 rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-transform"
-                          title="ดูใบเสร็จ"
-                        >
-                          <img src={tx.receiptUrl} className="w-full h-full object-cover" alt="Receipt" />
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Bottom Status Block */}
-                    <div className="pt-2 border-t border-gray-100/50 dark:border-white/5 flex items-center justify-between gap-2 flex-wrap">
-                      <div>
-                        {tx.type === 'INCOME' ? (
-                          <span className="text-[10px] text-gray-400">เบิกเงินพี่เกษม</span>
-                        ) : tx.paidBy === 'PETTY_CASH' ? (
-                          <span className="text-[10px] text-blue-500 font-semibold">จ่ายจากกองกลาง</span>
-                        ) : tx.paidBy === 'SPLIT' ? (
-                          <div className="space-y-0.5">
-                            <span className="text-[10px] text-purple-500 font-semibold block">จ่ายแบบผสม</span>
-                            <span className="text-[9px] text-gray-400 block">
-                              (กองกลาง {tx.splitPettyCashAmount} / ส่วนตัว {tx.splitPersonalAmount})
-                            </span>
-                            {tx.isReimbursed ? (
-                              <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded-md">
-                                คืนส่วนต่าง {tx.splitPersonalAmount} บ. แล้ว
-                              </span>
-                            ) : (
-                              <span className="text-[9px] font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded-md animate-pulse">
-                                ค้างคืนพนักงาน {tx.splitPersonalAmount} บ.
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="text-[10px] text-amber-500 font-semibold">
-                              สำรองจ่าย
-                            </span>
-                            {tx.isReimbursed ? (
-                              <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.2 rounded-md">
-                                คืนเงินแล้ว
-                              </span>
-                            ) : (
-                              <span className="text-[9px] font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.2 rounded-md animate-pulse">
-                                ยังไม่คืน
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Action buttons */}
-                      <div className="flex gap-1.5 ml-auto">
-                        {showReimburseBtn && (
-                          <button
-                            onClick={() => handleReimburse(tx.id)}
-                            className="px-2 py-1 bg-[#34c759] hover:bg-[#30b34f] text-white font-bold rounded-lg text-[9px] transition-colors active:scale-95"
-                          >
-                            คืนเงินพนักงาน
-                          </button>
-                        )}
-                        <button
-                          onClick={() => { setSelectedTx(tx); setShowModal(true); }}
-                          className="p-1.5 bg-gray-50 dark:bg-white/5 rounded-lg text-gray-400 hover:text-blue-500"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        {isAdmin && (
-                          <button
-                            onClick={() => handleDelete(tx.id)}
-                            className="p-1.5 bg-gray-50 dark:bg-white/5 rounded-lg text-gray-400 hover:text-red-500"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
-        </div>{/* end animated swipe content wrapper */}
+          );
+        })()}
       </div>
         </>
       ) : activeTab === 'dashboard' ? (
