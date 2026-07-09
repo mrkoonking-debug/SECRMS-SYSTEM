@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Landmark, Plus, FileSpreadsheet, Search, RefreshCw, Trash2, Edit2, Check, 
@@ -137,6 +137,12 @@ export const FinanceLedger: React.FC = () => {
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
   const [touchEndY, setTouchEndY] = useState<number | null>(null);
+
+  // Swipe transition animation states
+  const [swipeTransition, setSwipeTransition] = useState<'out-left' | 'out-right' | 'in-left' | 'in-right' | null>(null);
+  const [swipeDragX, setSwipeDragX] = useState(0);
+  const swipeContentRef = useRef<HTMLDivElement>(null);
+  const isSwipingRef = useRef(false);
 
   const getAvailableMonths = () => {
     const months = new Set<string>();
@@ -310,35 +316,70 @@ export const FinanceLedger: React.FC = () => {
     }
   }, [selectedMonth]);
 
-  const handlePrevMonth = () => {
+  const handlePrevMonth = useCallback(() => {
     const list = getMonthList();
     const idx = list.findIndex(item => item.val === selectedMonth);
     if (idx > 0) {
-      setSelectedMonth(list[idx - 1].val);
+      return list[idx - 1].val;
     }
-  };
+    return null;
+  }, [selectedMonth]);
 
-  const handleNextMonth = () => {
+  const handleNextMonth = useCallback(() => {
     const list = getMonthList();
     const idx = list.findIndex(item => item.val === selectedMonth);
     if (idx >= 0 && idx < list.length - 1) {
-      setSelectedMonth(list[idx + 1].val);
+      return list[idx + 1].val;
     }
-  };
+    return null;
+  }, [selectedMonth]);
+
+  const animateMonthChange = useCallback((direction: 'left' | 'right', newMonth: string) => {
+    // Phase 1: slide out current content
+    setSwipeTransition(direction === 'left' ? 'out-left' : 'out-right');
+    
+    setTimeout(() => {
+      // Phase 2: change data + slide in new content from opposite side
+      setSelectedMonth(newMonth);
+      setSwipeTransition(direction === 'left' ? 'in-left' : 'in-right');
+      
+      setTimeout(() => {
+        setSwipeTransition(null);
+      }, 260);
+    }, 210);
+  }, []);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchEndX(null);
     setTouchEndY(null);
     setTouchStartX(e.targetTouches[0].clientX);
     setTouchStartY(e.targetTouches[0].clientY);
+    setSwipeDragX(0);
+    isSwipingRef.current = false;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEndX(e.targetTouches[0].clientX);
-    setTouchEndY(e.targetTouches[0].clientY);
+    const currentX = e.targetTouches[0].clientX;
+    const currentY = e.targetTouches[0].clientY;
+    setTouchEndX(currentX);
+    setTouchEndY(currentY);
+    
+    if (touchStartX !== null && touchStartY !== null) {
+      const diffX = touchStartX - currentX;
+      const diffY = touchStartY - currentY;
+      
+      // Only apply drag if horizontal movement is dominant
+      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
+        isSwipingRef.current = true;
+        // Dampen the drag to max ±40px for subtle feedback
+        const clampedDrag = Math.max(-40, Math.min(40, -diffX * 0.3));
+        setSwipeDragX(clampedDrag);
+      }
+    }
   };
 
   const handleTouchEnd = () => {
+    setSwipeDragX(0);
     if (touchStartX === null || touchEndX === null || touchStartY === null || touchEndY === null) return;
     const diffX = touchStartX - touchEndX;
     const diffY = touchStartY - touchEndY;
@@ -346,10 +387,28 @@ export const FinanceLedger: React.FC = () => {
     // Only swipe if horizontal movement is dominant and meets minimum threshold
     if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
       if (diffX > 0) {
-        handleNextMonth();
+        const newMonth = handleNextMonth();
+        if (newMonth) {
+          animateMonthChange('left', newMonth);
+        }
       } else {
-        handlePrevMonth();
+        const newMonth = handlePrevMonth();
+        if (newMonth) {
+          animateMonthChange('right', newMonth);
+        }
       }
+    }
+    isSwipingRef.current = false;
+  };
+
+  // Helper to get the CSS class for the swipe transition
+  const getSwipeTransitionClass = () => {
+    switch (swipeTransition) {
+      case 'out-left': return 'swipe-out-left';
+      case 'out-right': return 'swipe-out-right';
+      case 'in-left': return 'swipe-in-left';
+      case 'in-right': return 'swipe-in-right';
+      default: return '';
     }
   };
 
@@ -1330,7 +1389,7 @@ export const FinanceLedger: React.FC = () => {
         />
         <button
           onClick={() => setActiveTab('records')}
-          className={`relative z-10 flex-1 py-1.5 text-[10px] sm:text-xs font-bold text-center rounded-xl transition-colors duration-300 ${
+          className={`relative z-10 flex-1 py-1.5 text-[10px] sm:text-xs font-bold text-center rounded-xl transition-colors duration-300 flex items-center justify-center ${
             activeTab === 'records'
               ? 'text-[#0071e3]'
               : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
@@ -1340,7 +1399,7 @@ export const FinanceLedger: React.FC = () => {
         </button>
         <button
           onClick={() => setActiveTab('dashboard')}
-          className={`relative z-10 flex-1 py-1.5 text-[10px] sm:text-xs font-bold text-center rounded-xl transition-colors duration-300 ${
+          className={`relative z-10 flex-1 py-1.5 text-[10px] sm:text-xs font-bold text-center rounded-xl transition-colors duration-300 flex items-center justify-center ${
             activeTab === 'dashboard'
               ? 'text-[#0071e3]'
               : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
@@ -1350,7 +1409,7 @@ export const FinanceLedger: React.FC = () => {
         </button>
         <button
           onClick={() => setActiveTab('reimbursements')}
-          className={`relative z-10 flex-1 py-1.5 text-[10px] sm:text-xs font-bold text-center rounded-xl transition-colors duration-300 ${
+          className={`relative z-10 flex-1 py-1.5 text-[10px] sm:text-xs font-bold text-center rounded-xl transition-colors duration-300 flex items-center justify-center ${
             activeTab === 'reimbursements'
               ? 'text-[#0071e3]'
               : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
@@ -1360,7 +1419,7 @@ export const FinanceLedger: React.FC = () => {
         </button>
         <button
           onClick={() => setActiveTab('audit')}
-          className={`relative z-10 flex-1 py-1.5 text-[10px] sm:text-xs font-bold text-center rounded-xl transition-colors duration-300 ${
+          className={`relative z-10 flex-1 py-1.5 text-[10px] sm:text-xs font-bold text-center rounded-xl transition-colors duration-300 flex items-center justify-center ${
             activeTab === 'audit'
               ? 'text-[#0071e3]'
               : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
@@ -1469,7 +1528,14 @@ export const FinanceLedger: React.FC = () => {
               <button
                 key={item.val}
                 type="button"
-                onClick={() => setSelectedMonth(item.val)}
+                onClick={() => {
+                  if (item.val === selectedMonth) return;
+                  const list = getMonthList();
+                  const currentIdx = list.findIndex(m => m.val === selectedMonth);
+                  const targetIdx = list.findIndex(m => m.val === item.val);
+                  const direction = targetIdx > currentIdx ? 'left' : 'right';
+                  animateMonthChange(direction, item.val);
+                }}
                 className={`pb-1 text-xs sm:text-sm font-bold whitespace-nowrap transition-all relative outline-none cursor-pointer ${
                   isActive 
                     ? 'text-blue-500 dark:text-white' 
@@ -1493,6 +1559,18 @@ export const FinanceLedger: React.FC = () => {
             </span>
           )}
         </div>
+
+        {/* Animated swipe content wrapper */}
+        <div
+          ref={swipeContentRef}
+          className={`overflow-hidden ${getSwipeTransitionClass()}`}
+          style={{
+            transform: swipeDragX !== 0 ? `translateX(${swipeDragX}px)` : undefined,
+            opacity: swipeDragX !== 0 ? 1 - Math.abs(swipeDragX) / 120 : undefined,
+            transition: swipeDragX !== 0 ? 'none' : undefined,
+            willChange: swipeTransition || swipeDragX !== 0 ? 'transform, opacity' : undefined,
+          }}
+        >
 
         {/* Filters Row */}
         <div className="flex flex-col xl:flex-row xl:items-center gap-4">
@@ -1523,7 +1601,7 @@ export const FinanceLedger: React.FC = () => {
               />
               <button
                 onClick={() => setTypeFilter('ALL')}
-                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 ${
+                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 flex items-center justify-center ${
                   typeFilter === 'ALL'
                     ? 'text-gray-900 dark:text-white'
                     : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
@@ -1533,7 +1611,7 @@ export const FinanceLedger: React.FC = () => {
               </button>
               <button
                 onClick={() => setTypeFilter('INCOME')}
-                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 ${
+                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 flex items-center justify-center ${
                   typeFilter === 'INCOME'
                     ? 'text-emerald-600 dark:text-emerald-400'
                     : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
@@ -1543,7 +1621,7 @@ export const FinanceLedger: React.FC = () => {
               </button>
               <button
                 onClick={() => setTypeFilter('EXPENSE')}
-                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 ${
+                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 flex items-center justify-center ${
                   typeFilter === 'EXPENSE'
                     ? 'text-orange-600 dark:text-[#ff9500]'
                     : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
@@ -1568,7 +1646,7 @@ export const FinanceLedger: React.FC = () => {
               />
               <button
                 onClick={() => setSourceFilter('ALL')}
-                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 ${
+                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 flex items-center justify-center ${
                   sourceFilter === 'ALL'
                     ? 'text-gray-900 dark:text-white'
                     : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
@@ -1578,7 +1656,7 @@ export const FinanceLedger: React.FC = () => {
               </button>
               <button
                 onClick={() => setSourceFilter('PETTY_CASH')}
-                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 ${
+                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 flex items-center justify-center ${
                   sourceFilter === 'PETTY_CASH'
                     ? 'text-blue-600 dark:text-blue-400'
                     : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
@@ -1588,7 +1666,7 @@ export const FinanceLedger: React.FC = () => {
               </button>
               <button
                 onClick={() => setSourceFilter('PERSONAL_CASH')}
-                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 ${
+                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 flex items-center justify-center ${
                   sourceFilter === 'PERSONAL_CASH'
                     ? 'text-amber-600 dark:text-amber-400'
                     : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
@@ -1598,7 +1676,7 @@ export const FinanceLedger: React.FC = () => {
               </button>
               <button
                 onClick={() => setSourceFilter('SPLIT')}
-                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 ${
+                className={`relative z-10 py-1 text-[11px] font-bold text-center rounded-md transition-colors duration-300 flex items-center justify-center ${
                   sourceFilter === 'SPLIT'
                     ? 'text-purple-600 dark:text-purple-400'
                     : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
@@ -1927,6 +2005,7 @@ export const FinanceLedger: React.FC = () => {
             </div>
           </>
         )}
+        </div>{/* end animated swipe content wrapper */}
       </div>
         </>
       ) : activeTab === 'dashboard' ? (

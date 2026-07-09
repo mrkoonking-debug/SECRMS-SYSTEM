@@ -148,6 +148,37 @@ textarea,
   animation: scale-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
+/* Month swipe transition animations */
+@keyframes swipe-out-left {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(-60px); }
+}
+@keyframes swipe-out-right {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(60px); }
+}
+@keyframes swipe-in-left {
+  from { opacity: 0; transform: translateX(60px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes swipe-in-right {
+  from { opacity: 0; transform: translateX(-60px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.swipe-out-left {
+  animation: swipe-out-left 0.2s ease-in forwards;
+}
+.swipe-out-right {
+  animation: swipe-out-right 0.2s ease-in forwards;
+}
+.swipe-in-left {
+  animation: swipe-in-left 0.25s ease-out forwards;
+}
+.swipe-in-right {
+  animation: swipe-in-right 0.25s ease-out forwards;
+}
+
 /* Extreme Performance Mode Overrides */
 html.performance-mode * {
   backdrop-filter: none !important;
