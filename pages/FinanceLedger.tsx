@@ -1621,17 +1621,34 @@ export const FinanceLedger: React.FC = () => {
                 <th className="pb-3 text-right pr-2">การจัดการ</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100/50 dark:divide-white/5">
-              {sortedTxs.map(tx => {
+            <tbody>
+              {groups.map((group, groupIdx) => (
+                <React.Fragment key={group.date}>
+                  {/* Date Group Header */}
+                  <tr>
+                    <td colSpan={7} className={`${groupIdx > 0 ? 'pt-5' : 'pt-1'} pb-2 pl-2`}>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/[0.06] px-3 py-1 rounded-lg">
+                          {formatThaiDate(group.date)}
+                        </span>
+                        <div className="h-px bg-gray-200/60 dark:bg-white/5 flex-1" />
+                        <span className="text-[10px] text-gray-400 dark:text-gray-500 pr-2">
+                          {group.txs.length} รายการ
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                  {/* Transactions for this date */}
+                  {group.txs.map(tx => {
                 const isExpense = tx.type === 'EXPENSE';
                 const isPersonal = tx.paidBy !== 'PETTY_CASH';
                 const showReimburseBtn = isExpense && isPersonal && !tx.isReimbursed;
 
                 return (
-                  <tr key={tx.id} className="text-xs text-[#1d1d1f] dark:text-gray-200 hover:bg-gray-50/50 dark:hover:bg-white/[0.01] transition-all">
+                  <tr key={tx.id} className="text-xs text-[#1d1d1f] dark:text-gray-200 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-all border-b border-gray-100/50 dark:border-white/5">
                     {/* Date */}
                     <td className="py-3.5 pl-2 font-mono whitespace-nowrap">
-                      <div>{tx.date}</div>
+                      <div className="text-gray-400 dark:text-gray-500">{tx.date}</div>
                       {tx.time && (
                         <div className="text-[10px] text-gray-400 flex items-center gap-0.5 mt-0.5">
                           <Clock className="w-3 h-3 text-gray-400/80" />
@@ -1755,6 +1772,8 @@ export const FinanceLedger: React.FC = () => {
                   </tr>
                 );
               })}
+                </React.Fragment>
+              ))}
             </tbody>
           </table>
         </div>
