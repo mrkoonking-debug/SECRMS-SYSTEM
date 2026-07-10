@@ -264,8 +264,8 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
        {user && (
          <>
            <div
-             className="md:hidden fixed bottom-6 left-0 right-0 z-40 pointer-events-none flex justify-center items-end transition-all duration-300"
-             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+             className="md:hidden fixed left-0 right-0 z-40 pointer-events-none flex justify-center items-end transition-all duration-300"
+             style={{ bottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}
            >
              {/* Glass capsule bar */}
              <div 
@@ -348,7 +348,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
              <div 
                id="mobile-more-popup" 
                className="md:hidden fixed right-3 w-[250px] bg-white dark:bg-[#16161a] border border-gray-200/50 dark:border-white/[0.08] rounded-2xl shadow-xl z-50 pointer-events-auto flex flex-col overflow-hidden animate-slide-up transition-all duration-300"
-               style={{ bottom: isScrollingDown ? 'calc(74px + env(safe-area-inset-bottom))' : 'calc(86px + env(safe-area-inset-bottom))' }}
+               style={{ bottom: isScrollingDown ? 'calc(62px + env(safe-area-inset-bottom))' : 'calc(78px + env(safe-area-inset-bottom))' }}
              >
               {/* Quick Settings */}
               <div className="p-2 border-b border-gray-100/50 dark:border-white/[0.04]">
