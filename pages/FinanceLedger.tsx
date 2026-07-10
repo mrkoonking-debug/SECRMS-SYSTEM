@@ -2211,7 +2211,7 @@ export const FinanceLedger: React.FC = () => {
                 }}
               >
                 {/* Panel 1: Previous Month */}
-                <div className="carousel-panel">
+                <div className={`carousel-panel ${(!isDragging && carouselState === 'idle') ? 'h-0 overflow-hidden' : ''}`}>
                   {prevMonth || overridePrevMonth ? renderMonthPanel(overridePrevMonth || prevMonth!) : (
                     <div className="py-12 text-center text-gray-400 italic">ไม่มีข้อมูลเดือนก่อนหน้า</div>
                   )}
@@ -2223,7 +2223,7 @@ export const FinanceLedger: React.FC = () => {
                 </div>
 
                 {/* Panel 3: Next Month */}
-                <div className="carousel-panel">
+                <div className={`carousel-panel ${(!isDragging && carouselState === 'idle') ? 'h-0 overflow-hidden' : ''}`}>
                   {nextMonth || overrideNextMonth ? renderMonthPanel(overrideNextMonth || nextMonth!) : (
                     <div className="py-12 text-center text-gray-400 italic">ไม่มีข้อมูลเดือนถัดไป</div>
                   )}
