@@ -9,16 +9,26 @@ export const Login: React.FC = () => {
   // State สำหรับเก็บค่าที่ผู้ใช้พิมพ์
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState(''); // เก็บข้อความ Error
   const [loading, setLoading] = useState(false); // สถานะกำลังโหลด (หมุนติ้วๆ)
 
   const navigate = useNavigate(); // ใช้สำหรับเปลี่ยนหน้า
-  const { t } = useLanguage(); // ใช้ระบบแปลภาษา
+  const { t, language } = useLanguage(); // ใช้ระบบแปลภาษา
 
-  // Check if already logged in
+  // Check if already logged in and load saved credentials
   React.useEffect(() => {
     if (MockDb.isAuthenticated()) {
       navigate('/admin/dashboard', { replace: true });
+      return;
+    }
+
+    const savedEmail = localStorage.getItem('sec_remember_email');
+    const savedPassword = localStorage.getItem('sec_remember_password');
+    if (savedEmail && savedPassword) {
+      setUsername(savedEmail);
+      setPassword(savedPassword);
+      setRememberMe(true);
     }
   }, [navigate]);
 
@@ -28,18 +38,19 @@ export const Login: React.FC = () => {
     setLoading(true); // เริ่มหมุน
     setError(''); // เคลียร์ Error เก่า
 
-    // เรียกใช้ฟังก์ชัน Login จากไฟล์ mockDb.ts
-    // คำสั่ง await คือ "รอ" จนกว่าจะติดต่อ Firebase เสร็จ
     const result = await MockDb.login(username, password);
-    // TypeScript might infer result as any or the object type depending on how it's defined, 
-    // but at runtime it is { success: boolean, error?: string }
 
     if (result.success) {
+      if (rememberMe) {
+        localStorage.setItem('sec_remember_email', username);
+        localStorage.setItem('sec_remember_password', password);
+      } else {
+        localStorage.removeItem('sec_remember_email');
+        localStorage.removeItem('sec_remember_password');
+      }
       // ถ้าผ่าน -> ไปหน้า Dashboard
       navigate('/admin/dashboard');
     } else {
-      // ถ้าไม่ผ่าน -> ขึ้นเตือน
-      // Check if result has error property, otherwise default message
       const errorMsg = result.error || 'Login failed. Please check email/password.';
       setError(errorMsg);
     }
@@ -91,6 +102,20 @@ export const Login: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-[#f5f5f7] dark:bg-[#2c2c2e] border-none rounded-xl px-4 py-2.5 md:py-4 text-sm md:text-base text-[#1d1d1f] dark:text-white focus:ring-2 focus:ring-[#0071e3] transition-all"
               />
+            </div>
+
+            {/* Remember Me Checkbox */}
+            <div className="flex items-center gap-2 px-1 py-1">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 rounded bg-[#f5f5f7] dark:bg-[#2c2c2e] border-none text-[#0071e3] focus:ring-0 focus:ring-offset-0 cursor-pointer"
+              />
+              <label htmlFor="rememberMe" className="text-xs md:text-sm text-gray-500 dark:text-gray-400 cursor-pointer select-none">
+                {language === 'th' ? 'จดจำบัญชีในเครื่องนี้ (จำเข้าสมอง)' : 'Remember Login on this Device'}
+              </label>
             </div>
 
             {/* แสดงข้อความ Error ตรงนี้ */}
