@@ -2021,49 +2021,6 @@ export const FinanceLedger: React.FC = () => {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        
-        {/* Month Horizontal Selector Bar */}
-        <div className="flex justify-start sm:justify-center border-b border-gray-150/40 dark:border-white/5 pb-2 mb-4 overflow-x-auto scrollbar-none select-none w-full gap-6 px-2">
-          {getMonthList().map(item => {
-            const isActive = selectedMonth === item.val;
-            return (
-              <button
-                key={item.val}
-                type="button"
-                onClick={() => {
-                  if (item.val === selectedMonth) return;
-                  const list = getMonthList();
-                  const currentIdx = list.findIndex(m => m.val === selectedMonth);
-                  const targetIdx = list.findIndex(m => m.val === item.val);
-                  const direction = targetIdx > currentIdx ? 'left' : 'right';
-                  animateMonthChange(direction, item.val);
-                }}
-                className={`pb-1 text-xs sm:text-sm font-bold whitespace-nowrap transition-all relative outline-none cursor-pointer ${
-                  isActive 
-                    ? 'text-blue-500 dark:text-white' 
-                    : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
-                }`}
-              >
-                <span>{item.label}</span>
-                {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 dark:bg-white rounded-full animate-fade-in" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Date Range Subtext indicator */}
-        <div className="text-center select-none w-full">
-          {startDate && endDate && (
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wider block">
-              ช่วงเวลารอบบัญชี: {formatThaiDate(startDate)} — {formatThaiDate(endDate)} · 📱 ปัดซ้าย/ขวาเพื่อเลื่อนเดือน
-            </span>
-          )}
-        </div>
-
-
-
         {/* Filters Row */}
         <div className="flex flex-col xl:flex-row xl:items-center gap-4">
           {/* Search bar */}
@@ -2212,6 +2169,46 @@ export const FinanceLedger: React.FC = () => {
             <RefreshCw className="w-3 h-3" /> ล้างตัวกรองทั้งหมด
           </button>
         )}
+
+        {/* Month Horizontal Selector Bar — below filters */}
+        <div className="flex justify-start sm:justify-center border-b border-gray-150/40 dark:border-white/5 pb-2 overflow-x-auto scrollbar-none select-none w-full gap-6 px-2">
+          {getMonthList().map(item => {
+            const isActive = selectedMonth === item.val;
+            return (
+              <button
+                key={item.val}
+                type="button"
+                onClick={() => {
+                  if (item.val === selectedMonth) return;
+                  const list = getMonthList();
+                  const currentIdx = list.findIndex(m => m.val === selectedMonth);
+                  const targetIdx = list.findIndex(m => m.val === item.val);
+                  const direction = targetIdx > currentIdx ? 'left' : 'right';
+                  animateMonthChange(direction, item.val);
+                }}
+                className={`pb-1 text-xs sm:text-sm font-bold whitespace-nowrap transition-all relative outline-none cursor-pointer ${
+                  isActive 
+                    ? 'text-blue-500 dark:text-white' 
+                    : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
+                }`}
+              >
+                <span>{item.label}</span>
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 dark:bg-white rounded-full animate-fade-in" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Date Range Subtext indicator */}
+        <div className="text-center select-none w-full">
+          {startDate && endDate && (
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wider block">
+              ช่วงเวลารอบบัญชี: {formatThaiDate(startDate)} — {formatThaiDate(endDate)} · 📱 ปัดซ้าย/ขวาเพื่อเลื่อนเดือน
+            </span>
+          )}
+        </div>
 
         {/* Transactions list */}
         {loading ? (
