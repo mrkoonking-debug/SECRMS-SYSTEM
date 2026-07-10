@@ -51,6 +51,31 @@ body {
   color: var(--text-primary);
   transition: background-color var(--transition-smooth), color var(--transition-smooth);
   margin: 0;
+  /* PWA WebView performance: force GPU compositing for smooth scroll */
+  -webkit-transform: translateZ(0);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* PWA performance: promote scrollable containers to GPU layer */
+@media (display-mode: standalone) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  .overflow-x-auto,
+  .overflow-y-auto,
+  .overflow-auto {
+    -webkit-overflow-scrolling: touch;
+    transform: translateZ(0);
+  }
+  /* Reduce backdrop-blur in PWA — major lag source in WebView */
+  .backdrop-blur-xl,
+  .backdrop-blur-lg,
+  .backdrop-blur-md,
+  .backdrop-blur-sm,
+  .backdrop-blur {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
 }
 
 .dark body {
