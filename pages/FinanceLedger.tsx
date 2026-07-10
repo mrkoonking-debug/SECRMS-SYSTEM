@@ -234,14 +234,57 @@ export const FinanceLedger: React.FC = () => {
   const currentUser = MockDb.getCurrentUser();
   const isAdmin = currentUser?.role === 'admin';
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      let txList = await MockDb.getPettyCashTransactions();
-      
-      // Seeding removed for clean system.
+  const computeSummaryFromTxs = (txs: PettyCashTransaction[]): PettyCashSummary => {
+    let pettyCashBalance = 0;
+    let totalPersonalAdvance = 0;
+    const personalAdvanceByStaff: Record<string, number> = {};
 
-      // Normalize 'ค่าเครื่องเขียน' category to 'ค่าของใช้สำนักงาน'
+    txs.forEach(tx => {
+      if (tx.type === 'INCOME') {
+        pettyCashBalance += tx.amount;
+      } else {
+        if (tx.paidBy === 'PETTY_CASH') {
+          pettyCashBalance -= tx.amount;
+        } else if (tx.paidBy === 'SPLIT') {
+          const pettyAmt = tx.splitPettyCashAmount || 0;
+          const personalAmt = tx.splitPersonalAmount || 0;
+          pettyCashBalance -= pettyAmt;
+          if (!tx.isReimbursed) {
+            totalPersonalAdvance += personalAmt;
+            const staff = tx.staffName || 'Unknown';
+            personalAdvanceByStaff[staff] = (personalAdvanceByStaff[staff] || 0) + personalAmt;
+          } else {
+            pettyCashBalance -= personalAmt;
+          }
+        } else {
+          if (!tx.isReimbursed) {
+            totalPersonalAdvance += tx.amount;
+            const staff = tx.staffName || 'Unknown';
+            personalAdvanceByStaff[staff] = (personalAdvanceByStaff[staff] || 0) + tx.amount;
+          } else {
+            pettyCashBalance -= tx.amount;
+          }
+        }
+      }
+    });
+
+    return { pettyCashBalance, totalPersonalAdvance, personalAdvanceByStaff };
+  };
+
+  const fetchData = async () => {
+    // Only show loading spinner on first load — subsequent refreshes update silently
+    const isFirstLoad = transactions.length === 0;
+    if (isFirstLoad) setLoading(true);
+
+    try {
+      // Fire all Firestore queries in PARALLEL instead of sequential
+      const [txList, allUsers, audits] = await Promise.all([
+        MockDb.getPettyCashTransactions(),
+        MockDb.getAllUsers().catch(err => { console.error("Error fetching users:", err); return []; }),
+        MockDb.getCashAudits().catch(err => { console.error("Error fetching audits:", err); return []; }),
+      ]);
+
+      // Normalize category
       const normalizedTxList = txList.map(tx => {
         if (tx.category === 'ค่าเครื่องเขียน') {
           return { ...tx, category: 'ค่าของใช้สำนักงาน' };
@@ -249,36 +292,26 @@ export const FinanceLedger: React.FC = () => {
         return tx;
       });
 
-      const summ = await MockDb.getPettyCashSummary();
+      // Compute summary locally — no need for a second Firestore fetch
+      const summ = computeSummaryFromTxs(normalizedTxList);
 
-      // Fetch users to map names to nicknames in Finance
-      try {
-        const allUsers = await MockDb.getAllUsers();
-        const map: Record<string, string> = {};
-        allUsers.forEach((u: any) => {
-          if (u.name && u.nickname) {
-            map[u.name.trim()] = u.nickname.trim();
-          }
-        });
-        setUserMap(map);
-      } catch (err) {
-        console.error("Error building userMap:", err);
-      }
+      // Build user nickname map
+      const map: Record<string, string> = {};
+      (allUsers as any[]).forEach((u: any) => {
+        if (u.name && u.nickname) {
+          map[u.name.trim()] = u.nickname.trim();
+        }
+      });
 
-      // Fetch cash audits
-      try {
-        const audits = await MockDb.getCashAudits();
-        setAuditLogs(audits);
-      } catch (err) {
-        console.error("Error fetching audits:", err);
-      }
-
+      // Batch all state updates together for a single re-render
       setTransactions(normalizedTxList);
       setSummary(summ);
+      setUserMap(map);
+      setAuditLogs(audits);
     } catch (err) {
       showToast('เกิดข้อผิดพลาดในการโหลดข้อมูลการเงิน', 'error');
     } finally {
-      setLoading(false);
+      if (isFirstLoad) setLoading(false);
     }
   };
 
