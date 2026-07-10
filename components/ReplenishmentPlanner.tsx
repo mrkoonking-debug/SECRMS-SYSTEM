@@ -170,7 +170,7 @@ ${calcMaid > 0 ? `-ค่าป้าแม่บ้าน ${calcMaid}\n` : ''}$
               type="button"
               className={`w-9 h-5 rounded-full transition-colors relative shrink-0 ${hasInterns ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}
             >
-              <span className={`block w-3.5 h-3.5 rounded-full bg-white shadow-sm absolute top-0.75 left-0.75 transition-transform ${hasInterns ? 'translate-x-4' : 'translate-x-0'}`} />
+              <span className={`block w-3.5 h-3.5 rounded-full bg-white shadow-sm absolute top-[3px] left-[3px] transition-transform ${hasInterns ? 'translate-x-4' : 'translate-x-0'}`} />
             </button>
           </div>
 
