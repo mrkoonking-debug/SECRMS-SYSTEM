@@ -2201,14 +2201,6 @@ export const FinanceLedger: React.FC = () => {
           })}
         </div>
 
-        {/* Date Range Subtext indicator */}
-        <div className="text-center select-none w-full">
-          {startDate && endDate && (
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wider block">
-              ช่วงเวลารอบบัญชี: {formatThaiDate(startDate)} — {formatThaiDate(endDate)} · 📱 ปัดซ้าย/ขวาเพื่อเลื่อนเดือน
-            </span>
-          )}
-        </div>
 
         {/* Transactions list */}
         {loading ? (
