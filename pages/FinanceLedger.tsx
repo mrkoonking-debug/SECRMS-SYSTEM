@@ -147,10 +147,64 @@ export const FinanceLedger: React.FC = () => {
   const touchStartYRef = useRef<number | null>(null);
   const carouselContainerRef = useRef<HTMLDivElement>(null);
   const swipeContentRef = useRef<HTMLDivElement>(null);
+  const panel1Ref = useRef<HTMLDivElement>(null);
+  const panel2Ref = useRef<HTMLDivElement>(null);
+  const panel3Ref = useRef<HTMLDivElement>(null);
+  const [containerHeight, setContainerHeight] = useState<number | string>('auto');
 
   // Overrides for sliding to non-adjacent months
   const [overridePrevMonth, setOverridePrevMonth] = useState<string | null>(null);
   const [overrideNextMonth, setOverrideNextMonth] = useState<string | null>(null);
+
+  // Height auto-adjust function
+  const updateContainerHeight = useCallback(() => {
+    if (carouselState === 'idle' && !isDragging) {
+      if (panel2Ref.current) {
+        setContainerHeight(panel2Ref.current.offsetHeight);
+      }
+    } else if (carouselState === 'snapping-prev') {
+      if (panel1Ref.current) {
+        setContainerHeight(panel1Ref.current.offsetHeight);
+      }
+    } else if (carouselState === 'snapping-next') {
+      if (panel3Ref.current) {
+        setContainerHeight(panel3Ref.current.offsetHeight);
+      }
+    } else if (carouselState === 'snapping-back') {
+      if (panel2Ref.current) {
+        setContainerHeight(panel2Ref.current.offsetHeight);
+      }
+    }
+  }, [carouselState, isDragging]);
+
+  // Adjust height during dragging to avoid truncation and allow smooth snapping height transition
+  useEffect(() => {
+    if (isDragging) {
+      const h1 = panel1Ref.current?.offsetHeight || 0;
+      const h2 = panel2Ref.current?.offsetHeight || 0;
+      const h3 = panel3Ref.current?.offsetHeight || 0;
+      setContainerHeight(Math.max(h1, h2, h3));
+    } else {
+      updateContainerHeight();
+    }
+  }, [isDragging, updateContainerHeight]);
+
+  // Auto-adjust container height whenever content updates
+  useEffect(() => {
+    updateContainerHeight();
+  }, [updateContainerHeight, transactions, loading, searchTerm, typeFilter, sourceFilter, startDate, endDate]);
+
+  // Observe active panel height shifts (e.g. from dynamic layout rendering or element changes)
+  useEffect(() => {
+    if (!panel2Ref.current || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => {
+      if (carouselState === 'idle' && !isDragging) {
+        updateContainerHeight();
+      }
+    });
+    observer.observe(panel2Ref.current);
+    return () => observer.disconnect();
+  }, [carouselState, isDragging, updateContainerHeight]);
 
   const getAvailableMonths = () => {
     const months = new Set<string>();
@@ -2216,6 +2270,10 @@ export const FinanceLedger: React.FC = () => {
             <div 
               ref={carouselContainerRef} 
               className="relative overflow-hidden w-full cursor-grab active:cursor-grabbing"
+              style={{
+                height: containerHeight,
+                transition: isDragging ? 'none' : 'height 0.28s cubic-bezier(0.4, 0, 0.2, 1)'
+              }}
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
@@ -2233,19 +2291,25 @@ export const FinanceLedger: React.FC = () => {
                 }}
               >
                 {/* Panel 1: Previous Month */}
-                <div className={`carousel-panel ${(!isDragging && carouselState === 'idle') ? 'h-0 overflow-hidden' : ''}`}>
+                <div 
+                  ref={panel1Ref}
+                  className={`carousel-panel ${(!isDragging && carouselState === 'idle') ? 'h-0 overflow-hidden' : ''}`}
+                >
                   {prevMonth || overridePrevMonth ? renderMonthPanel(overridePrevMonth || prevMonth!) : (
                     <div className="py-12 text-center text-gray-400 italic">ไม่มีข้อมูลเดือนก่อนหน้า</div>
                   )}
                 </div>
 
                 {/* Panel 2: Selected Month */}
-                <div className="carousel-panel">
+                <div ref={panel2Ref} className="carousel-panel">
                   {renderMonthPanel(selectedMonth)}
                 </div>
 
                 {/* Panel 3: Next Month */}
-                <div className={`carousel-panel ${(!isDragging && carouselState === 'idle') ? 'h-0 overflow-hidden' : ''}`}>
+                <div 
+                  ref={panel3Ref}
+                  className={`carousel-panel ${(!isDragging && carouselState === 'idle') ? 'h-0 overflow-hidden' : ''}`}
+                >
                   {nextMonth || overrideNextMonth ? renderMonthPanel(overrideNextMonth || nextMonth!) : (
                     <div className="py-12 text-center text-gray-400 italic">ไม่มีข้อมูลเดือนถัดไป</div>
                   )}
