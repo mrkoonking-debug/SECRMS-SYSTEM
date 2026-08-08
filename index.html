@@ -18,6 +18,16 @@
   <link rel="stylesheet" href="/index.css">
 
   
+  <script>
+    (function() {
+      var path = window.location.pathname;
+      var search = window.location.search;
+      var hash = window.location.hash;
+      if (!hash && (path === '/status' || path === '/register' || path === '/login' || path.indexOf('/status') === 0 || path.indexOf('/register') === 0)) {
+        window.location.replace(window.location.origin + '/#' + path + search);
+      }
+    })();
+  </script>
 </head>
 
 <body>
