@@ -439,7 +439,7 @@ export const getImporterFormHTML = async (rmas: RMA[]): Promise<string> => {
         </div>
         <div style="text-align: right;">
           <div style="font-size: 10px; font-weight: 700; color: #555; letter-spacing: 0.5px;">REFERENCE NO.</div>
-          <div style="font-size: 18px; font-weight: 700; color: #1d1d1f; margin-top: 2px;">${escapeHtml(rma.groupRequestId || rma.quotationNumber || rma.id)}</div>
+          <div style="font-size: 18px; font-weight: 700; color: #1d1d1f; margin-top: 2px;">${escapeHtml(rma.groupRequestId || rma.id)}</div>
           <div style="font-size: 11px; color: #555; margin-top: 2px;">Date: ${today}</div>
         </div>
       </div>
@@ -608,7 +608,7 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
           </td>
           <td style="width: 40%; border: none; padding: 0; text-align: right; vertical-align: top;">
             <div style="font-size: 10px; font-weight: 700; color: #555; letter-spacing: 0.5px;">JOB REFERENCE</div>
-            <div style="font-size: 18px; font-weight: 700; color: #1d1d1f; margin-top: 4px;">${escapeHtml(rma.groupRequestId || rma.quotationNumber || rma.id)}</div>
+            <div style="font-size: 18px; font-weight: 700; color: #1d1d1f; margin-top: 4px;">${escapeHtml(rma.groupRequestId || rma.id)}</div>
             <div style="font-size: 11px; color: #555; margin-top: 2px;">Date: ${today}</div>
           </td>
         </tr>
@@ -707,7 +707,7 @@ export const getCustomerShippingLabelHTML = async (payloads: ShippingLabelPayloa
     const { rma, receiverName, contactPerson, receiverPhone, receiverAddress, trackingId, currentBox, totalBoxes } = payload;
 
     // Determine Job ID to show in the pink box
-    const displayId = rma.groupRequestId || rma.quotationNumber || rma.id;
+    const displayId = rma.groupRequestId || rma.id;
     const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(displayId)}&margin=0`;
     const qrTrackingUrl = trackingId && trackingId.trim() !== ''
       ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(trackingId)}&margin=0`
@@ -1163,7 +1163,7 @@ export const printDistributorDocuments = async (rmas: RMA[]) => {
     }
     const combinedHTML = pages.join('<div style="page-break-after: always;"></div>');
 
-    executePrint(combinedHTML, rmas[0].quotationNumber || rmas[0].groupRequestId || rmas[0].id || 'Distributor_Forms');
+    executePrint(combinedHTML, rmas[0].groupRequestId || rmas[0].id || 'Distributor_Forms');
   } catch (err) {
     console.error("Error generating print documents:", err);
     alert("Error generating documents. Please try again.");
@@ -1192,7 +1192,7 @@ export const printCustomerDocuments = async (rmas: RMA[]) => {
   try {
     if (!rmas || rmas.length === 0) return;
     const combinedHTML = await getCustomerFormHTML(rmas);
-    executePrint(combinedHTML, rmas[0].quotationNumber || rmas[0].groupRequestId || rmas[0].id || 'Customer_Forms');
+    executePrint(combinedHTML, rmas[0].groupRequestId || rmas[0].id || 'Customer_Forms');
   } catch (err) {
     console.error("Error generating print documents:", err);
     alert("Error generating documents. Please try again.");

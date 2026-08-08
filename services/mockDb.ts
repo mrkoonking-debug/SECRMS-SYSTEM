@@ -932,21 +932,42 @@ export const MockDb = {
   getRMAsByJobId: async (jobId: string): Promise<RMA[]> => {
     if (!isConfigured || !db) throw new Error('Firebase Not Configured');
     try {
-      // Try groupRequestId first
+      // 1. Try groupRequestId first (unique job batch ID)
       let q = query(collection(db, 'rmas'), where('groupRequestId', '==', jobId));
       let snap = await getDocs(q);
       if (snap.docs.length > 0) return snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
 
-      // Try quotationNumber
-      q = query(collection(db, 'rmas'), where('quotationNumber', '==', jobId));
-      snap = await getDocs(q);
-      if (snap.docs.length > 0) return snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
-
-      // Fallback: single RMA by document ID
+      // 2. Fallback: single RMA by document ID
       const docSnap = await getDoc(doc(db, 'rmas', jobId));
       if (docSnap.exists()) {
         const rma = mapDocToRMA(docSnap as any);
-        return rma.isDeleted ? [] : [rma];
+        if (!rma.isDeleted) {
+          if (rma.groupRequestId) {
+            const gSnap = await getDocs(query(collection(db, 'rmas'), where('groupRequestId', '==', rma.groupRequestId)));
+            if (gSnap.docs.length > 0) return gSnap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
+          }
+          return [rma];
+        }
+      }
+
+      // 3. Fallback: quotationNumber - group by groupRequestId to prevent merging historic closed jobs
+      q = query(collection(db, 'rmas'), where('quotationNumber', '==', jobId));
+      snap = await getDocs(q);
+      if (snap.docs.length > 0) {
+        const allMatching = snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
+        if (allMatching.length > 0) {
+          const groupMap = new Map<string, RMA[]>();
+          allMatching.forEach(item => {
+            const key = item.groupRequestId || item.id;
+            if (!groupMap.has(key)) groupMap.set(key, []);
+            groupMap.get(key)!.push(item);
+          });
+          const groups = Array.from(groupMap.values());
+          const activeGroup = groups.find(g => g.some(r => ![RMAStatus.CLOSED, RMAStatus.CANCELLED, RMAStatus.REPAIRED, RMAStatus.REJECTED, RMAStatus.RETURNED_FROM_VENDOR].includes(r.status)));
+          if (activeGroup) return activeGroup;
+          groups.sort((a, b) => new Date(b[0].createdAt).getTime() - new Date(a[0].createdAt).getTime());
+          return groups[0];
+        }
       }
 
       return [];
@@ -1033,7 +1054,7 @@ export const MockDb = {
           allLogs.push({
             ...evt,
             claimId: rma.id, // Keep this key for UI consistency if needed, or rename to rmaId later
-            jobId: rma.quotationNumber || rma.groupRequestId || rma.id, // Derived Job ID
+            jobId: rma.groupRequestId || rma.id, // Derived Job ID
             claimRef: rma.quotationNumber || rma.id,
             productModel: rma.productModel,
             serialNumber: rma.serialNumber,
@@ -1147,8 +1168,10 @@ export const MockDb = {
 
     const isCustomerSubmit = c.createdBy?.includes('Web');
     const now = new Date().toISOString();
+    const groupRequestId = c.groupRequestId || (await MockDb.generateNextGroupRequestId());
     const newRMAData = {
       ...c,
+      groupRequestId,
       ...(isCustomerSubmit ? {} : { repairCosts: { warrantyStatus: 'IN_WARRANTY', ...(c.repairCosts || {}) } }),
       status: RMAStatus.PENDING,
       history: [{ id: `evt-${Date.now()}`, date: Timestamp.now(), type: 'SYSTEM', description: isCustomerSubmit ? 'ลูกค้าลงทะเบียนล่วงหน้าผ่านหน้าเว็บ' : 'รับสินค้าเข้าเข้าระบบ', user: currentUser?.name || 'System' }],
@@ -1660,7 +1683,7 @@ export const MockDb = {
         serial: data.serialNumber || '-',
         customer: data.customerName || '-',
         createdAt: createdAt.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }),
-        jobId: data.groupRequestId || data.quotationNumber || d.id
+        jobId: data.groupRequestId || d.id
       };
     });
   },

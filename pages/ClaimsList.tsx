@@ -318,7 +318,7 @@ export const ClaimsList: React.FC = () => {
             if (rmasInDate.length === 0) return;
 
             const jobs = rmasInDate.reduce((acc, rma) => {
-                const jobKey = rma.groupRequestId || rma.quotationNumber || 'Unassigned';
+                const jobKey = rma.groupRequestId || rma.id;
                 if (!acc[jobKey]) acc[jobKey] = [];
                 acc[jobKey].push(rma);
                 return acc;

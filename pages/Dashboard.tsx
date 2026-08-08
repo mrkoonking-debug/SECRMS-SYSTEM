@@ -206,7 +206,7 @@ export const Dashboard: React.FC = () => {
                     </div>
                     <div className="flex-1 overflow-y-auto pr-1 space-y-3.5 custom-scrollbar max-h-[300px] sm:max-h-[400px]">
                         {stats.urgentRMAs.map(rma => (
-                            <Link key={rma.id} to={`/admin/job/${encodeURIComponent(rma.quotationNumber || rma.groupRequestId || rma.id)}`} className="block bg-gray-50 dark:bg-[#1e1e1f] border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-[#282a2c] p-3.5 md:p-5 rounded-2xl md:rounded-3xl transition-all group outline-none focus:outline-none">
+                            <Link key={rma.id} to={`/admin/job/${encodeURIComponent(rma.groupRequestId || rma.id)}`} className="block bg-gray-50 dark:bg-[#1e1e1f] border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-[#282a2c] p-3.5 md:p-5 rounded-2xl md:rounded-3xl transition-all group outline-none focus:outline-none">
                                 <div className="flex justify-between items-start mb-2 gap-2">
                                     <div className="font-bold text-xs md:text-sm text-[#1d1d1f] dark:text-white group-hover:text-[#0071e3] transition-colors line-clamp-1">{rma.productModel}</div>
                                     <div className="text-[9px] font-mono text-gray-400 bg-white dark:bg-black/20 px-1.5 py-0.5 rounded-md flex-shrink-0">{rma.id}</div>

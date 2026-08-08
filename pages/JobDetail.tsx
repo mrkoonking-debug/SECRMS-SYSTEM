@@ -160,7 +160,7 @@ export const JobDetail: React.FC = () => {
 
                     const first = jobRMAs[0];
                     setJobInfo({
-                        id: first.groupRequestId || first.quotationNumber || decodedId,
+                        id: first.groupRequestId || first.id || decodedId,
                         quotationNumber: first.quotationNumber,
                         customerName: first.customerName,
                         count: jobRMAs.length,
@@ -725,7 +725,6 @@ export const JobDetail: React.FC = () => {
                                                     const allRMAs = await MockDb.getRMAs();
                                                     const decodedId = decodeURIComponent(jobId || '');
                                                     const remaining = allRMAs.filter(c =>
-                                                        c.quotationNumber === decodedId ||
                                                         c.groupRequestId === decodedId ||
                                                         (c.id === decodedId)
                                                     );
