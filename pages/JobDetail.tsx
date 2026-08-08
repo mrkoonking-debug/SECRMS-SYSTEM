@@ -991,49 +991,53 @@ export const JobDetail: React.FC = () => {
                 return (
                     <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex flex-col animate-in fade-in duration-200">
                         {/* Toolbar */}
-                        <div className="flex-shrink-0 flex items-center justify-between gap-1.5 px-3 md:px-6 py-2 bg-white dark:bg-[#1c1c1e] border-b border-gray-200 dark:border-white/10 shadow-sm w-full overflow-x-auto scrollbar-none">
-                            <h2 className="text-gray-800 dark:text-white font-bold text-xs sm:text-base flex-shrink-0 whitespace-nowrap mr-1">📋 Preview</h2>
-                            
-                            {/* Distributor Selector Tabs */}
-                            {docPreviewType === 'DISTRIBUTOR' && (() => {
-                                const distGroups = Object.entries(docPreviewRmas.reduce<Record<string, number>>((acc, r) => {
-                                    const key = r.distributor || 'Unknown';
-                                    acc[key] = (acc[key] || 0) + 1;
-                                    return acc;
-                                }, {}));
+                        <div className="flex-shrink-0 flex items-center justify-between gap-3 px-3 md:px-6 py-2.5 bg-white dark:bg-[#1c1c1e] border-b border-gray-200 dark:border-white/10 shadow-sm w-full overflow-x-auto scrollbar-none">
+                            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                                <h2 className="text-gray-800 dark:text-white font-bold text-xs sm:text-base flex-shrink-0 whitespace-nowrap">📋 Preview</h2>
+                                
+                                {/* Distributor Selector Tabs */}
+                                {docPreviewType === 'DISTRIBUTOR' && (() => {
+                                    const distGroups = Object.entries(docPreviewRmas.reduce<Record<string, number>>((acc, r) => {
+                                        const key = r.distributor || 'Unknown';
+                                        acc[key] = (acc[key] || 0) + 1;
+                                        return acc;
+                                    }, {}));
 
-                                if (distGroups.length <= 1) return null;
+                                    if (distGroups.length <= 1) return null;
 
-                                return (
-                                    <div className="flex bg-gray-100 dark:bg-white/5 p-1 rounded-xl gap-1 text-[10px] sm:text-xs font-semibold mr-auto">
-                                        <button
-                                            onClick={() => setSelectedDistTab('ALL')}
-                                            className={`px-2.5 py-1 rounded-lg transition-all ${
-                                                selectedDistTab === 'ALL'
-                                                    ? 'bg-white dark:bg-white/15 text-gray-800 dark:text-white shadow-sm'
-                                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
-                                            }`}
-                                        >
-                                            ทั้งหมด ({docPreviewRmas.length})
-                                        </button>
-                                        {distGroups.map(([distName, count]) => (
+                                    return (
+                                        <div className="flex bg-gray-100 dark:bg-white/5 p-1 rounded-xl gap-1 text-[10px] sm:text-xs font-semibold">
                                             <button
-                                                key={distName}
-                                                onClick={() => setSelectedDistTab(distName)}
+                                                onClick={() => setSelectedDistTab('ALL')}
                                                 className={`px-2.5 py-1 rounded-lg transition-all ${
-                                                    selectedDistTab === distName
+                                                    selectedDistTab === 'ALL'
                                                         ? 'bg-white dark:bg-white/15 text-gray-800 dark:text-white shadow-sm'
                                                         : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
                                                 }`}
                                             >
-                                                {distName} ({count})
+                                                ทั้งหมด ({docPreviewRmas.length})
                                             </button>
-                                        ))}
-                                    </div>
-                                );
-                            })()}
+                                            {distGroups.map(([distName, count]) => (
+                                                <button
+                                                    key={distName}
+                                                    onClick={() => setSelectedDistTab(distName)}
+                                                    className={`px-2.5 py-1 rounded-lg transition-all ${
+                                                        selectedDistTab === distName
+                                                            ? 'bg-white dark:bg-white/15 text-gray-800 dark:text-white shadow-sm'
+                                                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
+                                                    }`}
+                                                >
+                                                    {distName} ({count})
+                                                </button>
+                                            ))}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
 
-                            {/* Copy Text Only (Facebook friendly) */}
+                            {/* Action Buttons Grouped Right */}
+                            <div className="flex items-center gap-1.5 sm:gap-2 ml-auto flex-shrink-0">
+                                {/* Copy Text Only (Facebook friendly) */}
                             <button
                                 onClick={() => {
                                     const rma0 = filteredRmas[0];
@@ -1320,6 +1324,7 @@ export const JobDetail: React.FC = () => {
                             >
                                 <XIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> ปิด
                             </button>
+                            </div>
                         </div>
                         {/* Warning banner for partial customer documents */}
                         {docPreviewType === 'CUSTOMER' && filteredRmas.length < rmas.length && (
