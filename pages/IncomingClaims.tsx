@@ -54,6 +54,14 @@ export const IncomingClaims: React.FC = () => {
         loadOptions();
     }, [t]);
 
+    const brandSelectOptions = useMemo(() => {
+        const list = [...brandOptions];
+        if (rmaForm.brand && !list.includes(rmaForm.brand)) {
+            list.unshift(rmaForm.brand);
+        }
+        return list.map(b => ({ value: b, label: b }));
+    }, [brandOptions, rmaForm.brand]);
+
     const fetchIncoming = async () => {
         setLoading(true);
         const data = await MockDb.getUnassignedRMAs();
@@ -340,8 +348,8 @@ export const IncomingClaims: React.FC = () => {
                                                         </div>
                                                         <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3 pr-16 md:pr-0">
                                                             <div>
-                                                                <div className="text-[10px] font-bold text-gray-400 uppercase">Brand / Model</div>
-                                                                <div className="text-sm font-bold text-[#1d1d1f] dark:text-white">{rma.brand} {rma.productModel}</div>
+                                                                <div className="text-[10px] font-extrabold text-[#0071e3] dark:text-blue-400 uppercase tracking-wider">{rma.brand}</div>
+                                                                <div className="text-sm font-bold text-[#1d1d1f] dark:text-white leading-snug">{rma.productModel}</div>
                                                             </div>
                                                             <div>
                                                                 <div className="text-[10px] font-bold text-gray-400 uppercase">S/N</div>
@@ -570,20 +578,15 @@ export const IncomingClaims: React.FC = () => {
                         <div className="space-y-4 text-left">
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">ยี่ห้อ (Brand)</label>
-                                    <select
+                                    <GlassSelect
+                                        label="ยี่ห้อ (Brand)"
                                         value={rmaForm.brand}
-                                        onChange={(e) => setRmaForm({ ...rmaForm, brand: e.target.value })}
-                                        className="w-full px-3 py-2 bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-white/10 rounded-xl text-sm font-bold text-[#1d1d1f] dark:text-white focus:outline-none focus:border-[#0071e3]"
-                                    >
-                                        <option value="" disabled>-- เลือกยี่ห้อ --</option>
-                                        {brandOptions.map(b => (
-                                            <option key={b} value={b} className="bg-white dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-white">{b}</option>
-                                        ))}
-                                        {!brandOptions.includes(rmaForm.brand) && rmaForm.brand && (
-                                            <option value={rmaForm.brand} className="bg-white dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-white">{rmaForm.brand}</option>
-                                        )}
-                                    </select>
+                                        onChange={(val) => setRmaForm({ ...rmaForm, brand: val })}
+                                        options={brandSelectOptions}
+                                        placeholder="เลือกยี่ห้อ..."
+                                        searchable
+                                        recentKey="brand"
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 mb-1">ชื่อรุ่น (Model)</label>
