@@ -503,25 +503,25 @@ export const CustomerSubmit: React.FC = () => {
                             {/* Copy Link Button */}
                             <button
                                 onClick={() => {
-                                    const pcUrl = `${window.location.origin}/#/status?q=${encodeURIComponent(submittedRef)}&print=true`;
+                                    const pcUrl = `${window.location.origin}/#/status?q=${encodeURIComponent(submittedRef)}`;
                                     navigator.clipboard.writeText(pcUrl);
                                     setCopiedLink(true);
-                                    showToast('คัดลอกลิงก์เรียบร้อย! นำไปวางส่งใน LINE หรือเปิดบนคอมพิวเตอร์ได้เลย', 'success');
+                                    showToast('คัดลอกลิงก์ติดตามสถานะเรียบร้อย!', 'success');
                                     setTimeout(() => setCopiedLink(false), 3000);
                                 }}
                                 className="flex items-center justify-center gap-2 py-3 px-3 sm:px-4 bg-white dark:bg-[#2c2c2e] hover:bg-gray-100 dark:hover:bg-[#3a3a3c] border border-gray-200 dark:border-white/10 text-[#1d1d1f] dark:text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
                             >
                                 {copiedLink ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-[#0071e3]" />}
-                                <span>{copiedLink ? 'คัดลอกสำเร็จแล้ว!' : 'คัดลอกลิงก์เปิดในคอม'}</span>
+                                <span>{copiedLink ? 'คัดลอกสำเร็จแล้ว!' : 'คัดลอกลิงก์ติดตามสถานะ'}</span>
                             </button>
 
                             {/* Share to LINE / App Button */}
                             <button
                                 onClick={() => {
-                                    const pcUrl = `${window.location.origin}/#/status?q=${encodeURIComponent(submittedRef)}&print=true`;
-                                    const shareText = `ใบส่งสินค้าเคลม SEC RMS\nรหัสอ้างอิง: ${submittedRef}\nเปิดลิงก์บนคอมพิวเตอร์เพื่อพิมพ์ใบปะหน้ากล่อง:\n${pcUrl}`;
+                                    const pcUrl = `${window.location.origin}/#/status?q=${encodeURIComponent(submittedRef)}`;
+                                    const shareText = `ติดตามสถานะการเคลมสินค้า SEC RMS\nรหัสอ้างอิง: ${submittedRef}\n${pcUrl}`;
                                     if (navigator.share) {
-                                        navigator.share({ title: `ใบส่งสินค้าเคลม ${submittedRef}`, text: shareText, url: pcUrl }).catch(() => {});
+                                        navigator.share({ title: `สถานะเคลมสินค้า ${submittedRef}`, text: shareText, url: pcUrl }).catch(() => {});
                                     } else {
                                         window.open(`https://line.me/R/msg/text/?${encodeURIComponent(shareText)}`, '_blank');
                                     }
@@ -529,7 +529,7 @@ export const CustomerSubmit: React.FC = () => {
                                 className="flex items-center justify-center gap-2 py-3 px-3 sm:px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
                             >
                                 <Share2 className="w-4 h-4" />
-                                <span>แชร์เข้า LINE / แอพแชท</span>
+                                <span>แชร์สถานะเข้า LINE</span>
                             </button>
 
                             {/* Save Image Button */}
