@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { RMA, RMAStatus, Team, DelayReason, ResolutionDetails } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
-import { X, Save, AlertCircle, ArrowRight, CheckCircle2, ChevronRight, RotateCcw, Truck, Box, Layers, Wifi, Zap, ShoppingBag, ShieldCheck, RefreshCw, AlertOctagon, Plus, Check, Pencil, Lock, Search, Package, Wrench, Undo2, PackageCheck, ClipboardCheck, Settings2, Maximize2, ScanBarcode, Image as ImageIcon, Loader2, Trash2 } from 'lucide-react';
+import { X, Save, AlertCircle, ArrowRight, CheckCircle2, ChevronRight, RotateCcw, Truck, Box, Layers, Wifi, Zap, ShoppingBag, ShieldCheck, RefreshCw, AlertOctagon, Plus, Check, Pencil, Lock, Search, Package, Wrench, Undo2, PackageCheck, ClipboardCheck, Settings2, Maximize2, ScanBarcode, Image as ImageIcon, Loader2, Trash2, FileText } from 'lucide-react';
 import { GlassSelect } from './GlassSelect';
 import { ImageZoomModal } from './ImageZoomModal';
 import { MockDb } from '../services/mockDb';
@@ -1133,15 +1133,6 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                     </div>
                 </div>
             )}
-            {/* SECTION 4: บันทึก */}
-            <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] p-8 mb-6 border border-gray-100 dark:border-[#333]">
-                <h2 className="font-semibold text-lg flex items-center gap-3 mb-6 text-[#1d1d1f] dark:text-white">
-                    <span className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-sm font-bold">4</span>
-                    {t('track.internalNote')}
-                </h2>
-                <textarea value={formData.notes || ''} onChange={e => handleFormChange('notes', e.target.value)} rows={4} className="w-full rounded-2xl px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none" placeholder={t('track.addNotesPlaceholder')} />
-            </div>
-
             {/* ACTION BUTTONS */}
             <div className="flex justify-end items-center gap-4 px-2 pb-8">
                 <button onClick={handleSafeClose} className="px-8 py-3.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 transition-colors">
@@ -1256,6 +1247,30 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                         </div>
                     );
                 })()}
+
+                {/* SECTION: บันทึกภายใน (Internal Company Notes Card) */}
+                <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] p-6 border border-gray-100 dark:border-[#333] shadow-sm space-y-3">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                            <div className="w-5 h-5 rounded-md bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                                <FileText className="w-3 h-3" />
+                            </div>
+                            {t('track.internalNote')}
+                        </h3>
+                        {formData.notes?.trim() && (
+                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /> มีบันทึก
+                            </span>
+                        )}
+                    </div>
+                    <textarea
+                        value={formData.notes || ''}
+                        onChange={e => handleFormChange('notes', e.target.value)}
+                        rows={4}
+                        className="w-full rounded-2xl p-3.5 text-xs text-[#1d1d1f] dark:text-white bg-gray-50/50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none focus:ring-2 focus:ring-amber-500/30 transition-all resize-none"
+                        placeholder={t('track.addNotesPlaceholder')}
+                    />
+                </div>
             </div>
             </div>
 
