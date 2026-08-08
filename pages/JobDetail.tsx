@@ -330,10 +330,58 @@ export const JobDetail: React.FC = () => {
     if (loading) return <div className="p-12 text-center">Loading Job...</div>;
     if (!jobInfo) return null;
 
-    const closedRMAs = rmas.filter(rma => rma.status === RMAStatus.CLOSED || rma.status === RMAStatus.REPAIRED || rma.status === RMAStatus.REPLACED_FROM_STOCK || rma.status === RMAStatus.RETURNED_FROM_VENDOR);
+    const readyRMAs = rmas.filter(rma => [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REPLACED_FROM_STOCK, RMAStatus.RETURNED_FROM_VENDOR].includes(rma.status));
+    const closedRMAs = rmas.filter(rma => rma.status === RMAStatus.CLOSED);
+    const hasReadyRMAs = readyRMAs.length > 0;
     const hasClosedRMAs = closedRMAs.length > 0;
     const allHaveDistributor = rmas.every(rma => rma.distributor && rma.distributor.trim() !== '' && rma.distributor !== 'Pending Staff Input');
     const missingDistributorCount = rmas.filter(rma => !rma.distributor || rma.distributor.trim() === '' || rma.distributor === 'Pending Staff Input').length;
+
+    const handleReturnToCustomerClick = async () => {
+        const readyItems = rmas.filter(rma => [RMAStatus.REPAIRED, RMAStatus.REPLACED_FROM_STOCK, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.CLOSED].includes(rma.status));
+
+        if (readyItems.length === 0) {
+            showToast('ยังไม่มีรายการสินค้าที่ซ่อมหรือแก้ไขเสร็จแล้ว', 'warning');
+            return;
+        }
+
+        const unclosedItems = readyItems.filter(rma => rma.status !== RMAStatus.CLOSED);
+
+        if (unclosedItems.length > 0) {
+            if (!confirm(`มีสินค้า ${unclosedItems.length} รายการที่แก้ไขเสร็จแล้ว ต้องการกดปิดงานและส่งคืนลูกค้าทันทีใช่หรือไม่?`)) {
+                return;
+            }
+            setIsSavingCustomer(true);
+            try {
+                const user = MockDb.getCurrentUser()?.name || 'Staff';
+                for (const rma of unclosedItems) {
+                    await MockDb.updateRMA(rma.id, {
+                        status: RMAStatus.CLOSED,
+                        updatedAt: new Date().toISOString()
+                    });
+                    await MockDb.addTimelineEvent(rma.id, {
+                        type: 'STATUS_CHANGE',
+                        description: 'ปิดงานและส่งคืนสินค้าให้ลูกค้าเรียบร้อยแล้ว',
+                        user
+                    });
+                }
+                await refreshRMAs();
+                showToast('ปิดงานและส่งคืนสินค้าให้ลูกค้าเรียบร้อยแล้ว!', 'success');
+            } catch (err) {
+                console.error('Return to customer error:', err);
+                showToast('เกิดข้อผิดพลาดในการอัปเดตสถานะ', 'error');
+                return;
+            } finally {
+                setIsSavingCustomer(false);
+            }
+        }
+
+        const finalClosedRMAs = rmas.filter(rma => rma.status === RMAStatus.CLOSED || readyItems.some(r => r.id === rma.id));
+        setSelectedDistTab('ALL');
+        setDocPreviewType('CUSTOMER');
+        setDocPreviewRmas(finalClosedRMAs);
+        setIsDocPreviewOpen(true);
+    };
 
     return (
         <div className="max-w-5xl mx-auto px-2 sm:px-4 md:px-6 py-4 md:py-6 pb-6">
@@ -397,17 +445,12 @@ export const JobDetail: React.FC = () => {
 
                         {/* Top-Right: ใบส่งคืน */}
                         <button
-                            onClick={() => {
-                                setSelectedDistTab('ALL');
-                                setDocPreviewType('CUSTOMER');
-                                setDocPreviewRmas(closedRMAs);
-                                setIsDocPreviewOpen(true);
-                            }}
-                            disabled={!hasClosedRMAs}
-                            className={`h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${hasClosedRMAs
-                                ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-95'
+                            onClick={handleReturnToCustomerClick}
+                            disabled={!hasReadyRMAs}
+                            className={`h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${hasReadyRMAs
+                                ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-95 cursor-pointer'
                                 : 'bg-gray-100 dark:bg-[#2c2c2e] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
-                            title={!hasClosedRMAs ? `ปิดงานก่อนถึงจะพิมพ์ได้ (${closedRMAs.length}/${rmas.length} ปิดแล้ว)` : ''}
+                            title={!hasReadyRMAs ? 'ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะส่งคืนได้' : ''}
                         >
                             <User className="w-3.5 h-3.5" strokeWidth={2.5} />
                             ส่งคืนลูกค้า
@@ -440,12 +483,16 @@ export const JobDetail: React.FC = () => {
 
                         {/* Bottom-Right: ใบปะหน้า (ลูกค้า) */}
                         <button
-                            onClick={() => { setShipmentTagRmas(closedRMAs); setShipmentTagTarget('CUSTOMER'); setIsShipmentTagModalOpen(true); }}
-                            disabled={!hasClosedRMAs}
-                            className={`h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${hasClosedRMAs
-                                ? 'border border-blue-300 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:scale-[1.02] active:scale-95'
+                            onClick={() => {
+                                setShipmentTagRmas(readyRMAs);
+                                setShipmentTagTarget('CUSTOMER');
+                                setIsShipmentTagModalOpen(true);
+                            }}
+                            disabled={!hasReadyRMAs}
+                            className={`h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${hasReadyRMAs
+                                ? 'border border-blue-300 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:scale-[1.02] active:scale-95 cursor-pointer'
                                 : 'border border-gray-200 dark:border-[#333] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
-                            title={!hasClosedRMAs ? `ปิดงานก่อนถึงจะพิมพ์ได้ (${closedRMAs.length}/${rmas.length} ปิดแล้ว)` : ''}
+                            title={!hasReadyRMAs ? 'ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะพิมพ์ใบปะหน้าได้' : ''}
                         >
                             <Truck className="w-3.5 h-3.5" strokeWidth={2.5} />
                             ใบปะหน้า (ลูกค้า)
