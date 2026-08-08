@@ -1202,35 +1202,48 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                 </button>
                             </div>
 
-                            <div className="flex items-center gap-0 my-3 overflow-x-auto pb-1">
+                            {/* Vertical Flow Stepper */}
+                            <div className="space-y-1 my-4">
                                 {steps.map((step, i) => (
-                                    <React.Fragment key={i}>
-                                        <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                                    <div key={i} className="flex items-start gap-3">
+                                        <div className="flex flex-col items-center">
                                             <div className="relative">
                                                 {step.active && <div className="absolute -inset-1 rounded-full bg-blue-400/30 animate-ping" style={{ animationDuration: '2s' }} />}
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all duration-500 ${
+                                                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-all duration-500 ${
                                                     step.done ? 'bg-gradient-to-br from-blue-500 to-cyan-600 text-white shadow-md shadow-blue-500/20' :
-                                                    step.active ? 'bg-white dark:bg-[#232326] border-[3px] border-blue-500 shadow-lg shadow-blue-500/25' :
-                                                    'bg-gray-100 dark:bg-[#2a2a2c] border-2 border-gray-200 dark:border-gray-700'
+                                                    step.active ? 'bg-white dark:bg-[#232326] border-[3px] border-blue-500 text-blue-500 shadow-lg shadow-blue-500/25 font-bold' :
+                                                    'bg-gray-100 dark:bg-[#2a2a2c] border-2 border-gray-200 dark:border-gray-700 text-gray-400'
                                                 }`}>
-                                                    {step.done ? <Check className="w-3.5 h-3.5 text-white" /> : <span className={step.active ? '' : 'grayscale opacity-40'}>{step.icon}</span>}
+                                                    {step.done ? <Check className="w-4 h-4 text-white" /> : <span>{step.icon}</span>}
                                                 </div>
                                             </div>
-                                            <span className={`text-[9px] font-bold text-center leading-tight max-w-[48px] ${
-                                                step.done ? 'text-blue-500 dark:text-blue-400' : step.active ? 'text-[#1d1d1f] dark:text-white' : 'text-gray-300 dark:text-gray-600'
-                                            }`}>{step.label}</span>
+                                            {i < steps.length - 1 && (
+                                                <div className={`w-[2px] h-6 my-1 rounded-full transition-all duration-500 ${
+                                                    step.done ? 'bg-gradient-to-b from-blue-500 to-cyan-500' : 'bg-gray-200 dark:bg-[#333]'
+                                                }`} />
+                                            )}
                                         </div>
-                                        {i < steps.length - 1 && (
-                                            <div className={`h-[2px] flex-1 min-w-[6px] rounded-full transition-all duration-700 mx-0.5 ${
-                                                step.done ? 'bg-gradient-to-r from-blue-500 to-cyan-500' : 'bg-gray-200 dark:bg-[#333]'
-                                            }`} />
-                                        )}
-                                    </React.Fragment>
+                                        <div className="pt-1.5 min-w-0 flex-1">
+                                            <div className={`text-xs font-bold ${
+                                                step.done ? 'text-blue-500 dark:text-blue-400' :
+                                                step.active ? 'text-[#1d1d1f] dark:text-white' :
+                                                'text-gray-400 dark:text-gray-600'
+                                            }`}>
+                                                {step.label}
+                                            </div>
+                                            {step.active && (
+                                                <div className="text-[10px] text-blue-500 dark:text-blue-400 font-semibold mt-0.5 flex items-center gap-1">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                                                    กำลังอยู่ในขั้นตอนเสนอ/ดำเนินการ
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
 
                             {pathDecided && (
-                                <div className="flex justify-center mt-3 pt-3 border-t border-gray-100 dark:border-white/5">
+                                <div className="flex justify-center mt-2 pt-3 border-t border-gray-100 dark:border-white/5">
                                     <span className={`text-[10px] font-bold px-3 py-1 rounded-full ${
                                         vendorPath 
                                             ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-500 border border-orange-200 dark:border-orange-800/30'

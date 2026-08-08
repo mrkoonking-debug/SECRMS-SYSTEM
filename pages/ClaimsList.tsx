@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { MockDb } from '../services/mockDb';
 import { RMA, RMAStatus, Team } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
-import { Search, Plus, ChevronRight, ChevronDown, Box, Layers, Wifi, Zap, ShoppingBag, Package, User, ChevronsUpDown, AlertTriangle, RefreshCw, CheckCircle2, X } from 'lucide-react';
+import { Search, Plus, ChevronRight, ChevronDown, Box, Layers, Wifi, Zap, ShoppingBag, Package, User, ChevronsUpDown, AlertTriangle, RefreshCw, CheckCircle2, X, Calendar } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -130,8 +130,8 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
                                 <span className="text-gray-400 dark:text-gray-500 font-mono text-[10px]">({item.serialNumber})</span>
                             </div>
 
-                            {/* Middle: Symptoms & Root Cause (Expands naturally across wide space) */}
-                            <div className="flex flex-col text-[11px] min-w-0">
+                            {/* Middle: Symptoms, Root Cause, & Resolution Action */}
+                            <div className="flex flex-col text-[11px] min-w-0 space-y-0.5">
                                 {item.issueDescription && (
                                     <div className="text-gray-600 dark:text-gray-300 leading-relaxed" title={item.issueDescription}>
                                         <span className="font-medium text-gray-400 dark:text-gray-500">อาการที่แจ้ง:</span> {item.issueDescription}
@@ -140,6 +140,26 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
                                 {item.resolution?.rootCause && (
                                     <div className="text-[#0071e3] font-semibold leading-relaxed" title={item.resolution.rootCause}>
                                         <span>อาการที่พบ:</span> {item.resolution.rootCause}
+                                    </div>
+                                )}
+                                {item.resolution?.actionTaken && (
+                                    <div className="text-emerald-600 dark:text-emerald-400 font-semibold leading-relaxed flex items-center flex-wrap gap-1" title={item.resolution.actionTaken}>
+                                        <span>ผลการดำเนินการ:</span>
+                                        <span>
+                                            {(() => {
+                                                const key = `actions.${item.resolution.actionTaken.toLowerCase().replace(/ /g, '_')}`;
+                                                const trans = t(key);
+                                                return trans === key ? item.resolution.actionTaken : trans;
+                                            })()}
+                                        </span>
+                                        {item.resolution.actionDetails && (
+                                            <span className="text-gray-500 dark:text-gray-400 font-normal">({item.resolution.actionDetails})</span>
+                                        )}
+                                        {item.resolution.replacedSerialNumber && (
+                                            <span className="font-mono text-[10px] bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.2 rounded font-bold">
+                                                S/N ใหม่: {item.resolution.replacedSerialNumber}
+                                            </span>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -169,11 +189,13 @@ export const ClaimsList: React.FC = () => {
     const [debouncedSearch, setDebouncedSearch] = useState(() => sessionStorage.getItem('rmas_search') || '');
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'IN_PROGRESS' | 'DONE'>(() => (sessionStorage.getItem('rmas_statusFilter') as any) || 'ALL');
     const [teamFilter, setTeamFilter] = useState<'ALL' | 'GROUP_C' | Team>(() => (sessionStorage.getItem('rmas_teamFilter') as any) || 'ALL');
+    const [dateFilter, setDateFilter] = useState<'ALL' | 'TODAY' | 'LAST_7' | 'LAST_30' | 'THIS_MONTH'>(() => (sessionStorage.getItem('rmas_dateFilter') as any) || 'ALL');
     const [expandedDates, setExpandedDates] = useState<Set<string>>(() => {
         const saved = sessionStorage.getItem('rmas_expandedDates');
-        return saved ? new Set(JSON.parse(saved)) : new Set(['Today', 'Yesterday', 'This Week']);
+        return saved ? new Set(JSON.parse(saved)) : new Set(['Today', 'Yesterday', 'This Week', 'This Month', 'Earlier']);
     });
-        const [isTeamCExpanded, setIsTeamCExpanded] = useState(() => sessionStorage.getItem('rmas_isTeamCExpanded') === 'true');
+    const [isTeamCExpanded, setIsTeamCExpanded] = useState(() => sessionStorage.getItem('rmas_isTeamCExpanded') === 'true');
+
     const { t, language } = useLanguage();
     const navigate = useNavigate();
     const searchTimerRef = useRef<any>(null);
@@ -197,6 +219,10 @@ export const ClaimsList: React.FC = () => {
     useEffect(() => {
         sessionStorage.setItem('rmas_teamFilter', teamFilter);
     }, [teamFilter]);
+
+    useEffect(() => {
+        sessionStorage.setItem('rmas_dateFilter', dateFilter);
+    }, [dateFilter]);
 
     useEffect(() => {
         sessionStorage.setItem('rmas_expandedDates', JSON.stringify(Array.from(expandedDates)));
@@ -285,21 +311,49 @@ export const ClaimsList: React.FC = () => {
             if (teamFilter === 'ALL') return true;
             if (teamFilter === 'GROUP_C') return [Team.TEAM_C, Team.TEAM_E, Team.TEAM_G].includes(c.team);
             return c.team === teamFilter;
-        }
+        };
 
-        const filteredRMAs = rmas.filter(c => matchesSearch(c) && matchesStatus(c) && matchesTeam(c));
+        const matchesDate = (c: RMA) => {
+            if (dateFilter === 'ALL') return true;
+            const date = new Date(c.createdAt);
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+            if (dateFilter === 'TODAY') {
+                return date >= startOfToday;
+            }
+            if (dateFilter === 'LAST_7') {
+                const sevenDaysAgo = new Date(startOfToday.getTime() - 7 * 86400000);
+                return date >= sevenDaysAgo;
+            }
+            if (dateFilter === 'LAST_30') {
+                const thirtyDaysAgo = new Date(startOfToday.getTime() - 30 * 86400000);
+                return date >= thirtyDaysAgo;
+            }
+            if (dateFilter === 'THIS_MONTH') {
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                return date >= startOfMonth;
+            }
+            return true;
+        };
+
+        const filteredRMAs = rmas.filter(c => matchesSearch(c) && matchesStatus(c) && matchesTeam(c) && matchesDate(c));
 
         const getDateLabel = (dateStr: string) => {
             const date = new Date(dateStr);
             const now = new Date();
-            const diffDays = Math.floor(Math.abs(now.getTime() - date.getTime()) / (86400000));
-            if (diffDays === 0 && date.getDate() === now.getDate()) return 'Today';
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const diffTime = startOfToday.getTime() - new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+            const diffDays = Math.round(diffTime / 86400000);
+
+            if (diffDays === 0) return 'Today';
             if (diffDays === 1) return 'Yesterday';
             if (diffDays <= 7) return 'This Week';
+            if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) return 'This Month';
             return 'Earlier';
         };
 
-        const dateGroups: Record<string, RMA[]> = { 'Today': [], 'Yesterday': [], 'This Week': [], 'Earlier': [] };
+        const dateGroups: Record<string, RMA[]> = { 'Today': [], 'Yesterday': [], 'This Week': [], 'This Month': [], 'Earlier': [] };
         filteredRMAs.forEach(c => {
             const label = getDateLabel(c.createdAt);
             if (dateGroups[label]) dateGroups[label].push(c);
@@ -331,7 +385,7 @@ export const ClaimsList: React.FC = () => {
         });
 
         return finalGroups;
-    }, [rmas, debouncedSearch, statusFilter, teamFilter]);
+    }, [rmas, debouncedSearch, statusFilter, teamFilter, dateFilter]);
 
 
     const getTeamCount = (team: Team) => rmas.filter(c => c.team === team && !DONE_STATUSES.includes(c.status)).length;
@@ -434,6 +488,32 @@ export const ClaimsList: React.FC = () => {
                             ))}
                         </div>
                     </div>
+                </div>
+
+                {/* Date Filter Pills */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 px-1.5 scrollbar-hide border-t border-gray-100 dark:border-white/5 pt-2">
+                    <span className="text-gray-400 dark:text-gray-500 font-bold text-[11px] uppercase tracking-wider shrink-0 flex items-center gap-1 mr-1">
+                        <Calendar className="w-3.5 h-3.5 text-blue-500" /> ช่วงเวลา:
+                    </span>
+                    {[
+                        { key: 'ALL', label: 'ทั้งหมด' },
+                        { key: 'TODAY', label: 'วันนี้' },
+                        { key: 'LAST_7', label: '7 วันล่าสุด' },
+                        { key: 'LAST_30', label: '30 วันล่าสุด' },
+                        { key: 'THIS_MONTH', label: 'เดือนนี้' }
+                    ].map((d) => (
+                        <button
+                            key={d.key}
+                            onClick={() => setDateFilter(d.key as typeof dateFilter)}
+                            className={`px-3 py-1 rounded-full font-bold text-xs transition-all whitespace-nowrap ${
+                                dateFilter === d.key
+                                    ? 'bg-[#0071e3] text-white shadow-sm shadow-blue-500/20'
+                                    : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10'
+                            }`}
+                        >
+                            {d.label}
+                        </button>
+                    ))}
                 </div>
 
                 {isAnyFilterActive && (
