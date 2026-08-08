@@ -17,6 +17,7 @@ import { renderHtmlToBlob } from '../services/renderToImage';
 import { showToast } from '../services/toast';
 const ProductEntryForm = lazy(() => import('../components/ProductEntryForm').then(m => ({ default: m.ProductEntryForm })));
 import { EditRMADrawer } from '../components/EditRMADrawer';
+import { ImageZoomModal } from '../components/ImageZoomModal';
 
 
 export const JobDetail: React.FC = () => {
@@ -2077,31 +2078,12 @@ export const JobDetail: React.FC = () => {
                 </div>
             )}
 
-            {/* Lightbox Modal for Viewing Product Attachments */}
-            {activeImageUrl && (
-                <div 
-                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[99999] flex items-center justify-center p-4 animate-fade-in"
-                    onClick={() => setActiveImageUrl(null)}
-                >
-                    <div 
-                        className="relative max-w-3xl w-full max-h-[90vh] bg-white dark:bg-[#1c1c1e] rounded-3xl overflow-hidden shadow-2xl p-2 flex flex-col items-center"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <button
-                            onClick={() => setActiveImageUrl(null)}
-                            className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/80 text-white rounded-full transition-colors z-10"
-                        >
-                            <XClose className="w-5 h-5" />
-                        </button>
-                        <div className="w-full overflow-auto flex justify-center p-4 mt-8">
-                            <img src={activeImageUrl} alt="Product Attachment Full size" className="max-w-full max-h-[70vh] object-contain rounded-xl" />
-                        </div>
-                        <div className="pb-4 pt-2 text-center">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">รูปภาพอุปกรณ์ที่ส่งเคลม</p>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Lightbox Modal for Viewing Product Attachments with Zoom, Pan, & Rotate */}
+            <ImageZoomModal
+                imageUrl={activeImageUrl}
+                onClose={() => setActiveImageUrl(null)}
+                title="รูปภาพอุปกรณ์ที่ส่งเคลม"
+            />
         </div>
     );
 };

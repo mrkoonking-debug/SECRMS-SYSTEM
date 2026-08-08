@@ -4,10 +4,11 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { RMA, RMAStatus } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
-import { ArrowLeft, Search, Package, CheckCircle2, Settings, Clock, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Search, Package, CheckCircle2, Settings, Clock, RefreshCw, Image as ImageIcon } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageToggle } from '../components/LanguageToggle';
+import { ImageZoomModal } from '../components/ImageZoomModal';
 
 const formatDetailedDateTime = (dateVal?: any) => {
   if (!dateVal) return null;
@@ -33,6 +34,7 @@ export const CustomerStatus: React.FC = () => {
   const [rmas, setRMAs] = useState<RMA[]>([]);
   const [loading, setLoading] = useState(!!query);
   const [searched, setSearched] = useState(false);
+  const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -202,11 +204,39 @@ export const CustomerStatus: React.FC = () => {
                     </div>
                   )}
                 </div>
+
+                {/* Attachments gallery */}
+                {rma.attachments && rma.attachments.length > 0 && (
+                  <div className="mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
+                    <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2 flex items-center gap-1">
+                      <ImageIcon className="w-3.5 h-3.5 text-blue-500" /> รูปภาพอุปกรณ์แนบ ({rma.attachments.length})
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {rma.attachments.map((att: any, attIdx: number) => (
+                        <button
+                          key={att.id || attIdx}
+                          onClick={() => setActiveImageUrl(att.previewUrl)}
+                          className="w-12 h-12 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-transform cursor-pointer shadow-sm"
+                          title="คลิกเพื่อดูรูปและขยาย"
+                        >
+                          <img src={att.previewUrl} className="w-full h-full object-cover" alt={att.fileName || 'Attachment'} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
       </div>
+
+      {/* Interactive Lightbox Modal for Viewing Product Attachments with Zoom & Pan */}
+      <ImageZoomModal
+        imageUrl={activeImageUrl}
+        onClose={() => setActiveImageUrl(null)}
+        title="รูปภาพอุปกรณ์ที่ส่งเคลม"
+      />
     </div>
   );
 };
