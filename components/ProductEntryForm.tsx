@@ -5,6 +5,7 @@ import { Plus, Minus, ScanBarcode, X, Box, Wifi, Zap, ShoppingBag, Layers, HardD
 import { ProductType, Team, Attachment } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { GlassSelect } from './GlassSelect';
+import { ImageZoomModal } from './ImageZoomModal';
 import { COMMON_ACCESSORIES } from '../constants/options';
 import { MockDb } from '../services/mockDb';
 import { HddBulkModal } from './HddBulkModal';
@@ -47,6 +48,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
     // UI Helper State
     const [selectedMainTeam, setSelectedMainTeam] = useState<'A' | 'B' | 'C' | ''>('');
     const [customAccessory, setCustomAccessory] = useState('');
+    const [activeZoomImage, setActiveZoomImage] = useState<string | null>(null);
     const [customDistributor, setCustomDistributor] = useState('');
     const [customBrand, setCustomBrand] = useState('');
     const [noSerial, setNoSerial] = useState(false);
@@ -347,12 +349,21 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                 
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
                     {attachments.map((att) => (
-                        <div key={att.id} className="relative aspect-square w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 group bg-gray-50 dark:bg-[#1e1e1f] flex items-center justify-center">
-                            <img src={att.previewUrl} alt="Product Attachment Preview" className="w-full h-full object-cover" />
+                        <div key={att.id} className="relative aspect-square w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 group bg-gray-50 dark:bg-[#1e1e1f] flex items-center justify-center cursor-pointer">
+                            <img 
+                                src={att.previewUrl} 
+                                alt="Product Attachment Preview" 
+                                className="w-full h-full object-cover transition-transform group-hover:scale-105" 
+                                onClick={() => setActiveZoomImage(att.previewUrl || null)}
+                                title="คลิกเพื่อดูรูปและซูมขยาย"
+                            />
                             <button
                                 type="button"
-                                onClick={() => removeAttachment(att.id)}
-                                className="absolute top-1.5 right-1.5 p-1 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeAttachment(att.id);
+                                }}
+                                className="absolute top-1.5 right-1.5 p-1 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow z-10"
                                 title="ลบรูปภาพ"
                             >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -406,6 +417,13 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                     }}
                 />
             )}
+
+            {/* Image Zoom Modal */}
+            <ImageZoomModal
+                imageUrl={activeZoomImage}
+                onClose={() => setActiveZoomImage(null)}
+                title="รูปภาพอุปกรณ์แนบ"
+            />
         </div>
     );
 };

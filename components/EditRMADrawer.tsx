@@ -4,6 +4,7 @@ import { RMA, RMAStatus, Team, DelayReason, ResolutionDetails } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { X, Save, AlertCircle, ArrowRight, CheckCircle2, ChevronRight, RotateCcw, Truck, Box, Layers, Wifi, Zap, ShoppingBag, ShieldCheck, RefreshCw, AlertOctagon, Plus, Check, Pencil, Lock, Search, Package, Wrench, Undo2, PackageCheck, ClipboardCheck, Settings2, Maximize2, ScanBarcode, Image as ImageIcon, Loader2, Trash2 } from 'lucide-react';
 import { GlassSelect } from './GlassSelect';
+import { ImageZoomModal } from './ImageZoomModal';
 import { MockDb } from '../services/mockDb';
 import { HddBulkModal } from './HddBulkModal';
 import { ScannerModal } from './ScannerModal';
@@ -20,6 +21,7 @@ interface EditRMADrawerProps {
 export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, rma, onSave }) => {
     const { t } = useLanguage();
     const [formData, setFormData] = useState<RMA | null>(null);
+    const [activeZoomImage, setActiveZoomImage] = useState<string | null>(null);
     const [distOptions, setDistOptions] = useState<any[]>([]);
     const [brandOptions, setBrandOptions] = useState<any[]>([]);
     const [isReviewing, setIsReviewing] = useState(false);
@@ -665,15 +667,22 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                         </label>
                         <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
                             {(formData.attachments || []).map((att: any, attIdx: number) => (
-                                <div key={att.id || attIdx} className="relative aspect-square w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 group bg-gray-50 dark:bg-[#1e1e1f] flex items-center justify-center">
-                                    <img src={att.previewUrl} alt="Product Attachment" className="w-full h-full object-cover" />
+                                <div key={att.id || attIdx} className="relative aspect-square w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 group bg-gray-50 dark:bg-[#1e1e1f] flex items-center justify-center cursor-pointer">
+                                    <img 
+                                        src={att.previewUrl} 
+                                        alt="Product Attachment" 
+                                        className="w-full h-full object-cover transition-transform group-hover:scale-105" 
+                                        onClick={() => setActiveZoomImage(att.previewUrl)}
+                                        title="คลิกเพื่อดูรูปและซูมขยาย"
+                                    />
                                     <button
                                         type="button"
-                                        onClick={() => {
+                                        onClick={(e) => {
+                                            e.stopPropagation();
                                             const current = formData.attachments || [];
                                             handleFormChange('attachments', current.filter((_: any, idx: number) => idx !== attIdx));
                                         }}
-                                        className="absolute top-1.5 right-1.5 p-1 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow"
+                                        className="absolute top-1.5 right-1.5 p-1 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow z-10"
                                         title="ลบรูปภาพ"
                                     >
                                         <Trash2 className="w-3.5 h-3.5" />
@@ -1549,6 +1558,13 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             )}
             {/* Scanner Modal */}
             {showScanner && <ScannerModal onClose={() => setShowScanner(false)} onScan={(val) => { handleFormChange(scanTarget, val.toUpperCase()); setShowScanner(false); }} />}
+
+            {/* Image Zoom Modal */}
+            <ImageZoomModal
+                imageUrl={activeZoomImage}
+                onClose={() => setActiveZoomImage(null)}
+                title="รูปภาพอุปกรณ์แนบ"
+            />
 
             </fieldset>
         </div>

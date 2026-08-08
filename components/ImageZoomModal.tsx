@@ -21,15 +21,30 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const imgRef = useRef<HTMLImageElement>(null);
 
-    // Reset when modal opens or image changes
+    // Reset state when modal opens or image changes
     useEffect(() => {
         setScale(1);
         setPosition({ x: 0, y: 0 });
         setRotation(0);
     }, [imageUrl]);
 
+    // Lock page background scrolling (body + main container)
+    useEffect(() => {
+        const originalBodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        const mainEl = document.querySelector('main');
+        const originalMainOverflow = mainEl ? mainEl.style.overflow : '';
+        if (mainEl) mainEl.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = originalBodyOverflow;
+            if (mainEl) mainEl.style.overflow = originalMainOverflow;
+        };
+    }, []);
+
     const handleZoomIn = useCallback(() => {
-        setScale(prev => Math.min(prev + 0.5, 4.5));
+        setScale(prev => Math.min(prev + 0.5, 5.0));
     }, []);
 
     const handleZoomOut = useCallback(() => {
@@ -50,15 +65,26 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = ({
         setRotation(prev => (prev + 90) % 360);
     }, []);
 
-    // Mouse wheel zoom handler
-    const handleWheel = useCallback((e: React.WheelEvent) => {
-        e.preventDefault();
-        const delta = e.deltaY < 0 ? 0.25 : -0.25;
-        setScale(prev => {
-            const nextScale = Math.min(Math.max(prev + delta, 0.8), 4.5);
-            if (nextScale <= 1) setPosition({ x: 0, y: 0 });
-            return nextScale;
-        });
+    // Attach non-passive wheel listener to prevent background page scroll & handle zoom
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+
+        const onNativeWheel = (e: WheelEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const delta = e.deltaY < 0 ? 0.25 : -0.25;
+            setScale(prev => {
+                const nextScale = Math.min(Math.max(prev + delta, 0.8), 5.0);
+                if (nextScale <= 1) setPosition({ x: 0, y: 0 });
+                return nextScale;
+            });
+        };
+
+        el.addEventListener('wheel', onNativeWheel, { passive: false });
+        return () => {
+            el.removeEventListener('wheel', onNativeWheel);
+        };
     }, []);
 
     // Double click to toggle 100% / 250% zoom
@@ -107,23 +133,24 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = ({
 
     return (
         <div 
-            className="fixed inset-0 bg-black/85 backdrop-blur-md z-[99999] flex flex-col justify-between items-center p-3 sm:p-6 animate-fade-in select-none"
+            ref={containerRef}
+            className="fixed inset-0 z-[99999] w-screen h-screen bg-black/90 backdrop-blur-md flex items-center justify-center overflow-hidden select-none animate-fade-in"
             onClick={onClose}
         >
-            {/* Top Toolbar */}
+            {/* Top Toolbar (Fixed to top of screen) */}
             <div 
-                className="w-full max-w-4xl flex items-center justify-between z-20 pt-2 pb-2 px-4 rounded-2xl bg-white/10 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10 text-white shadow-2xl"
+                className="fixed top-4 left-1/2 -translate-x-1/2 z-[100000] w-[92%] max-w-3xl flex items-center justify-between px-4 py-2.5 rounded-2xl bg-white/10 dark:bg-black/60 backdrop-blur-xl border border-white/20 dark:border-white/10 text-white shadow-2xl"
                 onClick={e => e.stopPropagation()}
             >
-                <div className="flex items-center gap-2">
-                    <span className="text-xs sm:text-sm font-bold truncate max-w-[200px] sm:max-w-md">{title}</span>
-                    <span className="text-[10px] sm:text-xs font-mono font-bold bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/30">
+                <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                    <span className="text-xs sm:text-sm font-bold truncate">{title}</span>
+                    <span className="text-[10px] sm:text-xs font-mono font-bold bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/30 flex-shrink-0">
                         {Math.round(scale * 100)}%
                     </span>
                 </div>
 
                 {/* Control Action Buttons */}
-                <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
                     <button
                         type="button"
                         onClick={handleZoomIn}
@@ -168,12 +195,10 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = ({
                 </div>
             </div>
 
-            {/* Main Image Container */}
+            {/* Main Fullscreen Image Viewport */}
             <div 
-                ref={containerRef}
-                className="relative flex-1 w-full max-w-5xl my-3 flex items-center justify-center overflow-hidden rounded-3xl cursor-grab active:cursor-grabbing"
+                className="w-full h-full flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing"
                 onClick={e => e.stopPropagation()}
-                onWheel={handleWheel}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
@@ -185,7 +210,7 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = ({
                     src={imageUrl}
                     alt={title}
                     draggable={false}
-                    className="max-w-full max-h-[75vh] object-contain transition-transform ease-out duration-75 origin-center rounded-2xl shadow-2xl pointer-events-auto"
+                    className="max-w-[90vw] max-h-[85vh] object-contain origin-center shadow-2xl pointer-events-auto rounded-xl"
                     style={{
                         transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`,
                         transition: isDragging ? 'none' : 'transform 0.15s ease-out'
@@ -193,9 +218,9 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = ({
                 />
             </div>
 
-            {/* Bottom Hint Banner */}
+            {/* Bottom Hint Bar (Fixed to bottom of screen) */}
             <div 
-                className="z-20 px-4 py-2 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-white/80 text-[11px] sm:text-xs flex items-center gap-2 pointer-events-none"
+                className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100000] px-4 py-2 rounded-full bg-white/10 dark:bg-black/60 backdrop-blur-xl border border-white/20 text-white/90 text-[11px] sm:text-xs flex items-center gap-2 pointer-events-none shadow-xl"
             >
                 <Move className="w-3.5 h-3.5 text-blue-400" />
                 <span>หมุนล้อเมาส์เพื่อ Zoom In/Out | ดับเบิ้ลคลิกเพื่อขยาย | คลิกแล้วลากเพื่อย้ายตำแหน่งรูป</span>
