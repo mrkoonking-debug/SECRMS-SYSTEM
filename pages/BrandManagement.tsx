@@ -63,7 +63,7 @@ export const BrandManagement: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-4 md:py-8">
+    <div className="max-w-[1600px] w-full mx-auto px-4 py-4 md:py-8">
       <div className="mb-6 md:mb-10">
         <h1 className="text-2xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white mb-1">{t('nav.brands')}</h1>
         <p className="text-xs md:text-sm text-gray-500">จัดการรายชื่อยี่ห้อสินค้าสำหรับใช้ในการออกใบเคลม</p>

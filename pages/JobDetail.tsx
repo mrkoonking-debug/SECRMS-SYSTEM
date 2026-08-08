@@ -403,7 +403,7 @@ export const JobDetail: React.FC = () => {
     };
 
     return (
-        <div className="max-w-5xl mx-auto px-2 sm:px-4 md:px-6 py-4 md:py-6 pb-2">
+        <div className="max-w-[1600px] w-full mx-auto px-3 sm:px-6 md:px-8 py-4 md:py-6 pb-2">
             <div className="flex items-center justify-between mb-4 md:mb-8">
                 <Link to="/admin/rmas" className="flex items-center text-xs md:text-sm font-medium text-gray-500 hover:text-[#0071e3] transition-colors"><ArrowLeft className="h-4 w-4 mr-1" /> {t('track.backToList')}</Link>
             </div>

@@ -95,7 +95,7 @@ export const DistributorManagement: React.FC = () => {
   const editInputClass = "bg-white dark:bg-[#333] border border-[#0071e3] rounded-lg px-2.5 py-1.5 md:py-2 text-xs md:text-sm w-full outline-none dark:text-white";
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-4 md:py-8">
+    <div className="max-w-[1600px] w-full mx-auto px-4 py-4 md:py-8">
       <div className="mb-6 md:mb-10">
         <h1 className="text-2xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white mb-1">{t('nav.distributors')}</h1>
         <p className="text-xs md:text-sm text-gray-500">จัดการรายชื่อดิสทิบิวเตอร์ผู้นำเข้าสำหรับการออกใบนำส่งเคลม</p>

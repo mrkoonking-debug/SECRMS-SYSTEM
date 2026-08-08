@@ -288,7 +288,7 @@ export const SettingsPage: React.FC = () => {
   if (loading) return <div className="p-20 text-center"><Loader2 className="animate-spin mx-auto" /></div>;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 md:py-8">
+    <div className="max-w-[1600px] w-full mx-auto px-4 py-6 md:py-8">
       <div className="mb-6 md:mb-10">
         <h1 className="text-2xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white mb-2">{t('nav.settings')}</h1>
         <p className="text-sm text-gray-500">ตั้งค่าข้อมูลบริษัทสำหรับใช้แสดงผลในเอกสารใบเคลมและใบรับคืน</p>
