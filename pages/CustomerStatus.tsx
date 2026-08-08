@@ -45,8 +45,8 @@ export const CustomerStatus: React.FC = () => {
       case RMAStatus.REPLACED_FROM_STOCK: return 3;
       case RMAStatus.REPAIRED: return 3;
       case RMAStatus.RETURNED_FROM_VENDOR: return 3;
-      case RMAStatus.CLOSED: return 4;
-      case RMAStatus.REJECTED: return 4;
+      case RMAStatus.CLOSED: return 3;
+      case RMAStatus.REJECTED: return 3;
       default: return 0;
     }
   };
@@ -125,7 +125,7 @@ export const CustomerStatus: React.FC = () => {
                   <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-gray-100 dark:bg-[#2c2c2e] z-0 rounded-full"></div>
                   <div
                     className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#0071e3] transition-all duration-1000 ease-out z-0 rounded-full"
-                    style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
+                    style={{ width: `${Math.min(100, Math.max(0, (currentStep / (steps.length - 1)) * 100))}%` }}
                   ></div>
 
                   {steps.map((step, idx) => {
