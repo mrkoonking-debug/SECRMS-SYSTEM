@@ -34,17 +34,24 @@ export const IncomingClaims: React.FC = () => {
     const [selectedDistributor, setSelectedDistributor] = useState('');
     const [customDistributor, setCustomDistributor] = useState('');
     const [distOptions, setDistOptions] = useState<any[]>([]);
+    const [brandOptions, setBrandOptions] = useState<string[]>([]);
 
     const [isAssigning, setIsAssigning] = useState(false);
     const { t } = useLanguage();
 
-    // Load distributor options
+    // Load distributor & brand options
     useEffect(() => {
-        const loadDists = async () => {
-            const dists = await MockDb.getDistributors();
+        const loadOptions = async () => {
+            const [dists, brands] = await Promise.all([
+                MockDb.getDistributors(),
+                MockDb.getBrands()
+            ]);
             setDistOptions([...dists, { value: 'Other', label: t('submit.other') }]);
+            const names = brands.map(b => b.label || b.value);
+            const defaultBrands = ['Hikvision', 'Dahua', 'Ruijie', 'Ezviz', 'Imou', 'Hilook', 'อื่นๆ'];
+            setBrandOptions(Array.from(new Set([...names, ...defaultBrands])));
         };
-        loadDists();
+        loadOptions();
     }, [t]);
 
     const fetchIncoming = async () => {
@@ -564,20 +571,28 @@ export const IncomingClaims: React.FC = () => {
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 mb-1">ยี่ห้อ (Brand)</label>
-                                    <input
-                                        type="text"
+                                    <select
                                         value={rmaForm.brand}
                                         onChange={(e) => setRmaForm({ ...rmaForm, brand: e.target.value })}
-                                        className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-bold text-[#1d1d1f] dark:text-white focus:outline-none focus:border-[#0071e3]"
-                                    />
+                                        className="w-full px-3 py-2 bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-white/10 rounded-xl text-sm font-bold text-[#1d1d1f] dark:text-white focus:outline-none focus:border-[#0071e3]"
+                                    >
+                                        <option value="" disabled>-- เลือกยี่ห้อ --</option>
+                                        {brandOptions.map(b => (
+                                            <option key={b} value={b} className="bg-white dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-white">{b}</option>
+                                        ))}
+                                        {!brandOptions.includes(rmaForm.brand) && rmaForm.brand && (
+                                            <option value={rmaForm.brand} className="bg-white dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-white">{rmaForm.brand}</option>
+                                        )}
+                                    </select>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 mb-1">ชื่อรุ่น (Model)</label>
                                     <input
                                         type="text"
                                         value={rmaForm.productModel}
-                                        onChange={(e) => setRmaForm({ ...rmaForm, productModel: e.target.value })}
-                                        className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-bold text-[#1d1d1f] dark:text-white focus:outline-none focus:border-[#0071e3]"
+                                        onChange={(e) => setRmaForm({ ...rmaForm, productModel: e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase() })}
+                                        style={{ textTransform: 'uppercase' }}
+                                        className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-bold text-[#1d1d1f] dark:text-white uppercase focus:outline-none focus:border-[#0071e3]"
                                     />
                                 </div>
                             </div>
@@ -587,8 +602,9 @@ export const IncomingClaims: React.FC = () => {
                                 <input
                                     type="text"
                                     value={rmaForm.serialNumber}
-                                    onChange={(e) => setRmaForm({ ...rmaForm, serialNumber: e.target.value })}
-                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-mono font-bold text-[#1d1d1f] dark:text-white focus:outline-none focus:border-[#0071e3]"
+                                    onChange={(e) => setRmaForm({ ...rmaForm, serialNumber: e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase() })}
+                                    style={{ textTransform: 'uppercase' }}
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-mono font-bold text-[#1d1d1f] dark:text-white uppercase focus:outline-none focus:border-[#0071e3]"
                                 />
                             </div>
 
