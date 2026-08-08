@@ -503,7 +503,7 @@ export const CustomerSubmit: React.FC = () => {
                             {/* Copy Link Button */}
                             <button
                                 onClick={() => {
-                                    const pcUrl = `${window.location.origin}/status?q=${encodeURIComponent(submittedRef)}`;
+                                    const pcUrl = `${window.location.origin}/status?q=${encodeURIComponent(submittedRef)}&print=true`;
                                     navigator.clipboard.writeText(pcUrl);
                                     setCopiedLink(true);
                                     showToast('คัดลอกลิงก์เรียบร้อย! นำไปวางส่งใน LINE หรือเปิดบนคอมพิวเตอร์ได้เลย', 'success');
@@ -518,7 +518,7 @@ export const CustomerSubmit: React.FC = () => {
                             {/* Share to LINE / App Button */}
                             <button
                                 onClick={() => {
-                                    const pcUrl = `${window.location.origin}/status?q=${encodeURIComponent(submittedRef)}`;
+                                    const pcUrl = `${window.location.origin}/status?q=${encodeURIComponent(submittedRef)}&print=true`;
                                     const shareText = `ใบส่งสินค้าเคลม SEC RMS\nรหัสอ้างอิง: ${submittedRef}\nเปิดลิงก์บนคอมพิวเตอร์เพื่อพิมพ์ใบปะหน้ากล่อง:\n${pcUrl}`;
                                     if (navigator.share) {
                                         navigator.share({ title: `ใบส่งสินค้าเคลม ${submittedRef}`, text: shareText, url: pcUrl }).catch(() => {});

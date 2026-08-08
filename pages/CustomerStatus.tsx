@@ -4,17 +4,20 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { RMA, RMAStatus } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
-import { ArrowLeft, Search, RefreshCw, Package, CheckCircle2, Settings, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Search, Package, CheckCircle2, Settings, Printer } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageToggle } from '../components/LanguageToggle';
+import { PrintLabelModal } from '../components/PrintLabelModal';
 
 export const CustomerStatus: React.FC = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q');
+  const autoPrint = searchParams.get('print') === 'true' || searchParams.get('print') === '1';
   const [rmas, setRMAs] = useState<RMA[]>([]);
-  const [loading, setLoading] = useState(!!query); // Start as true if query exists
+  const [loading, setLoading] = useState(!!query);
   const [searched, setSearched] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -25,6 +28,9 @@ export const CustomerStatus: React.FC = () => {
         try {
           const results = await MockDb.searchRMAsPublic(query);
           setRMAs(results);
+          if (results.length > 0 && autoPrint) {
+            setShowPrintModal(true);
+          }
         } catch (err) {
           console.error('Search error:', err);
           setRMAs([]);
@@ -35,16 +41,16 @@ export const CustomerStatus: React.FC = () => {
       };
       search();
     }
-  }, [query]);
+  }, [query, autoPrint]);
 
   const getStepStatus = (status: RMAStatus) => {
     switch (status) {
       case RMAStatus.PENDING: return 0;
       case RMAStatus.DIAGNOSING: return 1;
       case RMAStatus.WAITING_PARTS: return 2;
-      case RMAStatus.REPLACED_FROM_STOCK: return 3; // For customer, getting replacement means it's done/ready
+      case RMAStatus.REPLACED_FROM_STOCK: return 3;
       case RMAStatus.REPAIRED: return 3;
-      case RMAStatus.RETURNED_FROM_VENDOR: return 3; // Completed state
+      case RMAStatus.RETURNED_FROM_VENDOR: return 3;
       case RMAStatus.CLOSED: return 4;
       case RMAStatus.REJECTED: return 4;
       default: return 0;
@@ -59,7 +65,6 @@ export const CustomerStatus: React.FC = () => {
     );
   }
 
-  // Filter out any undefined/null items that mapDocToRMA might return
   const validRmas = rmas.filter((r): r is RMA => r != null);
 
   if (!query || (searched && validRmas.length === 0)) {
@@ -87,17 +92,26 @@ export const CustomerStatus: React.FC = () => {
       </div>
 
       <div className="max-w-2xl mx-auto">
-        <div className="mb-6 md:mb-12 animate-slide-up">
-          <div className="text-[11px] font-bold text-[#0071e3] uppercase tracking-wider mb-1">{t('track.reference')}</div>
-          <h1 className="text-xl md:text-4xl font-bold text-[#1d1d1f] dark:text-white tracking-tight flex flex-wrap gap-2 items-center">
-            {validRmas[0].groupRequestId || validRmas[0].id}
-            {validRmas[0].quotationNumber && (
-              <span className="bg-gray-100 dark:bg-[#2c2c2e] text-gray-600 dark:text-gray-300 text-xs md:text-sm px-2 py-0.5 md:px-3 md:py-1 rounded-lg border border-gray-200 dark:border-[#424245]">
-                Ref: {validRmas[0].quotationNumber}
-              </span>
-            )}
-          </h1>
-          <p className="text-[#86868b] text-sm md:text-lg mt-1.5">{validRmas[0].customerName}</p>
+        <div className="mb-6 md:mb-12 animate-slide-up flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="text-[11px] font-bold text-[#0071e3] uppercase tracking-wider mb-1">{t('track.reference')}</div>
+            <h1 className="text-xl md:text-4xl font-bold text-[#1d1d1f] dark:text-white tracking-tight flex flex-wrap gap-2 items-center">
+              {validRmas[0].groupRequestId || validRmas[0].id}
+              {validRmas[0].quotationNumber && (
+                <span className="bg-gray-100 dark:bg-[#2c2c2e] text-gray-600 dark:text-gray-300 text-xs md:text-sm px-2 py-0.5 md:px-3 md:py-1 rounded-lg border border-gray-200 dark:border-[#424245]">
+                  Ref: {validRmas[0].quotationNumber}
+                </span>
+              )}
+            </h1>
+            <p className="text-[#86868b] text-sm md:text-lg mt-1.5">{validRmas[0].customerName}</p>
+          </div>
+
+          <button
+            onClick={() => setShowPrintModal(true)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-full font-bold text-sm shadow-md transition-all self-start md:self-auto cursor-pointer"
+          >
+            <Printer className="w-4 h-4" /> พิมพ์ใบจ่าหน้ากล่อง
+          </button>
         </div>
 
         <div className="space-y-4 md:space-y-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
@@ -154,6 +168,14 @@ export const CustomerStatus: React.FC = () => {
           })}
         </div>
       </div>
+
+      {validRmas.length > 0 && (
+        <PrintLabelModal
+          isOpen={showPrintModal}
+          onClose={() => setShowPrintModal(false)}
+          rma={validRmas[0]}
+        />
+      )}
     </div>
   );
 };
