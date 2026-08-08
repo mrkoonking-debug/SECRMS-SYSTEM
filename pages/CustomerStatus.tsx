@@ -4,10 +4,28 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { RMA, RMAStatus } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
-import { ArrowLeft, Search, Package, CheckCircle2, Settings } from 'lucide-react';
+import { ArrowLeft, Search, Package, CheckCircle2, Settings, Clock, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageToggle } from '../components/LanguageToggle';
+
+const formatDetailedDateTime = (dateVal?: any) => {
+  if (!dateVal) return null;
+  try {
+    const d = dateVal?.toDate ? dateVal.toDate() : new Date(dateVal);
+    if (isNaN(d.getTime())) return null;
+    return d.toLocaleString('th-TH', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }) + ' น.';
+  } catch {
+    return null;
+  }
+};
 
 export const CustomerStatus: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -147,6 +165,42 @@ export const CustomerStatus: React.FC = () => {
                       </div>
                     );
                   })}
+                </div>
+
+                {/* Detailed Timestamp Breakdown */}
+                <div className="mt-8 pt-4 border-t border-gray-100 dark:border-white/10 space-y-2 text-xs">
+                  {rma.createdAt && (
+                    <div className="flex justify-between items-center text-gray-500 dark:text-gray-400">
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <Clock className="w-3.5 h-3.5 text-blue-500" /> เวลาลงทะเบียนส่งเคลม:
+                      </span>
+                      <span className="font-bold font-mono text-[#1d1d1f] dark:text-white bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded">
+                        {formatDetailedDateTime(rma.createdAt)}
+                      </span>
+                    </div>
+                  )}
+
+                  {rma.history && rma.history.find((h: any) => h.description?.includes('รับเรื่องเข้าทีม') || h.description?.includes('รับสินค้า')) && (
+                    <div className="flex justify-between items-center text-gray-500 dark:text-gray-400">
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> เวลาพนักงานกดรับเข้าทีม:
+                      </span>
+                      <span className="font-bold font-mono text-[#1d1d1f] dark:text-white bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded">
+                        {formatDetailedDateTime(rma.history.find((h: any) => h.description?.includes('รับเรื่องเข้าทีม') || h.description?.includes('รับสินค้า'))?.date)}
+                      </span>
+                    </div>
+                  )}
+
+                  {rma.updatedAt && (
+                    <div className="flex justify-between items-center text-gray-500 dark:text-gray-400">
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <RefreshCw className="w-3.5 h-3.5 text-orange-500" /> อัปเดตสถานะล่าสุด:
+                      </span>
+                      <span className="font-bold font-mono text-[#1d1d1f] dark:text-white bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded">
+                        {formatDetailedDateTime(rma.updatedAt)}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             );

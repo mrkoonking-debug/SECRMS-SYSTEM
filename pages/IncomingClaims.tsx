@@ -313,7 +313,7 @@ export const IncomingClaims: React.FC = () => {
                                             </div>
 
                                             <div className="flex items-center gap-2 md:gap-4 text-[10px] md:text-xs text-gray-400">
-                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3 md:w-3.5 md:h-3.5" /> {new Date(job.createdAt).toLocaleString()}</span>
+                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3 md:w-3.5 md:h-3.5 text-blue-500" /> {new Date(job.createdAt).toLocaleString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                                                 <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
                                                 <span className={job.quotationNumber && job.quotationNumber !== 'N/A' ? '' : 'italic opacity-60'}>{job.quotationNumber && job.quotationNumber !== 'N/A' ? `QT: ${job.quotationNumber}` : 'ไม่มี Ref'}</span>
                                             </div>

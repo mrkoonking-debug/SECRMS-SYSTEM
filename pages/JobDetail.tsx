@@ -383,6 +383,24 @@ export const JobDetail: React.FC = () => {
         setIsDocPreviewOpen(true);
     };
 
+    const formatDetailedDateTime = (dateVal?: any) => {
+        if (!dateVal) return '-';
+        try {
+            const d = dateVal?.toDate ? dateVal.toDate() : new Date(dateVal);
+            if (isNaN(d.getTime())) return '-';
+            return d.toLocaleString('th-TH', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        } catch {
+            return '-';
+        }
+    };
+
     return (
         <div className="max-w-5xl mx-auto px-2 sm:px-4 md:px-6 py-4 md:py-6 pb-2">
             <div className="flex items-center justify-between mb-4 md:mb-8">
@@ -407,7 +425,10 @@ export const JobDetail: React.FC = () => {
                                 </span>
                             </div>
                             <div className="flex flex-wrap items-center gap-1.5 md:gap-4 text-[11px] md:text-sm text-gray-500">
-                                <span className="flex items-center gap-1"><Clock className="w-3 h-3 md:w-4 md:h-4" /> {new Date(jobInfo.date).toLocaleDateString()}</span>
+                                <span className="flex items-center gap-1 font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-lg border border-gray-200/50 dark:border-white/10" title="เวลาลงทะเบียน">
+                                    <Clock className="w-3.5 h-3.5 text-blue-500" />
+                                    <span>{formatDetailedDateTime(jobInfo.date)}</span>
+                                </span>
                                 <span className="bg-gray-100 dark:bg-white/10 px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs text-[#1d1d1f] dark:text-gray-300 font-medium">{jobInfo.count} {t('claimsList.items')}</span>
                                     <div className="flex gap-1.5 md:gap-2">
                                         <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium border border-green-100 dark:border-green-900/30">
