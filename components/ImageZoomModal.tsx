@@ -12,6 +12,17 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = ({
     onClose,
     title = 'รูปภาพอุปกรณ์ที่ส่งเคลม'
 }) => {
+    // Early return BEFORE hooks if no image URL is active
+    if (!imageUrl) return null;
+
+    return <ImageZoomModalContent imageUrl={imageUrl} onClose={onClose} title={title} />;
+};
+
+const ImageZoomModalContent: React.FC<{ imageUrl: string; onClose: () => void; title: string }> = ({
+    imageUrl,
+    onClose,
+    title
+}) => {
     const [scale, setScale] = useState(1);
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [rotation, setRotation] = useState(0);
@@ -21,14 +32,7 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const imgRef = useRef<HTMLImageElement>(null);
 
-    // Reset state when modal opens or image changes
-    useEffect(() => {
-        setScale(1);
-        setPosition({ x: 0, y: 0 });
-        setRotation(0);
-    }, [imageUrl]);
-
-    // Lock page background scrolling (body + main container)
+    // Lock page background scrolling (body + main container) ONLY while modal content is mounted
     useEffect(() => {
         const originalBodyOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
@@ -128,8 +132,6 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = ({
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [onClose, handleZoomIn, handleZoomOut, handleReset]);
-
-    if (!imageUrl) return null;
 
     return (
         <div 
