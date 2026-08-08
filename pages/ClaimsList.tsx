@@ -122,36 +122,31 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
             <div className="w-full pl-0 sm:pl-9">
                 <div className="mt-1 space-y-1.5 bg-gray-50/50 dark:bg-white/[0.01] border border-gray-100 dark:border-white/5 rounded-xl p-2.5 max-w-full overflow-hidden">
                     {jobItems.slice(0, 3).map((item) => (
-                        <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] gap-2 border-b border-gray-100/50 dark:border-white/5 last:border-0 pb-2 last:pb-0 pt-2 first:pt-0">
-                            {/* Left: Product Info & Mobile Badge */}
-                            <div className="flex items-start sm:items-center justify-between sm:justify-start gap-2 flex-wrap sm:flex-nowrap min-w-0 flex-grow">
-                                <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                                    <span className="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">{item.brand}</span>
-                                    <span className="text-gray-500 dark:text-gray-400 truncate">{item.productModel}</span>
-                                    <span className="text-gray-400 dark:text-gray-500 font-mono text-[10px]">({item.serialNumber})</span>
-                                </div>
-                                <div className="sm:hidden shrink-0">
-                                    <StatusBadge status={item.status} isOverdue={isRMAOverdue(item)} />
-                                </div>
+                        <div key={item.id} className="grid grid-cols-1 md:grid-cols-[240px_1fr_auto] gap-2 md:gap-4 items-center text-[11px] border-b border-gray-100/50 dark:border-white/5 last:border-0 pb-2.5 last:pb-0 pt-2.5 first:pt-0">
+                            {/* Left: Product Info */}
+                            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                                <span className="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">{item.brand}</span>
+                                <span className="text-gray-500 dark:text-gray-400 truncate">{item.productModel}</span>
+                                <span className="text-gray-400 dark:text-gray-500 font-mono text-[10px]">({item.serialNumber})</span>
                             </div>
 
-                            {/* Right: Symptoms & Desktop Badge */}
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 text-[10px] text-gray-400 dark:text-gray-500 w-full sm:w-auto">
-                                <div className="flex flex-col text-left sm:text-right w-full sm:max-w-[280px]">
-                                    {item.issueDescription && (
-                                        <div className="break-words whitespace-normal leading-relaxed" title={item.issueDescription}>
-                                            <span className="font-medium text-gray-400 dark:text-gray-500">อาการที่แจ้ง:</span> {item.issueDescription}
-                                        </div>
-                                    )}
-                                    {item.resolution?.rootCause && (
-                                        <div className="break-words whitespace-normal leading-relaxed text-[#0071e3] font-semibold" title={item.resolution.rootCause}>
-                                            <span>อาการที่พบ:</span> {item.resolution.rootCause}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="hidden sm:block shrink-0">
-                                    <StatusBadge status={item.status} isOverdue={isRMAOverdue(item)} />
-                                </div>
+                            {/* Middle: Symptoms & Root Cause (Expands naturally across wide space) */}
+                            <div className="flex flex-col text-[11px] min-w-0">
+                                {item.issueDescription && (
+                                    <div className="text-gray-600 dark:text-gray-300 leading-relaxed" title={item.issueDescription}>
+                                        <span className="font-medium text-gray-400 dark:text-gray-500">อาการที่แจ้ง:</span> {item.issueDescription}
+                                    </div>
+                                )}
+                                {item.resolution?.rootCause && (
+                                    <div className="text-[#0071e3] font-semibold leading-relaxed" title={item.resolution.rootCause}>
+                                        <span>อาการที่พบ:</span> {item.resolution.rootCause}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Right: Status Badge */}
+                            <div className="shrink-0 flex items-center justify-start md:justify-end">
+                                <StatusBadge status={item.status} isOverdue={isRMAOverdue(item)} />
                             </div>
                         </div>
                     ))}
