@@ -63,7 +63,7 @@ const AppContent: React.FC = () => {
             {/* Ambient Background Glows inspired by modern UI design */}
             <div className="absolute bottom-[-150px] left-[-150px] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-amber-500/15 via-orange-500/5 to-transparent blur-[120px] pointer-events-none -z-10 dark:opacity-75 opacity-25" />
             <div className="absolute top-[-200px] right-[-150px] w-[450px] h-[450px] rounded-full bg-blue-500/10 dark:bg-blue-600/[0.05] blur-[120px] pointer-events-none -z-10 dark:opacity-70 opacity-20" />
-            <div className="min-h-full px-1.5 sm:px-4 pt-20 pb-36 md:py-8">
+            <div className="px-1.5 sm:px-4 pt-16 md:pt-6 pb-6">
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
