@@ -677,20 +677,42 @@ export const JobDetail: React.FC = () => {
                                         <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold">{index + 1}</div>
                                     )}
                                 </div>
-                                <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                                    <div><div className="font-bold text-base md:text-lg text-[#1d1d1f] dark:text-white">{item.productModel}</div><div className="text-xs md:text-sm text-gray-500">{item.brand}</div><div className="mt-0.5 md:mt-1 inline-block text-[10px] md:text-xs font-mono bg-black/5 dark:bg-white/10 px-1.5 md:px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">S/N: {item.serialNumber}</div></div>
-                                    <div>
-                                        <div className="text-xs font-bold text-gray-400 uppercase mb-1 flex items-center gap-1">{t('track.issueReported')}
+                                <div className="flex-grow grid grid-cols-1 md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] gap-4 md:gap-8 w-full">
+                                    <div className="space-y-2">
+                                        <div>
+                                            <div className="font-bold text-base md:text-lg text-[#1d1d1f] dark:text-white leading-tight">{item.productModel}</div>
+                                            <div className="text-xs md:text-sm text-gray-500 font-medium">{item.brand}</div>
+                                            <div className="mt-1 inline-block text-[10px] md:text-xs font-mono bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">S/N: {item.serialNumber}</div>
                                         </div>
-                                        <div className="text-sm text-gray-700 dark:text-gray-200 flex items-start gap-2"><AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" /><span className="line-clamp-2">{item.issueDescription}</span></div>
+                                        
+                                        <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-1 text-xs text-gray-400">
+                                            <div className="flex items-center gap-1.5">
+                                                <Truck className="w-3.5 h-3.5 text-gray-400 shrink-0" /> {t('submit.distributor')}:{' '}
+                                                <span className="text-[#1d1d1f] dark:text-white font-medium ml-0.5">{item.distributor || '-'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <ShieldCheck className="w-3.5 h-3.5 text-gray-400 shrink-0" /> {t('track.warrantyStatus')}:{' '}
+                                                <span className={`font-medium ml-0.5 ${item.repairCosts?.warrantyStatus === 'IN_WARRANTY' ? 'text-green-500' :
+                                                    item.repairCosts?.warrantyStatus === 'OUT_OF_WARRANTY' ? 'text-orange-500' :
+                                                    item.repairCosts?.warrantyStatus === 'VOID' ? 'text-red-500' :
+                                                    'text-[#1d1d1f] dark:text-white'
+                                                }`}>{item.repairCosts?.warrantyStatus ? t(`warranty.${item.repairCosts.warrantyStatus}`) : '-'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3 min-w-0">
+                                        <div>
+                                            <div className="text-xs font-bold text-gray-400 uppercase mb-1 flex items-center gap-1">{t('track.issueReported')}</div>
+                                            <div className="text-sm text-gray-800 dark:text-gray-200 flex items-start gap-2 bg-red-500/5 dark:bg-red-500/10 p-2.5 rounded-xl border border-red-500/10"><AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" /><span className="whitespace-pre-wrap leading-relaxed">{item.issueDescription}</span></div>
+                                        </div>
                                         {item.resolution?.rootCause && (
-                                            <div className="mt-2">
+                                            <div>
                                                 <div className="text-xs font-bold text-gray-400 uppercase mb-1 flex items-center gap-1">{t('track.rootCause')}</div>
-                                                <div className="text-sm text-gray-700 dark:text-gray-200 flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" /><span className="line-clamp-2">{item.resolution.rootCause}</span></div>
+                                                <div className="text-sm text-gray-800 dark:text-gray-200 flex items-start gap-2 bg-blue-500/5 dark:bg-blue-500/10 p-2.5 rounded-xl border border-blue-500/10"><CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" /><span className="whitespace-pre-wrap leading-relaxed">{item.resolution.rootCause}</span></div>
                                             </div>
                                         )}
                                         {item.resolution?.actionTaken && (
-                                            <div className="mt-2 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-100 dark:border-white/10 space-y-1.5">
+                                            <div className="bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-100 dark:border-white/10 space-y-1.5">
                                                 <div className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                                                     <ClipboardCheck className="w-3.5 h-3.5 text-blue-500" /> ผลการดำเนินการที่ศูนย์ส่งกลับมา
                                                 </div>
@@ -724,24 +746,7 @@ export const JobDetail: React.FC = () => {
                                                 )}
                                             </div>
                                         )}
-                                        <div className="mt-2 text-xs text-gray-400 flex items-center gap-1">
-                                            <Truck className="w-3 h-3" /> {t('submit.distributor')}:{' '}
-                                            <span className="inline-flex items-center gap-1 ml-1">
-                                                <span className="text-[#1d1d1f] dark:text-white font-medium">{item.distributor || '-'}</span>
-                                            </span>
-                                        </div>
-                                        {/* Warranty Status */}
-                                        <div className="mt-1 text-xs text-gray-400 flex items-center gap-1">
-                                            <ShieldCheck className="w-3 h-3" /> {t('track.warrantyStatus')}:{' '}
-                                            <span className="inline-flex items-center gap-1 ml-1">
-                                                <span className={`font-medium ${item.repairCosts?.warrantyStatus === 'IN_WARRANTY' ? 'text-green-500' :
-                                                    item.repairCosts?.warrantyStatus === 'OUT_OF_WARRANTY' ? 'text-orange-500' :
-                                                        item.repairCosts?.warrantyStatus === 'VOID' ? 'text-red-500' :
-                                                            'text-[#1d1d1f] dark:text-white'
-                                                    }`}>{item.repairCosts?.warrantyStatus ? t(`warranty.${item.repairCosts.warrantyStatus}`) : '-'}</span>
-                                            </span>
-                                        </div>
-                                        <div className="mt-2 text-xs text-gray-400 flex items-start gap-1 w-full">
+                                        <div className="text-xs text-gray-400 flex items-start gap-1 w-full">
                                             <FileText className="w-3 h-3 mt-1 flex-shrink-0" />
                                             <span className="font-bold uppercase mt-1 w-24 flex-shrink-0 truncate" title={t('track.internalNote') || 'Notes'}>{t('track.internalNote') || 'Notes'}:</span>
                                             <div className="flex-grow py-1 text-sm text-[#1d1d1f] dark:text-white whitespace-pre-line" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>

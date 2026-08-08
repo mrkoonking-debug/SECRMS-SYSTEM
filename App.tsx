@@ -61,8 +61,10 @@ const AppContent: React.FC = () => {
           <Navbar embedded={true} />
           <main className="flex-1 overflow-y-auto overflow-x-hidden relative bg-[#f2f2f7] dark:bg-[#17171e] border-l border-gray-200/50 dark:border-white/[0.08] custom-scrollbar pb-0">
             {/* Ambient Background Glows inspired by modern UI design */}
-            <div className="absolute bottom-[-150px] left-[-150px] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-amber-500/15 via-orange-500/5 to-transparent blur-[120px] pointer-events-none -z-10 dark:opacity-75 opacity-25" />
-            <div className="absolute top-[-200px] right-[-150px] w-[450px] h-[450px] rounded-full bg-blue-500/10 dark:bg-blue-600/[0.05] blur-[120px] pointer-events-none -z-10 dark:opacity-70 opacity-20" />
+            <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+              <div className="absolute bottom-[-150px] left-[-150px] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-amber-500/15 via-orange-500/5 to-transparent blur-[120px] dark:opacity-75 opacity-25" />
+              <div className="absolute top-[-200px] right-[-150px] w-[450px] h-[450px] rounded-full bg-blue-500/10 dark:bg-blue-600/[0.05] blur-[120px] dark:opacity-70 opacity-20" />
+            </div>
             <div className="px-1.5 sm:px-4 pt-16 md:pt-6 pb-3">
               <Suspense fallback={<PageLoader />}>
                 <Routes>
