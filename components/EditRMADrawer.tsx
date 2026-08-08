@@ -1133,15 +1133,6 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                     </div>
                 </div>
             )}
-                {/* ACTION BUTTONS (Placed in Sticky Sidebar for instant access) */}
-                <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-center gap-3 pt-2">
-                    <button onClick={handleSafeClose} className="w-full sm:w-auto lg:w-full xl:w-1/3 py-3.5 rounded-2xl text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2c2c2e] border border-gray-200 dark:border-gray-700 transition-all text-center">
-                        {t('track.cancelBtn')}
-                    </button>
-                    <button onClick={handlePreSave} className="w-full sm:w-auto lg:w-full xl:flex-1 py-3.5 px-4 rounded-2xl text-xs font-bold text-white bg-[#0071e3] hover:bg-[#0077ed] shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all flex items-center justify-center gap-2 transform hover:scale-[1.01] active:scale-[0.98] cursor-pointer">
-                        ตรวจสอบและบันทึก <ChevronRight className="w-4 h-4" />
-                    </button>
-                </div>
             </div>
 
             {/* Right Column: Sticky Flow Tracker & Status Summary */}
@@ -1270,6 +1261,16 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                         className="w-full rounded-2xl p-3.5 text-xs text-[#1d1d1f] dark:text-white bg-gray-50/50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none focus:ring-2 focus:ring-amber-500/30 transition-all resize-none"
                         placeholder={t('track.addNotesPlaceholder')}
                     />
+                </div>
+
+                {/* ACTION BUTTONS in Sticky Sidebar */}
+                <div className="flex flex-col gap-3 pt-1">
+                    <button onClick={handlePreSave} className="w-full py-3.5 px-4 rounded-2xl text-sm font-bold text-white bg-[#0071e3] hover:bg-[#0077ed] shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all flex items-center justify-center gap-2 transform hover:scale-[1.01] active:scale-[0.98]">
+                        ตรวจสอบและบันทึก <ChevronRight className="w-4 h-4" />
+                    </button>
+                    <button onClick={handleSafeClose} className="w-full py-3 rounded-2xl text-xs font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 border border-gray-200 dark:border-white/10 transition-all text-center">
+                        {t('track.cancelBtn')}
+                    </button>
                 </div>
             </div>
             </div>
