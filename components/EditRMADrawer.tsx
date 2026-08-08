@@ -1133,15 +1133,15 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                     </div>
                 </div>
             )}
-            {/* ACTION BUTTONS */}
-            <div className="flex justify-end items-center gap-4 px-2 pb-8">
-                <button onClick={handleSafeClose} className="px-8 py-3.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 transition-colors">
-                    {t('track.cancelBtn')}
-                </button>
-                <button onClick={handlePreSave} className="px-10 py-3.5 rounded-full text-sm font-bold text-white bg-[#0071e3] hover:bg-[#0077ed] shadow-xl shadow-blue-500/20 transition-all flex items-center gap-2 transform hover:scale-[1.01] active:scale-[0.98]">
-                    ตรวจสอบและบันทึก <ChevronRight className="w-4 h-4" />
-                </button>
-            </div>
+                {/* ACTION BUTTONS (Placed in Sticky Sidebar for instant access) */}
+                <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-center gap-3 pt-2">
+                    <button onClick={handleSafeClose} className="w-full sm:w-auto lg:w-full xl:w-1/3 py-3.5 rounded-2xl text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2c2c2e] border border-gray-200 dark:border-gray-700 transition-all text-center">
+                        {t('track.cancelBtn')}
+                    </button>
+                    <button onClick={handlePreSave} className="w-full sm:w-auto lg:w-full xl:flex-1 py-3.5 px-4 rounded-2xl text-xs font-bold text-white bg-[#0071e3] hover:bg-[#0077ed] shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all flex items-center justify-center gap-2 transform hover:scale-[1.01] active:scale-[0.98] cursor-pointer">
+                        ตรวจสอบและบันทึก <ChevronRight className="w-4 h-4" />
+                    </button>
+                </div>
             </div>
 
             {/* Right Column: Sticky Flow Tracker & Status Summary */}
@@ -1273,6 +1273,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                 </div>
             </div>
             </div>
+            </fieldset>
 
             {/* UNSAVED CHANGES MODAL */}
             {showUnsavedModal && createPortal(
@@ -1600,8 +1601,6 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                 onClose={() => setActiveZoomImage(null)}
                 title="รูปภาพอุปกรณ์แนบ"
             />
-
-            </fieldset>
         </div>
     );
 };
