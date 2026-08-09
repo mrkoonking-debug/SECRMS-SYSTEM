@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { RMA, RMAStatus, Team, DelayReason, ResolutionDetails } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
-import { X, Save, AlertCircle, ArrowRight, CheckCircle2, ChevronRight, RotateCcw, Truck, Box, Layers, Wifi, Zap, ShoppingBag, ShieldCheck, RefreshCw, AlertOctagon, Plus, Check, Pencil, Lock, Search, Package, Wrench, Undo2, PackageCheck, ClipboardCheck, Settings2, Maximize2, ScanBarcode, Image as ImageIcon, Loader2, Trash2, FileText } from 'lucide-react';
+import { X, Save, AlertCircle, ArrowRight, CheckCircle2, ChevronRight, RotateCcw, Truck, Box, Layers, Wifi, Zap, ShoppingBag, ShieldCheck, RefreshCw, AlertOctagon, Plus, Check, Pencil, Lock, Search, Package, Wrench, Undo2, PackageCheck, ClipboardCheck, Settings2, Maximize2, ScanBarcode, Image as ImageIcon, Loader2, Trash2, FileText, Inbox, HelpCircle } from 'lucide-react';
 import { GlassSelect } from './GlassSelect';
 import { ImageZoomModal } from './ImageZoomModal';
 import { MockDb } from '../services/mockDb';
@@ -759,20 +759,20 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                     catch { return ''; }
                                 };
 
-                                interface FlowStep { icon: string; label: string; done: boolean; active: boolean; date?: string; sub?: string }
+                                interface FlowStep { icon: any; label: string; done: boolean; active: boolean; date?: string; sub?: string }
                                 const flowSteps: FlowStep[] = [
-                                    { icon: '📋', label: 'รับเรื่อง', done: level > 0, active: level === 0, date: fmtDate(rma.createdAt) },
-                                    { icon: '🔍', label: 'ตรวจสอบที่ร้าน', done: level > 1, active: level === 1 },
+                                    { icon: FileText, label: 'รับเรื่อง', done: level > 0, active: level === 0, date: fmtDate(rma.createdAt) },
+                                    { icon: Search, label: 'ตรวจสอบที่ร้าน', done: level > 1, active: level === 1 },
                                 ];
                                 if (vendorPath) {
-                                    flowSteps.push({ icon: '📦', label: 'ส่งเคลมผู้นำเข้า', done: level > 2, active: level === 2, sub: formData.distributor || rma.distributor });
-                                    flowSteps.push({ icon: '📥', label: 'ได้รับคืนจากผู้นำเข้า', done: level > 3, active: level === 3 });
+                                    flowSteps.push({ icon: Package, label: 'ส่งเคลมผู้นำเข้า', done: level > 2, active: level === 2, sub: formData.distributor || rma.distributor });
+                                    flowSteps.push({ icon: Inbox, label: 'ได้รับคืนจากผู้นำเข้า', done: level > 3, active: level === 3 });
                                 } else if (directPath) {
-                                    flowSteps.push({ icon: '🔧', label: 'แก้ไขที่ร้าน / ไม่พบอาการเสีย', done: level >= 3, active: level === 3 });
+                                    flowSteps.push({ icon: Wrench, label: 'แก้ไขที่ร้าน / ไม่พบอาการเสีย', done: level >= 3, active: level === 3 });
                                 } else {
-                                    flowSteps.push({ icon: '❓', label: 'รอตัดสินใจเส้นทาง', done: false, active: false });
+                                    flowSteps.push({ icon: HelpCircle, label: 'รอตัดสินใจเส้นทาง', done: false, active: false });
                                 }
-                                flowSteps.push({ icon: '✅', label: 'ปิดงาน / ส่งคืนลูกค้า', done: level >= 4, active: level === 4, date: fmtDate(rma.resolvedAt) });
+                                flowSteps.push({ icon: CheckCircle2, label: 'ปิดงาน / ส่งคืนลูกค้า', done: level >= 4, active: level === 4, date: fmtDate(rma.resolvedAt) });
 
                                 return (
                                     <div className="mb-8">
@@ -795,10 +795,10 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                                         {step.active && <div className="absolute -inset-1.5 rounded-full bg-blue-400/25 animate-ping" style={{ animationDuration: '2s' }} />}
                                                         <div className={`w-11 h-11 rounded-full flex items-center justify-center text-lg transition-all duration-500 ${
                                                             step.done ? 'bg-gradient-to-br from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/20' :
-                                                            step.active ? 'bg-white dark:bg-[#232326] border-[3px] border-blue-500 shadow-lg shadow-blue-500/25' :
-                                                            'bg-gray-100 dark:bg-[#2a2a2c] border-2 border-gray-200 dark:border-gray-700'
+                                                            step.active ? 'bg-white dark:bg-[#232326] border-[3px] border-blue-500 text-blue-500 shadow-lg shadow-blue-500/25 font-bold' :
+                                                            'bg-gray-100 dark:bg-[#2a2a2c] border-2 border-gray-200 dark:border-gray-700 text-gray-400'
                                                         }`}>
-                                                            {step.done ? <Check className="w-5 h-5 text-white" /> : <span className={step.active ? '' : 'grayscale opacity-40'}>{step.icon}</span>}
+                                                            {step.done ? <Check className="w-5 h-5 text-white" /> : <step.icon className={`w-5 h-5 ${step.active ? 'text-blue-500' : 'text-gray-400'}`} />}
                                                         </div>
                                                     </div>
                                                     <div className="flex-1 pt-1.5">
@@ -1155,19 +1155,19 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                     };
                     const level = statusLevel[s] ?? 0;
 
-                    const steps: { icon: string; label: string; done: boolean; active: boolean }[] = [
-                        { icon: '📋', label: 'รับเรื่อง', done: level > 0, active: level === 0 },
-                        { icon: '🔍', label: 'ตรวจสอบ', done: level > 1, active: level === 1 },
+                    const steps: { icon: any; label: string; done: boolean; active: boolean }[] = [
+                        { icon: FileText, label: 'รับเรื่อง', done: level > 0, active: level === 0 },
+                        { icon: Search, label: 'ตรวจสอบ', done: level > 1, active: level === 1 },
                     ];
                     if (vendorPath) {
-                        steps.push({ icon: '📦', label: 'ส่งผู้นำเข้า', done: level > 2, active: level === 2 });
-                        steps.push({ icon: '📥', label: 'ได้รับคืน', done: level > 3, active: level === 3 });
+                        steps.push({ icon: Package, label: 'ส่งผู้นำเข้า', done: level > 2, active: level === 2 });
+                        steps.push({ icon: Inbox, label: 'ได้รับคืน', done: level > 3, active: level === 3 });
                     } else if (directPath) {
-                        steps.push({ icon: '🔧', label: 'จบที่ร้าน', done: level >= 3, active: level === 3 });
+                        steps.push({ icon: Wrench, label: 'จบที่ร้าน', done: level >= 3, active: level === 3 });
                     } else {
-                        steps.push({ icon: '❓', label: 'รอตัดสิน', done: false, active: false });
+                        steps.push({ icon: HelpCircle, label: 'รอตัดสิน', done: false, active: false });
                     }
-                    steps.push({ icon: '✅', label: 'ปิดงาน', done: level >= 4, active: level === 4 });
+                    steps.push({ icon: CheckCircle2, label: 'ปิดงาน', done: level >= 4, active: level === 4 });
 
                     return (
                         <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] p-6 border border-gray-100 dark:border-[#333] shadow-sm">
@@ -1196,7 +1196,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                                     step.active ? 'bg-white dark:bg-[#232326] border-[3px] border-blue-500 text-blue-500 shadow-lg shadow-blue-500/25 font-bold' :
                                                     'bg-gray-100 dark:bg-[#2a2a2c] border-2 border-gray-200 dark:border-gray-700 text-gray-400'
                                                 }`}>
-                                                    {step.done ? <Check className="w-4 h-4 text-white" /> : <span>{step.icon}</span>}
+                                                    {step.done ? <Check className="w-4 h-4 text-white" /> : <step.icon className={`w-4 h-4 ${step.active ? 'text-blue-500' : 'text-gray-400'}`} />}
                                                 </div>
                                             </div>
                                             {i < steps.length - 1 && (
