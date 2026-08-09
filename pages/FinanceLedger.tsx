@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Landmark, Plus, FileSpreadsheet, Search, RefreshCw, Trash2, Edit2, Check, 
+  Landmark, Plus, FileSpreadsheet, Search, RefreshCw, Trash2, Edit2, Check, Copy,
   ArrowUpRight, ArrowDownLeft, AlertCircle, Coins, Clock, ChevronRight, ChevronLeft, Image as ImageIcon, X, Wallet, Calendar
 } from 'lucide-react';
 import { PettyCashTransaction, PettyCashSummary, PettyCashAudit } from '../types';
@@ -662,6 +662,17 @@ export const FinanceLedger: React.FC = () => {
     } catch (err) {
       showToast('ลบรายการไม่สำเร็จ', 'error');
     }
+  };
+
+  const handleDuplicate = (tx: PettyCashTransaction) => {
+    const now = new Date();
+    setSelectedTx({
+      ...tx,
+      id: '',
+      date: formatDateString(now),
+      time: now.toTimeString().split(' ')[0].substring(0, 5)
+    });
+    setShowModal(true);
   };
 
   const handleExportCSV = () => {
@@ -1615,6 +1626,13 @@ export const FinanceLedger: React.FC = () => {
               </button>
             )}
             <button
+              onClick={() => handleDuplicate(tx)}
+              className="p-1 text-gray-400 hover:text-emerald-500 hover:bg-gray-150 dark:hover:bg-white/5 rounded-lg transition-colors"
+              title="คัดลอกเป็นรายการใหม่ (Duplicate)"
+            >
+              <Copy className="w-3.5 h-3.5" />
+            </button>
+            <button
               onClick={() => { setSelectedTx(tx); setShowModal(true); }}
               className="p-1 text-gray-400 hover:text-blue-500 hover:bg-gray-150 dark:hover:bg-white/5 rounded-lg transition-colors"
               title="แก้ไขรายการ"
@@ -1844,6 +1862,13 @@ export const FinanceLedger: React.FC = () => {
                             คืนเงินพนักงาน
                           </button>
                         )}
+                        <button
+                          onClick={() => handleDuplicate(tx)}
+                          className="p-1.5 text-gray-400 hover:text-emerald-500 hover:bg-gray-150 dark:hover:bg-white/5 rounded-lg transition-colors"
+                          title="คัดลอกเป็นรายการใหม่ (Duplicate)"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
                         <button
                           onClick={() => { setSelectedTx(tx); setShowModal(true); }}
                           className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-gray-150 dark:hover:bg-white/5 rounded-lg transition-colors"

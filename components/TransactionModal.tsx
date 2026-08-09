@@ -5,7 +5,7 @@ import { MockDb } from '../services/mockDb';
 import { showToast } from '../services/toast';
 import { GlassSelect } from './GlassSelect';
 import { compressImage } from '../services/imageCompressor';
-import { X, Save, Calendar, Landmark, User, FileText, HelpCircle, Image as ImageIcon, Loader2, Trash2, Clock } from 'lucide-react';
+import { X, Save, Calendar, Landmark, User, FileText, HelpCircle, Image as ImageIcon, Loader2, Trash2, Clock, Plus } from 'lucide-react';
 
 interface TransactionModalProps {
   onClose: () => void;
@@ -18,7 +18,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   onSave,
   transaction
 }) => {
-  const isEdit = !!transaction;
+  const isEdit = !!transaction && !!transaction.id;
   const [date, setDate] = useState(transaction?.date || new Date().toISOString().split('T')[0]);
   const [time, setTime] = useState(transaction?.time || new Date().toTimeString().split(' ')[0].substring(0, 5)); // HH:MM
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>(transaction?.type || 'EXPENSE');
@@ -117,7 +117,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
     setIsUploadingImage(true);
     try {
-      // Compress to max 800px width/height, 0.5 quality for extremely light size
       const compressed = await compressImage(file, 800, 800, 0.5);
       setReceiptUrl(compressed);
       showToast('อัพโหลดและบีบอัดรูปภาพสำเร็จ', 'success');
@@ -129,40 +128,66 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     }
   };
 
+  const buildPayload = () => ({
+    date,
+    time,
+    type,
+    amount: Number(amount),
+    description: description.trim(),
+    category,
+    paidBy,
+    staffName: staffName.trim(),
+    isReimbursed: transaction?.isReimbursed || false,
+    note: note.trim(),
+    receiptUrl: receiptUrl || undefined,
+    ...(type === 'INCOME' ? { paidBy: 'PETTY_CASH' as const } : {}),
+    ...(paidBy === 'SPLIT' ? {
+      splitPettyCashAmount: Number(splitPettyCashAmount),
+      splitPersonalAmount: Number(splitPersonalAmount)
+    } : {
+      splitPettyCashAmount: null as any,
+      splitPersonalAmount: null as any
+    })
+  });
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
     try {
-      const payload = {
-        date,
-        time,
-        type,
-        amount: Number(amount),
-        description: description.trim(),
-        category,
-        paidBy,
-        staffName: staffName.trim(),
-        isReimbursed: transaction?.isReimbursed || false,
-        note: note.trim(),
-        receiptUrl: receiptUrl || undefined,
-        ...(type === 'INCOME' ? { paidBy: 'PETTY_CASH' as const } : {}), // Income is always funded to Petty Cash
-        ...(paidBy === 'SPLIT' ? {
-          splitPettyCashAmount: Number(splitPettyCashAmount),
-          splitPersonalAmount: Number(splitPersonalAmount)
-        } : {
-          splitPettyCashAmount: null as any,
-          splitPersonalAmount: null as any
-        })
-      };
+      const payload = buildPayload();
 
-      if (isEdit && transaction) {
+      if (isEdit && transaction && transaction.id) {
         await MockDb.updatePettyCashTransaction(transaction.id, payload);
         showToast('แก้ไขข้อมูลการเงินสำเร็จ', 'success');
       } else {
         await MockDb.addPettyCashTransaction(payload);
         showToast('บันทึกข้อมูลการเงินสำเร็จ', 'success');
       }
+      onSave();
+    } catch (err: any) {
+      showToast(err.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
+    }
+  };
+
+  const handleSaveAndContinue = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    try {
+      const payload = buildPayload();
+      await MockDb.addPettyCashTransaction(payload);
+      showToast('บันทึกสำเร็จ สามารถพิมพ์รายการถัดไปต่อได้เลย', 'success');
+      
+      // Reset entry-specific fields
+      setAmount('');
+      setDescription('');
+      setNote('');
+      setReceiptUrl('');
+      setSplitPettyCashAmount('');
+      setSplitPersonalAmount('');
+      setErrors({});
+      
       onSave();
     } catch (err: any) {
       showToast(err.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
@@ -561,11 +586,21 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             >
               ยกเลิก
             </button>
+            {!isEdit && (
+              <button
+                type="button"
+                onClick={handleSaveAndContinue}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold flex items-center gap-1.5 shadow-sm active:scale-[0.98] transition-all"
+                title="บันทึกและคาหน้าต่างไว้เพื่อคีย์รายการต่อไปทันที"
+              >
+                <Plus className="w-4 h-4" /> บันทึก & เพิ่มต่อ
+              </button>
+            )}
             <button
               type="submit"
               className="px-5 py-2 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-sm font-bold flex items-center gap-1.5 shadow-sm active:scale-[0.98] transition-all"
             >
-              <Save className="w-4 h-4" /> บันทึกรายการ
+              <Save className="w-4 h-4" /> {isEdit ? 'บันทึกการแก้ไข' : 'บันทึกรายการ'}
             </button>
           </div>
         </form>
