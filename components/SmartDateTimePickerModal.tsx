@@ -199,40 +199,40 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                 <button
                   type="button"
                   onClick={setMorning}
-                  className={`h-16 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border transition-all active:scale-[0.98] ${
+                  className={`h-14 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border transition-all active:scale-[0.98] ${
                     hour === 10 && minute === 0 
                       ? 'bg-amber-500/25 border-amber-500 text-amber-300 ring-1 ring-amber-400' 
                       : 'bg-white/5 border-white/5 hover:bg-white/10 text-gray-300'
                   }`}
                 >
                   <Sun className="w-4 h-4 text-amber-400" />
-                  <span>เช้า (10:00)</span>
+                  <span className="font-mono font-bold text-xs">10:00</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={setAfternoon}
-                  className={`h-16 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border transition-all active:scale-[0.98] ${
+                  className={`h-14 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border transition-all active:scale-[0.98] ${
                     hour === 13 && minute === 0 
                       ? 'bg-blue-500/25 border-blue-500 text-blue-300 ring-1 ring-blue-400' 
                       : 'bg-white/5 border-white/5 hover:bg-white/10 text-gray-300'
                   }`}
                 >
                   <Clock className="w-4 h-4 text-blue-400" />
-                  <span>บ่าย (13:00)</span>
+                  <span className="font-mono font-bold text-xs">13:00</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={setEvening}
-                  className={`h-16 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border transition-all active:scale-[0.98] ${
+                  className={`h-14 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border transition-all active:scale-[0.98] ${
                     hour === 16 && minute === 0 
                       ? 'bg-purple-500/25 border-purple-500 text-purple-300 ring-1 ring-purple-400' 
                       : 'bg-white/5 border-white/5 hover:bg-white/10 text-gray-300'
                   }`}
                 >
                   <Sunset className="w-4 h-4 text-purple-400" />
-                  <span>ค่ำ (16:00)</span>
+                  <span className="font-mono font-bold text-xs">16:00</span>
                 </button>
               </div>
             </div>
