@@ -6,6 +6,7 @@ import { LINE_ACCOUNTS } from '../lineConfig';
 import { escapeHtml } from './sanitize';
 
 const formatAccessory = (acc: string) => {
+  if (acc === 'unit') return 'ตัวเครื่อง';
   if (acc.startsWith('acc_hdd::')) return `HDD (${acc.split('::')[1]})`;
   if (acc.startsWith('acc_')) {
     const label = (translations.th.accessories_list as any)[acc];
@@ -385,13 +386,13 @@ export const getImporterFormHTML = async (rmas: RMA[]): Promise<string> => {
     let keptString: string;
 
     if (sentItems.length > 0) {
-      const sentFormatted = sentItems.map(a => a === 'unit' ? 'ตัวเครื่อง (Unit)' : formatAccessory(a));
+      const sentFormatted = sentItems.map(a => a === 'unit' ? 'ตัวเครื่อง' : formatAccessory(a));
       sentString = sentFormatted.join(', ');
       // Filter out 'unit_only' from kept items — it's a flag, not an actual accessory
       const keptItems = allAcc.filter(a => a !== 'unit_only' && !sentItems.includes(a));
       keptString = keptItems.length > 0 ? keptItems.map(a => formatAccessory(a)).join(', ') : '';
     } else {
-      sentString = 'Unit Only (เฉพาะเครื่อง)';
+      sentString = 'ตัวเครื่องเท่านั้น';
       // Filter out 'unit_only' — it's not a real item to keep at store
       const realAcc = allAcc.filter(a => a !== 'unit_only');
       keptString = realAcc.length > 0 ? realAcc.map(a => formatAccessory(a)).join(', ') : '';
