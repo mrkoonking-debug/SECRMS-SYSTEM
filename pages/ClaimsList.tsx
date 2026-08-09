@@ -189,10 +189,10 @@ export const ClaimsList: React.FC = () => {
     const [debouncedSearch, setDebouncedSearch] = useState(() => sessionStorage.getItem('rmas_search') || '');
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'IN_PROGRESS' | 'DONE'>(() => (sessionStorage.getItem('rmas_statusFilter') as any) || 'ALL');
     const [teamFilter, setTeamFilter] = useState<'ALL' | 'GROUP_C' | Team>(() => (sessionStorage.getItem('rmas_teamFilter') as any) || 'ALL');
-    const [dateFilter, setDateFilter] = useState<'ALL' | 'TODAY' | 'LAST_7' | 'LAST_30' | 'THIS_MONTH'>(() => (sessionStorage.getItem('rmas_dateFilter') as any) || 'ALL');
+    const [dateFilter, setDateFilter] = useState<string>(() => (sessionStorage.getItem('rmas_dateFilter') || 'ALL'));
     const [expandedDates, setExpandedDates] = useState<Set<string>>(() => {
         const saved = sessionStorage.getItem('rmas_expandedDates');
-        return saved ? new Set(JSON.parse(saved)) : new Set(['Today', 'Yesterday', 'This Week', 'This Month', 'Earlier']);
+        return saved ? new Set(JSON.parse(saved)) : new Set();
     });
     const [isTeamCExpanded, setIsTeamCExpanded] = useState(() => sessionStorage.getItem('rmas_isTeamCExpanded') === 'true');
 
@@ -200,52 +200,67 @@ export const ClaimsList: React.FC = () => {
     const navigate = useNavigate();
     const searchTimerRef = useRef<any>(null);
 
-    // Debounce search input
+    const availableMonthKeys = useMemo(() => {
+        const monthSet = new Set<string>();
+        const now = new Date();
+        const currentYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        monthSet.add(currentYM);
+
+        rmas.forEach(c => {
+            if (!c || !c.createdAt) return;
+            const d = new Date(c.createdAt);
+            if (!isNaN(d.getTime())) {
+                const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                monthSet.add(ym);
+            }
+        });
+
+        return Array.from(monthSet).sort().reverse();
+    }, [rmas]);
+
+    const formatMonthTitle = useCallback((ymKey: string) => {
+        if (ymKey === 'Earlier') return { short: 'ก่อนหน้า', full: 'รายการก่อนหน้า', isThisMonth: false };
+        const [yStr, mStr] = ymKey.split('-');
+        const year = parseInt(yStr, 10);
+        const monthIdx = parseInt(mStr, 10) - 1;
+        const now = new Date();
+        const isThisMonth = year === now.getFullYear() && monthIdx === now.getMonth();
+
+        const thaiMonthsShort = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+        const thaiMonthsFull = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+
+        return {
+            short: isThisMonth ? 'เดือนนี้' : `${thaiMonthsShort[monthIdx]} ${year + 543}`,
+            full: isThisMonth ? `เดือนนี้ (${thaiMonthsFull[monthIdx]} ${year + 543})` : `${thaiMonthsFull[monthIdx]} ${year + 543}`,
+            isThisMonth
+        };
+    }, []);
+
     const handleSearchChange = useCallback((value: string) => {
         setSearch(value);
         if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
         searchTimerRef.current = setTimeout(() => setDebouncedSearch(value), 300);
     }, []);
 
-    // Save filters state to sessionStorage to preserve filters on back navigation
     useEffect(() => {
         sessionStorage.setItem('rmas_search', search);
-    }, [search]);
-
-    useEffect(() => {
         sessionStorage.setItem('rmas_statusFilter', statusFilter);
-    }, [statusFilter]);
-
-    useEffect(() => {
         sessionStorage.setItem('rmas_teamFilter', teamFilter);
-    }, [teamFilter]);
-
-    useEffect(() => {
         sessionStorage.setItem('rmas_dateFilter', dateFilter);
-    }, [dateFilter]);
-
-    useEffect(() => {
         sessionStorage.setItem('rmas_expandedDates', JSON.stringify(Array.from(expandedDates)));
-    }, [expandedDates]);
-
-    useEffect(() => {
         sessionStorage.setItem('rmas_isTeamCExpanded', String(isTeamCExpanded));
-    }, [isTeamCExpanded]);
+    }, [search, statusFilter, teamFilter, dateFilter, expandedDates, isTeamCExpanded]);
 
     useEffect(() => {
         const fetchInitialAndRemaining = async () => {
             try {
-                // 1. Initial Load: Fetch first 50 items and display immediately
                 const result = await MockDb.getRMAsPaginated(PAGE_SIZE, null);
                 const assignedRMAs = result.rmas.filter(c => c && c.id && c.team && (c.team as any) !== 'UNASSIGNED');
                 setRMAs(assignedRMAs);
-                setLoading(false); // Render initial screen instantly
-                
-                // 2. Background Load: Fetch remaining items recursively
+                setLoading(false);
                 if (result.hasMore) {
                     let cursor = result.lastDoc;
                     let more = true;
-                    
                     while (more) {
                         const nextResult = await MockDb.getRMAsPaginated(PAGE_SIZE, cursor);
                         const nextAssigned = nextResult.rmas.filter(c => c && c.id && c.team && (c.team as any) !== 'UNASSIGNED');
@@ -269,7 +284,6 @@ export const ClaimsList: React.FC = () => {
         fetchInitialAndRemaining();
     }, []);
 
-
     const toggleDateGroup = (dateLabel: string) => {
         const newSet = new Set(expandedDates);
         if (newSet.has(dateLabel)) newSet.delete(dateLabel);
@@ -279,7 +293,7 @@ export const ClaimsList: React.FC = () => {
 
     const handleExpandAll = () => {
         if (expandedDates.size > 0) setExpandedDates(new Set());
-        else setExpandedDates(new Set(['Today', 'Yesterday', 'This Week', 'Earlier']));
+        else setExpandedDates(new Set(availableMonthKeys));
     };
 
     const handleJobClick = useCallback((jobId: string) => navigate(`/admin/job/${encodeURIComponent(jobId)}`), [navigate]);
@@ -289,14 +303,7 @@ export const ClaimsList: React.FC = () => {
             if (!c || !c.id) return false;
             if (!debouncedSearch.trim()) return true;
             const term = debouncedSearch.toLowerCase().trim();
-            const matchCustomer = c.customerName && c.customerName.toLowerCase().includes(term);
-            const matchSN = c.serialNumber && c.serialNumber.toLowerCase().includes(term);
-            const matchModel = c.productModel && c.productModel.toLowerCase().includes(term);
-            const matchId = c.id && c.id.toLowerCase().includes(term);
-            const matchQuote = c.quotationNumber && c.quotationNumber.toLowerCase().includes(term);
-            const matchGroup = c.groupRequestId && c.groupRequestId.toLowerCase().includes(term);
-            const matchBrand = c.brand && c.brand.toLowerCase().includes(term);
-            return matchId || matchCustomer || matchSN || matchModel || matchQuote || matchGroup || matchBrand;
+            return (c.id && c.id.toLowerCase().includes(term)) || (c.customerName && c.customerName.toLowerCase().includes(term)) || (c.serialNumber && c.serialNumber.toLowerCase().includes(term));
         };
 
         const matchesStatus = (c: RMA) => {
@@ -315,92 +322,52 @@ export const ClaimsList: React.FC = () => {
 
         const matchesDate = (c: RMA) => {
             if (dateFilter === 'ALL') return true;
-            const date = new Date(c.createdAt);
+            if (!c.createdAt) return false;
+            const d = new Date(c.createdAt);
+            if (isNaN(d.getTime())) return false;
+            const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
             const now = new Date();
-            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-            if (dateFilter === 'TODAY') {
-                return date >= startOfToday;
-            }
-            if (dateFilter === 'LAST_7') {
-                const sevenDaysAgo = new Date(startOfToday.getTime() - 7 * 86400000);
-                return date >= sevenDaysAgo;
-            }
-            if (dateFilter === 'LAST_30') {
-                const thirtyDaysAgo = new Date(startOfToday.getTime() - 30 * 86400000);
-                return date >= thirtyDaysAgo;
-            }
-            if (dateFilter === 'THIS_MONTH') {
-                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-                return date >= startOfMonth;
-            }
-            return true;
+            const nowYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            if (dateFilter === 'THIS_MONTH') return ym === nowYM;
+            return ym === dateFilter;
         };
 
         const filteredRMAs = rmas.filter(c => matchesSearch(c) && matchesStatus(c) && matchesTeam(c) && matchesDate(c));
-
-        const getDateLabel = (dateStr: string) => {
-            const date = new Date(dateStr);
-            const now = new Date();
-            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const diffTime = startOfToday.getTime() - new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-            const diffDays = Math.round(diffTime / 86400000);
-
-            if (diffDays === 0) return 'Today';
-            if (diffDays === 1) return 'Yesterday';
-            if (diffDays <= 7) return 'This Week';
-            if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) return 'This Month';
-            return 'Earlier';
-        };
-
-        const dateGroups: Record<string, RMA[]> = { 'Today': [], 'Yesterday': [], 'This Week': [], 'This Month': [], 'Earlier': [] };
+        const dateGroups: Record<string, RMA[]> = {};
         filteredRMAs.forEach(c => {
-            const label = getDateLabel(c.createdAt);
-            if (dateGroups[label]) dateGroups[label].push(c);
-            else dateGroups['Earlier'].push(c);
+            let ym = 'Earlier';
+            if (c.createdAt) {
+                const d = new Date(c.createdAt);
+                if (!isNaN(d.getTime())) {
+                    ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                }
+            }
+            if (!dateGroups[ym]) dateGroups[ym] = [];
+            dateGroups[ym].push(c);
         });
 
         const finalGroups: Record<string, { jobs: Record<string, RMA[]>; sortedJobKeys: string[]; count: number }> = {};
-
         Object.keys(dateGroups).forEach(dateLabel => {
             const rmasInDate = dateGroups[dateLabel];
-            if (rmasInDate.length === 0) return;
-
             const jobs = rmasInDate.reduce((acc, rma) => {
                 const jobKey = rma.groupRequestId || rma.id;
                 if (!acc[jobKey]) acc[jobKey] = [];
                 acc[jobKey].push(rma);
                 return acc;
             }, {} as Record<string, RMA[]>);
-
-            const sortedJobKeys = Object.keys(jobs).sort((a, b) => 
-                new Date(jobs[b][0].createdAt).getTime() - new Date(jobs[a][0].createdAt).getTime()
-            );
-
-            finalGroups[dateLabel] = {
-                jobs,
-                sortedJobKeys,
-                count: rmasInDate.length
-            };
+            const sortedJobKeys = Object.keys(jobs).sort((a, b) => new Date(jobs[b][0].createdAt).getTime() - new Date(jobs[a][0].createdAt).getTime());
+            finalGroups[dateLabel] = { jobs, sortedJobKeys, count: rmasInDate.length };
         });
-
         return finalGroups;
     }, [rmas, debouncedSearch, statusFilter, teamFilter, dateFilter]);
-
 
     const getTeamCount = (team: Team) => rmas.filter(c => c.team === team && !DONE_STATUSES.includes(c.status)).length;
     const getGroupCCount = () => rmas.filter(c => [Team.TEAM_C, Team.TEAM_E, Team.TEAM_G].includes(c.team) && !DONE_STATUSES.includes(c.status)).length;
     const handleGroupCClick = () => { setIsTeamCExpanded(!isTeamCExpanded); setTeamFilter('GROUP_C'); };
-
-
     const handleClearFilters = () => {
-        setSearch('');
-        setDebouncedSearch('');
-        setStatusFilter('ALL');
-        setTeamFilter('ALL');
-        setIsTeamCExpanded(false);
+        setSearch(''); setDebouncedSearch(''); setStatusFilter('ALL'); setTeamFilter('ALL'); setDateFilter('ALL'); setIsTeamCExpanded(false);
     };
-    const isAnyFilterActive = search !== '' || statusFilter !== 'ALL' || teamFilter !== 'ALL';
+    const isAnyFilterActive = search !== '' || statusFilter !== 'ALL' || teamFilter !== 'ALL' || dateFilter !== 'ALL';
 
     if (loading) return <div className="p-12 text-center">Loading RMAs...</div>;
 
@@ -415,7 +382,6 @@ export const ClaimsList: React.FC = () => {
 
     return (
         <div className="max-w-[1600px] w-full mx-auto px-2 sm:px-4 md:px-6 pb-6">
-            {/* ── Header ── */}
             <div className="flex items-center justify-between gap-4 mb-4 md:mb-6">
                 <div>
                     <h1 className="text-xl md:text-[28px] font-extrabold text-[#1d1d1f] dark:text-white tracking-tight">{t('claimsList.title')}</h1>
@@ -424,13 +390,12 @@ export const ClaimsList: React.FC = () => {
                 <Link to="/admin/submit" className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-4 md:px-5 py-2 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-1.5 shadow-sm transition-all whitespace-nowrap hover:shadow-md active:scale-[0.97]"><Plus className="h-4 w-4" /> <span className="hidden md:inline">{t('nav.newRequest')}</span><span className="md:hidden">เพิ่ม</span></Link>
             </div>
 
-            {/* ── Bento Stats Grid ── */}
             <div className="mb-4 md:mb-6 space-y-2.5">
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:flex gap-2.5 md:gap-3 pb-1">
-                    <button onClick={() => { setTeamFilter('ALL'); setIsTeamCExpanded(false); }} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${teamFilter === 'ALL' ? 'bg-[#0071e3] text-white shadow-sm border border-[#0071e3]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-blue-300 dark:hover:border-blue-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] sm:text-[10px] md:text-[10px] font-bold uppercase tracking-wider mb-0.5 truncate ${teamFilter === 'ALL' ? 'text-blue-100' : 'text-gray-400 dark:text-gray-500'}`}>{t('claimsList.active')}</div><div className={`text-base md:text-2xl font-extrabold ${teamFilter === 'ALL' ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{rmas.filter(c => !DONE_STATUSES.includes(c.status)).length}</div></button>
-                    <button onClick={() => { setTeamFilter(Team.HIKVISION); setIsTeamCExpanded(false); }} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${teamFilter === Team.HIKVISION ? 'bg-[#e53e3e] text-white shadow-sm border border-[#e53e3e]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-red-300 dark:hover:border-red-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] sm:text-[10px] md:text-[10px] font-bold uppercase tracking-wider mb-0.5 ${teamFilter === Team.HIKVISION ? 'text-red-100' : 'text-red-500'}`}>HIK</div><div className={`text-base md:text-2xl font-extrabold ${teamFilter === Team.HIKVISION ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{getTeamCount(Team.HIKVISION)}</div></button>
-                    <button onClick={() => { setTeamFilter(Team.DAHUA); setIsTeamCExpanded(false); }} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${teamFilter === Team.DAHUA ? 'bg-[#dd6b20] text-white shadow-sm border border-[#dd6b20]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-orange-300 dark:hover:border-orange-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] sm:text-[10px] md:text-[10px] font-bold uppercase tracking-wider mb-0.5 ${teamFilter === Team.DAHUA ? 'text-orange-100' : 'text-orange-500'}`}>DAHUA</div><div className={`text-base md:text-2xl font-extrabold ${teamFilter === Team.DAHUA ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{getTeamCount(Team.DAHUA)}</div></button>
-                    <button onClick={handleGroupCClick} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'bg-[#805ad5] text-white shadow-sm border border-[#805ad5]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-violet-300 dark:hover:border-violet-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] sm:text-[10px] md:text-[10px] font-bold uppercase tracking-wider mb-0.5 ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-violet-100' : 'text-violet-500'}`}>Team C</div><div className={`text-base md:text-2xl font-extrabold ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{getGroupCCount()}</div></button>
+                    <button onClick={() => { setTeamFilter('ALL'); setIsTeamCExpanded(false); }} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${teamFilter === 'ALL' ? 'bg-[#0071e3] text-white shadow-sm border border-[#0071e3]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-blue-300 dark:hover:border-blue-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 truncate ${teamFilter === 'ALL' ? 'text-blue-100' : 'text-gray-400 dark:text-gray-500'}`}>{t('claimsList.active')}</div><div className={`text-base md:text-2xl font-extrabold ${teamFilter === 'ALL' ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{rmas.filter(c => !DONE_STATUSES.includes(c.status)).length}</div></button>
+                    <button onClick={() => { setTeamFilter(Team.HIKVISION); setIsTeamCExpanded(false); }} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${teamFilter === Team.HIKVISION ? 'bg-[#e53e3e] text-white shadow-sm border border-[#e53e3e]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-red-300 dark:hover:border-red-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${teamFilter === Team.HIKVISION ? 'text-red-100' : 'text-red-500'}`}>HIK</div><div className={`text-base md:text-2xl font-extrabold ${teamFilter === Team.HIKVISION ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{getTeamCount(Team.HIKVISION)}</div></button>
+                    <button onClick={() => { setTeamFilter(Team.DAHUA); setIsTeamCExpanded(false); }} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${teamFilter === Team.DAHUA ? 'bg-[#dd6b20] text-white shadow-sm border border-[#dd6b20]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-orange-300 dark:hover:border-orange-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${teamFilter === Team.DAHUA ? 'text-orange-100' : 'text-orange-500'}`}>DAHUA</div><div className={`text-base md:text-2xl font-extrabold ${teamFilter === Team.DAHUA ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{getTeamCount(Team.DAHUA)}</div></button>
+                    <button onClick={handleGroupCClick} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'bg-[#805ad5] text-white shadow-sm border border-[#805ad5]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-violet-300 dark:hover:border-violet-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-violet-100' : 'text-violet-500'}`}>Team C</div><div className={`text-base md:text-2xl font-extrabold ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{getGroupCCount()}</div></button>
                 </div>
                 {isTeamCExpanded && (
                     <div className="flex gap-2 overflow-x-auto scrollbar-hide animate-fade-in pl-2 border-l-2 border-violet-500/30">
@@ -441,126 +406,71 @@ export const ClaimsList: React.FC = () => {
                 )}
             </div>
 
-            {/* ── Search + Filters ── */}
-            <div className="bg-white dark:bg-[#16161a] rounded-xl md:rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-200/60 dark:border-white/[0.08] p-1.5 mb-5 md:mb-6 sticky top-14 md:top-0 z-30 flex flex-col gap-2">
-                <div className="flex flex-col xl:flex-row xl:items-center gap-1 md:gap-2 w-full">
-                    <div className="relative flex-grow group">
-                        <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input 
-                            type="text" 
-                            placeholder={t('claimsList.searchPlaceholder')} 
-                            value={search} 
-                            onChange={(e) => handleSearchChange(e.target.value)} 
-                            className="w-full bg-transparent border-none rounded-xl md:rounded-2xl py-2.5 md:py-3 pl-9 md:pl-11 pr-4 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0" 
-                        />
+            <div className="bg-white dark:bg-[#16161a] rounded-2xl md:rounded-[24px] border border-gray-200/60 dark:border-white/[0.08] p-2 md:p-3 shadow-sm mb-4 md:mb-6 space-y-2">
+                <div className="flex flex-col xl:flex-row items-center justify-between gap-2.5">
+                    <div className="relative w-full xl:flex-1">
+                        <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
+                        <input type="text" placeholder={t('claimsList.searchPlaceholder')} value={search} onChange={(e) => handleSearchChange(e.target.value)} className="w-full bg-transparent border-none rounded-xl py-2.5 pl-10 text-sm dark:text-white focus:ring-0" />
                     </div>
-                    <div className="flex items-center gap-2 w-full xl:w-auto px-1 pb-1 xl:pb-0">
-                        <button onClick={handleExpandAll} className="hidden xl:flex p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06] flex-shrink-0 transition-colors">
-                            <ChevronsUpDown className="w-4 h-4" />
-                        </button>
-                        <div className="hidden xl:block h-5 w-px bg-gray-200 dark:bg-white/10 flex-shrink-0"></div>
-                        
-                        {/* iOS Segmented Control style with Sliding Indicator */}
-                        <div className="bg-gray-100 dark:bg-[#2c2c2e]/60 border border-gray-200/50 dark:border-white/[0.04] p-0.5 rounded-full grid grid-cols-4 items-center relative w-full xl:w-[560px] flex-shrink-0">
-                            {/* Sliding Indicator with Dynamic Colors */}
-                            <div 
-                              className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform translate-z-0 ${getStatusColorClass(statusFilter)}`}
-                              style={{
-                                width: 'calc(25% - 4px)',
-                                left: `calc(${['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].indexOf(statusFilter) * 25}% + 2px)`
-                              }}
-                            />
+                    <div className="flex items-center gap-2">
+                        <button onClick={handleExpandAll} className="p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06]"><ChevronsUpDown className="w-4 h-4" /></button>
+                        <div className="bg-gray-100 dark:bg-[#2c2c2e]/60 border border-gray-200/50 p-0.5 rounded-full grid grid-cols-4 relative w-[280px]">
+                            <div className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ${getStatusColorClass(statusFilter)}`} style={{ width: 'calc(25% - 4px)', left: `calc(${['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].indexOf(statusFilter) * 25}% + 2px)` }} />
                             {['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].map((s) => (
-                                <button 
-                                    key={s} 
-                                    onClick={() => setStatusFilter(s as typeof statusFilter)} 
-                                    className={`relative z-10 px-1 md:px-3.5 py-1.5 md:py-2 text-[11px] sm:text-xs font-bold rounded-full transition-colors duration-200 whitespace-nowrap text-center outline-none focus:outline-none ${
-                                        statusFilter === s 
-                                            ? 'text-white' 
-                                            : 'text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
-                                    }`}
-                                >
-                                    {language === 'en' 
-                                        ? (s === 'ALL' ? 'All' : s === 'PENDING' ? 'Received' : s === 'IN_PROGRESS' ? 'Progress' : 'Done')
-                                        : (s === 'ALL' ? 'ทั้งหมด' : s === 'PENDING' ? 'รับเรื่อง' : s === 'IN_PROGRESS' ? 'ดำเนินการ' : 'เสร็จสิ้น')
-                                    }
+                                <button key={s} onClick={() => setStatusFilter(s as any)} className={`relative z-10 py-1.5 text-[11px] font-bold rounded-full ${statusFilter === s ? 'text-white' : 'text-gray-500'}`}>
+                                    {language === 'en' ? (s === 'ALL' ? 'All' : s === 'PENDING' ? 'Recv' : s === 'IN_PROGRESS' ? 'Prog' : 'Done') : (s === 'ALL' ? 'ทั้งหมด' : s === 'PENDING' ? 'รับ' : s === 'IN_PROGRESS' ? 'ทำ' : 'เสร็จ')}
                                 </button>
                             ))}
                         </div>
                     </div>
                 </div>
 
-                {/* Date Filter Pills */}
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 px-1.5 scrollbar-hide border-t border-gray-100 dark:border-white/5 pt-2">
-                    <span className="text-gray-400 dark:text-gray-500 font-bold text-[11px] uppercase tracking-wider shrink-0 flex items-center gap-1 mr-1">
-                        <Calendar className="w-3.5 h-3.5 text-blue-500" /> ช่วงเวลา:
-                    </span>
-                    {[
-                        { key: 'ALL', label: 'ทั้งหมด' },
-                        { key: 'TODAY', label: 'วันนี้' },
-                        { key: 'LAST_7', label: '7 วันล่าสุด' },
-                        { key: 'LAST_30', label: '30 วันล่าสุด' },
-                        { key: 'THIS_MONTH', label: 'เดือนนี้' }
-                    ].map((d) => (
-                        <button
-                            key={d.key}
-                            onClick={() => setDateFilter(d.key as typeof dateFilter)}
-                            className={`px-3 py-1 rounded-full font-bold text-xs transition-all whitespace-nowrap ${
-                                dateFilter === d.key
-                                    ? 'bg-[#0071e3] text-white shadow-sm shadow-blue-500/20'
-                                    : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10'
-                            }`}
-                        >
-                            {d.label}
-                        </button>
-                    ))}
+                    <span className="text-gray-400 dark:text-gray-500 font-bold text-[11px] uppercase tracking-wider shrink-0 flex items-center gap-1 mr-1"><Calendar className="w-3.5 h-3.5 text-blue-500" /> ช่วงเวลา:</span>
+                    <button onClick={() => setDateFilter('ALL')} className={`px-3 py-1 rounded-full font-bold text-xs ${dateFilter === 'ALL' ? 'bg-[#0071e3] text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-400'}`}>ทั้งหมด</button>
+                    <button onClick={() => setDateFilter('THIS_MONTH')} className={`px-3 py-1 rounded-full font-bold text-xs ${dateFilter === 'THIS_MONTH' ? 'bg-[#0071e3] text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-400'}`}>เดือนนี้</button>
+                    {availableMonthKeys.map((ymKey) => {
+                        const title = formatMonthTitle(ymKey);
+                        if (title.isThisMonth) return null;
+                        return (
+                            <button key={ymKey} onClick={() => setDateFilter(ymKey)} className={`px-3 py-1 rounded-full font-bold text-xs ${dateFilter === ymKey ? 'bg-[#0071e3] text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-400'}`}>
+                                {title.short}
+                            </button>
+                        );
+                    })}
                 </div>
 
                 {isAnyFilterActive && (
-                    <div className="w-full px-1 pb-1 flex justify-center animate-fade-in border-t border-gray-150/10 dark:border-white/5 pt-1.5">
-                        <button 
-                            onClick={handleClearFilters} 
-                            className="w-full md:w-auto px-4 py-2 text-xs font-bold rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 transition-all flex items-center justify-center gap-1.5"
-                        >
-                            <X className="w-4 h-4" /> {t('claimsList.clearFilters')}
-                        </button>
+                    <div className="w-full px-1 pb-1 flex justify-center border-t border-gray-150/10 dark:border-white/5 pt-1.5">
+                        <button onClick={handleClearFilters} className="w-full md:w-auto px-4 py-2 text-xs font-bold rounded-xl bg-red-500/10 text-red-600 flex items-center gap-1.5"><X className="w-4 h-4" /> {t('claimsList.clearFilters')}</button>
                     </div>
                 )}
             </div>
 
-            {/* ── Job List ── */}
             <div className="space-y-6 md:space-y-8">
                 {Object.keys(groupedJobsByDate).length === 0 ? (
-                    <div className="text-center py-20 md:py-24 bg-gray-50 dark:bg-white/[0.02] rounded-2xl md:rounded-3xl border border-gray-200/80 dark:border-white/[0.08]"><Search className="w-10 h-10 md:w-12 md:h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" /><p className="text-gray-400 dark:text-gray-500 text-sm">{t('claimsList.noClaims')}</p></div>
+                    <div className="text-center py-20 bg-gray-50 dark:bg-white/[0.02] rounded-2xl border border-gray-200/80"><Search className="w-10 h-10 text-gray-300 mx-auto mb-4" /><p className="text-gray-400 text-sm">{t('claimsList.noClaims')}</p></div>
                 ) : (
-                    ['Today', 'Yesterday', 'This Week', 'Earlier'].map(dateLabel => {
-                        const dateGroup = groupedJobsByDate[dateLabel];
+                    Object.keys(groupedJobsByDate).sort().reverse().map(ymKey => {
+                        const dateGroup = groupedJobsByDate[ymKey];
                         if (!dateGroup) return null;
-                        const isDateExpanded = expandedDates.has(dateLabel);
+                        const isDateExpanded = expandedDates.size === 0 || expandedDates.has(ymKey);
+                        const monthInfo = formatMonthTitle(ymKey);
 
                         return (
-                            <div key={dateLabel} className="animate-fade-in">
-                                <button onClick={() => toggleDateGroup(dateLabel)} className="w-full flex items-center gap-2.5 md:gap-3 mb-3 md:mb-4 group">
-                                    <div className={`w-6 h-6 md:w-7 md:h-7 rounded-lg flex items-center justify-center transition-all duration-200 ${isDateExpanded ? 'bg-[#0071e3] text-white shadow-md shadow-blue-500/30 rotate-0' : 'bg-gray-200/80 dark:bg-white/[0.06] text-gray-400 dark:text-gray-500 -rotate-90'}`}><ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4" /></div>
-                                    <h2 className="text-sm md:text-base font-bold text-[#1d1d1f] dark:text-white">
-                                        {dateLabel === 'Today' ? t('claimsList.today') :
-                                            dateLabel === 'Yesterday' ? t('claimsList.yesterday') :
-                                                dateLabel === 'This Week' ? t('claimsList.thisWeek') :
-                                                    dateLabel === 'Earlier' ? t('claimsList.earlier') : dateLabel} <span className="text-xs font-medium text-gray-400 dark:text-gray-500 ml-1">({dateGroup.count})</span>
+                            <div key={ymKey} className="animate-fade-in">
+                                <button onClick={() => toggleDateGroup(ymKey)} className="w-full flex items-center gap-2.5 md:gap-3 mb-3 group">
+                                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${isDateExpanded ? 'bg-[#0071e3] text-white rotate-0' : 'bg-gray-200 dark:bg-white/[0.06] text-gray-400 -rotate-90'}`}><ChevronDown className="w-3.5 h-3.5" /></div>
+                                    <h2 className="text-sm font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2">
+                                        <span>{monthInfo.full}</span>
+                                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-[#0071e3]">{dateGroup.count} ใบงาน</span>
                                     </h2>
-                                    <div className="flex-grow h-px bg-gradient-to-r from-gray-200 dark:from-white/10 to-transparent group-hover:from-blue-300 dark:group-hover:from-blue-500/20 transition-colors"></div>
+                                    <div className="flex-grow h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
                                 </button>
-
                                 {isDateExpanded && (
                                     <div className="space-y-3">
                                         {dateGroup.sortedJobKeys.map(jobKey => (
-                                            <JobCard
-                                                key={jobKey}
-                                                jobKey={jobKey}
-                                                jobItems={dateGroup.jobs[jobKey]}
-                                                onJobClick={handleJobClick}
-                                                t={t}
-                                            />
+                                            <JobCard key={jobKey} jobKey={jobKey} jobItems={dateGroup.jobs[jobKey]} onJobClick={handleJobClick} t={t} />
                                         ))}
                                     </div>
                                 )}
@@ -569,8 +479,6 @@ export const ClaimsList: React.FC = () => {
                     })
                 )}
             </div>
-
-
         </div>
     );
 };
