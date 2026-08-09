@@ -155,7 +155,7 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
   return createPortal(
     <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md animate-fade-in">
       <div 
-        className="relative w-full max-w-[760px] bg-[#07080b] text-white rounded-3xl border border-white/10 shadow-2xl overflow-hidden p-6 sm:p-7 flex flex-col gap-5"
+        className="relative w-full max-w-[800px] bg-[#0d0e14] text-white rounded-3xl border border-white/10 shadow-2xl overflow-hidden p-6 flex flex-col gap-5"
         onClick={e => e.stopPropagation()}
       >
         {/* Top Header */}
@@ -177,28 +177,29 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
           </button>
         </div>
 
-        {/* Content Body */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+        {/* Content Body: Symmetrical 2 Panels */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
           
-          {/* Left Panel: Shortcuts & Steppers & Confirm */}
-          <div className="md:col-span-5 flex flex-col justify-between space-y-4 bg-white/[0.02] p-4.5 rounded-2xl border border-white/5 min-h-[420px]">
-            {/* Quick Preset Buttons */}
+          {/* Left Panel: Presets & Steppers */}
+          <div className="md:col-span-5 bg-[#14151f] p-5 rounded-2xl border border-white/10 flex flex-col justify-between space-y-4">
+            
+            {/* Quick Preset Section */}
             <div className="space-y-3">
               <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">ทางลัดเวลา</span>
               
               <button
                 type="button"
                 onClick={setNow}
-                className="w-full px-4 py-3 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm"
+                className="w-full h-11 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-sm"
               >
                 <Sparkles className="w-4 h-4 text-blue-400" /> ตอนนี้ ({new Date().toTimeString().substring(0, 5)})
               </button>
               
-              <div className="grid grid-cols-3 gap-2 pt-1">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={setMorning}
-                  className={`px-2 py-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5 border transition-all active:scale-95 ${
+                  className={`h-16 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border transition-all active:scale-[0.98] ${
                     hour === 10 && minute === 0 
                       ? 'bg-amber-500/25 border-amber-500 text-amber-300 ring-1 ring-amber-400' 
                       : 'bg-white/5 border-white/5 hover:bg-white/10 text-gray-300'
@@ -211,7 +212,7 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                 <button
                   type="button"
                   onClick={setAfternoon}
-                  className={`px-2 py-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5 border transition-all active:scale-95 ${
+                  className={`h-16 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border transition-all active:scale-[0.98] ${
                     hour === 13 && minute === 0 
                       ? 'bg-blue-500/25 border-blue-500 text-blue-300 ring-1 ring-blue-400' 
                       : 'bg-white/5 border-white/5 hover:bg-white/10 text-gray-300'
@@ -224,7 +225,7 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                 <button
                   type="button"
                   onClick={setEvening}
-                  className={`px-2 py-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5 border transition-all active:scale-95 ${
+                  className={`h-16 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border transition-all active:scale-[0.98] ${
                     hour === 16 && minute === 0 
                       ? 'bg-purple-500/25 border-purple-500 text-purple-300 ring-1 ring-purple-400' 
                       : 'bg-white/5 border-white/5 hover:bg-white/10 text-gray-300'
@@ -236,7 +237,7 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
               </div>
             </div>
 
-            {/* Stepper display */}
+            {/* Stepper Section */}
             <div className="pt-3 border-t border-white/10 flex flex-col items-center">
               <span className="text-xs uppercase tracking-wider text-gray-400 font-bold mb-2">ตั้งเวลา</span>
               <div className="flex items-center justify-center gap-3">
@@ -247,7 +248,7 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                   </button>
                   <button
                     onClick={() => setActiveTab('hour')}
-                    className={`w-16 py-2 text-center text-2xl font-mono font-black rounded-2xl border transition-all ${
+                    className={`w-16 h-12 text-center text-2xl font-mono font-black rounded-xl border flex items-center justify-center transition-all ${
                       activeTab === 'hour' ? 'bg-blue-500/25 border-blue-500 text-blue-300 ring-2 ring-blue-500/30' : 'bg-white/5 border-white/10 text-white'
                     }`}
                   >
@@ -256,10 +257,10 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                   <button onClick={() => adjustHour(-1)} className="p-1 text-gray-400 hover:text-blue-400 transition-colors active:scale-95">
                     <ChevronDown className="w-5 h-5" />
                   </button>
-                  <span className="text-xs text-gray-400 font-bold mt-1">ชม.</span>
+                  <span className="text-[11px] text-gray-400 font-bold mt-0.5">ชม.</span>
                 </div>
 
-                <span className="text-2xl font-bold text-gray-500 mb-5">:</span>
+                <span className="text-2xl font-bold text-gray-500 mb-4">:</span>
 
                 {/* Minute Stepper */}
                 <div className="flex flex-col items-center">
@@ -268,7 +269,7 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                   </button>
                   <button
                     onClick={() => setActiveTab('minute')}
-                    className={`w-16 py-2 text-center text-2xl font-mono font-black rounded-2xl border transition-all ${
+                    className={`w-16 h-12 text-center text-2xl font-mono font-black rounded-xl border flex items-center justify-center transition-all ${
                       activeTab === 'minute' ? 'bg-purple-500/25 border-purple-500 text-purple-300 ring-2 ring-purple-500/30' : 'bg-white/5 border-white/10 text-white'
                     }`}
                   >
@@ -277,7 +278,7 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                   <button onClick={() => adjustMinute(-1)} className="p-1 text-gray-400 hover:text-blue-400 transition-colors active:scale-95">
                     <ChevronDown className="w-5 h-5" />
                   </button>
-                  <span className="text-xs text-gray-400 font-bold mt-1">นาที</span>
+                  <span className="text-[11px] text-gray-400 font-bold mt-0.5">นาที</span>
                 </div>
               </div>
 
@@ -290,60 +291,65 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
               </button>
             </div>
 
-            {/* Confirm Button on Left Side */}
+            {/* Confirm Button */}
             <button
               type="button"
               onClick={handleConfirm}
-              className="w-full py-3.5 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:opacity-95 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-xl shadow-purple-500/25 active:scale-[0.99] transition-all"
+              className="w-full h-12 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:opacity-95 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 active:scale-[0.98] transition-all"
             >
               <Check className="w-4 h-4" /> ยืนยัน ✓
             </button>
           </div>
 
-          {/* Right Panel: Fixed 42-cell height Layout */}
-          <div className="md:col-span-7 flex flex-col justify-start space-y-4 bg-white/[0.02] p-4.5 rounded-2xl border border-white/5 min-h-[420px]">
-            {/* View Switcher Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/10 flex-shrink-0">
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('calendar')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'calendar' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  📅 ปฏิทินเลือกวันที่
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('hour')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'hour' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  ชั่วโมง
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('minute')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'minute' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  นาที
-                </button>
-              </div>
+          {/* Right Panel: Calendar & Grid Views */}
+          <div className="md:col-span-7 bg-[#14151f] p-5 rounded-2xl border border-white/10 flex flex-col justify-between">
+            
+            {/* Sleek Segmented Control Tab Bar */}
+            <div className="flex bg-black/40 p-1 rounded-xl border border-white/10 mb-3 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setActiveTab('calendar')}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === 'calendar'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                📅 ปฏิทินเลือกวันที่
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('hour')}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === 'hour'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                ชั่วโมง
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('minute')}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === 'minute'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                นาที
+              </button>
             </div>
 
-            {/* TAB 1: REAL THAI CALENDAR GRID (FIXED 42 CELLS = CONSTANT HEIGHT) */}
+            {/* TAB 1: CALENDAR VIEW */}
             {activeTab === 'calendar' && (
-              <div className="flex-grow flex flex-col justify-start space-y-3">
+              <div className="flex-grow flex flex-col justify-between">
                 {/* Month/Year Header */}
-                <div className="flex items-center justify-between px-2 h-10 flex-shrink-0">
+                <div className="flex items-center justify-between px-1 h-9 mb-1">
                   <button
                     type="button"
                     onClick={handlePrevMonth}
-                    className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
@@ -355,14 +361,14 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                   <button
                     type="button"
                     onClick={handleNextMonth}
-                    className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
                 </div>
 
                 {/* Weekdays Header */}
-                <div className="grid grid-cols-7 text-center font-bold text-xs py-1 flex-shrink-0">
+                <div className="grid grid-cols-7 text-center font-bold text-xs mb-1">
                   {WEEKDAYS.map((w, idx) => (
                     <span key={w} className={idx === 0 || idx === 6 ? 'text-red-400 font-extrabold' : 'text-gray-400'}>
                       {w}
@@ -371,7 +377,7 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                 </div>
 
                 {/* Days Grid - Fixed 6 rows x 7 cols (42 cells total) */}
-                <div className="grid grid-cols-7 gap-1.5 text-center flex-grow">
+                <div className="grid grid-cols-7 gap-1 text-center">
                   {/* Trailing days from previous month */}
                   {Array.from({ length: firstDayOfWeek }, (_, i) => {
                     const dayNum = daysInPrevMonth - firstDayOfWeek + i + 1;
@@ -380,7 +386,7 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                         key={`prev-${i}`}
                         type="button"
                         onClick={() => handleSelectDay(dayNum, -1)}
-                        className="h-10 text-xs text-gray-600 hover:text-gray-400 flex items-center justify-center rounded-2xl transition-colors"
+                        className="h-9 text-xs text-gray-600 hover:text-gray-400 flex items-center justify-center rounded-lg transition-colors"
                       >
                         {dayNum}
                       </button>
@@ -401,9 +407,9 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                         key={dayNum}
                         type="button"
                         onClick={() => handleSelectDay(dayNum, 0)}
-                        className={`h-10 text-sm font-bold flex items-center justify-center rounded-2xl transition-all ${
+                        className={`h-9 text-sm font-bold flex items-center justify-center rounded-lg transition-all ${
                           isSelected
-                            ? 'bg-gradient-to-tr from-blue-600 to-purple-600 text-white shadow-lg shadow-purple-500/40 scale-105 ring-2 ring-purple-400'
+                            ? 'bg-gradient-to-tr from-blue-600 to-purple-600 text-white shadow-md shadow-purple-500/40 ring-2 ring-purple-400'
                             : 'hover:bg-white/10 text-white'
                         }`}
                       >
@@ -412,7 +418,7 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                     );
                   })}
 
-                  {/* Trailing days from next month to ALWAYS complete 42 cells (6 full rows) */}
+                  {/* Trailing days from next month */}
                   {Array.from({ length: trailingNextMonthCount }, (_, i) => {
                     const dayNum = i + 1;
                     return (
@@ -420,7 +426,7 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                         key={`next-${i}`}
                         type="button"
                         onClick={() => handleSelectDay(dayNum, 1)}
-                        className="h-10 text-xs text-gray-600 hover:text-gray-400 flex items-center justify-center rounded-2xl transition-colors"
+                        className="h-9 text-xs text-gray-600 hover:text-gray-400 flex items-center justify-center rounded-lg transition-colors"
                       >
                         {dayNum}
                       </button>
@@ -430,11 +436,11 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
               </div>
             )}
 
-            {/* TAB 2: HOUR GRID */}
+            {/* TAB 2: HOUR VIEW */}
             {activeTab === 'hour' && (
-              <div className="space-y-3 flex-grow">
+              <div className="flex-grow flex flex-col justify-between space-y-3">
                 <span className="text-xs font-bold text-gray-300 block">เลือกชั่วโมง (ชม.):</span>
-                <div className="grid grid-cols-6 gap-2 max-h-[300px] overflow-y-auto pr-1">
+                <div className="grid grid-cols-6 gap-2 my-auto">
                   {hoursList.map(h => {
                     const isSelected = hour === h;
                     return (
@@ -442,9 +448,9 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                         key={h}
                         type="button"
                         onClick={() => { setHour(h); setActiveTab('minute'); }}
-                        className={`w-11 h-11 rounded-2xl text-sm font-bold flex items-center justify-center transition-all ${
+                        className={`h-11 rounded-xl text-sm font-bold flex items-center justify-center transition-all ${
                           isSelected
-                            ? 'bg-gradient-to-tr from-blue-600 to-purple-600 text-white shadow-lg shadow-purple-500/30 scale-105 ring-2 ring-purple-400'
+                            ? 'bg-gradient-to-tr from-blue-600 to-purple-600 text-white shadow-md shadow-purple-500/30 ring-2 ring-purple-400'
                             : 'bg-white/5 hover:bg-white/15 text-gray-300 border border-white/5'
                         }`}
                       >
@@ -456,11 +462,11 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
               </div>
             )}
 
-            {/* TAB 3: MINUTE GRID */}
+            {/* TAB 3: MINUTE VIEW */}
             {activeTab === 'minute' && (
-              <div className="space-y-4 flex-grow">
+              <div className="flex-grow flex flex-col justify-between space-y-3">
                 <span className="text-xs font-bold text-gray-300 block">เลือกนาที (นาที):</span>
-                <div className="grid grid-cols-6 gap-2">
+                <div className="grid grid-cols-6 gap-2 my-auto">
                   {minutesStepList.map(m => {
                     const isSelected = minute === m;
                     return (
@@ -468,9 +474,9 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                         key={m}
                         type="button"
                         onClick={() => setMinute(m)}
-                        className={`w-11 h-11 rounded-2xl text-sm font-bold flex items-center justify-center transition-all ${
+                        className={`h-11 rounded-xl text-sm font-bold flex items-center justify-center transition-all ${
                           isSelected
-                            ? 'bg-gradient-to-tr from-blue-600 to-purple-600 text-white shadow-lg shadow-purple-500/30 scale-105 ring-2 ring-purple-400'
+                            ? 'bg-gradient-to-tr from-blue-600 to-purple-600 text-white shadow-md shadow-purple-500/30 ring-2 ring-purple-400'
                             : 'bg-white/5 hover:bg-white/15 text-gray-300 border border-white/5'
                         }`}
                       >
@@ -481,13 +487,13 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                 </div>
 
                 {/* Fine adjustment +/- 1 min */}
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between bg-black/40 p-3 rounded-2xl">
+                <div className="mt-auto border-t border-white/10 pt-3 flex items-center justify-between bg-black/40 p-3 rounded-xl">
                   <span className="text-xs text-gray-400 font-bold">ปรับเพิ่ม/ลดทีละ 1 นาที:</span>
                   <div className="flex items-center gap-2.5">
                     <button
                       type="button"
                       onClick={() => adjustMinute(-1)}
-                      className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold active:scale-95 flex items-center gap-1 border border-white/10"
+                      className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-bold active:scale-95 flex items-center gap-1 border border-white/10"
                     >
                       <Minus className="w-3.5 h-3.5" /> 1 นาที
                     </button>
