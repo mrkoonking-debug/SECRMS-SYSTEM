@@ -303,62 +303,31 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   </div>
                 </div>
 
-                {/* Date & Time Row */}
-                <div className="space-y-2">
-                  <div className="grid grid-cols-2 gap-3.5">
-                    {/* Date */}
-                    <div className="col-span-1">
-                      <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1 flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5 text-[#0071e3]" /> วันที่
-                      </label>
-                      <input
-                        type="date"
-                        value={date}
-                        onChange={e => setDate(e.target.value)}
-                        className={inputClass(!!errors.date)}
-                      />
-                      {errors.date && <p className="text-red-500 text-[10px] mt-1 ml-1">{errors.date}</p>}
-                    </div>
-
-                    {/* Time */}
-                    <div className="col-span-1">
-                      <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1 flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-[#0071e3]" /> เวลา
-                      </label>
-                      <div className="relative flex items-center">
-                        <input
-                          type="text"
-                          maxLength={5}
-                          value={time}
-                          onChange={e => {
-                            let val = e.target.value.replace(/[^0-9]/g, '');
-                            if (val.length > 2) {
-                              val = val.substring(0, 2) + ':' + val.substring(2, 4);
-                            }
-                            setTime(val);
-                          }}
-                          placeholder="15:30"
-                          className={inputClass(!!errors.time) + " pr-14 font-mono"}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setTime(new Date().toTimeString().split(' ')[0].substring(0, 5))}
-                          className="absolute right-1.5 px-2 py-1 text-[10px] font-bold bg-[#0071e3]/10 hover:bg-[#0071e3]/20 dark:bg-blue-500/20 dark:hover:bg-blue-500/30 text-[#0071e3] dark:text-blue-400 rounded-lg transition-all"
-                          title="ใช้เวลาปัจจุบัน"
-                        >
-                          ตอนนี้
-                        </button>
-                      </div>
-                      {errors.time && <p className="text-red-500 text-[10px] mt-1 ml-1">{errors.time}</p>}
-                    </div>
-                  </div>
-
+                {/* Single Unified Date & Time Trigger Field */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 ml-1 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-[#0071e3]" /> วันที่และเวลาทำรายการ <span className="text-red-500">*</span></span>
+                    <span className="text-[10px] text-[#0071e3] dark:text-blue-400 font-medium">คลิกเพื่อเลือก/เปลี่ยน</span>
+                  </label>
                   <button
                     type="button"
                     onClick={() => setShowSmartPicker(true)}
-                    className="w-full py-2 px-3 bg-[#0071e3]/10 hover:bg-[#0071e3]/20 text-[#0071e3] dark:bg-blue-500/20 dark:hover:bg-blue-500/30 dark:text-blue-400 border border-blue-500/20 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
+                    className="w-full px-4 py-3 bg-white dark:bg-[#1e1e1f] border border-gray-200 dark:border-white/10 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl text-left font-bold text-sm text-[#1d1d1f] dark:text-white flex items-center justify-between shadow-sm transition-all active:scale-[0.99]"
                   >
-                    <Sparkles className="w-3.5 h-3.5" /> เลือกวันที่ & เวลาด่วน (เช้า 10:00 / บ่าย 13:00 / เย็น 16:00)
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+                        <Calendar className="w-4 h-4" />
+                        <span>{date}</span>
+                      </div>
+                      <span className="text-gray-300 dark:text-gray-600">|</span>
+                      <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400 font-mono">
+                        <Clock className="w-4 h-4" />
+                        <span>{time} น.</span>
+                      </div>
+                    </div>
+                    <span className="px-3 py-1 text-xs bg-[#0071e3]/10 dark:bg-blue-500/20 text-[#0071e3] dark:text-blue-400 rounded-lg font-bold">
+                      เปลี่ยนวันที่/เวลา
+                    </span>
                   </button>
                 </div>
 
