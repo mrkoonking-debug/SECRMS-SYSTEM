@@ -296,6 +296,7 @@ if (isConfigured && auth) {
       currentUser = {
         uid: user.uid,
         name: userData.name || user.email?.split('@')[0],
+        nickname: userData.nickname || '',
         email: user.email,
         role: resolveUserRole(user.email, userData),
         team: userData.team || 'ALL'
@@ -347,6 +348,7 @@ export const MockDb = {
       currentUser = {
         uid: cred.user.uid,
         name: userData?.name || email?.split('@')[0],
+        nickname: userData?.nickname || '',
         email: email,
         role: role,
         team: userData?.team || 'ALL'
