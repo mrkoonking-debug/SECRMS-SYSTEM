@@ -107,10 +107,11 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
     setMinute(prev => (prev + delta + 60) % 60);
   };
 
-  // Calendar Math
+  // Calendar Math (Always 42 cells for fixed constant height)
   const firstDayOfWeek = new Date(calYear, calMonth, 1).getDay(); // 0 = Sun
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
   const daysInPrevMonth = new Date(calYear, calMonth, 0).getDate();
+  const trailingNextMonthCount = 42 - (firstDayOfWeek + daysInMonth);
 
   const handlePrevMonth = () => {
     if (calMonth === 0) {
@@ -177,10 +178,10 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
         </div>
 
         {/* Content Body */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
           
           {/* Left Panel: Shortcuts & Steppers & Confirm */}
-          <div className="md:col-span-5 flex flex-col justify-between space-y-4 bg-white/[0.02] p-4 rounded-2xl border border-white/5">
+          <div className="md:col-span-5 flex flex-col justify-between space-y-4 bg-white/[0.02] p-4.5 rounded-2xl border border-white/5 min-h-[420px]">
             {/* Quick Preset Buttons */}
             <div className="space-y-3">
               <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">ทางลัดเวลา</span>
@@ -237,7 +238,7 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
 
             {/* Stepper display */}
             <div className="pt-3 border-t border-white/10 flex flex-col items-center">
-              <span className="text-xs uppercase tracking-wider text-gray-400 font-bold mb-3">ตั้งเวลา</span>
+              <span className="text-xs uppercase tracking-wider text-gray-400 font-bold mb-2">ตั้งเวลา</span>
               <div className="flex items-center justify-center gap-3">
                 {/* Hour Stepper */}
                 <div className="flex flex-col items-center">
@@ -283,7 +284,7 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
               <button
                 type="button"
                 onClick={setNow}
-                className="mt-3 text-xs text-gray-400 hover:text-white flex items-center gap-1.5 transition-colors font-medium"
+                className="mt-2 text-xs text-gray-400 hover:text-white flex items-center gap-1.5 transition-colors font-medium"
               >
                 <RotateCcw className="w-3.5 h-3.5" /> รีเซ็ต
               </button>
@@ -293,16 +294,16 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
             <button
               type="button"
               onClick={handleConfirm}
-              className="w-full py-3 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:opacity-95 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-xl shadow-purple-500/25 active:scale-[0.99] transition-all"
+              className="w-full py-3.5 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:opacity-95 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-xl shadow-purple-500/25 active:scale-[0.99] transition-all"
             >
               <Check className="w-4 h-4" /> ยืนยัน ✓
             </button>
           </div>
 
-          {/* Right Panel: Interactive Thai Calendar Grid by default */}
-          <div className="md:col-span-7 flex flex-col justify-between space-y-4 bg-white/[0.02] p-4.5 rounded-2xl border border-white/5">
+          {/* Right Panel: Fixed 42-cell height Layout */}
+          <div className="md:col-span-7 flex flex-col justify-start space-y-4 bg-white/[0.02] p-4.5 rounded-2xl border border-white/5 min-h-[420px]">
             {/* View Switcher Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10 flex-shrink-0">
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -334,11 +335,11 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
               </div>
             </div>
 
-            {/* TAB 1: REAL THAI CALENDAR GRID */}
+            {/* TAB 1: REAL THAI CALENDAR GRID (FIXED 42 CELLS = CONSTANT HEIGHT) */}
             {activeTab === 'calendar' && (
-              <div className="space-y-4">
+              <div className="flex-grow flex flex-col justify-start space-y-3">
                 {/* Month/Year Header */}
-                <div className="flex items-center justify-between px-2">
+                <div className="flex items-center justify-between px-2 h-10 flex-shrink-0">
                   <button
                     type="button"
                     onClick={handlePrevMonth}
@@ -361,7 +362,7 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                 </div>
 
                 {/* Weekdays Header */}
-                <div className="grid grid-cols-7 text-center font-bold text-xs py-1">
+                <div className="grid grid-cols-7 text-center font-bold text-xs py-1 flex-shrink-0">
                   {WEEKDAYS.map((w, idx) => (
                     <span key={w} className={idx === 0 || idx === 6 ? 'text-red-400 font-extrabold' : 'text-gray-400'}>
                       {w}
@@ -369,8 +370,8 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                   ))}
                 </div>
 
-                {/* Days Grid */}
-                <div className="grid grid-cols-7 gap-1.5 text-center">
+                {/* Days Grid - Fixed 6 rows x 7 cols (42 cells total) */}
+                <div className="grid grid-cols-7 gap-1.5 text-center flex-grow">
                   {/* Trailing days from previous month */}
                   {Array.from({ length: firstDayOfWeek }, (_, i) => {
                     const dayNum = daysInPrevMonth - firstDayOfWeek + i + 1;
@@ -411,8 +412,8 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
                     );
                   })}
 
-                  {/* Trailing days from next month to fill grid */}
-                  {Array.from({ length: (7 - ((firstDayOfWeek + daysInMonth) % 7)) % 7 }, (_, i) => {
+                  {/* Trailing days from next month to ALWAYS complete 42 cells (6 full rows) */}
+                  {Array.from({ length: trailingNextMonthCount }, (_, i) => {
                     const dayNum = i + 1;
                     return (
                       <button
@@ -431,9 +432,9 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
 
             {/* TAB 2: HOUR GRID */}
             {activeTab === 'hour' && (
-              <div className="space-y-3">
+              <div className="space-y-3 flex-grow">
                 <span className="text-xs font-bold text-gray-300 block">เลือกชั่วโมง (ชม.):</span>
-                <div className="grid grid-cols-6 gap-2 max-h-[240px] overflow-y-auto pr-1">
+                <div className="grid grid-cols-6 gap-2 max-h-[300px] overflow-y-auto pr-1">
                   {hoursList.map(h => {
                     const isSelected = hour === h;
                     return (
@@ -457,7 +458,7 @@ export const SmartDateTimePickerModal: React.FC<SmartDateTimePickerModalProps> =
 
             {/* TAB 3: MINUTE GRID */}
             {activeTab === 'minute' && (
-              <div className="space-y-4">
+              <div className="space-y-4 flex-grow">
                 <span className="text-xs font-bold text-gray-300 block">เลือกนาที (นาที):</span>
                 <div className="grid grid-cols-6 gap-2">
                   {minutesStepList.map(m => {
