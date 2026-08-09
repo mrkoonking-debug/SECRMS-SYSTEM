@@ -1627,8 +1627,8 @@ export const FinanceLedger: React.FC = () => {
             )}
             <button
               onClick={() => handleDuplicate(tx)}
-              className="p-1 text-gray-400 hover:text-emerald-500 hover:bg-gray-150 dark:hover:bg-white/5 rounded-lg transition-colors"
-              title="คัดลอกเป็นรายการใหม่ (Duplicate)"
+              className="p-1 text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-colors"
+              title="คัดลอกรายการนี้ลงใหม่ (Duplicate)"
             >
               <Copy className="w-3.5 h-3.5" />
             </button>
@@ -1864,8 +1864,8 @@ export const FinanceLedger: React.FC = () => {
                         )}
                         <button
                           onClick={() => handleDuplicate(tx)}
-                          className="p-1.5 text-gray-400 hover:text-emerald-500 hover:bg-gray-150 dark:hover:bg-white/5 rounded-lg transition-colors"
-                          title="คัดลอกเป็นรายการใหม่ (Duplicate)"
+                          className="p-1.5 text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-colors"
+                          title="คัดลอกรายการนี้ลงใหม่ (Duplicate)"
                         >
                           <Copy className="w-3.5 h-3.5" />
                         </button>
