@@ -514,11 +514,11 @@ export const ClaimsList: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2">
                         <button onClick={handleExpandAll} className="p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06]" title="ขยาย/หุบทั้งหมด"><ChevronsUpDown className="w-4 h-4" /></button>
-                        <div className="bg-gray-100 dark:bg-[#2c2c2e]/60 border border-gray-200/50 p-0.5 rounded-full grid grid-cols-4 relative w-[340px]">
+                        <div className="bg-gray-100 dark:bg-[#2c2c2e]/60 border border-gray-200/50 p-0.5 rounded-full grid grid-cols-4 relative w-[310px]">
                             <div className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ${getStatusColorClass(statusFilter)}`} style={{ width: 'calc(25% - 4px)', left: `calc(${['IN_PROGRESS', 'PENDING', 'DONE', 'ALL'].indexOf(statusFilter) * 25}% + 2px)` }} />
                             {(['IN_PROGRESS', 'PENDING', 'DONE', 'ALL'] as const).map((s) => (
                                 <button key={s} onClick={() => setStatusFilter(s as any)} className={`relative z-10 py-1.5 text-[11px] font-bold rounded-full ${statusFilter === s ? 'text-white' : 'text-gray-500'}`}>
-                                    {language === 'en' ? (s === 'ALL' ? 'All' : s === 'PENDING' ? 'Recv' : s === 'IN_PROGRESS' ? 'Prog' : 'Done') : (s === 'ALL' ? 'ทั้งหมด' : s === 'PENDING' ? 'รับเรื่อง' : s === 'IN_PROGRESS' ? 'กำลังดำเนินการ' : 'เสร็จ')}
+                                    {language === 'en' ? (s === 'ALL' ? 'All' : s === 'PENDING' ? 'Recv' : s === 'IN_PROGRESS' ? 'Prog' : 'Done') : (s === 'ALL' ? 'ทั้งหมด' : s === 'PENDING' ? 'รับเรื่อง' : s === 'IN_PROGRESS' ? 'ดำเนินการ' : 'เสร็จ')}
                                 </button>
                             ))}
                         </div>
