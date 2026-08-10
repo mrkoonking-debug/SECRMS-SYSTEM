@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { MockDb } from '../services/mockDb';
+import { MockDb, matchesSmartRef } from '../services/mockDb';
 import { RMA, RMAStatus, Team } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
-import { Search, Plus, ChevronRight, ChevronDown, Box, Layers, Wifi, Zap, ShoppingBag, Package, User, ChevronsUpDown, AlertTriangle, RefreshCw, CheckCircle2, X, Calendar } from 'lucide-react';
+import { Search, Plus, ChevronRight, ChevronDown, Package, ChevronsUpDown, AlertTriangle, RefreshCw, CheckCircle2, X, Calendar, ChevronLeft, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -187,14 +187,15 @@ export const ClaimsList: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState(() => sessionStorage.getItem('rmas_search') || '');
     const [debouncedSearch, setDebouncedSearch] = useState(() => sessionStorage.getItem('rmas_search') || '');
-    const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'IN_PROGRESS' | 'DONE'>(() => (sessionStorage.getItem('rmas_statusFilter') as any) || 'ALL');
+    const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'IN_PROGRESS' | 'DONE'>(() => (sessionStorage.getItem('rmas_statusFilter') as any) || 'IN_PROGRESS');
     const [teamFilter, setTeamFilter] = useState<'ALL' | 'GROUP_C' | Team>(() => (sessionStorage.getItem('rmas_teamFilter') as any) || 'ALL');
     const [dateFilter, setDateFilter] = useState<string>(() => (sessionStorage.getItem('rmas_dateFilter') || 'ALL'));
-    const [expandedDates, setExpandedDates] = useState<Set<string>>(() => {
-        const saved = sessionStorage.getItem('rmas_expandedDates');
-        return saved ? new Set(JSON.parse(saved)) : new Set();
-    });
+    const [expandedDates, setExpandedDates] = useState<Set<string> | null>(null);
     const [isTeamCExpanded, setIsTeamCExpanded] = useState(() => sessionStorage.getItem('rmas_isTeamCExpanded') === 'true');
+
+    // DOM Pagination States
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState<number>(20);
 
     const { t, language } = useLanguage();
     const navigate = useNavigate();
@@ -242,14 +243,23 @@ export const ClaimsList: React.FC = () => {
         searchTimerRef.current = setTimeout(() => setDebouncedSearch(value), 300);
     }, []);
 
+    const handleClearSearch = useCallback(() => {
+        setSearch('');
+        setDebouncedSearch('');
+    }, []);
+
+    // Reset pagination to page 1 whenever search or filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [debouncedSearch, statusFilter, teamFilter, dateFilter, pageSize]);
+
     useEffect(() => {
         sessionStorage.setItem('rmas_search', search);
         sessionStorage.setItem('rmas_statusFilter', statusFilter);
         sessionStorage.setItem('rmas_teamFilter', teamFilter);
         sessionStorage.setItem('rmas_dateFilter', dateFilter);
-        sessionStorage.setItem('rmas_expandedDates', JSON.stringify(Array.from(expandedDates)));
         sessionStorage.setItem('rmas_isTeamCExpanded', String(isTeamCExpanded));
-    }, [search, statusFilter, teamFilter, dateFilter, expandedDates, isTeamCExpanded]);
+    }, [search, statusFilter, teamFilter, dateFilter, isTeamCExpanded]);
 
     useEffect(() => {
         const fetchInitialAndRemaining = async () => {
@@ -284,32 +294,70 @@ export const ClaimsList: React.FC = () => {
         fetchInitialAndRemaining();
     }, []);
 
+    const isDateGroupExpanded = useCallback((ymKey: string) => {
+        if (expandedDates !== null) {
+            return expandedDates.has(ymKey);
+        }
+        return ymKey === availableMonthKeys[0]; // Default: ONLY latest month is expanded!
+    }, [expandedDates, availableMonthKeys]);
+
     const toggleDateGroup = (dateLabel: string) => {
-        const newSet = new Set(expandedDates);
-        if (newSet.has(dateLabel)) newSet.delete(dateLabel);
-        else newSet.add(dateLabel);
-        setExpandedDates(newSet);
+        let currentSet: Set<string>;
+        if (expandedDates === null) {
+            currentSet = new Set(availableMonthKeys[0] ? [availableMonthKeys[0]] : []);
+        } else {
+            currentSet = new Set(expandedDates);
+        }
+
+        if (currentSet.has(dateLabel)) {
+            currentSet.delete(dateLabel);
+        } else {
+            currentSet.add(dateLabel);
+        }
+        setExpandedDates(currentSet);
     };
 
     const handleExpandAll = () => {
-        if (expandedDates.size > 0) setExpandedDates(new Set());
-        else setExpandedDates(new Set(availableMonthKeys));
+        const isAllExpanded = expandedDates && expandedDates.size === availableMonthKeys.length;
+        if (isAllExpanded) {
+            setExpandedDates(new Set());
+        } else {
+            setExpandedDates(new Set(availableMonthKeys));
+        }
     };
 
     const handleJobClick = useCallback((jobId: string) => navigate(`/admin/job/${encodeURIComponent(jobId)}`), [navigate]);
 
-    const groupedJobsByDate = useMemo(() => {
+    // Compute complete filtered dataset matching ALL filters (multi-field search)
+    const filteredRMAs = useMemo(() => {
         const matchesSearch = (c: RMA) => {
             if (!c || !c.id) return false;
             if (!debouncedSearch.trim()) return true;
             const term = debouncedSearch.toLowerCase().trim();
-            return (c.id && c.id.toLowerCase().includes(term)) || (c.customerName && c.customerName.toLowerCase().includes(term)) || (c.serialNumber && c.serialNumber.toLowerCase().includes(term));
+            return (
+                matchesSmartRef(c.id, term) ||
+                matchesSmartRef(c.groupRequestId, term) ||
+                matchesSmartRef(c.quotationNumber, term) ||
+                matchesSmartRef(c.serialNumber, term) ||
+                matchesSmartRef(c.resolution?.replacedSerialNumber, term) ||
+                (c.customerName && c.customerName.toLowerCase().includes(term)) ||
+                (c.contactPerson && c.contactPerson.toLowerCase().includes(term)) ||
+                (c.customerPhone && c.customerPhone.includes(term)) ||
+                (c.customerEmail && c.customerEmail.toLowerCase().includes(term)) ||
+                (c.productModel && c.productModel.toLowerCase().includes(term)) ||
+                (c.brand && c.brand.toLowerCase().includes(term)) ||
+                (c.issueDescription && c.issueDescription.toLowerCase().includes(term)) ||
+                (c.resolution?.rootCause && c.resolution.rootCause.toLowerCase().includes(term)) ||
+                (c.resolution?.actionTaken && c.resolution.actionTaken.toLowerCase().includes(term)) ||
+                (c.resolution?.actionDetails && c.resolution.actionDetails.toLowerCase().includes(term)) ||
+                (c.createdBy && c.createdBy.toLowerCase().includes(term))
+            );
         };
 
         const matchesStatus = (c: RMA) => {
             if (statusFilter === 'ALL') return true;
             if (statusFilter === 'PENDING') return c.status === RMAStatus.PENDING;
-            if (statusFilter === 'IN_PROGRESS') return [RMAStatus.DIAGNOSING, RMAStatus.WAITING_PARTS].includes(c.status);
+            if (statusFilter === 'IN_PROGRESS') return !DONE_STATUSES.includes(c.status);
             if (statusFilter === 'DONE') return DONE_STATUSES.includes(c.status);
             return true;
         };
@@ -332,7 +380,11 @@ export const ClaimsList: React.FC = () => {
             return ym === dateFilter;
         };
 
-        const filteredRMAs = rmas.filter(c => matchesSearch(c) && matchesStatus(c) && matchesTeam(c) && matchesDate(c));
+        return rmas.filter(c => matchesSearch(c) && matchesStatus(c) && matchesTeam(c) && matchesDate(c));
+    }, [rmas, debouncedSearch, statusFilter, teamFilter, dateFilter]);
+
+    // Group jobs across dates and create a flat list of sorted jobs
+    const allFilteredJobsList = useMemo(() => {
         const dateGroups: Record<string, RMA[]> = {};
         filteredRMAs.forEach(c => {
             let ym = 'Earlier';
@@ -346,30 +398,63 @@ export const ClaimsList: React.FC = () => {
             dateGroups[ym].push(c);
         });
 
-        const finalGroups: Record<string, { jobs: Record<string, RMA[]>; sortedJobKeys: string[]; count: number }> = {};
-        Object.keys(dateGroups).forEach(dateLabel => {
-            const rmasInDate = dateGroups[dateLabel];
+        const list: { ymKey: string; jobKey: string; jobItems: RMA[]; latestDate: number }[] = [];
+        Object.keys(dateGroups).forEach(ymKey => {
+            const rmasInDate = dateGroups[ymKey];
             const jobs = rmasInDate.reduce((acc, rma) => {
                 const jobKey = rma.groupRequestId || rma.id;
                 if (!acc[jobKey]) acc[jobKey] = [];
                 acc[jobKey].push(rma);
                 return acc;
             }, {} as Record<string, RMA[]>);
-            const sortedJobKeys = Object.keys(jobs).sort((a, b) => new Date(jobs[b][0].createdAt).getTime() - new Date(jobs[a][0].createdAt).getTime());
-            finalGroups[dateLabel] = { jobs, sortedJobKeys, count: rmasInDate.length };
+
+            Object.keys(jobs).forEach(jobKey => {
+                const jobItems = jobs[jobKey];
+                const latestDate = Math.max(...jobItems.map(i => new Date(i.createdAt).getTime()));
+                list.push({ ymKey, jobKey, jobItems, latestDate });
+            });
+        });
+
+        // Sort overall by latest job date descending
+        return list.sort((a, b) => b.latestDate - a.latestDate);
+    }, [filteredRMAs]);
+
+    // Total jobs found
+    const totalJobsCount = allFilteredJobsList.length;
+
+    // Apply pagination slicing to jobs list so only active page is rendered in DOM
+    const totalPages = pageSize === -1 ? 1 : Math.ceil(totalJobsCount / pageSize) || 1;
+    const activePage = Math.min(currentPage, totalPages);
+
+    const paginatedJobsList = useMemo(() => {
+        if (pageSize === -1) return allFilteredJobsList;
+        const start = (activePage - 1) * pageSize;
+        return allFilteredJobsList.slice(start, start + pageSize);
+    }, [allFilteredJobsList, activePage, pageSize]);
+
+    // Group paginated jobs back by ymKey for month headers display
+    const groupedJobsByDate = useMemo(() => {
+        const finalGroups: Record<string, { jobs: Record<string, RMA[]>; sortedJobKeys: string[]; count: number }> = {};
+        paginatedJobsList.forEach(item => {
+            if (!finalGroups[item.ymKey]) {
+                finalGroups[item.ymKey] = { jobs: {}, sortedJobKeys: [], count: 0 };
+            }
+            finalGroups[item.ymKey].jobs[item.jobKey] = item.jobItems;
+            finalGroups[item.ymKey].sortedJobKeys.push(item.jobKey);
+            finalGroups[item.ymKey].count += item.jobItems.length;
         });
         return finalGroups;
-    }, [rmas, debouncedSearch, statusFilter, teamFilter, dateFilter]);
+    }, [paginatedJobsList]);
 
     const getTeamCount = (team: Team) => rmas.filter(c => c.team === team && !DONE_STATUSES.includes(c.status)).length;
     const getGroupCCount = () => rmas.filter(c => [Team.TEAM_C, Team.TEAM_E, Team.TEAM_G].includes(c.team) && !DONE_STATUSES.includes(c.status)).length;
     const handleGroupCClick = () => { setIsTeamCExpanded(!isTeamCExpanded); setTeamFilter('GROUP_C'); };
     const handleClearFilters = () => {
-        setSearch(''); setDebouncedSearch(''); setStatusFilter('ALL'); setTeamFilter('ALL'); setDateFilter('ALL'); setIsTeamCExpanded(false);
+        setSearch(''); setDebouncedSearch(''); setStatusFilter('IN_PROGRESS'); setTeamFilter('ALL'); setDateFilter('ALL'); setIsTeamCExpanded(false);
     };
-    const isAnyFilterActive = search !== '' || statusFilter !== 'ALL' || teamFilter !== 'ALL' || dateFilter !== 'ALL';
+    const isAnyFilterActive = search !== '' || statusFilter !== 'IN_PROGRESS' || teamFilter !== 'ALL' || dateFilter !== 'ALL';
 
-    if (loading) return <div className="p-12 text-center">Loading RMAs...</div>;
+    if (loading) return <div className="p-12 text-center text-gray-500 font-medium">กำลังโหลดรายการแจ้งเคลม...</div>;
 
     if (error) return (
         <div className="max-w-md mx-auto mt-20 text-center">
@@ -410,15 +495,30 @@ export const ClaimsList: React.FC = () => {
                 <div className="flex flex-col xl:flex-row items-center justify-between gap-2.5">
                     <div className="relative w-full xl:flex-1">
                         <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
-                        <input type="text" placeholder={t('claimsList.searchPlaceholder')} value={search} onChange={(e) => handleSearchChange(e.target.value)} className="w-full bg-transparent border-none rounded-xl py-2.5 pl-10 text-sm dark:text-white focus:ring-0" />
+                        <input 
+                            type="text" 
+                            placeholder={t('claimsList.searchPlaceholder')} 
+                            value={search} 
+                            onChange={(e) => handleSearchChange(e.target.value)} 
+                            className="w-full bg-transparent border-none rounded-xl py-2.5 pl-10 pr-10 text-sm dark:text-white focus:ring-0" 
+                        />
+                        {search && (
+                            <button 
+                                onClick={handleClearSearch}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                                title="ล้างการค้นหา"
+                            >
+                                <X className="w-3.5 h-3.5" />
+                            </button>
+                        )}
                     </div>
                     <div className="flex items-center gap-2">
-                        <button onClick={handleExpandAll} className="p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06]"><ChevronsUpDown className="w-4 h-4" /></button>
-                        <div className="bg-gray-100 dark:bg-[#2c2c2e]/60 border border-gray-200/50 p-0.5 rounded-full grid grid-cols-4 relative w-[280px]">
-                            <div className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ${getStatusColorClass(statusFilter)}`} style={{ width: 'calc(25% - 4px)', left: `calc(${['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].indexOf(statusFilter) * 25}% + 2px)` }} />
-                            {['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].map((s) => (
+                        <button onClick={handleExpandAll} className="p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06]" title="ขยาย/หุบทั้งหมด"><ChevronsUpDown className="w-4 h-4" /></button>
+                        <div className="bg-gray-100 dark:bg-[#2c2c2e]/60 border border-gray-200/50 p-0.5 rounded-full grid grid-cols-4 relative w-[340px]">
+                            <div className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ${getStatusColorClass(statusFilter)}`} style={{ width: 'calc(25% - 4px)', left: `calc(${['IN_PROGRESS', 'PENDING', 'DONE', 'ALL'].indexOf(statusFilter) * 25}% + 2px)` }} />
+                            {(['IN_PROGRESS', 'PENDING', 'DONE', 'ALL'] as const).map((s) => (
                                 <button key={s} onClick={() => setStatusFilter(s as any)} className={`relative z-10 py-1.5 text-[11px] font-bold rounded-full ${statusFilter === s ? 'text-white' : 'text-gray-500'}`}>
-                                    {language === 'en' ? (s === 'ALL' ? 'All' : s === 'PENDING' ? 'Recv' : s === 'IN_PROGRESS' ? 'Prog' : 'Done') : (s === 'ALL' ? 'ทั้งหมด' : s === 'PENDING' ? 'รับ' : s === 'IN_PROGRESS' ? 'ทำ' : 'เสร็จ')}
+                                    {language === 'en' ? (s === 'ALL' ? 'All' : s === 'PENDING' ? 'Recv' : s === 'IN_PROGRESS' ? 'Prog' : 'Done') : (s === 'ALL' ? 'ทั้งหมด' : s === 'PENDING' ? 'รับเรื่อง' : s === 'IN_PROGRESS' ? 'กำลังดำเนินการ' : 'เสร็จ')}
                                 </button>
                             ))}
                         </div>
@@ -447,6 +547,18 @@ export const ClaimsList: React.FC = () => {
                 )}
             </div>
 
+            {/* List Results Counter */}
+            <div className="flex items-center justify-between px-1 mb-3 text-xs font-medium text-gray-500 dark:text-gray-400">
+                <div>
+                    พบข้อมูลทั้งหมด <span className="font-bold text-[#0071e3]">{totalJobsCount}</span> ใบงาน ({filteredRMAs.length} รายการสินค้า)
+                </div>
+                {pageSize !== -1 && totalPages > 1 && (
+                    <div>
+                        หน้า <span className="font-bold text-gray-800 dark:text-white">{activePage}</span> จาก {totalPages}
+                    </div>
+                )}
+            </div>
+
             <div className="space-y-6 md:space-y-8">
                 {Object.keys(groupedJobsByDate).length === 0 ? (
                     <div className="text-center py-20 bg-gray-50 dark:bg-white/[0.02] rounded-2xl border border-gray-200/80"><Search className="w-10 h-10 text-gray-300 mx-auto mb-4" /><p className="text-gray-400 text-sm">{t('claimsList.noClaims')}</p></div>
@@ -454,7 +566,7 @@ export const ClaimsList: React.FC = () => {
                     Object.keys(groupedJobsByDate).sort().reverse().map(ymKey => {
                         const dateGroup = groupedJobsByDate[ymKey];
                         if (!dateGroup) return null;
-                        const isDateExpanded = expandedDates.size === 0 || expandedDates.has(ymKey);
+                        const isDateExpanded = isDateGroupExpanded(ymKey);
                         const monthInfo = formatMonthTitle(ymKey);
 
                         return (
@@ -463,7 +575,7 @@ export const ClaimsList: React.FC = () => {
                                     <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${isDateExpanded ? 'bg-[#0071e3] text-white rotate-0' : 'bg-gray-200 dark:bg-white/[0.06] text-gray-400 -rotate-90'}`}><ChevronDown className="w-3.5 h-3.5" /></div>
                                     <h2 className="text-sm font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2">
                                         <span>{monthInfo.full}</span>
-                                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-[#0071e3]">{dateGroup.count} ใบงาน</span>
+                                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-[#0071e3]">{dateGroup.count} รายการ</span>
                                     </h2>
                                     <div className="flex-grow h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
                                 </button>
@@ -479,6 +591,67 @@ export const ClaimsList: React.FC = () => {
                     })
                 )}
             </div>
+
+            {/* DOM Pagination Bar */}
+            {totalJobsCount > 0 && (
+                <div className="mt-8 pt-4 border-t border-gray-200/60 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                        <span>แสดงใบงานต่อหน้า:</span>
+                        <select 
+                            value={pageSize} 
+                            onChange={(e) => setPageSize(Number(e.target.value))}
+                            className="bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-lg px-2.5 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300 focus:ring-[#0071e3]"
+                        >
+                            <option value={20}>20 ใบงาน</option>
+                            <option value={50}>50 ใบงาน</option>
+                            <option value={100}>100 ใบงาน</option>
+                            <option value={-1}>ทั้งหมด ({totalJobsCount})</option>
+                        </select>
+                    </div>
+
+                    {pageSize !== -1 && totalPages > 1 && (
+                        <div className="flex items-center gap-1.5">
+                            <button
+                                onClick={() => setCurrentPage(1)}
+                                disabled={activePage === 1}
+                                className="p-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/5"
+                                title="หน้าแรก"
+                            >
+                                <ChevronsLeft className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={activePage === 1}
+                                className="p-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/5"
+                                title="หน้าก่อนหน้า"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+
+                            <span className="px-3 py-1 font-bold text-gray-700 dark:text-gray-300">
+                                {activePage} / {totalPages}
+                            </span>
+
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={activePage === totalPages}
+                                className="p-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/5"
+                                title="หน้าถัดไป"
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage(totalPages)}
+                                disabled={activePage === totalPages}
+                                className="p-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/5"
+                                title="หน้าสุดท้าย"
+                            >
+                                <ChevronsRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

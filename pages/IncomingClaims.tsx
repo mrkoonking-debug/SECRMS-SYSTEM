@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { MockDb } from '../services/mockDb';
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { MockDb, matchesSmartRef } from '../services/mockDb';
 import { RMA, Team } from '../types';
-import { Package, User, Clock, ArrowRight, CheckCircle2, Loader2, Info, ChevronRight, ChevronDown, Check, Box, Layers, Wifi, Zap, ShoppingBag, Truck, Pencil, Trash2, X } from 'lucide-react';
+import { Package, User, Clock, ArrowRight, CheckCircle2, Loader2, Info, ChevronRight, ChevronDown, Check, Box, Layers, Wifi, Zap, ShoppingBag, Truck, Pencil, Trash2, X, Search, ChevronLeft, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { GlassSelect } from '../components/GlassSelect';
 import { showToast } from '../services/toast';
@@ -21,6 +21,17 @@ export const IncomingClaims: React.FC = () => {
     const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
     const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
+    // Search and Filter States
+    const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [brandFilter, setBrandFilter] = useState('ALL');
+
+    // DOM Pagination States
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState<number>(20);
+
+    const searchTimerRef = useRef<any>(null);
+
     // Edit Modal States
     const [editingJob, setEditingJob] = useState<GroupedJob | null>(null);
     const [editingRMA, setEditingRMA] = useState<RMA | null>(null);
@@ -38,6 +49,21 @@ export const IncomingClaims: React.FC = () => {
 
     const [isAssigning, setIsAssigning] = useState(false);
     const { t } = useLanguage();
+
+    const handleSearchChange = useCallback((value: string) => {
+        setSearch(value);
+        if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+        searchTimerRef.current = setTimeout(() => setDebouncedSearch(value), 300);
+    }, []);
+
+    const handleClearSearch = useCallback(() => {
+        setSearch('');
+        setDebouncedSearch('');
+    }, []);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [debouncedSearch, brandFilter, pageSize]);
 
     // Load distributor & brand options
     useEffect(() => {
@@ -71,10 +97,39 @@ export const IncomingClaims: React.FC = () => {
 
     useEffect(() => { fetchIncoming(); }, []);
 
-    // Group rmas by groupRequestId
+    // Filter incoming RMAs across full dataset
+    const filteredIncoming = useMemo(() => {
+        return incoming.filter(rma => {
+            if (!rma) return false;
+            // Brand filter
+            if (brandFilter !== 'ALL' && rma.brand?.toLowerCase() !== brandFilter.toLowerCase()) {
+                return false;
+            }
+            // Multi-field search
+            if (debouncedSearch.trim()) {
+                const term = debouncedSearch.toLowerCase().trim();
+                const match =
+                    matchesSmartRef(rma.id, term) ||
+                    matchesSmartRef(rma.groupRequestId, term) ||
+                    matchesSmartRef(rma.quotationNumber, term) ||
+                    matchesSmartRef(rma.serialNumber, term) ||
+                    (rma.customerName && rma.customerName.toLowerCase().includes(term)) ||
+                    (rma.contactPerson && rma.contactPerson.toLowerCase().includes(term)) ||
+                    (rma.customerPhone && rma.customerPhone.includes(term)) ||
+                    (rma.customerEmail && rma.customerEmail.toLowerCase().includes(term)) ||
+                    (rma.productModel && rma.productModel.toLowerCase().includes(term)) ||
+                    (rma.brand && rma.brand.toLowerCase().includes(term)) ||
+                    (rma.issueDescription && rma.issueDescription.toLowerCase().includes(term));
+                if (!match) return false;
+            }
+            return true;
+        });
+    }, [incoming, debouncedSearch, brandFilter]);
+
+    // Group filtered rmas by groupRequestId
     const groupedJobs: GroupedJob[] = useMemo(() => {
         const map = new Map<string, RMA[]>();
-        incoming.forEach(rma => {
+        filteredIncoming.forEach(rma => {
             const key = rma.groupRequestId || rma.id;
             if (!map.has(key)) map.set(key, []);
             map.get(key)!.push(rma);
@@ -87,7 +142,20 @@ export const IncomingClaims: React.FC = () => {
             createdAt: rmas[0].createdAt,
             quotationNumber: rmas[0].quotationNumber || 'N/A',
         }));
-    }, [incoming]);
+    }, [filteredIncoming]);
+
+    // Total grouped jobs
+    const totalJobsCount = groupedJobs.length;
+
+    // Apply pagination slicing
+    const totalPages = pageSize === -1 ? 1 : Math.ceil(totalJobsCount / pageSize) || 1;
+    const activePage = Math.min(currentPage, totalPages);
+
+    const paginatedGroupedJobs = useMemo(() => {
+        if (pageSize === -1) return groupedJobs;
+        const start = (activePage - 1) * pageSize;
+        return groupedJobs.slice(start, start + pageSize);
+    }, [groupedJobs, activePage, pageSize]);
 
     const resetSelection = () => {
         setSelectedGroupId(null);
@@ -152,14 +220,14 @@ export const IncomingClaims: React.FC = () => {
 
     const handleDeleteRMA = async (rma: RMA, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!confirm(`คุณต้องการลบรายการ "${rma.productModel}" (S/N: ${rma.serialNumber}) ใช่หรือไม่?`)) return;
+        if (!confirm(`คุณต้องการลบรายการสินค้า "${rma.productModel} (${rma.serialNumber})" ใช่หรือไม่?`)) return;
         try {
             setLoading(true);
             await MockDb.deleteRMA(rma.id);
-            showToast('ลบรายการเรียบร้อยแล้ว', 'success');
+            showToast('ลบรายการสินค้าเรียบร้อยแล้ว', 'success');
             await fetchIncoming();
         } catch (err) {
-            console.error('Delete rma error:', err);
+            console.error('Delete RMA error:', err);
             showToast('เกิดข้อผิดพลาดในการลบรายการ', 'error');
         } finally {
             setLoading(false);
@@ -169,14 +237,14 @@ export const IncomingClaims: React.FC = () => {
     // Edit Handlers
     const startEditJob = (job: GroupedJob, e: React.MouseEvent) => {
         e.stopPropagation();
-        const first = job.rmas[0];
+        const firstRMA = job.rmas[0];
         setJobForm({
-            customerName: first.customerName || '',
-            contactPerson: first.contactPerson || '',
-            phone: first.customerPhone || '',
-            email: first.customerEmail || '',
-            returnAddress: first.customerReturnAddress || first.customerAddress || '',
-            quotationNumber: first.quotationNumber || ''
+            customerName: firstRMA.customerName || '',
+            contactPerson: firstRMA.contactPerson || '',
+            phone: firstRMA.customerPhone || '',
+            email: firstRMA.customerEmail || '',
+            returnAddress: firstRMA.customerReturnAddress || firstRMA.customerAddress || '',
+            quotationNumber: firstRMA.quotationNumber || ''
         });
         setEditingJob(job);
     };
@@ -244,12 +312,58 @@ export const IncomingClaims: React.FC = () => {
 
     return (
         <div className="max-w-[1600px] w-full mx-auto px-2 sm:px-4 md:px-6 py-4 sm:py-8 pb-6">
-            <div className="mb-5 md:mb-10">
+            <div className="mb-5 md:mb-8">
                 <h1 className="text-xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white mb-1 md:mb-2">{t('incoming.title')}</h1>
                 <p className="text-xs md:text-base text-gray-500">{t('incoming.subtitle')}</p>
             </div>
 
-            {groupedJobs.length === 0 ? (
+            {/* Search and Brand Filter Controls */}
+            <div className="bg-white dark:bg-[#16161a] rounded-2xl md:rounded-[24px] border border-gray-200/60 dark:border-white/[0.08] p-3 shadow-sm mb-6 space-y-3">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div className="relative w-full flex-1">
+                        <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
+                        <input
+                            type="text"
+                            placeholder="ค้นหาตามชื่อลูกค้า, เบอร์โทร, Ref #, S/N, รุ่นสินค้า, อาการเสีย..."
+                            value={search}
+                            onChange={(e) => handleSearchChange(e.target.value)}
+                            className="w-full bg-transparent border-none rounded-xl py-2 pl-10 pr-10 text-sm dark:text-white focus:ring-0"
+                        />
+                        {search && (
+                            <button
+                                onClick={handleClearSearch}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                            >
+                                <X className="w-3.5 h-3.5" />
+                            </button>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <span className="text-xs font-semibold text-gray-400 whitespace-nowrap">ยี่ห้อ:</span>
+                        <select
+                            value={brandFilter}
+                            onChange={(e) => setBrandFilter(e.target.value)}
+                            className="bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-white/10 text-xs font-bold rounded-xl px-3 py-2 text-gray-700 dark:text-white focus:ring-0 w-full sm:w-auto"
+                        >
+                            <option value="ALL">ยี่ห้อทั้งหมด</option>
+                            {brandOptions.map(b => (
+                                <option key={b} value={b}>{b}</option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-gray-500 border-t border-gray-100 dark:border-white/5 pt-2 px-1">
+                    <div>
+                        พบงานรอดำเนินการ <span className="font-bold text-[#0071e3]">{totalJobsCount}</span> ใบงาน ({filteredIncoming.length} รายการสินค้า)
+                    </div>
+                    {pageSize !== -1 && totalPages > 1 && (
+                        <div>หน้า {activePage} / {totalPages}</div>
+                    )}
+                </div>
+            </div>
+
+            {totalJobsCount === 0 ? (
                 <div className="glass-panel p-12 md:p-20 text-center rounded-2xl md:rounded-[3rem]">
                     <div className="w-14 h-14 md:w-20 md:h-20 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
                         <CheckCircle2 className="w-7 h-7 md:w-10 md:h-10 text-gray-400" />
@@ -258,7 +372,7 @@ export const IncomingClaims: React.FC = () => {
                 </div>
             ) : (
                 <div className="space-y-4 md:space-y-6">
-                    {groupedJobs.map((job) => {
+                    {paginatedGroupedJobs.map((job) => {
                         const isExpanded = expandedGroupId === job.groupId;
                         const isSelected = selectedGroupId === job.groupId;
 
@@ -460,6 +574,67 @@ export const IncomingClaims: React.FC = () => {
                             </div>
                         );
                     })}
+                </div>
+            )}
+
+            {/* DOM Pagination Bar */}
+            {totalJobsCount > 0 && (
+                <div className="mt-8 pt-4 border-t border-gray-200/60 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                        <span>แสดงใบงานต่อหน้า:</span>
+                        <select 
+                            value={pageSize} 
+                            onChange={(e) => setPageSize(Number(e.target.value))}
+                            className="bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-lg px-2.5 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300 focus:ring-[#0071e3]"
+                        >
+                            <option value={20}>20 ใบงาน</option>
+                            <option value={50}>50 ใบงาน</option>
+                            <option value={100}>100 ใบงาน</option>
+                            <option value={-1}>ทั้งหมด ({totalJobsCount})</option>
+                        </select>
+                    </div>
+
+                    {pageSize !== -1 && totalPages > 1 && (
+                        <div className="flex items-center gap-1.5">
+                            <button
+                                onClick={() => setCurrentPage(1)}
+                                disabled={activePage === 1}
+                                className="p-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/5"
+                                title="หน้าแรก"
+                            >
+                                <ChevronsLeft className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={activePage === 1}
+                                className="p-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/5"
+                                title="หน้าก่อนหน้า"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+
+                            <span className="px-3 py-1 font-bold text-gray-700 dark:text-gray-300">
+                                {activePage} / {totalPages}
+                            </span>
+
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={activePage === totalPages}
+                                className="p-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/5"
+                                title="หน้าถัดไป"
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage(totalPages)}
+                                disabled={activePage === totalPages}
+                                className="p-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/5"
+                                title="หน้าสุดท้าย"
+                            >
+                                <ChevronsRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
 

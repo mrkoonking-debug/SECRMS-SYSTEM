@@ -18,6 +18,21 @@ import { flattenRMAUpdates } from './flattenUpdates';
 
 import { SEED_CLAIMS } from './seedData';
 
+// Smart Ref Matching helper function (handles SECRMA-, SEC-, RMA- prefix variations)
+export const matchesSmartRef = (target: string | undefined, queryStr: string): boolean => {
+  if (!target || !queryStr) return false;
+  const t = target.toLowerCase().trim();
+  const q = queryStr.toLowerCase().trim();
+  if (t.includes(q)) return true;
+
+  // Stripped core prefix comparison (handles SECRMA-, SEC-, RMA- interchangeability)
+  const cleanT = t.replace(/^(secrma|sec|rma)[-_\s]?/i, '');
+  const cleanQ = q.replace(/^(secrma|sec|rma)[-_\s]?/i, '');
+  if (cleanT && cleanQ && cleanT.includes(cleanQ)) return true;
+
+  return false;
+};
+
 let currentUser: any = null;
 let OFFLINE_STORAGE: RMA[] = SEED_CLAIMS as any;
 // In-memory stats cache (30 second TTL)
@@ -933,43 +948,72 @@ export const MockDb = {
   // Get RMAs by Job ID — queries Firestore directly instead of fetching all
   getRMAsByJobId: async (jobId: string): Promise<RMA[]> => {
     if (!isConfigured || !db) throw new Error('Firebase Not Configured');
+    const trimmedId = jobId.trim();
+    const upperId = trimmedId.toUpperCase();
+
     try {
-      // 1. Try groupRequestId first (unique job batch ID)
-      let q = query(collection(db, 'rmas'), where('groupRequestId', '==', jobId));
-      let snap = await getDocs(q);
-      if (snap.docs.length > 0) return snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
+      // 1. Try groupRequestId first (unique job batch ID) with case variations
+      for (const term of Array.from(new Set([trimmedId, upperId]))) {
+        const q = query(collection(db, 'rmas'), where('groupRequestId', '==', term));
+        const snap = await getDocs(q);
+        if (snap.docs.length > 0) return snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
+      }
 
       // 2. Fallback: single RMA by document ID
-      const docSnap = await getDoc(doc(db, 'rmas', jobId));
-      if (docSnap.exists()) {
-        const rma = mapDocToRMA(docSnap as any);
-        if (!rma.isDeleted) {
-          if (rma.groupRequestId) {
-            const gSnap = await getDocs(query(collection(db, 'rmas'), where('groupRequestId', '==', rma.groupRequestId)));
-            if (gSnap.docs.length > 0) return gSnap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
+      for (const term of Array.from(new Set([trimmedId, upperId]))) {
+        const docSnap = await getDoc(doc(db, 'rmas', term));
+        if (docSnap.exists()) {
+          const rma = mapDocToRMA(docSnap as any);
+          if (!rma.isDeleted) {
+            if (rma.groupRequestId) {
+              const gSnap = await getDocs(query(collection(db, 'rmas'), where('groupRequestId', '==', rma.groupRequestId)));
+              if (gSnap.docs.length > 0) return gSnap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
+            }
+            return [rma];
           }
-          return [rma];
         }
       }
 
-      // 3. Fallback: quotationNumber - group by groupRequestId to prevent merging historic closed jobs
-      q = query(collection(db, 'rmas'), where('quotationNumber', '==', jobId));
-      snap = await getDocs(q);
-      if (snap.docs.length > 0) {
-        const allMatching = snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
-        if (allMatching.length > 0) {
-          const groupMap = new Map<string, RMA[]>();
-          allMatching.forEach(item => {
-            const key = item.groupRequestId || item.id;
-            if (!groupMap.has(key)) groupMap.set(key, []);
-            groupMap.get(key)!.push(item);
-          });
-          const groups = Array.from(groupMap.values());
-          const activeGroup = groups.find(g => g.some(r => ![RMAStatus.CLOSED, RMAStatus.CANCELLED, RMAStatus.REPAIRED, RMAStatus.REJECTED, RMAStatus.RETURNED_FROM_VENDOR].includes(r.status)));
-          if (activeGroup) return activeGroup;
-          groups.sort((a, b) => new Date(b[0].createdAt).getTime() - new Date(a[0].createdAt).getTime());
-          return groups[0];
+      // 3. Fallback: quotationNumber - group by groupRequestId
+      for (const term of Array.from(new Set([trimmedId, upperId]))) {
+        const q = query(collection(db, 'rmas'), where('quotationNumber', '==', term));
+        const snap = await getDocs(q);
+        if (snap.docs.length > 0) {
+          const allMatching = snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
+          if (allMatching.length > 0) {
+            const groupMap = new Map<string, RMA[]>();
+            allMatching.forEach(item => {
+              const key = item.groupRequestId || item.id;
+              if (!groupMap.has(key)) groupMap.set(key, []);
+              groupMap.get(key)!.push(item);
+            });
+            const groups = Array.from(groupMap.values());
+            const activeGroup = groups.find(g => g.some(r => ![RMAStatus.CLOSED, RMAStatus.CANCELLED, RMAStatus.REPAIRED, RMAStatus.REJECTED, RMAStatus.RETURNED_FROM_VENDOR].includes(r.status)));
+            if (activeGroup) return activeGroup;
+            groups.sort((a, b) => new Date(b[0].createdAt).getTime() - new Date(a[0].createdAt).getTime());
+            return groups[0];
+          }
         }
+      }
+
+      // 4. Fallback: Smart Ref Matching across loaded RMAs if exact queries miss
+      const allRMAs = await MockDb.getRMAs();
+      const smartMatches = allRMAs.filter(r => 
+        !r.isDeleted && (
+          matchesSmartRef(r.groupRequestId, trimmedId) ||
+          matchesSmartRef(r.id, trimmedId) ||
+          matchesSmartRef(r.quotationNumber, trimmedId)
+        )
+      );
+      if (smartMatches.length > 0) {
+        const groupMap = new Map<string, RMA[]>();
+        smartMatches.forEach(item => {
+          const key = item.groupRequestId || item.id;
+          if (!groupMap.has(key)) groupMap.set(key, []);
+          groupMap.get(key)!.push(item);
+        });
+        const groups = Array.from(groupMap.values());
+        return groups[0];
       }
 
       return [];
@@ -1109,7 +1153,7 @@ export const MockDb = {
       const quoteSnap = await getDocs(query(
         collection(db, 'rmas'),
         where('quotationNumber', '==', text.trim()),
-        limit(5)
+        limit(10)
       ));
       quoteSnap.docs.forEach(d => {
         const rma = mapDocToRMA(d);
@@ -1120,7 +1164,7 @@ export const MockDb = {
       const groupSnap = await getDocs(query(
         collection(db, 'rmas'),
         where('groupRequestId', '==', text.trim()),
-        limit(5)
+        limit(10)
       ));
       groupSnap.docs.forEach(d => {
         const rma = mapDocToRMA(d);
@@ -1131,12 +1175,31 @@ export const MockDb = {
       const snSnap = await getDocs(query(
         collection(db, 'rmas'),
         where('serialNumber', '==', text.trim()),
-        limit(5)
+        limit(10)
       ));
       snSnap.docs.forEach(d => {
         const rma = mapDocToRMA(d);
         if (!rma.isDeleted) resultsMap.set(d.id, rma);
       });
+
+      // 5. Fallback: If exact queries returned no match, search across all RMAs using smart ref matching
+      if (resultsMap.size === 0) {
+        const allRMAs = await MockDb.getRMAs();
+        allRMAs.forEach(r => {
+          if (!r || r.isDeleted) return;
+          const match =
+            matchesSmartRef(r.id, text) ||
+            matchesSmartRef(r.groupRequestId, text) ||
+            matchesSmartRef(r.quotationNumber, text) ||
+            matchesSmartRef(r.serialNumber, text) ||
+            (r.customerName && r.customerName.toLowerCase().includes(searchString)) ||
+            (r.contactPerson && r.contactPerson.toLowerCase().includes(searchString)) ||
+            (r.customerPhone && r.customerPhone.includes(searchString)) ||
+            (r.productModel && r.productModel.toLowerCase().includes(searchString)) ||
+            (r.brand && r.brand.toLowerCase().includes(searchString));
+          if (match) resultsMap.set(r.id, r);
+        });
+      }
 
     } catch (e) {
       console.error('searchRMAsPublic error:', e);

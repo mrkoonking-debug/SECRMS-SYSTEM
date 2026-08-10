@@ -583,11 +583,16 @@ export const FinanceLedger: React.FC = () => {
 
   // Filter transactions
   const filteredTransactions = transactions.filter(tx => {
-    // Search filter
-    const matchesSearch = 
-      tx.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tx.staffName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (tx.note && tx.note.toLowerCase().includes(searchTerm.toLowerCase()));
+    // Search filter across all transaction fields
+    const term = searchTerm.toLowerCase().trim();
+    const matchesSearch = !term ||
+      (tx.description && tx.description.toLowerCase().includes(term)) ||
+      (tx.staffName && tx.staffName.toLowerCase().includes(term)) ||
+      (tx.category && tx.category.toLowerCase().includes(term)) ||
+      (tx.paidBy && tx.paidBy.toLowerCase().includes(term)) ||
+      (tx.id && tx.id.toLowerCase().includes(term)) ||
+      (tx.amount !== undefined && tx.amount.toString().includes(term)) ||
+      (tx.note && tx.note.toLowerCase().includes(term));
 
     // Type filter
     const matchesType = typeFilter === 'ALL' || tx.type === typeFilter;

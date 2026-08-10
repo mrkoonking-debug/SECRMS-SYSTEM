@@ -1,8 +1,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { MockDb } from '../services/mockDb';
-// Add Box to the imports from lucide-react
-import { Clock, Search, ExternalLink, User, History, Filter, AlertCircle, RefreshCw, Loader2, ArrowRight, Box } from 'lucide-react';
+import { MockDb, matchesSmartRef } from '../services/mockDb';
+import { Clock, Search, ExternalLink, User, History, Filter, AlertCircle, RefreshCw, Loader2, ArrowRight, Box, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -10,6 +9,11 @@ export const LogsManagement: React.FC = () => {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(25);
+
   const navigate = useNavigate();
   const { t } = useLanguage();
 
@@ -34,18 +38,34 @@ export const LogsManagement: React.FC = () => {
     fetchLogs();
   }, [navigate]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, pageSize]);
+
   const filteredLogs = useMemo(() => {
     if (!search.trim()) return logs;
-    const lower = search.toLowerCase();
+    const lower = search.toLowerCase().trim();
     return logs.filter(log =>
+      matchesSmartRef(log.claimId, lower) ||
+      matchesSmartRef(log.jobId, lower) ||
+      matchesSmartRef(log.claimRef, lower) ||
+      matchesSmartRef(log.serialNumber, lower) ||
       log.description?.toLowerCase().includes(lower) ||
       log.user?.toLowerCase().includes(lower) ||
-      log.claimId?.toLowerCase().includes(lower) ||
-      log.claimRef?.toLowerCase().includes(lower) ||
       log.productModel?.toLowerCase().includes(lower) ||
-      log.serialNumber?.toLowerCase().includes(lower)
+      log.brand?.toLowerCase().includes(lower)
     );
   }, [logs, search]);
+
+  const totalLogsCount = filteredLogs.length;
+  const totalPages = pageSize === -1 ? 1 : Math.ceil(totalLogsCount / pageSize) || 1;
+  const activePage = Math.min(currentPage, totalPages);
+
+  const paginatedLogs = useMemo(() => {
+    if (pageSize === -1) return filteredLogs;
+    const start = (activePage - 1) * pageSize;
+    return filteredLogs.slice(start, start + pageSize);
+  }, [filteredLogs, activePage, pageSize]);
 
   const getLogIcon = (type: string) => {
     switch (type) {
@@ -80,7 +100,7 @@ export const LogsManagement: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] shadow-sm border border-gray-200 dark:border-[#333] p-2 mb-8 flex items-center gap-2">
+      <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] shadow-sm border border-gray-200 dark:border-[#333] p-2 mb-4 flex items-center gap-2">
         <div className="relative flex-grow">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
@@ -88,19 +108,34 @@ export const LogsManagement: React.FC = () => {
             placeholder="Search by User, Claim ID, Serial, or Description..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-transparent border-none rounded-2xl py-3 pl-11 pr-4 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-500 focus:ring-0"
+            className="w-full bg-transparent border-none rounded-2xl py-3 pl-11 pr-10 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-500 focus:ring-0"
           />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 
+      <div className="flex items-center justify-between px-2 mb-4 text-xs font-medium text-gray-500">
+        <div>พบกิจกรรมทั้งหมด <span className="font-bold text-[#0071e3]">{totalLogsCount}</span> รายการ</div>
+        {pageSize !== -1 && totalPages > 1 && (
+          <div>หน้า {activePage} / {totalPages}</div>
+        )}
+      </div>
+
       <div className="space-y-4">
-        {filteredLogs.length === 0 ? (
+        {paginatedLogs.length === 0 ? (
           <div className="text-center py-20 glass-panel rounded-[2rem]">
             <History className="w-12 h-12 text-gray-200 mx-auto mb-4" />
             <p className="text-gray-400 font-medium">ไม่พบประวัติกิจกรรมที่ค้นหา</p>
           </div>
         ) : (
-          filteredLogs.map((log) => (
+          paginatedLogs.map((log) => (
             <div key={log.id} className="glass-panel p-4 md:p-5 hover:bg-gray-50 dark:hover:bg-white/5 transition-all group border border-gray-100 dark:border-[#333]">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-start gap-4 flex-1">
@@ -141,6 +176,67 @@ export const LogsManagement: React.FC = () => {
           ))
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {totalLogsCount > 0 && (
+        <div className="mt-8 pt-4 border-t border-gray-200/60 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+            <span>แสดงต่อหน้า:</span>
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className="bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-lg px-2.5 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300 focus:ring-[#0071e3]"
+            >
+              <option value={25}>25 รายการ</option>
+              <option value={50}>50 รายการ</option>
+              <option value={100}>100 รายการ</option>
+              <option value={-1}>ทั้งหมด ({totalLogsCount})</option>
+            </select>
+          </div>
+
+          {pageSize !== -1 && totalPages > 1 && (
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setCurrentPage(1)}
+                disabled={activePage === 1}
+                className="p-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/5"
+                title="หน้าแรก"
+              >
+                <ChevronsLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={activePage === 1}
+                className="p-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/5"
+                title="หน้าก่อนหน้า"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <span className="px-3 py-1 font-bold text-gray-700 dark:text-gray-300">
+                {activePage} / {totalPages}
+              </span>
+
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={activePage === totalPages}
+                className="p-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/5"
+                title="หน้าถัดไป"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={activePage === totalPages}
+                className="p-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/5"
+                title="หน้าสุดท้าย"
+              >
+                <ChevronsRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
