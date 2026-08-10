@@ -577,67 +577,6 @@ export const IncomingClaims: React.FC = () => {
                 </div>
             )}
 
-            {/* DOM Pagination Bar */}
-            {totalJobsCount > 0 && (
-                <div className="mt-8 pt-4 border-t border-gray-200/60 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                        <span>แสดงใบงานต่อหน้า:</span>
-                        <select 
-                            value={pageSize} 
-                            onChange={(e) => setPageSize(Number(e.target.value))}
-                            className="bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-white/10 rounded-lg px-2.5 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300 focus:ring-[#0071e3]"
-                        >
-                            <option value={20}>20 ใบงาน</option>
-                            <option value={50}>50 ใบงาน</option>
-                            <option value={100}>100 ใบงาน</option>
-                            <option value={-1}>ทั้งหมด ({totalJobsCount})</option>
-                        </select>
-                    </div>
-
-                    {pageSize !== -1 && totalPages > 1 && (
-                        <div className="flex items-center gap-1.5">
-                            <button
-                                onClick={() => setCurrentPage(1)}
-                                disabled={activePage === 1}
-                                className="p-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/5"
-                                title="หน้าแรก"
-                            >
-                                <ChevronsLeft className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                disabled={activePage === 1}
-                                className="p-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/5"
-                                title="หน้าก่อนหน้า"
-                            >
-                                <ChevronLeft className="w-4 h-4" />
-                            </button>
-
-                            <span className="px-3 py-1 font-bold text-gray-700 dark:text-gray-300">
-                                {activePage} / {totalPages}
-                            </span>
-
-                            <button
-                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                disabled={activePage === totalPages}
-                                className="p-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/5"
-                                title="หน้าถัดไป"
-                            >
-                                <ChevronRight className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={() => setCurrentPage(totalPages)}
-                                disabled={activePage === totalPages}
-                                className="p-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-white/5"
-                                title="หน้าสุดท้าย"
-                            >
-                                <ChevronsRight className="w-4 h-4" />
-                            </button>
-                        </div>
-                    )}
-                </div>
-            )}
-
             {/* Modal: Edit Job Customer Info */}
             {editingJob && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
