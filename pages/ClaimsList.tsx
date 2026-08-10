@@ -615,20 +615,20 @@ export const ClaimsList: React.FC = () => {
                                 ไม่พบรายการในกลุ่ม "{statusFilter === 'IN_PROGRESS' ? 'ดำเนินการ' : statusFilter === 'PENDING' ? 'รับเรื่อง' : 'ที่เลือก'}"
                             </h3>
                             <p className="text-xs text-gray-600 dark:text-gray-300 max-w-md mx-auto mb-5 leading-relaxed">
-                                แต่พบข้อมูล <span className="font-bold text-amber-600 dark:text-amber-400 text-sm">{closedMatchJobsCount}</span> ใบงานที่เป็น <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">"งานที่เสร็จสิ้น / ปิดงานแล้ว"</span> สำหรับคำค้นหา <span className="font-bold font-mono text-blue-600 dark:text-blue-400">"{debouncedSearch}"</span>
+                                แต่พบข้อมูล <span className="font-bold text-amber-600 dark:text-amber-400 text-sm">{closedMatchJobsCount}</span> ใบงานที่ <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">"ปิดงานแล้ว"</span> สำหรับคำค้นหา <span className="font-bold font-mono text-blue-600 dark:text-blue-400">"{debouncedSearch}"</span>
                             </p>
                             <div className="flex flex-wrap justify-center gap-3">
                                 <button 
                                     onClick={() => setStatusFilter('ALL')}
                                     className="px-5 py-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
                                 >
-                                    <CheckCircle2 className="w-4 h-4" /> ดูรายการทั้งหมด (รวมงานที่เสร็จแล้ว)
+                                    <CheckCircle2 className="w-4 h-4" /> ดูรายการทั้งหมด (รวมงานที่ปิดแล้ว)
                                 </button>
                                 <button 
                                     onClick={() => setStatusFilter('DONE')}
                                     className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-500/20 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
                                 >
-                                    <CheckCircle2 className="w-4 h-4" /> ดูเฉพาะงานที่เสร็จแล้ว ({closedMatchJobsCount})
+                                    <CheckCircle2 className="w-4 h-4" /> ดูเฉพาะงานที่ปิดแล้ว ({closedMatchJobsCount})
                                 </button>
                             </div>
                         </div>
