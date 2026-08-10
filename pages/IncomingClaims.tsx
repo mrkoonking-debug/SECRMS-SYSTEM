@@ -647,10 +647,10 @@ export const IncomingClaims: React.FC = () => {
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 mb-1">ที่อยู่จัดส่งคืน</label>
                                 <textarea
-                                    rows={2}
+                                    rows={4}
                                     value={jobForm.returnAddress}
                                     onChange={(e) => setJobForm({ ...jobForm, returnAddress: e.target.value })}
-                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm text-[#1d1d1f] dark:text-white focus:outline-none focus:border-[#0071e3]"
+                                    className="w-full px-3 py-2.5 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm text-[#1d1d1f] dark:text-white focus:outline-none focus:border-[#0071e3] min-h-[110px] resize-y"
                                 />
                             </div>
                         </div>
