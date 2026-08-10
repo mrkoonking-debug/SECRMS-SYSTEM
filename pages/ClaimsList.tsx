@@ -422,6 +422,37 @@ export const ClaimsList: React.FC = () => {
     // Total jobs found
     const totalJobsCount = allFilteredJobsList.length;
 
+    // Count closed/completed jobs matching current search query across all dates
+    const closedMatchJobsCount = useMemo(() => {
+        if (!debouncedSearch.trim()) return 0;
+        const term = debouncedSearch.toLowerCase().trim();
+        const matchesSearch = (c: RMA) => {
+            if (!c || !c.id) return false;
+            return (
+                matchesSmartRef(c.id, term) ||
+                matchesSmartRef(c.groupRequestId, term) ||
+                matchesSmartRef(c.quotationNumber, term) ||
+                matchesSmartRef(c.serialNumber, term) ||
+                matchesSmartRef(c.resolution?.replacedSerialNumber, term) ||
+                (c.customerName && c.customerName.toLowerCase().includes(term)) ||
+                (c.contactPerson && c.contactPerson.toLowerCase().includes(term)) ||
+                (c.customerPhone && c.customerPhone.includes(term)) ||
+                (c.customerEmail && c.customerEmail.toLowerCase().includes(term)) ||
+                (c.productModel && c.productModel.toLowerCase().includes(term)) ||
+                (c.brand && c.brand.toLowerCase().includes(term)) ||
+                (c.issueDescription && c.issueDescription.toLowerCase().includes(term)) ||
+                (c.resolution?.rootCause && c.resolution.rootCause.toLowerCase().includes(term)) ||
+                (c.resolution?.actionTaken && c.resolution.actionTaken.toLowerCase().includes(term)) ||
+                (c.resolution?.actionDetails && c.resolution.actionDetails.toLowerCase().includes(term)) ||
+                (c.createdBy && c.createdBy.toLowerCase().includes(term))
+            );
+        };
+
+        const closedRMAs = rmas.filter(c => DONE_STATUSES.includes(c.status) && matchesSearch(c));
+        const closedJobs = new Set(closedRMAs.map(r => r.groupRequestId || r.id));
+        return closedJobs.size;
+    }, [rmas, debouncedSearch]);
+
     // Apply pagination slicing to jobs list so only active page is rendered in DOM
     const totalPages = pageSize === -1 ? 1 : Math.ceil(totalJobsCount / pageSize) || 1;
     const activePage = Math.min(currentPage, totalPages);
@@ -514,10 +545,16 @@ export const ClaimsList: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2">
                         <button onClick={handleExpandAll} className="p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06]" title="ขยาย/หุบทั้งหมด"><ChevronsUpDown className="w-4 h-4" /></button>
-                        <div className="bg-gray-100 dark:bg-[#2c2c2e]/60 border border-gray-200/50 p-0.5 rounded-full grid grid-cols-4 relative w-[310px]">
-                            <div className={`absolute top-0.5 bottom-0.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ${getStatusColorClass(statusFilter)}`} style={{ width: 'calc(25% - 4px)', left: `calc(${['IN_PROGRESS', 'PENDING', 'DONE', 'ALL'].indexOf(statusFilter) * 25}% + 2px)` }} />
+                        <div className="bg-gray-100 dark:bg-[#2c2c2e]/60 border border-gray-200/50 p-1 rounded-full grid grid-cols-4 relative w-[310px]">
+                            <div 
+                                className={`absolute top-1 bottom-1 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ${getStatusColorClass(statusFilter)}`} 
+                                style={{ 
+                                    width: 'calc((100% - 8px) / 4)', 
+                                    left: `calc(4px + ${['IN_PROGRESS', 'PENDING', 'DONE', 'ALL'].indexOf(statusFilter)} * ((100% - 8px) / 4))` 
+                                }} 
+                            />
                             {(['IN_PROGRESS', 'PENDING', 'DONE', 'ALL'] as const).map((s) => (
-                                <button key={s} onClick={() => setStatusFilter(s as any)} className={`relative z-10 py-1.5 text-[11px] font-bold rounded-full ${statusFilter === s ? 'text-white' : 'text-gray-500'}`}>
+                                <button key={s} onClick={() => setStatusFilter(s as any)} className={`relative z-10 py-1.5 text-[11px] font-bold rounded-full transition-colors ${statusFilter === s ? 'text-white' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'}`}>
                                     {language === 'en' ? (s === 'ALL' ? 'All' : s === 'PENDING' ? 'Recv' : s === 'IN_PROGRESS' ? 'Prog' : 'Done') : (s === 'ALL' ? 'ทั้งหมด' : s === 'PENDING' ? 'รับเรื่อง' : s === 'IN_PROGRESS' ? 'ดำเนินการ' : 'เสร็จ')}
                                 </button>
                             ))}
@@ -548,9 +585,17 @@ export const ClaimsList: React.FC = () => {
             </div>
 
             {/* List Results Counter */}
-            <div className="flex items-center justify-between px-1 mb-3 text-xs font-medium text-gray-500 dark:text-gray-400">
-                <div>
-                    พบข้อมูลทั้งหมด <span className="font-bold text-[#0071e3]">{totalJobsCount}</span> ใบงาน ({filteredRMAs.length} รายการสินค้า)
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1 mb-3 text-xs font-medium text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-2 flex-wrap">
+                    <span>พบข้อมูลทั้งหมด <span className="font-bold text-[#0071e3]">{totalJobsCount}</span> ใบงาน ({filteredRMAs.length} รายการสินค้า)</span>
+                    {closedMatchJobsCount > 0 && statusFilter !== 'ALL' && totalJobsCount > 0 && (
+                        <button 
+                            onClick={() => setStatusFilter('ALL')}
+                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 font-bold transition-all text-[11px] cursor-pointer"
+                        >
+                            💡 พบงานที่เสร็จแล้วอีก {closedMatchJobsCount} ใบงาน (กดเพื่อดูทั้งหมด)
+                        </button>
+                    )}
                 </div>
                 {pageSize !== -1 && totalPages > 1 && (
                     <div>
@@ -561,7 +606,38 @@ export const ClaimsList: React.FC = () => {
 
             <div className="space-y-6 md:space-y-8">
                 {Object.keys(groupedJobsByDate).length === 0 ? (
-                    <div className="text-center py-20 bg-gray-50 dark:bg-white/[0.02] rounded-2xl border border-gray-200/80"><Search className="w-10 h-10 text-gray-300 mx-auto mb-4" /><p className="text-gray-400 text-sm">{t('claimsList.noClaims')}</p></div>
+                    debouncedSearch.trim() && closedMatchJobsCount > 0 && statusFilter !== 'ALL' ? (
+                        <div className="text-center py-12 px-6 bg-gradient-to-b from-amber-500/5 to-amber-500/10 dark:from-amber-500/10 dark:to-amber-500/20 rounded-2xl border border-amber-500/30 animate-fade-in my-4 shadow-lg">
+                            <div className="w-14 h-14 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center mx-auto mb-3 shadow-inner">
+                                <Search className="w-7 h-7" />
+                            </div>
+                            <h3 className="text-base font-bold text-[#1d1d1f] dark:text-white mb-1">
+                                ไม่พบรายการในกลุ่ม "{statusFilter === 'IN_PROGRESS' ? 'ดำเนินการ' : statusFilter === 'PENDING' ? 'รับเรื่อง' : 'ที่เลือก'}"
+                            </h3>
+                            <p className="text-xs text-gray-600 dark:text-gray-300 max-w-md mx-auto mb-5 leading-relaxed">
+                                แต่พบข้อมูล <span className="font-bold text-amber-600 dark:text-amber-400 text-sm">{closedMatchJobsCount}</span> ใบงานที่เป็น <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">"งานที่เสร็จสิ้น / ปิดงานแล้ว"</span> สำหรับคำค้นหา <span className="font-bold font-mono text-blue-600 dark:text-blue-400">"{debouncedSearch}"</span>
+                            </p>
+                            <div className="flex flex-wrap justify-center gap-3">
+                                <button 
+                                    onClick={() => setStatusFilter('ALL')}
+                                    className="px-5 py-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+                                >
+                                    <CheckCircle2 className="w-4 h-4" /> ดูรายการทั้งหมด (รวมงานที่เสร็จแล้ว)
+                                </button>
+                                <button 
+                                    onClick={() => setStatusFilter('DONE')}
+                                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-500/20 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+                                >
+                                    <CheckCircle2 className="w-4 h-4" /> ดูเฉพาะงานที่เสร็จแล้ว ({closedMatchJobsCount})
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-20 bg-gray-50 dark:bg-white/[0.02] rounded-2xl border border-gray-200/80">
+                            <Search className="w-10 h-10 text-gray-300 mx-auto mb-4" />
+                            <p className="text-gray-400 text-sm">{t('claimsList.noClaims')}</p>
+                        </div>
+                    )
                 ) : (
                     Object.keys(groupedJobsByDate).sort().reverse().map(ymKey => {
                         const dateGroup = groupedJobsByDate[ymKey];
