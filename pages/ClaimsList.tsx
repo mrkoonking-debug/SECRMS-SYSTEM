@@ -195,7 +195,7 @@ export const ClaimsList: React.FC = () => {
 
     // DOM Pagination States
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState<number>(20);
+    const [pageSize, setPageSize] = useState<number>(-1);
 
     const { t, language } = useLanguage();
     const navigate = useNavigate();

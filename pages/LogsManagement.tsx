@@ -12,7 +12,7 @@ export const LogsManagement: React.FC = () => {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState<number>(25);
+  const [pageSize, setPageSize] = useState<number>(-1);
 
   const navigate = useNavigate();
   const { t } = useLanguage();
