@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
-import { Building2, Plus, Trash2, Edit2, Check, X, Loader2, ChevronDown, ChevronUp, MapPin, Phone, User } from 'lucide-react';
+import { Building2, Plus, Trash2, Edit2, Check, X, Loader2, ChevronDown, ChevronUp, MapPin, Phone, User, Mail, Printer } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export const DistributorManagement: React.FC = () => {
@@ -15,6 +15,9 @@ export const DistributorManagement: React.FC = () => {
   const [newAddress, setNewAddress] = useState('');
   const [newContactPerson, setNewContactPerson] = useState('');
   const [newPhone, setNewPhone] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newFax, setNewFax] = useState('');
+  const [newDepartment, setNewDepartment] = useState('');
   const [showNewExtra, setShowNewExtra] = useState(false);
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -23,6 +26,9 @@ export const DistributorManagement: React.FC = () => {
   const [editAddress, setEditAddress] = useState('');
   const [editContactPerson, setEditContactPerson] = useState('');
   const [editPhone, setEditPhone] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editFax, setEditFax] = useState('');
+  const [editDepartment, setEditDepartment] = useState('');
 
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -52,9 +58,13 @@ export const DistributorManagement: React.FC = () => {
       label: newFull.trim(),
       address: newAddress.trim() || '',
       contactPerson: newContactPerson.trim() || '',
-      phone: newPhone.trim() || ''
+      phone: newPhone.trim() || '',
+      email: newEmail.trim() || '',
+      fax: newFax.trim() || '',
+      department: newDepartment.trim() || ''
     });
     setNewName(''); setNewFull(''); setNewAddress(''); setNewContactPerson(''); setNewPhone('');
+    setNewEmail(''); setNewFax(''); setNewDepartment('');
     setShowNewExtra(false);
     await fetchDistributors();
     setIsSubmitting(false);
@@ -68,7 +78,10 @@ export const DistributorManagement: React.FC = () => {
       label: editFull.trim(),
       address: editAddress.trim() || '',
       contactPerson: editContactPerson.trim() || '',
-      phone: editPhone.trim() || ''
+      phone: editPhone.trim() || '',
+      email: editEmail.trim() || '',
+      fax: editFax.trim() || '',
+      department: editDepartment.trim() || ''
     });
     setEditingId(null);
     await fetchDistributors();
@@ -89,6 +102,9 @@ export const DistributorManagement: React.FC = () => {
     setEditAddress(d.address || '');
     setEditContactPerson(d.contactPerson || '');
     setEditPhone(d.phone || '');
+    setEditEmail(d.email || '');
+    setEditFax(d.fax || '');
+    setEditDepartment(d.department || '');
   };
 
   const inputClass = "bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-3 py-2.5 md:py-3 text-xs md:text-sm w-full outline-none focus:ring-2 focus:ring-[#0071e3] dark:text-white";
@@ -116,21 +132,26 @@ export const DistributorManagement: React.FC = () => {
             className="text-sm text-[#0071e3] hover:underline flex items-center gap-1 font-medium"
           >
             {showNewExtra ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            {showNewExtra ? 'ซ่อนข้อมูลเพิ่มเติม' : 'เพิ่มข้อมูลที่อยู่ / ผู้ติดต่อ (สำหรับใบปะหน้า)'}
+            {showNewExtra ? 'ซ่อนข้อมูลเพิ่มเติม' : 'เพิ่มข้อมูลที่อยู่ / ผู้ติดต่อ / Email / แผนก (สำหรับใบนำส่ง)'}
           </button>
 
           {showNewExtra && (
             <div className="space-y-4 animate-fade-in border-t border-gray-100 dark:border-[#333] pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <input value={newContactPerson} onChange={e => setNewContactPerson(e.target.value)} className={inputClass} placeholder="ชื่อผู้ติดต่อ (Contact Person)" />
                 <input value={newPhone} onChange={e => setNewPhone(e.target.value)} className={inputClass} placeholder="เบอร์โทรติดต่อ" />
+                <input value={newEmail} onChange={e => setNewEmail(e.target.value)} className={inputClass} placeholder="Email ติดต่อ" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input value={newDepartment} onChange={e => setNewDepartment(e.target.value)} className={inputClass} placeholder="แผนก/ฝ่าย (เช่น ฝ่ายเคลมสินค้า)" />
+                <input value={newFax} onChange={e => setNewFax(e.target.value)} className={inputClass} placeholder="เบอร์โทรสาร (Fax)" />
               </div>
               <textarea
                 value={newAddress}
                 onChange={e => setNewAddress(e.target.value)}
                 className={`${inputClass} resize-none`}
                 rows={3}
-                placeholder="ที่อยู่สำหรับส่งเคลม (จะแสดงบนใบปะหน้ากล่องอัตโนมัติ)"
+                placeholder="ที่อยู่สำหรับส่งเคลม (จะแสดงบนใบนำส่งและใบปะหน้ากล่อง)"
               />
             </div>
           )}
@@ -156,9 +177,14 @@ export const DistributorManagement: React.FC = () => {
                       <input autoFocus value={editName} onChange={e => setEditName(e.target.value)} className={editInputClass} placeholder="Short Name" />
                       <input value={editFull} onChange={e => setEditFull(e.target.value)} className={editInputClass} placeholder="Full Company Name" />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <input value={editContactPerson} onChange={e => setEditContactPerson(e.target.value)} className={editInputClass} placeholder="ชื่อผู้ติดต่อ" />
                       <input value={editPhone} onChange={e => setEditPhone(e.target.value)} className={editInputClass} placeholder="เบอร์โทรติดต่อ" />
+                      <input value={editEmail} onChange={e => setEditEmail(e.target.value)} className={editInputClass} placeholder="Email" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <input value={editDepartment} onChange={e => setEditDepartment(e.target.value)} className={editInputClass} placeholder="แผนก/ฝ่าย" />
+                      <input value={editFax} onChange={e => setEditFax(e.target.value)} className={editInputClass} placeholder="Fax" />
                     </div>
                     <textarea
                       value={editAddress}
@@ -177,13 +203,22 @@ export const DistributorManagement: React.FC = () => {
                     <div className="flex-1">
                       <div className="font-bold text-sm md:text-base dark:text-white">{d.value}</div>
                       <div className="text-xs md:text-sm text-gray-550 dark:text-gray-450">{d.label}</div>
-                      {(d.address || d.contactPerson || d.phone) && (
+                      {(d.address || d.contactPerson || d.phone || d.email || d.department || d.fax) && (
                         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] md:text-xs text-gray-450 dark:text-gray-500">
+                          {d.department && (
+                            <span className="font-medium text-blue-600 dark:text-blue-400">[{d.department}]</span>
+                          )}
                           {d.contactPerson && (
                             <span className="flex items-center gap-1"><User className="w-3 h-3" /> {d.contactPerson}</span>
                           )}
                           {d.phone && (
                             <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {d.phone}</span>
+                          )}
+                          {d.email && (
+                            <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {d.email}</span>
+                          )}
+                          {d.fax && (
+                            <span className="flex items-center gap-1"><Printer className="w-3 h-3" /> Fax: {d.fax}</span>
                           )}
                           {d.address && (
                             <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {d.address.length > 60 ? d.address.slice(0, 60) + '...' : d.address}</span>

@@ -369,8 +369,23 @@ export const getImporterFormHTML = async (rmas: RMA[]): Promise<string> => {
   const settings = await MockDb.getSettings();
   const today = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
 
+  // Helper to map team enum to label
+  const getTeamName = (team?: Team) => {
+    if (!team) return '';
+    switch (team) {
+      case Team.HIKVISION: return 'Team A: Hikvision';
+      case Team.DAHUA: return 'Team B: Dahua';
+      case Team.TEAM_C: return 'Team C: Network & UNV';
+      case Team.TEAM_E: return 'Team E: UPS';
+      case Team.TEAM_G: return 'Team G: Online Platform';
+      default: return `Team ${team}`;
+    }
+  };
+
+  const teamName = getTeamName(rma.team);
+
   // Fetch distributor master data for address/contact info
-  let distInfo: { address?: string; contactPerson?: string; phone?: string; label?: string } = {};
+  let distInfo: { address?: string; contactPerson?: string; phone?: string; email?: string; fax?: string; department?: string; label?: string } = {};
   try {
     const distributors = await MockDb.getDistributors();
     const match = distributors.find(d => d.value === rma.distributor);
@@ -425,7 +440,7 @@ export const getImporterFormHTML = async (rmas: RMA[]): Promise<string> => {
             <div style="font-size: 18px; font-weight: 700; color: #333;">${settings.nameTh}</div>
             <div style="font-size: 11px; color: #666; margin-top: 4px; line-height: 1.4;">
               ${settings.address} | TAX ID: ${settings.taxId}<br/>
-              Tel: ${settings.tel} | Web: www.sectechnology.co.th
+              Tel: ${settings.tel} | Email: support@sectechnology.co.th | Web: www.sectechnology.co.th
             </div>
           </td>
         </tr>
@@ -451,10 +466,18 @@ export const getImporterFormHTML = async (rmas: RMA[]): Promise<string> => {
           <div class="party-box-label">TO: DISTRIBUTOR (เรียน ผู้นำเข้า)</div>
           <div class="party-name">${escapeHtml(rma.distributor)}</div>
           ${distInfo.label ? `<div class="party-detail">${escapeHtml(distInfo.label)}</div>` : ''}
+          ${distInfo.department ? `<div class="party-detail" style="font-weight: 600; color: #2563eb;">แผนก/ฝ่าย: ${escapeHtml(distInfo.department)}</div>` : ''}
           ${distInfo.contactPerson || distInfo.phone ? `
             <div class="party-detail">
-               ${distInfo.contactPerson ? `ผู้ติดต่อ: ${escapeHtml(distInfo.contactPerson)}` : ''}
+              ${distInfo.contactPerson ? `ผู้ติดต่อ: ${escapeHtml(distInfo.contactPerson)}` : ''}
               ${distInfo.contactPerson && distInfo.phone ? ` | โทร: ${escapeHtml(distInfo.phone)}` : distInfo.phone ? `โทร: ${escapeHtml(distInfo.phone)}` : ''}
+            </div>
+          ` : ''}
+          ${distInfo.email || distInfo.fax ? `
+            <div class="party-detail">
+              ${distInfo.email ? `Email: ${escapeHtml(distInfo.email)}` : ''}
+              ${distInfo.email && distInfo.fax ? ` | ` : ''}
+              ${distInfo.fax ? `Fax: ${escapeHtml(distInfo.fax)}` : ''}
             </div>
           ` : ''}
           ${distInfo.address ? `<div class="party-detail" style="margin-top: 4px;">${escapeHtml(distInfo.address)}</div>` : ''}
@@ -463,7 +486,8 @@ export const getImporterFormHTML = async (rmas: RMA[]): Promise<string> => {
         <div class="party-box" style="flex: 1;">
           <div class="party-box-label">FROM: OUR COMPANY (จาก)</div>
           <div class="party-name">${settings.nameEn}</div>
-          <div class="party-detail">Attn: Technical Support Dept.</div>
+          <div class="party-detail">Attn: Technical Support Dept. ${teamName ? `(${teamName})` : ''}</div>
+          <div class="party-detail" style="margin-top: 2px;">Tel: ${settings.tel || '02-999-8888'} | Email: support@sectechnology.co.th</div>
         </div>
       </div>
 
@@ -593,7 +617,7 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
             <div style="font-size: 20px; font-weight: 700; color: #333;">${settings.nameTh}</div>
             <div style="font-size: 11px; color: #666; margin-top: 6px; line-height: 1.5;">
               ${settings.address} | TAX ID: ${settings.taxId}<br/>
-              Tel: ${settings.tel} | Web: www.sectechnology.co.th
+              Tel: ${settings.tel} | Email: support@sectechnology.co.th | Web: www.sectechnology.co.th
             </div>
           </td>
         </tr>
@@ -619,11 +643,19 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
       <div class="party-box" style="margin-bottom: 14px;">
         <div class="party-box-label">CUSTOMER DETAILS (ลูกค้า)</div>
         <div class="party-name">${escapeHtml(rma.customerName)}</div>
-        <div class="party-detail" style="margin-top: 4px;">
+        ${rma.contactPerson ? `<div class="party-detail" style="margin-top: 2px; font-weight: 600;">ผู้ติดต่อ: ${escapeHtml(rma.contactPerson)}</div>` : ''}
+        <div class="party-detail" style="margin-top: 2px;">
           ${rma.customerPhone ? `Tel: ${escapeHtml(rma.customerPhone)}` : ''}
           ${rma.customerPhone && rma.customerEmail ? ' · ' : ''}
           ${rma.customerEmail ? `Email: ${escapeHtml(rma.customerEmail)}` : ''}
+          ${(rma.customerPhone || rma.customerEmail) && rma.customerLineId ? ' · ' : ''}
+          ${rma.customerLineId ? `LINE ID: ${escapeHtml(rma.customerLineId)}` : ''}
         </div>
+        ${(rma.customerReturnAddress || rma.customerAddress) ? `
+          <div class="party-detail" style="margin-top: 4px; color: #555;">
+            ที่อยู่จัดส่งคืน: ${escapeHtml(rma.customerReturnAddress || rma.customerAddress || '')}
+          </div>
+        ` : ''}
       </div>
 
       <!-- Section Title -->

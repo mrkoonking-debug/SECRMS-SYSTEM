@@ -175,6 +175,9 @@ export interface Distributor {
   address?: string;        // ที่อยู่สำหรับส่งเคลม
   contactPerson?: string;  // ชื่อผู้ติดต่อ
   phone?: string;          // เบอร์โทรติดต่อ
+  email?: string;          // อีเมลผู้ติดต่อ
+  fax?: string;            // เบอร์แฟกซ์
+  department?: string;     // แผนกที่ติดต่อ
 }
 
 // ===== FINANCE MODULE (แยกขาดจาก RMA) =====
