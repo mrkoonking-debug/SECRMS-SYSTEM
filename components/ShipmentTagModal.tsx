@@ -664,14 +664,14 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                         </button>
                     </div>
                 </div>
-                {/* Preview Content - A4 size */}
-                <div className="flex-1 overflow-auto flex justify-start lg:justify-center py-8 px-4 md:px-12 bg-gray-100/50 dark:bg-black/50">
-                    <div className="origin-top flex justify-center" style={{ zoom: 'min(0.8, calc(100vw / 850))' }}>
+                {/* Preview Content - A4 size (794px = 210mm) */}
+                <div className="flex-1 overflow-auto flex justify-center py-6 px-4 bg-gray-900/70 dark:bg-black/80">
+                    <div className="origin-top flex justify-center shadow-2xl rounded-sm overflow-hidden" style={{ zoom: 'min(0.85, calc((100vw - 48px) / 794))' }}>
                         <iframe
                             id="preview-iframe"
-                            srcDoc={`<html><head><title>Preview</title><style>body{margin:0;padding:0;background:#e5e7eb;}@media print{body{padding:0;margin:0;background:#fff !important;}}</style></head><body>${previewHtml}</body></html>`}
-                            className="border-0 bg-gray-200"
-                            style={{ width: '850px', height: `${isTabbed ? Math.max(1, tabNames.length) * 1123 : 1123}px`, minWidth: '794px' }}
+                            srcDoc={`<!DOCTYPE html><html><head><title>Preview</title><meta name="viewport" content="width=794"><style>html,body{margin:0;padding:0;background:#fff;width:100%}</style></head><body style="margin:0;padding:0;background:#fff;">${previewHtml}</body></html>`}
+                            className="border-0 bg-white"
+                            style={{ width: '794px', height: `${isTabbed ? Math.max(1, tabNames.length) * 1123 : 1123}px` }}
                         />
                     </div>
                 </div>

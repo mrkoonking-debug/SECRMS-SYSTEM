@@ -864,7 +864,7 @@ export const getCustomerShippingLabelHTML = async (payloads: ShippingLabelPayloa
         height: 297mm;
         min-height: 297mm;
         padding: 8mm;
-        margin: 0 auto;
+        margin: 0;
         position: relative;
         box-sizing: border-box;
         background: #fff;
