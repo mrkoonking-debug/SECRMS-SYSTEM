@@ -496,7 +496,7 @@ export const getImporterFormHTML = async (rmas: RMA[]): Promise<string> => {
           <div class="party-name">${settings.nameEn}</div>
           <div class="party-detail" style="font-weight: 600;">Attn: Technical Support Dept. ${teamName ? `(${teamName})` : ''}</div>
           ${teamStaffList ? `<div class="party-detail" style="margin-top: 2px;">ทีมงานดูแล: ${escapeHtml(teamStaffList)}</div>` : ''}
-          <div class="party-detail" style="margin-top: 2px;">Tel: ${settings.tel || '02-999-8888'} | Email: support@sectechnology.co.th</div>
+          <div class="party-detail" style="margin-top: 2px;">Email: support@sectechnology.co.th</div>
         </div>
       </div>
 
