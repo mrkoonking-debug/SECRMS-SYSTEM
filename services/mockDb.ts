@@ -1135,74 +1135,96 @@ export const MockDb = {
     }
   },
   searchRMAsPublic: async (text: string): Promise<RMA[]> => {
-    if (!isConfigured || !db) return [];
-    const searchString = text.toLowerCase().trim();
-    if (!searchString) return [];
+    const rawSearch = text.trim();
+    if (!rawSearch || rawSearch.length < 3) return [];
+    const searchString = rawSearch.toLowerCase();
+    const cleanQ = searchString.replace(/^(secrma|sec|rma)[-_\s]?/i, '');
 
     const resultsMap = new Map<string, RMA>();
 
-    try {
-      // 1. Try direct document get by RMA ID (e.g. "RMA-261234")
-      const directSnap = await getDoc(doc(db, 'rmas', text.trim()));
-      if (directSnap.exists()) {
-        const rma = mapDocToRMA(directSnap);
-        if (!rma.isDeleted) resultsMap.set(directSnap.id, rma);
+    const isExactOrRefMatch = (r: RMA): boolean => {
+      if (!r || r.isDeleted) return false;
+
+      // 1. Serial Number exact match (case insensitive)
+      if (r.serialNumber && r.serialNumber.toLowerCase() === searchString) return true;
+
+      // 2. Quotation Number exact match (case insensitive)
+      if (r.quotationNumber && r.quotationNumber.toLowerCase() === searchString) return true;
+
+      // 3. RMA ID / Group Request ID exact or smart ref match
+      if (r.id && r.id.toLowerCase() === searchString) return true;
+      if (r.groupRequestId && r.groupRequestId.toLowerCase() === searchString) return true;
+
+      // Smart ref matching for stripped prefix (e.g. searching "2026-5303")
+      if (r.id) {
+        const cleanId = r.id.toLowerCase().replace(/^(secrma|sec|rma)[-_\s]?/i, '');
+        if (cleanId && cleanId === cleanQ) return true;
+      }
+      if (r.groupRequestId) {
+        const cleanGroupId = r.groupRequestId.toLowerCase().replace(/^(secrma|sec|rma)[-_\s]?/i, '');
+        if (cleanGroupId && cleanGroupId === cleanQ) return true;
       }
 
-      // 2. Try exact match on quotationNumber (e.g. "SEC073880")
-      const quoteSnap = await getDocs(query(
-        collection(db, 'rmas'),
-        where('quotationNumber', '==', text.trim()),
-        limit(10)
-      ));
-      quoteSnap.docs.forEach(d => {
-        const rma = mapDocToRMA(d);
-        if (!rma.isDeleted) resultsMap.set(d.id, rma);
-      });
+      return false;
+    };
 
-      // 3. Try exact match on groupRequestId (e.g. "SECRMA-2026-0003")
-      const groupSnap = await getDocs(query(
-        collection(db, 'rmas'),
-        where('groupRequestId', '==', text.trim()),
-        limit(10)
-      ));
-      groupSnap.docs.forEach(d => {
-        const rma = mapDocToRMA(d);
-        if (!rma.isDeleted) resultsMap.set(d.id, rma);
-      });
+    if (isConfigured && db) {
+      try {
+        // 1. Direct get by document ID
+        const directSnap = await getDoc(doc(db, 'rmas', rawSearch));
+        if (directSnap.exists()) {
+          const rma = mapDocToRMA(directSnap);
+          if (!rma.isDeleted) resultsMap.set(directSnap.id, rma);
+        }
 
-      // 4. Try exact match on serialNumber
-      const snSnap = await getDocs(query(
-        collection(db, 'rmas'),
-        where('serialNumber', '==', text.trim()),
-        limit(10)
-      ));
-      snSnap.docs.forEach(d => {
-        const rma = mapDocToRMA(d);
-        if (!rma.isDeleted) resultsMap.set(d.id, rma);
-      });
-
-      // 5. Fallback: If exact queries returned no match, search across all RMAs using smart ref matching
-      if (resultsMap.size === 0) {
-        const allRMAs = await MockDb.getRMAs();
-        allRMAs.forEach(r => {
-          if (!r || r.isDeleted) return;
-          const match =
-            matchesSmartRef(r.id, text) ||
-            matchesSmartRef(r.groupRequestId, text) ||
-            matchesSmartRef(r.quotationNumber, text) ||
-            matchesSmartRef(r.serialNumber, text) ||
-            (r.customerName && r.customerName.toLowerCase().includes(searchString)) ||
-            (r.contactPerson && r.contactPerson.toLowerCase().includes(searchString)) ||
-            (r.customerPhone && r.customerPhone.includes(searchString)) ||
-            (r.productModel && r.productModel.toLowerCase().includes(searchString)) ||
-            (r.brand && r.brand.toLowerCase().includes(searchString));
-          if (match) resultsMap.set(r.id, r);
+        // 2. Query quotationNumber == rawSearch
+        const quoteSnap = await getDocs(query(
+          collection(db, 'rmas'),
+          where('quotationNumber', '==', rawSearch),
+          limit(10)
+        ));
+        quoteSnap.docs.forEach(d => {
+          const rma = mapDocToRMA(d);
+          if (!rma.isDeleted) resultsMap.set(d.id, rma);
         });
-      }
 
-    } catch (e) {
-      console.error('searchRMAsPublic error:', e);
+        // 3. Query groupRequestId == rawSearch
+        const groupSnap = await getDocs(query(
+          collection(db, 'rmas'),
+          where('groupRequestId', '==', rawSearch),
+          limit(10)
+        ));
+        groupSnap.docs.forEach(d => {
+          const rma = mapDocToRMA(d);
+          if (!rma.isDeleted) resultsMap.set(d.id, rma);
+        });
+
+        // 4. Query serialNumber == rawSearch
+        const snSnap = await getDocs(query(
+          collection(db, 'rmas'),
+          where('serialNumber', '==', rawSearch),
+          limit(10)
+        ));
+        snSnap.docs.forEach(d => {
+          const rma = mapDocToRMA(d);
+          if (!rma.isDeleted) resultsMap.set(d.id, rma);
+        });
+
+        // 5. Fallback: Check active RMAs using strict isExactOrRefMatch only (NO partial customer/phone/model matches)
+        if (resultsMap.size === 0) {
+          const allRMAs = await MockDb.getRMAs();
+          allRMAs.forEach(r => {
+            if (isExactOrRefMatch(r)) resultsMap.set(r.id, r);
+          });
+        }
+      } catch (e) {
+        console.error('searchRMAsPublic error:', e);
+      }
+    } else {
+      // Offline fallback
+      OFFLINE_STORAGE.forEach(r => {
+        if (isExactOrRefMatch(r)) resultsMap.set(r.id, r);
+      });
     }
 
     return Array.from(resultsMap.values());
