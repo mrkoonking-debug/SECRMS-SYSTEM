@@ -4,29 +4,10 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { RMA, RMAStatus } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
-import { ArrowLeft, Search, Package, CheckCircle2, Settings, Clock, RefreshCw, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Search, Package, CheckCircle2, Settings } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageToggle } from '../components/LanguageToggle';
-import { ImageZoomModal } from '../components/ImageZoomModal';
-
-const formatDetailedDateTime = (dateVal?: any) => {
-  if (!dateVal) return null;
-  try {
-    const d = dateVal?.toDate ? dateVal.toDate() : new Date(dateVal);
-    if (isNaN(d.getTime())) return null;
-    return d.toLocaleString('th-TH', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    }) + ' น.';
-  } catch {
-    return null;
-  }
-};
 
 export const CustomerStatus: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -34,7 +15,6 @@ export const CustomerStatus: React.FC = () => {
   const [rmas, setRMAs] = useState<RMA[]>([]);
   const [loading, setLoading] = useState(!!query);
   const [searched, setSearched] = useState(false);
-  const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -168,75 +148,11 @@ export const CustomerStatus: React.FC = () => {
                     );
                   })}
                 </div>
-
-                {/* Detailed Timestamp Breakdown */}
-                <div className="mt-8 pt-4 border-t border-gray-100 dark:border-white/10 space-y-2 text-xs">
-                  {rma.createdAt && (
-                    <div className="flex justify-between items-center text-gray-500 dark:text-gray-400">
-                      <span className="flex items-center gap-1.5 font-medium">
-                        <Clock className="w-3.5 h-3.5 text-blue-500" /> เวลาลงทะเบียนส่งเคลม:
-                      </span>
-                      <span className="font-bold font-mono text-[#1d1d1f] dark:text-white bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded">
-                        {formatDetailedDateTime(rma.createdAt)}
-                      </span>
-                    </div>
-                  )}
-
-                  {rma.history && rma.history.find((h: any) => h.description?.includes('รับเรื่องเข้าทีม') || h.description?.includes('รับสินค้า')) && (
-                    <div className="flex justify-between items-center text-gray-500 dark:text-gray-400">
-                      <span className="flex items-center gap-1.5 font-medium">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> เวลาพนักงานกดรับเข้าทีม:
-                      </span>
-                      <span className="font-bold font-mono text-[#1d1d1f] dark:text-white bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded">
-                        {formatDetailedDateTime(rma.history.find((h: any) => h.description?.includes('รับเรื่องเข้าทีม') || h.description?.includes('รับสินค้า'))?.date)}
-                      </span>
-                    </div>
-                  )}
-
-                  {rma.updatedAt && (
-                    <div className="flex justify-between items-center text-gray-500 dark:text-gray-400">
-                      <span className="flex items-center gap-1.5 font-medium">
-                        <RefreshCw className="w-3.5 h-3.5 text-orange-500" /> อัปเดตสถานะล่าสุด:
-                      </span>
-                      <span className="font-bold font-mono text-[#1d1d1f] dark:text-white bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded">
-                        {formatDetailedDateTime(rma.updatedAt)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Attachments gallery */}
-                {rma.attachments && rma.attachments.length > 0 && (
-                  <div className="mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
-                    <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2 flex items-center gap-1">
-                      <ImageIcon className="w-3.5 h-3.5 text-blue-500" /> รูปภาพอุปกรณ์แนบ ({rma.attachments.length})
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {rma.attachments.map((att: any, attIdx: number) => (
-                        <button
-                          key={att.id || attIdx}
-                          onClick={() => setActiveImageUrl(att.previewUrl)}
-                          className="w-12 h-12 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-transform cursor-pointer shadow-sm"
-                          title="คลิกเพื่อดูรูปและขยาย"
-                        >
-                          <img src={att.previewUrl} className="w-full h-full object-cover" alt={att.fileName || 'Attachment'} />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             );
           })}
         </div>
       </div>
-
-      {/* Interactive Lightbox Modal for Viewing Product Attachments with Zoom & Pan */}
-      <ImageZoomModal
-        imageUrl={activeImageUrl}
-        onClose={() => setActiveImageUrl(null)}
-        title="รูปภาพอุปกรณ์ที่ส่งเคลม"
-      />
     </div>
   );
 };

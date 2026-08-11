@@ -25,9 +25,7 @@ export const StatusBadge: React.FC<Props> = React.memo(({ status, isOverdue, isP
       case RMAStatus.WAITING_PARTS:
         return 'bg-orange-50 text-orange-600 border border-orange-100 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-500/20';
       case RMAStatus.REPLACED_FROM_STOCK:
-        return isPublic ? 'bg-green-500 text-white shadow-md shadow-green-500/20' : 'bg-purple-50 text-purple-600 border border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-500/20';
       case RMAStatus.RETURNED_FROM_VENDOR:
-        return 'bg-teal-50 text-teal-600 border border-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-500/20';
       case RMAStatus.REPAIRED:
       case RMAStatus.CLOSED:
         return 'bg-green-500 text-white shadow-md shadow-green-500/20';
@@ -44,11 +42,8 @@ export const StatusBadge: React.FC<Props> = React.memo(({ status, isOverdue, isP
     if (isPublic && language === 'th') {
       switch (status) {
         case RMAStatus.REPLACED_FROM_STOCK:
-          return 'เปลี่ยนตัวใหม่เรียบร้อย';
         case RMAStatus.RETURNED_FROM_VENDOR:
-          return 'เคลมเสร็จสิ้น';
         case RMAStatus.REPAIRED:
-          return 'ซ่อมเสร็จสิ้น';
         case RMAStatus.CLOSED:
           return 'ส่งคืนสินค้าเรียบร้อย';
         case RMAStatus.WAITING_PARTS:
@@ -65,13 +60,20 @@ export const StatusBadge: React.FC<Props> = React.memo(({ status, isOverdue, isP
     } else if (isPublic && language === 'en') {
       switch (status) {
         case RMAStatus.REPLACED_FROM_STOCK:
-          return 'Replaced with New Unit';
         case RMAStatus.RETURNED_FROM_VENDOR:
-          return 'Claim Completed';
         case RMAStatus.REPAIRED:
-          return 'Repaired & Ready';
         case RMAStatus.CLOSED:
-          return 'Returned / Completed';
+          return 'Item Returned / Completed';
+        case RMAStatus.WAITING_PARTS:
+          return 'Sent to Service Center';
+        case RMAStatus.DIAGNOSING:
+          return 'Inspecting';
+        case RMAStatus.PENDING:
+          return 'Received';
+        case RMAStatus.REJECTED:
+          return 'Rejected';
+        case RMAStatus.CANCELLED:
+          return 'Cancelled';
       }
     }
     return t(`status.${status}`);
