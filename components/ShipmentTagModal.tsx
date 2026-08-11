@@ -679,8 +679,9 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                                     URL.revokeObjectURL(url);
                                     showToast('ดาวน์โหลด PDF ใบแปะหน้าเรียบร้อยแล้ว!', 'success');
                                 } catch (err) {
-                                    console.error('Download PDF error:', err);
-                                    showToast('ไม่สามารถสร้างไฟล์ PDF ได้', 'error');
+                                    console.warn('PDF blob generation fallback to print dialog:', err);
+                                    showToast('กำลังเปิดหน้าต่างพิมพ์ (บันทึกเป็น PDF)...', 'info');
+                                    handlePrintFromPreview();
                                 } finally {
                                     setIsGeneratingPdf(false);
                                 }

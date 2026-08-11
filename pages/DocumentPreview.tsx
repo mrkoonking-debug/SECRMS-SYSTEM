@@ -253,8 +253,9 @@ export const DocumentPreview: React.FC = () => {
                                 URL.revokeObjectURL(url);
                                 showToast('ดาวน์โหลดไฟล์ PDF เรียบร้อยแล้ว!', 'success');
                             } catch (err) {
-                                console.error('PDF generation error:', err);
-                                showToast('เกิดข้อผิดพลาดในการสร้างไฟล์ PDF', 'error');
+                                console.warn('PDF generation fallback to print dialog:', err);
+                                showToast('กำลังเปิดหน้าต่างพิมพ์ (บันทึกเป็น PDF)...', 'info');
+                                handlePrint();
                             } finally {
                                 setIsGeneratingPdf(false);
                             }
