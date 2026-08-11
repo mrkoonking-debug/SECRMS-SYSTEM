@@ -32,7 +32,7 @@ export const JobDetail: React.FC = () => {
 
     // Shipment Tag Modal state
     const [isShipmentTagModalOpen, setIsShipmentTagModalOpen] = useState(false);
-    const [shipmentTagTarget, setShipmentTagTarget] = useState<'CUSTOMER' | 'DISTRIBUTOR'>('CUSTOMER');
+    const [shipmentTagTarget, setShipmentTagTarget] = useState<'CUSTOMER' | 'DISTRIBUTOR' | 'CUSTOMER_INBOUND'>('CUSTOMER');
     const [shipmentTagRmas, setShipmentTagRmas] = useState<RMA[]>([]); // Selected RMAs for shipment tag
 
     // Distributor Picker state (appears before ShipmentTagModal when multiple distributors)
@@ -503,7 +503,7 @@ export const JobDetail: React.FC = () => {
                             ใบปะหน้า (ศูนย์)
                         </button>
 
-                        {/* Bottom-Right: ใบปะหน้า (ลูกค้า) */}
+                        {/* Bottom-Right: ใบปะหน้าส่งกลับ (ลูกค้า) */}
                         <button
                             onClick={() => {
                                 setShipmentTagRmas(readyRMAs);
@@ -517,7 +517,21 @@ export const JobDetail: React.FC = () => {
                             title={!hasReadyRMAs ? 'ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะพิมพ์ใบปะหน้าได้' : ''}
                         >
                             <Truck className="w-3.5 h-3.5" strokeWidth={2.5} />
-                            ใบปะหน้า (ลูกค้า)
+                            ใบปะหน้าส่งกลับ (ลูกค้า)
+                        </button>
+
+                        {/* ใบปะหน้าลูกค้าส่งมาบริษัท (Inbound Label) */}
+                        <button
+                            onClick={() => {
+                                setShipmentTagRmas(rmas);
+                                setShipmentTagTarget('CUSTOMER_INBOUND');
+                                setIsShipmentTagModalOpen(true);
+                            }}
+                            className="h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all border border-emerald-300 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:scale-[1.02] active:scale-95 cursor-pointer col-span-2 md:col-span-1"
+                            title="พิมพ์/ดาวน์โหลด PDF ใบปะหน้ากล่องที่ลูกค้าใช้ส่งพัสดุมายังบริษัทฯ"
+                        >
+                            <Truck className="w-3.5 h-3.5" strokeWidth={2.5} />
+                            ใบปะหน้าลูกค้าส่งมาบริษัท
                         </button>
                     </div>
                 </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { renderHtmlToBlob, renderHtmlToPdfBlob } from '../services/renderToImage';
 import { X, Package, Trash2, Expand, RefreshCw, Copy, Mail, Plus, Save, Truck, FileText, Loader2 } from 'lucide-react';
 import { RMA, Distributor } from '../types';
-import { ShippingLabelPayload, getCustomerShippingLabelHTML } from '../services/printService';
+import { ShippingLabelPayload, getCustomerShippingLabelHTML, getCustomerInboundLabelHTML } from '../services/printService';
 import { MockDb } from '../services/mockDb';
 import { useLanguage } from '../contexts/LanguageContext';
 import { showToast } from '../services/toast';
@@ -21,7 +21,7 @@ interface ShipmentTagModalProps {
     rma: RMA;
     allRmas?: RMA[];
     onSave: (customerData: any, rmaIds?: string[]) => Promise<void>;
-    targetType: 'CUSTOMER' | 'DISTRIBUTOR';
+    targetType: 'CUSTOMER' | 'DISTRIBUTOR' | 'CUSTOMER_INBOUND';
     distributorGroups?: Record<string, RMA[]>;
 }
 
@@ -218,6 +218,12 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
             setIsSaving(true);
             const rmaIds = isTabbed ? currentRmas.map(r => r.id) : undefined;
             await onSave(buildSavePayload(), rmaIds);
+
+            if (targetType === 'CUSTOMER_INBOUND') {
+                const html = await getCustomerInboundLabelHTML(currentRmas);
+                setPreviewHtml(html);
+                return;
+            }
 
             const payloads: ShippingLabelPayload[] = effectiveTrackingIds.map((tid, index) => ({
                 rma: currentRma,

@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { RMA } from '../types';
-import { getImporterFormHTML, getCustomerFormHTML } from '../services/printService';
+import { getImporterFormHTML, getCustomerFormHTML, getCustomerInboundLabelHTML } from '../services/printService';
 import { ArrowLeft, Printer, Download, Loader2, Image as ImageIcon, X, Check, Copy, FileText } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { renderHtmlToBlob, renderHtmlToPdfBlob } from '../services/renderToImage';
@@ -29,6 +29,7 @@ export const DocumentPreview: React.FC = () => {
                     setRMA(found);
                     let content = '';
                     if (type === 'importer') content = await getImporterFormHTML([found]);
+                    else if (type === 'inbound' || type === 'customer-inbound') content = await getCustomerInboundLabelHTML([found]);
                     else if (type === 'customer') content = await getCustomerFormHTML([found]);
                     setHtmlContent(content);
                 } else {

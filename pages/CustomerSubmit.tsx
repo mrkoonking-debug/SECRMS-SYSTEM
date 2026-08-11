@@ -7,6 +7,7 @@ import { renderHtmlToBlob, renderHtmlToPdfBlob } from '../services/renderToImage
 import { escapeHtml } from '../services/sanitize';
 import { ProductType, Team } from '../types';
 import { LINE_ACCOUNTS, SEC_ADDRESS, getLineAccountById } from '../lineConfig';
+import { getCustomerInboundLabelHTML } from '../services/printService';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ProductEntryForm } from '../components/ProductEntryForm';
 import { showToast, showValidationError } from '../services/toast';
@@ -32,88 +33,19 @@ export const CustomerSubmit: React.FC = () => {
     const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
     const [copiedLink, setCopiedLink] = useState(false);
 
-    const getLabelHtml = () => {
+    const getLabelHtml = async () => {
         if (!submittedData) return '';
         const { customer: sCustomer } = submittedData;
-        const sSelectedLineConfig = getLineAccountById(sCustomer.lineAccount);
-        const useCustomerAddress = sameAsReturn === true || (sameAsReturn === null && (!altSender.name));
-        const fromName = useCustomerAddress ? `${sCustomer.companyName} - ${sCustomer.contactName}` : altSender.name;
-        const fromPhone = useCustomerAddress ? sCustomer.phone : altSender.phone;
-        const fromAddress = useCustomerAddress ? sCustomer.returnAddress : `${altSender.address} ${altSender.postalCode}`;
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(submittedRef)}&margin=0`;
-
-        return `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Shipping Label - ${submittedRef}</title>
-                <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
-                    * { margin: 0; padding: 0; box-sizing: border-box; }
-                    body { font-family: 'Sarabun', 'Inter', sans-serif; padding: 12mm; background: #fff; }
-                    .label { border: 2.5px solid #000; max-width: 190mm; margin: 0 auto; overflow: hidden; }
-                    .header { display: flex; border-bottom: 2.5px solid #000; }
-                    .header-left { flex: 1; padding: 14px 20px; display: flex; flex-direction: column; justify-content: center; }
-                    .header-title { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 2px; }
-                    .header-ref { font-size: 26px; font-weight: 800; color: #000; letter-spacing: 0.5px; font-family: 'Inter', monospace; line-height: 1.1; }
-                    .header-note { font-size: 10px; color: #555; margin-top: 4px; font-weight: 500; }
-                    .header-qr { width: 36mm; border-left: 2.5px solid #000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; background: #fafafa; }
-                    .header-qr img { width: 26mm; height: 26mm; }
-                    .header-qr span { font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-top: 4px; }
-                    .sender { padding: 14px 20px; border-bottom: 1.5px dashed #999; position: relative; }
-                    .section-badge { display: inline-block; font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #fff; background: #000; padding: 3px 10px; margin-bottom: 10px; }
-                    .sender-name { font-size: 16px; font-weight: 700; color: #000; margin-bottom: 3px; }
-                    .sender-address { font-size: 13px; color: #333; line-height: 1.5; white-space: pre-line; }
-                    .sender-phone { font-size: 13px; font-weight: 600; color: #000; margin-top: 4px; }
-                    .recipient { padding: 16px 20px 20px; }
-                    .recipient-badge { display: inline-block; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #fff; background: #000; padding: 4px 12px; margin-bottom: 12px; }
-                    .recipient-company { font-size: 20px; font-weight: 800; color: #000; margin-bottom: 4px; line-height: 1.2; }
-                    .recipient-line-id { display: inline-block; font-size: 12px; font-weight: 700; color: #333; border: 1.5px solid #000; padding: 2px 8px; margin-bottom: 8px; letter-spacing: 0.5px; }
-                    .recipient-address { font-size: 14px; color: #222; line-height: 1.6; margin-bottom: 8px; }
-                    .recipient-contacts { font-size: 13px; font-weight: 700; color: #000; line-height: 1.6; }
-                    .recipient-contacts span { font-weight: 400; color: #444; }
-                    .footer { border-top: 1.5px solid #000; padding: 8px 20px; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
-                    .footer-right { font-size: 9px; color: #888; font-weight: 600; font-family: 'Inter', monospace; }
-                </style>
-            </head>
-            <body>
-                <div class="label">
-                    <div class="header">
-                        <div class="header-left">
-                            <div class="header-title">${t('publicSubmit.refLabel')}</div>
-                            <div class="header-ref">${escapeHtml(submittedRef)}</div>
-                            <div class="header-note">กรุณาเก็บรักษาเลขนี้ไว้เพื่อติดตามสถานะ</div>
-                        </div>
-                        <div class="header-qr">
-                            <img src="${qrUrl}" alt="QR Code" />
-                            <span>SCAN TO TRACK</span>
-                        </div>
-                    </div>
-                    <div class="sender">
-                        <div class="section-badge">${t('publicSubmit.senderLabel')}</div>
-                        <div class="sender-name">${escapeHtml(fromName)}</div>
-                        <div class="sender-address">${escapeHtml(fromAddress)}</div>
-                        <div class="sender-phone">โทร. ${escapeHtml(fromPhone)}</div>
-                    </div>
-                    <div class="recipient">
-                        <div class="recipient-badge">${t('publicSubmit.recipientLabel')}</div>
-                        <div class="recipient-company">${SEC_ADDRESS.company}</div>
-                        ${sSelectedLineConfig?.lineId ? `<div class="recipient-line-id">${sSelectedLineConfig.lineId}</div>` : ''}
-                        <div class="recipient-address">${SEC_ADDRESS.address}</div>
-                        <div class="recipient-contacts">
-                            ${sSelectedLineConfig 
-                                ? sSelectedLineConfig.recipients.map((r: any) => `<span>โทร.</span> ${escapeHtml(r.name)} ${escapeHtml(r.phone)}`).join(' &nbsp;/&nbsp; ')
-                                : '-'
-                            }
-                        </div>
-                    </div>
-                    <div class="footer">
-                        <div class="footer-right">${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
-                    </div>
-                </div>
-            </body>
-            </html>
-        `;
+        const fakeRma: any = {
+            id: submittedRef,
+            groupRequestId: submittedRef,
+            customerName: sCustomer.companyName ? `${sCustomer.companyName} - ${sCustomer.contactName}` : sCustomer.contactName,
+            contactPerson: sCustomer.contactName,
+            customerPhone: sCustomer.phone,
+            returnAddress: sCustomer.returnAddress,
+            lineAccount: sCustomer.lineAccount
+        };
+        return await getCustomerInboundLabelHTML([fakeRma]);
     };
 
     // Navigation Guard Logic
@@ -587,7 +519,7 @@ export const CustomerSubmit: React.FC = () => {
                             {/* Download PDF Button */}
                             <button
                                 onClick={async () => {
-                                    const html = getLabelHtml();
+                                    const html = await getLabelHtml();
                                     if (!html) return;
                                     setIsDownloadingPdf(true);
                                     try {
@@ -618,7 +550,7 @@ export const CustomerSubmit: React.FC = () => {
                             {/* Save Image PNG Button */}
                             <button
                                 onClick={async () => {
-                                    const html = getLabelHtml();
+                                    const html = await getLabelHtml();
                                     if (!html) return;
                                     setIsDownloadingImage(true);
                                     try {
