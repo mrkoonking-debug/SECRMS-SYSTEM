@@ -86,10 +86,10 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
     .print-doc {
       font-family: 'Sarabun', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       color: #1d1d1f;
-      line-height: 1.5;
+      line-height: 1.4;
       width: 210mm;
       min-height: 297mm;
-      padding: 12mm 14mm 14mm;
+      padding: 6mm 10mm 10mm;
       margin: 0 auto;
       background: #fff;
       position: relative;
@@ -104,11 +104,11 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
     .co-details {
       font-size: 11px;
       color: #1d1d1f;
-      line-height: 1.6;
+      line-height: 1.4;
     }
     
     .doc-header-title {
-      font-size: 28px;
+      font-size: 24px;
       font-weight: 700;
       letter-spacing: 0;
       color: ${primary}; /* Bright blue matching reference */
@@ -116,23 +116,23 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
       flex-direction: column;
       align-items: flex-end;
       gap: 2px;
-      margin-bottom: 24px;
+      margin-bottom: 16px;
     }
-
 
     .party-box {
       border: 1px solid #e5e5ea;
       border-radius: 8px;
-      padding: 16px;
+      padding: 6px 10px;
+      margin-bottom: 8px;
       background: #fff;
     }
     .party-box-label {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
       color: ${primary};
-      margin-bottom: 12px;
+      margin-bottom: 4px;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -141,21 +141,21 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
       content: '';
       display: inline-block;
       width: 4px;
-      height: 14px;
+      height: 12px;
       background: ${primary};
       border-radius: 4px;
     }
-    .party-name { font-size: 14px; font-weight: 700; color: #1d1d1f; margin-bottom: 2px; }
-    .party-detail { font-size: 10px; color: #666; line-height: 1.6; }
+    .party-name { font-size: 12px; font-weight: 700; color: #1d1d1f; margin-bottom: 1px; }
+    .party-detail { font-size: 9.5px; color: #666; line-height: 1.4; }
 
     /* ── SECTION TITLE ── */
     .section-title {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
       color: ${primary};
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-bottom: 12px;
+      margin-bottom: 6px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -181,25 +181,26 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 0;
-      font-size: 11px;
+      font-size: 10px;
       border: 1px solid ${light};
       border-radius: 6px;
       overflow: hidden;
+      table-layout: fixed;
     }
     .items-table th {
       background: ${bgLight};
       color: ${dark};
       font-weight: 700;
-      font-size: 10px;
+      font-size: 9.5px;
       text-transform: uppercase;
       letter-spacing: 0.04em;
       text-align: center;
-      padding: 10px 12px;
+      padding: 5px 8px;
       border-bottom: 2px solid ${primary};
     }
     .items-table th.align-left { text-align: left; }
     .items-table td {
-      padding: 14px 12px;
+      padding: 5px 8px;
       border-bottom: 1px solid #eef2f7;
       vertical-align: top;
     }
@@ -207,18 +208,18 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
     .items-table td.align-center { text-align: center; color: #9ca3af; }
     
     .item-brand-model {
-      font-weight: 700; color: #1d1d1f; font-size: 13px; margin-bottom: 6px;
+      font-weight: 700; color: #1d1d1f; font-size: 11px; margin-bottom: 3px;
     }
     .item-desc {
-      color: #555; font-size: 10.5px; line-height: 1.5; margin-bottom: 1px;
+      color: #555; font-size: 9.5px; line-height: 1.3; margin-bottom: 1px;
     }
     .item-sn {
       display: inline-block;
       font-family: 'Inter', monospace;
-      font-size: 10px; color: #1d1d1f;
+      font-size: 9.5px; color: #1d1d1f;
       background: #f3f4f6; 
-      padding: 3px 10px; border-radius: 4px;
-      margin-top: 8px;
+      padding: 2px 6px; border-radius: 4px;
+      margin-top: 0px;
       border: 1px solid #e5e7eb;
       letter-spacing: 0.01em;
     }
@@ -229,19 +230,19 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
       justify-content: flex-end;
       align-items: center;
       gap: 12px;
-      padding: 10px 16px;
+      padding: 4px 12px;
       background: #f0f4ff;
       color: ${dark};
       border: 1px solid ${light};
       border-top: none;
       border-radius: 0 0 6px 6px;
-      margin-bottom: 28px;
-      font-size: 12px;
+      margin-bottom: 8px;
+      font-size: 10px;
     }
     .table-summary-bar .summary-label { font-weight: 400; color: #555; }
     .table-summary-bar .summary-value {
       font-family: 'Inter', sans-serif;
-      font-weight: 700; font-size: 15px; color: ${primary};
+      font-weight: 700; font-size: 12px; color: ${primary};
     }
     
     /* ── REMARKS ── */
@@ -249,49 +250,49 @@ const getCommonStyles = (theme: 'blue' | 'orange' = 'blue') => {
       background: #f8f9fb;
       border-left: 3px solid ${primary};
       border-radius: 0 8px 8px 0;
-      padding: 14px 18px;
-      margin-bottom: 20px;
-      font-size: 10.5px;
+      padding: 6px 12px;
+      margin-bottom: 8px;
+      font-size: 9.5px;
       color: #444;
-      line-height: 1.7;
+      line-height: 1.4;
     }
     .remarks-card-title {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 700;
       color: ${dark};
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      margin-bottom: 8px;
+      margin-bottom: 2px;
     }
 
     /* ── FOOTER / SIGNATURES ── */
     .footer-section {
-      margin-top: 10px;
+      margin-top: 6px;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
+      gap: 10px;
     }
     .sig-box {
       border: 1px solid #e5e7eb;
       border-top: 3px solid ${primary};
       border-radius: 0 0 8px 8px;
-      padding: 14px 18px 16px;
+      padding: 8px 12px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 80px;
+      min-height: 50px;
       background: #fff;
     }
     .sig-title {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: ${primary};
-      margin-bottom: 16px;
+      margin-bottom: 4px;
     }
-    .sig-subtitle { font-size: 9px; color: #86868b; margin-bottom: 24px; }
-    .sig-line { border-bottom: 1px solid #1d1d1f; margin-bottom: 6px; }
+    .sig-subtitle { font-size: 9px; color: #86868b; margin-bottom: 12px; }
+    .sig-line { border-bottom: 1px solid #1d1d1f; margin-bottom: 4px; }
     .sig-name-label { font-size: 9px; color: #86868b; }
     .sig-date-label { font-size: 9px; color: #86868b; }
     .sig-date-line { display: inline-block; border-bottom: 1px solid #1d1d1f; width: 150px; margin-left: 4px; }
@@ -617,39 +618,39 @@ export const getCustomerFormHTML = async (rmas: RMA[]): Promise<string> => {
     ${getCommonStyles('blue')}
     <div class="print-doc">
       <!-- Header: Logo + Company Info -->
-      <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 16px;">
+      <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 8px;">
         <tr>
           <td style="width: 35%; border: none; padding: 0; vertical-align: middle;">
-            <img src="${settings.logoUrl || '/logo.png'}" style="height: 60px; width: auto; display: block;" alt="logo" />
+            <img src="${settings.logoUrl || '/logo.png'}" style="height: 45px; width: auto; display: block;" alt="logo" />
           </td>
           <td style="width: 65%; border: none; padding: 0; text-align: right; vertical-align: middle;">
-            <div style="font-size: 20px; font-weight: 700; color: #333;">${settings.nameTh}</div>
-            <div style="font-size: 11px; color: #666; margin-top: 6px; line-height: 1.5;">
+            <div style="font-size: 18px; font-weight: 700; color: #333;">${settings.nameTh}</div>
+            <div style="font-size: 11px; color: #666; margin-top: 4px; line-height: 1.4;">
               ${settings.address} | TAX ID: ${settings.taxId}<br/>
               Tel: ${settings.tel} | Email: support@sectechnology.co.th | Web: www.sectechnology.co.th
             </div>
           </td>
         </tr>
       </table>
-      <div class="header-divider" style="height: 2px; background-color: #2563eb; margin-bottom: 14px;"></div>
+      <div class="header-divider" style="height: 2px; background-color: #2563eb; margin-bottom: 8px;"></div>
       
       <!-- Title + Job Reference -->
-      <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 16px;">
+      <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 8px;">
         <tr>
           <td style="width: 60%; border: none; padding: 0; vertical-align: top;">
-            <div style="font-size: 24px; font-weight: 700; color: #2563eb;">ใบส่งคืนสินค้าเคลม</div>
-            <div style="font-size: 14px; color: #555; margin-top: 4px;">Product Return Note</div>
+            <div style="font-size: 20px; font-weight: 700; color: #2563eb;">ใบส่งคืนสินค้าเคลม</div>
+            <div style="font-size: 13px; color: #555; margin-top: 2px;">Product Return Note</div>
           </td>
           <td style="width: 40%; border: none; padding: 0; text-align: right; vertical-align: top;">
             <div style="font-size: 10px; font-weight: 700; color: #555; letter-spacing: 0.5px;">JOB REFERENCE</div>
-            <div style="font-size: 18px; font-weight: 700; color: #1d1d1f; margin-top: 4px;">${escapeHtml(rma.groupRequestId || rma.id)}</div>
+            <div style="font-size: 18px; font-weight: 700; color: #1d1d1f; margin-top: 2px;">${escapeHtml(rma.groupRequestId || rma.id)}</div>
             <div style="font-size: 11px; color: #555; margin-top: 2px;">Date: ${today}</div>
           </td>
         </tr>
       </table>
 
       <!-- Customer Details -->
-      <div class="party-box" style="margin-bottom: 14px;">
+      <div class="party-box" style="margin-bottom: 8px;">
         <div class="party-box-label">CUSTOMER DETAILS (ลูกค้า)</div>
         <div class="party-name">${escapeHtml(rma.customerName)}</div>
         ${rma.contactPerson ? `<div class="party-detail" style="margin-top: 2px; font-weight: 600;">ผู้ติดต่อ: ${escapeHtml(rma.contactPerson)}</div>` : ''}
