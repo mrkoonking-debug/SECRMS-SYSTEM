@@ -445,93 +445,80 @@ export const JobDetail: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* PRINT ACTION GROUPS — Balanced & Symmetrical Layout */}
-                    <div className="flex flex-col gap-2 w-full md:w-auto min-w-[320px] max-w-[480px]">
-                        {/* Row 1: งานส่งศูนย์ (Distributor Actions) - 2 Columns */}
-                        <div className="grid grid-cols-2 gap-1.5 md:gap-2">
-                            <button
-                                onClick={() => {
-                                    setSelectedDistTab('ALL');
-                                    setDocPreviewType('DISTRIBUTOR');
-                                    setDocPreviewRmas(rmas);
-                                    setIsDocPreviewOpen(true);
-                                }}
-                                disabled={!allHaveDistributor}
-                                className={`h-9 md:h-10 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${allHaveDistributor
-                                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-95'
-                                    : 'bg-gray-100 dark:bg-[#2c2c2e] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
-                                title={!allHaveDistributor ? `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)` : ''}
-                            >
-                                <Printer className="w-3.5 h-3.5" strokeWidth={2.5} />
-                                ส่งให้ศูนย์
-                            </button>
+                    {/* PRINT ACTION GROUPS — Clean 2x2 Symmetrical Grid */}
+                    <div className="grid grid-cols-2 gap-1.5 md:gap-2 w-full md:w-auto md:min-w-[340px] md:max-w-[400px]">
+                        {/* Top-Left: ใบส่งเคลม */}
+                        <button
+                            onClick={() => {
+                                setSelectedDistTab('ALL');
+                                setDocPreviewType('DISTRIBUTOR');
+                                setDocPreviewRmas(rmas);
+                                setIsDocPreviewOpen(true);
+                            }}
+                            disabled={!allHaveDistributor}
+                            className={`h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${allHaveDistributor
+                                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-95'
+                                : 'bg-gray-100 dark:bg-[#2c2c2e] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
+                            title={!allHaveDistributor ? `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)` : ''}
+                        >
+                            <Printer className="w-3.5 h-3.5" strokeWidth={2.5} />
+                            ส่งให้ศูนย์
+                        </button>
 
-                            <button
-                                onClick={() => {
-                                    const distributorGroups = new Set(rmas.map(r => r.distributor || '').filter(Boolean));
-                                    if (distributorGroups.size > 1) {
-                                        setSelectedDistRmas(new Set(rmas.map(r => r.id)));
-                                        setShowDistributorPicker(true);
-                                    } else {
-                                        setShipmentTagRmas(rmas);
-                                        setShipmentTagTarget('DISTRIBUTOR');
-                                        setIsShipmentTagModalOpen(true);
-                                    }
-                                }}
-                                disabled={!allHaveDistributor}
-                                className={`h-9 md:h-10 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${allHaveDistributor
-                                    ? 'border border-orange-300 dark:border-orange-500/30 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:scale-[1.02] active:scale-95'
-                                    : 'border border-gray-200 dark:border-[#333] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
-                                title={!allHaveDistributor ? `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)` : ''}
-                            >
-                                <Truck className="w-3.5 h-3.5" strokeWidth={2.5} />
-                                ใบปะหน้า (ศูนย์)
-                            </button>
-                        </div>
+                        {/* Top-Right: ใบส่งคืน */}
+                        <button
+                            onClick={handleReturnToCustomerClick}
+                            disabled={!hasReadyRMAs}
+                            className={`h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${hasReadyRMAs
+                                ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-95 cursor-pointer'
+                                : 'bg-gray-100 dark:bg-[#2c2c2e] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
+                            title={!hasReadyRMAs ? 'ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะส่งคืนได้' : ''}
+                        >
+                            <User className="w-3.5 h-3.5" strokeWidth={2.5} />
+                            ส่งคืนลูกค้า
+                        </button>
 
-                        {/* Row 2: งานฝั่งลูกค้า (Customer Actions) - 3 Columns */}
-                        <div className="grid grid-cols-3 gap-1.5 md:gap-2">
-                            <button
-                                onClick={() => {
+                        {/* Bottom-Left: ใบปะหน้า (ศูนย์) */}
+                        <button
+                            onClick={() => {
+                                const distributorGroups = new Set(rmas.map(r => r.distributor || '').filter(Boolean));
+                                if (distributorGroups.size > 1) {
+                                    // Multiple distributors — show picker
+                                    setSelectedDistRmas(new Set(rmas.map(r => r.id)));
+                                    setShowDistributorPicker(true);
+                                } else {
+                                    // Single distributor — go straight to label
                                     setShipmentTagRmas(rmas);
-                                    setShipmentTagTarget('CUSTOMER_INBOUND');
+                                    setShipmentTagTarget('DISTRIBUTOR');
                                     setIsShipmentTagModalOpen(true);
-                                }}
-                                className="h-9 md:h-10 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[10px] md:text-xs font-semibold transition-all border border-emerald-300 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:scale-[1.02] active:scale-95 cursor-pointer whitespace-nowrap"
-                                title="พิมพ์/ดาวน์โหลด PDF ใบปะหน้ากล่องที่ลูกค้าใช้ส่งพัสดุมายังบริษัทฯ"
-                            >
-                                <Truck className="w-3.5 h-3.5" strokeWidth={2.5} />
-                                <span className="truncate">ใบปะหน้าส่งบริษัท</span>
-                            </button>
+                                }
+                            }}
+                            disabled={!allHaveDistributor}
+                            className={`h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${allHaveDistributor
+                                ? 'border border-orange-300 dark:border-orange-500/30 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:scale-[1.02] active:scale-95'
+                                : 'border border-gray-200 dark:border-[#333] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
+                            title={!allHaveDistributor ? `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)` : ''}
+                        >
+                            <Truck className="w-3.5 h-3.5" strokeWidth={2.5} />
+                            ใบปะหน้า (ศูนย์)
+                        </button>
 
-                            <button
-                                onClick={() => {
-                                    setShipmentTagRmas(readyRMAs);
-                                    setShipmentTagTarget('CUSTOMER');
-                                    setIsShipmentTagModalOpen(true);
-                                }}
-                                disabled={!hasReadyRMAs}
-                                className={`h-9 md:h-10 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[10px] md:text-xs font-semibold transition-all whitespace-nowrap ${hasReadyRMAs
-                                    ? 'border border-blue-300 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:scale-[1.02] active:scale-95 cursor-pointer'
-                                    : 'border border-gray-200 dark:border-[#333] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
-                                title={!hasReadyRMAs ? 'ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะพิมพ์ใบปะหน้าได้' : ''}
-                            >
-                                <Truck className="w-3.5 h-3.5" strokeWidth={2.5} />
-                                <span className="truncate">ใบปะหน้าส่งกลับ</span>
-                            </button>
-
-                            <button
-                                onClick={handleReturnToCustomerClick}
-                                disabled={!hasReadyRMAs}
-                                className={`h-9 md:h-10 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[10px] md:text-xs font-semibold transition-all whitespace-nowrap ${hasReadyRMAs
-                                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-95 cursor-pointer'
-                                    : 'bg-gray-100 dark:bg-[#2c2c2e] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
-                                title={!hasReadyRMAs ? 'ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะส่งคืนได้' : ''}
-                            >
-                                <User className="w-3.5 h-3.5" strokeWidth={2.5} />
-                                <span className="truncate">ส่งคืนลูกค้า</span>
-                            </button>
-                        </div>
+                        {/* Bottom-Right: ใบปะหน้าส่งกลับ (ลูกค้า) */}
+                        <button
+                            onClick={() => {
+                                setShipmentTagRmas(readyRMAs);
+                                setShipmentTagTarget('CUSTOMER');
+                                setIsShipmentTagModalOpen(true);
+                            }}
+                            disabled={!hasReadyRMAs}
+                            className={`h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${hasReadyRMAs
+                                ? 'border border-blue-300 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:scale-[1.02] active:scale-95 cursor-pointer'
+                                : 'border border-gray-200 dark:border-[#333] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
+                            title={!hasReadyRMAs ? 'ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะพิมพ์ใบปะหน้าได้' : ''}
+                        >
+                            <Truck className="w-3.5 h-3.5" strokeWidth={2.5} />
+                            ใบปะหน้าส่งกลับ (ลูกค้า)
+                        </button>
                     </div>
                 </div>
 
@@ -546,7 +533,22 @@ export const JobDetail: React.FC = () => {
                             {t('submit.customerDetails')}
                         </h2>
                         {!isEditingCustomer ? (
-                            <button onClick={() => setIsEditingCustomer(true)} className="text-xs text-blue-500 font-medium hover:text-blue-600 transition-colors flex items-center gap-1"><Edit3 className="w-3 h-3" /> {t('track.changeBtn')}</button>
+                            <div className="flex items-center gap-2.5">
+                                {/* Customer Inbound Shipping Label Button inside Customer Info Header */}
+                                <button
+                                    onClick={() => {
+                                        setShipmentTagRmas(rmas);
+                                        setShipmentTagTarget('CUSTOMER_INBOUND');
+                                        setIsShipmentTagModalOpen(true);
+                                    }}
+                                    className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700/60 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                                    title="ดู / พิมพ์ / ดาวน์โหลด PDF ใบปะหน้ากล่องที่ลูกค้าจ่าหน้าส่งมายังบริษัทฯ"
+                                >
+                                    <Truck className="w-3.5 h-3.5" strokeWidth={2.5} />
+                                    <span>ใบปะหน้าส่งบริษัท (ลูกค้าส่งของ)</span>
+                                </button>
+                                <button onClick={() => setIsEditingCustomer(true)} className="text-xs text-blue-500 font-medium hover:text-blue-600 transition-colors flex items-center gap-1"><Edit3 className="w-3 h-3" /> {t('track.changeBtn')}</button>
+                            </div>
                         ) : (
                             <div className="flex items-center gap-2">
                                 <button onClick={handleCancelCustomerEdit} className="px-4 py-1.5 text-xs text-gray-500 hover:text-red-500 font-medium transition-colors">{t('track.cancelBtn')}</button>
