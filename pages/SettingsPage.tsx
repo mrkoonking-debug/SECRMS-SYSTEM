@@ -123,7 +123,11 @@ export const SettingsPage: React.FC = () => {
   const handleSendOverdueSummary = async () => {
     setIsSendingSummary(true);
     try {
-      const allRmas = await MockDb.getRMAs();
+      const [allRmas, registeredUsers] = await Promise.all([
+        MockDb.getRMAs(),
+        MockDb.getAllUsers().catch(() => [])
+      ]);
+
       const activeRmas = allRmas.filter(rma => 
         !rma.isDeleted && 
         ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.CANCELLED].includes(rma.status)
@@ -134,25 +138,91 @@ export const SettingsPage: React.FC = () => {
         return;
       }
 
-      // Group active RMAs by creator
-      const groups: Record<string, { name: string; email: string; items: any[] }> = {};
-      
-      activeRmas.forEach(rma => {
-        const creatorName = rma.createdBy || 'Unknown';
-        const creatorEmail = rma.creatorEmail || '';
-        const groupKey = creatorEmail ? creatorEmail.toLowerCase() : creatorName.toLowerCase();
-        
-        if (!groups[groupKey]) {
-          groups[groupKey] = {
-            name: creatorName,
-            email: creatorEmail,
-            items: []
-          };
+      // Group active RMAs by normalized staff member or creator
+      const userGroupMap = new Map<string, { key: string; name: string; email: string; items: any[] }>();
+
+      // 1. Pre-fill registered staff accounts to ensure official names and emails
+      registeredUsers.forEach((u: any) => {
+        if (u.name || u.email) {
+          const mainKey = u.email ? u.email.toLowerCase().trim() : u.name.toLowerCase().trim();
+          if (!userGroupMap.has(mainKey)) {
+            userGroupMap.set(mainKey, {
+              key: mainKey,
+              name: u.name || u.email.split('@')[0],
+              email: u.email || '',
+              items: []
+            });
+          }
         }
-        groups[groupKey].items.push(rma);
       });
 
-      const list = Object.values(groups);
+      // Helper function to find best matching staff account for an RMA
+      const findUserForRma = (rma: any) => {
+        const creatorEmail = (rma.creatorEmail || '').toLowerCase().trim();
+        const createdBy = (rma.createdBy || '').trim();
+        const createdByLower = createdBy.toLowerCase();
+
+        // 1. Match by email
+        if (creatorEmail) {
+          const matchByEmail = registeredUsers.find((u: any) => u.email && u.email.toLowerCase().trim() === creatorEmail);
+          if (matchByEmail) return matchByEmail;
+        }
+
+        // 2. Match by exact name
+        if (createdBy) {
+          const matchByName = registeredUsers.find((u: any) => u.name && u.name.toLowerCase().trim() === createdByLower);
+          if (matchByName) return matchByName;
+
+          // 3. Match by partial name or email in createdBy (e.g. "Sirichai Raktham (sirichai.r@...)")
+          const matchByPartial = registeredUsers.find((u: any) => 
+            (u.name && createdByLower.includes(u.name.toLowerCase().trim())) ||
+            (u.email && createdByLower.includes(u.email.toLowerCase().trim()))
+          );
+          if (matchByPartial) return matchByPartial;
+        }
+
+        return null;
+      };
+
+      // 2. Assign each RMA item to a staff group
+      activeRmas.forEach(rma => {
+        const matchedUser = findUserForRma(rma);
+
+        if (matchedUser) {
+          const mainKey = matchedUser.email ? matchedUser.email.toLowerCase().trim() : matchedUser.name.toLowerCase().trim();
+          if (!userGroupMap.has(mainKey)) {
+            userGroupMap.set(mainKey, {
+              key: mainKey,
+              name: matchedUser.name || matchedUser.email.split('@')[0],
+              email: matchedUser.email || '',
+              items: []
+            });
+          }
+          userGroupMap.get(mainKey)!.items.push(rma);
+        } else {
+          // Unassigned or Web Customer registered item
+          const isWebCustomer = !rma.createdBy || rma.createdBy.toLowerCase().includes('customer') || rma.createdBy.toLowerCase().includes('web');
+          const rawName = (rma.createdBy || '').trim();
+          const cleanName = isWebCustomer ? 'ลูกค้าลงทะเบียนผ่านเว็บ (Web)' : (rawName || 'งานรอระบุผู้รับผิดชอบ');
+          const unassignedKey = cleanName.toLowerCase();
+
+          if (!userGroupMap.has(unassignedKey)) {
+            userGroupMap.set(unassignedKey, {
+              key: unassignedKey,
+              name: cleanName,
+              email: rma.creatorEmail || '',
+              items: []
+            });
+          }
+          userGroupMap.get(unassignedKey)!.items.push(rma);
+        }
+      });
+
+      // Filter out empty groups and sort by pending items count descending
+      const list = Array.from(userGroupMap.values())
+        .filter(g => g.items.length > 0)
+        .sort((a, b) => b.items.length - a.items.length);
+
       setSummaryList(list);
       setShowSummaryModal(true);
     } catch (err: unknown) {
