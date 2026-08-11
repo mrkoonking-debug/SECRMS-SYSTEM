@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { renderHtmlToBlob, renderHtmlToPdfBlob } from '../services/renderToImage';
+import { renderHtmlToBlob, downloadHtmlAsPdf } from '../services/renderToImage';
 import { X, Package, Trash2, Expand, RefreshCw, Copy, Mail, Plus, Save, Truck, FileText, Loader2 } from 'lucide-react';
 import { RMA, Distributor } from '../types';
 import { ShippingLabelPayload, getCustomerShippingLabelHTML, getCustomerInboundLabelHTML } from '../services/printService';
@@ -668,20 +668,12 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                                 if (!previewHtml) return;
                                 setIsGeneratingPdf(true);
                                 try {
-                                    const pdfBlob = await renderHtmlToPdfBlob(previewHtml);
-                                    const url = URL.createObjectURL(pdfBlob);
-                                    const a = document.createElement('a');
-                                    a.href = url;
-                                    a.download = `Shipping-Label-${effectiveTrackingIds.join('-') || 'SEC'}.pdf`;
-                                    document.body.appendChild(a);
-                                    a.click();
-                                    document.body.removeChild(a);
-                                    URL.revokeObjectURL(url);
+                                    const fileName = `Shipping-Label-${effectiveTrackingIds.join('-') || 'SEC'}.pdf`;
+                                    await downloadHtmlAsPdf(previewHtml, fileName);
                                     showToast('ดาวน์โหลด PDF ใบแปะหน้าเรียบร้อยแล้ว!', 'success');
                                 } catch (err) {
-                                    console.warn('PDF blob generation fallback to print dialog:', err);
-                                    showToast('กำลังเปิดหน้าต่างพิมพ์ (บันทึกเป็น PDF)...', 'info');
-                                    handlePrintFromPreview();
+                                    console.error('PDF download error:', err);
+                                    showToast('เกิดข้อผิดพลาดในการสร้างไฟล์ PDF', 'error');
                                 } finally {
                                     setIsGeneratingPdf(false);
                                 }

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, ArrowRight, ArrowLeft, Package, User, X, Box, PenTool, Tag, Check, Trash2, MapPin, Phone, Printer, AlertTriangle, Copy, Share2, Download, Smartphone, Laptop, Loader2, FileText } from 'lucide-react';
 import { MockDb } from '../services/mockDb';
-import { renderHtmlToBlob, renderHtmlToPdfBlob } from '../services/renderToImage';
+import { renderHtmlToBlob, downloadHtmlAsPdf } from '../services/renderToImage';
 import { escapeHtml } from '../services/sanitize';
 import { ProductType, Team } from '../types';
 import { LINE_ACCOUNTS, SEC_ADDRESS, getLineAccountById } from '../lineConfig';
@@ -523,15 +523,8 @@ export const CustomerSubmit: React.FC = () => {
                                     if (!html) return;
                                     setIsDownloadingPdf(true);
                                     try {
-                                        const pdfBlob = await renderHtmlToPdfBlob(html);
-                                        const url = URL.createObjectURL(pdfBlob);
-                                        const a = document.createElement('a');
-                                        a.href = url;
-                                        a.download = `SECRMA-Label-${submittedRef}.pdf`;
-                                        document.body.appendChild(a);
-                                        a.click();
-                                        document.body.removeChild(a);
-                                        URL.revokeObjectURL(url);
+                                        const fileName = `SECRMA-Label-${submittedRef}.pdf`;
+                                        await downloadHtmlAsPdf(html, fileName);
                                         showToast('ดาวน์โหลดไฟล์ PDF ใบแปะหน้ากล่องเรียบร้อยแล้ว!', 'success');
                                     } catch (err) {
                                         console.error('Download PDF failed:', err);

@@ -6,7 +6,7 @@ import { RMA } from '../types';
 import { getImporterFormHTML, getCustomerFormHTML, getCustomerInboundLabelHTML } from '../services/printService';
 import { ArrowLeft, Printer, Download, Loader2, Image as ImageIcon, X, Check, Copy, FileText } from 'lucide-react';
 import html2canvas from 'html2canvas';
-import { renderHtmlToBlob, renderHtmlToPdfBlob } from '../services/renderToImage';
+import { renderHtmlToBlob, downloadHtmlAsPdf } from '../services/renderToImage';
 import { showToast } from '../services/toast';
 
 export const DocumentPreview: React.FC = () => {
@@ -242,20 +242,12 @@ export const DocumentPreview: React.FC = () => {
                             if (!htmlContent) return;
                             setIsGeneratingPdf(true);
                             try {
-                                const pdfBlob = await renderHtmlToPdfBlob(htmlContent);
-                                const url = URL.createObjectURL(pdfBlob);
-                                const a = document.createElement('a');
-                                a.href = url;
-                                a.download = `rma-${id}-${type}.pdf`;
-                                document.body.appendChild(a);
-                                a.click();
-                                document.body.removeChild(a);
-                                URL.revokeObjectURL(url);
+                                const fileName = `rma-${id}-${type}.pdf`;
+                                await downloadHtmlAsPdf(htmlContent, fileName);
                                 showToast('ดาวน์โหลดไฟล์ PDF เรียบร้อยแล้ว!', 'success');
                             } catch (err) {
-                                console.warn('PDF generation fallback to print dialog:', err);
-                                showToast('กำลังเปิดหน้าต่างพิมพ์ (บันทึกเป็น PDF)...', 'info');
-                                handlePrint();
+                                console.error('PDF generation error:', err);
+                                showToast('เกิดข้อผิดพลาดในการดาวน์โหลด PDF', 'error');
                             } finally {
                                 setIsGeneratingPdf(false);
                             }
