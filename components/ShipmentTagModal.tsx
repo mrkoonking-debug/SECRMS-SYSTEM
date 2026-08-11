@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { renderHtmlToBlob } from '../services/renderToImage';
-import { X, Package, Trash2, Expand, RefreshCw, Copy, Mail, Plus, Save, Truck } from 'lucide-react';
+import { renderHtmlToBlob, renderHtmlToPdfBlob } from '../services/renderToImage';
+import { X, Package, Trash2, Expand, RefreshCw, Copy, Mail, Plus, Save, Truck, FileText, Loader2 } from 'lucide-react';
 import { RMA, Distributor } from '../types';
 import { ShippingLabelPayload, getCustomerShippingLabelHTML } from '../services/printService';
 import { MockDb } from '../services/mockDb';
@@ -51,6 +51,7 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
     // Tabbed multi-distributor state
     const [activeTab, setActiveTab] = useState('');
     const [tabData, setTabData] = useState<Record<string, TabState>>({});
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
     const isTabbed = !!distributorGroups && Object.keys(distributorGroups).length > 1;
     const tabNames = isTabbed ? Object.keys(distributorGroups!) : [];
 
@@ -656,6 +657,36 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                             🖨️ พิมพ์
                         </button>
                         
+                        <button
+                            onClick={async () => {
+                                if (!previewHtml) return;
+                                setIsGeneratingPdf(true);
+                                try {
+                                    const pdfBlob = await renderHtmlToPdfBlob(previewHtml);
+                                    const url = URL.createObjectURL(pdfBlob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `Shipping-Label-${effectiveTrackingIds.join('-') || 'SEC'}.pdf`;
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    document.body.removeChild(a);
+                                    URL.revokeObjectURL(url);
+                                    showToast('ดาวน์โหลด PDF ใบแปะหน้าเรียบร้อยแล้ว!', 'success');
+                                } catch (err) {
+                                    console.error('Download PDF error:', err);
+                                    showToast('ไม่สามารถสร้างไฟล์ PDF ได้', 'error');
+                                } finally {
+                                    setIsGeneratingPdf(false);
+                                }
+                            }}
+                            disabled={isGeneratingPdf}
+                            className="px-2.5 py-1.5 md:px-4 md:py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-[11px] md:text-sm flex items-center gap-1 md:gap-2 transition-colors whitespace-nowrap disabled:opacity-50"
+                            title="ดาวน์โหลดเป็นไฟล์ PDF"
+                        >
+                            {isGeneratingPdf ? <Loader2 className="w-3.5 h-3.5 animate-spin text-white" /> : <FileText className="w-3.5 h-3.5 text-white" />}
+                            <span>{isGeneratingPdf ? 'สร้าง PDF...' : '📄 PDF'}</span>
+                        </button>
+
                         <button
                             onClick={() => setPreviewHtml(null)}
                             className="px-2.5 py-1.5 md:px-4 md:py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium text-[11px] md:text-sm flex items-center gap-1.5 md:gap-2 transition-colors whitespace-nowrap"

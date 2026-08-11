@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, ArrowRight, ArrowLeft, Package, User, X, Box, PenTool, Tag, Check, Trash2, MapPin, Phone, Printer, AlertTriangle, Copy, Share2, Download, Smartphone, Laptop, Loader2 } from 'lucide-react';
+import { CheckCircle2, ArrowRight, ArrowLeft, Package, User, X, Box, PenTool, Tag, Check, Trash2, MapPin, Phone, Printer, AlertTriangle, Copy, Share2, Download, Smartphone, Laptop, Loader2, FileText } from 'lucide-react';
 import { MockDb } from '../services/mockDb';
-import { renderHtmlToBlob } from '../services/renderToImage';
+import { renderHtmlToBlob, renderHtmlToPdfBlob } from '../services/renderToImage';
 import { escapeHtml } from '../services/sanitize';
 import { ProductType, Team } from '../types';
 import { LINE_ACCOUNTS, SEC_ADDRESS, getLineAccountById } from '../lineConfig';
@@ -27,10 +27,94 @@ export const CustomerSubmit: React.FC = () => {
     const [showExitConfirm, setShowExitConfirm] = useState(false);
     const [sameAsReturn, setSameAsReturn] = useState<boolean | null>(null);
     const [altSender, setAltSender] = useState({ name: '', phone: '', address: '', postalCode: '' });
-    // State to hold data for success screen/printing after form is cleared
     const [submittedData, setSubmittedData] = useState<{ customer: any, altSender: any, sameAsReturn: boolean | null } | null>(null);
     const [isDownloadingImage, setIsDownloadingImage] = useState(false);
+    const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
     const [copiedLink, setCopiedLink] = useState(false);
+
+    const getLabelHtml = () => {
+        if (!submittedData) return '';
+        const { customer: sCustomer } = submittedData;
+        const sSelectedLineConfig = getLineAccountById(sCustomer.lineAccount);
+        const useCustomerAddress = sameAsReturn === true || (sameAsReturn === null && (!altSender.name));
+        const fromName = useCustomerAddress ? `${sCustomer.companyName} - ${sCustomer.contactName}` : altSender.name;
+        const fromPhone = useCustomerAddress ? sCustomer.phone : altSender.phone;
+        const fromAddress = useCustomerAddress ? sCustomer.returnAddress : `${altSender.address} ${altSender.postalCode}`;
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(submittedRef)}&margin=0`;
+
+        return `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Shipping Label - ${submittedRef}</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { font-family: 'Sarabun', 'Inter', sans-serif; padding: 12mm; background: #fff; }
+                    .label { border: 2.5px solid #000; max-width: 190mm; margin: 0 auto; overflow: hidden; }
+                    .header { display: flex; border-bottom: 2.5px solid #000; }
+                    .header-left { flex: 1; padding: 14px 20px; display: flex; flex-direction: column; justify-content: center; }
+                    .header-title { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 2px; }
+                    .header-ref { font-size: 26px; font-weight: 800; color: #000; letter-spacing: 0.5px; font-family: 'Inter', monospace; line-height: 1.1; }
+                    .header-note { font-size: 10px; color: #555; margin-top: 4px; font-weight: 500; }
+                    .header-qr { width: 36mm; border-left: 2.5px solid #000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; background: #fafafa; }
+                    .header-qr img { width: 26mm; height: 26mm; }
+                    .header-qr span { font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-top: 4px; }
+                    .sender { padding: 14px 20px; border-bottom: 1.5px dashed #999; position: relative; }
+                    .section-badge { display: inline-block; font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #fff; background: #000; padding: 3px 10px; margin-bottom: 10px; }
+                    .sender-name { font-size: 16px; font-weight: 700; color: #000; margin-bottom: 3px; }
+                    .sender-address { font-size: 13px; color: #333; line-height: 1.5; white-space: pre-line; }
+                    .sender-phone { font-size: 13px; font-weight: 600; color: #000; margin-top: 4px; }
+                    .recipient { padding: 16px 20px 20px; }
+                    .recipient-badge { display: inline-block; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #fff; background: #000; padding: 4px 12px; margin-bottom: 12px; }
+                    .recipient-company { font-size: 20px; font-weight: 800; color: #000; margin-bottom: 4px; line-height: 1.2; }
+                    .recipient-line-id { display: inline-block; font-size: 12px; font-weight: 700; color: #333; border: 1.5px solid #000; padding: 2px 8px; margin-bottom: 8px; letter-spacing: 0.5px; }
+                    .recipient-address { font-size: 14px; color: #222; line-height: 1.6; margin-bottom: 8px; }
+                    .recipient-contacts { font-size: 13px; font-weight: 700; color: #000; line-height: 1.6; }
+                    .recipient-contacts span { font-weight: 400; color: #444; }
+                    .footer { border-top: 1.5px solid #000; padding: 8px 20px; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
+                    .footer-right { font-size: 9px; color: #888; font-weight: 600; font-family: 'Inter', monospace; }
+                </style>
+            </head>
+            <body>
+                <div class="label">
+                    <div class="header">
+                        <div class="header-left">
+                            <div class="header-title">${t('publicSubmit.refLabel')}</div>
+                            <div class="header-ref">${escapeHtml(submittedRef)}</div>
+                            <div class="header-note">กรุณาเก็บรักษาเลขนี้ไว้เพื่อติดตามสถานะ</div>
+                        </div>
+                        <div class="header-qr">
+                            <img src="${qrUrl}" alt="QR Code" />
+                            <span>SCAN TO TRACK</span>
+                        </div>
+                    </div>
+                    <div class="sender">
+                        <div class="section-badge">${t('publicSubmit.senderLabel')}</div>
+                        <div class="sender-name">${escapeHtml(fromName)}</div>
+                        <div class="sender-address">${escapeHtml(fromAddress)}</div>
+                        <div class="sender-phone">โทร. ${escapeHtml(fromPhone)}</div>
+                    </div>
+                    <div class="recipient">
+                        <div class="recipient-badge">${t('publicSubmit.recipientLabel')}</div>
+                        <div class="recipient-company">${SEC_ADDRESS.company}</div>
+                        ${sSelectedLineConfig?.lineId ? `<div class="recipient-line-id">${sSelectedLineConfig.lineId}</div>` : ''}
+                        <div class="recipient-address">${SEC_ADDRESS.address}</div>
+                        <div class="recipient-contacts">
+                            ${sSelectedLineConfig 
+                                ? sSelectedLineConfig.recipients.map((r: any) => `<span>โทร.</span> ${escapeHtml(r.name)} ${escapeHtml(r.phone)}`).join(' &nbsp;/&nbsp; ')
+                                : '-'
+                            }
+                        </div>
+                    </div>
+                    <div class="footer">
+                        <div class="footer-right">${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
+    };
 
     // Navigation Guard Logic
     const isDirty = basket.length > 0 ||
@@ -486,140 +570,59 @@ export const CustomerSubmit: React.FC = () => {
                     <p className="text-gray-500 dark:text-gray-400 mb-8">{t('publicSubmit.successDesc')}</p>
                     <div className="bg-gray-50 dark:bg-[#1c1c1e] p-6 rounded-2xl border border-gray-200 dark:border-[#333] mb-6"><div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t('publicSubmit.yourRef')}</div><div className="text-3xl sm:text-4xl font-mono font-bold text-[#0071e3] break-all">{submittedRef}</div><div className="text-xs text-blue-500 mt-2 flex items-center justify-center gap-1"><Check className="w-3 h-3" /> Database Updated</div></div>
 
-                    {/* Mobile Friendly Print & PC Sharing Section */}
+                    {/* Mobile Friendly Print & Options Section */}
                     <div className="bg-blue-50/70 dark:bg-blue-950/30 p-4 sm:p-6 rounded-2xl border border-blue-200 dark:border-blue-800/40 mb-8 text-left">
                         <div className="flex items-center gap-2.5 mb-2 sm:mb-3">
-                            <Smartphone className="w-5 h-5 text-[#0071e3] flex-shrink-0" />
+                            <Printer className="w-5 h-5 text-[#0071e3] flex-shrink-0" />
                             <h3 className="font-bold text-[#1d1d1f] dark:text-white text-sm md:text-base">
-                                ตัวเลือกสำหรับการเปิดพิมพ์บนคอมพิวเตอร์ / บันทึกรูปภาพ
+                                ตัวเลือกสำหรับการบันทึกและพิมพ์ใบแปะหน้ากล่อง
                             </h3>
                         </div>
 
                         <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
-                            หากท่านลงทะเบียนบนมือถือและไม่ได้ต่อเครื่องพิมพ์ สามารถส่งลิงก์ไปเปิดพิมพ์บนคอมพิวเตอร์ หรือบันทึกรูปภาพใบปะหน้าไว้ใช้ได้ดังนี้:
+                            ท่านสามารถบันทึกใบแปะหน้าเป็นไฟล์ PDF หรือรูปภาพ เพื่อนำไปเปิดพิมพ์บนคอมพิวเตอร์หรือเครื่องพิมพ์พัสดุได้ตามสะดวก:
                         </p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-4">
-                            {/* Copy Link Button */}
-                            <button
-                                onClick={() => {
-                                    const pcUrl = `${window.location.origin}/#/status?q=${encodeURIComponent(submittedRef)}`;
-                                    navigator.clipboard.writeText(pcUrl);
-                                    setCopiedLink(true);
-                                    showToast('คัดลอกลิงก์ติดตามสถานะเรียบร้อย!', 'success');
-                                    setTimeout(() => setCopiedLink(false), 3000);
-                                }}
-                                className="flex items-center justify-center gap-2 py-3 px-3 sm:px-4 bg-white dark:bg-[#2c2c2e] hover:bg-gray-100 dark:hover:bg-[#3a3a3c] border border-gray-200 dark:border-white/10 text-[#1d1d1f] dark:text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
-                            >
-                                {copiedLink ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-[#0071e3]" />}
-                                <span>{copiedLink ? 'คัดลอกสำเร็จแล้ว!' : 'คัดลอกลิงก์ติดตามสถานะ'}</span>
-                            </button>
-
-                            {/* Share to LINE / App Button */}
-                            <button
-                                onClick={() => {
-                                    const pcUrl = `${window.location.origin}/#/status?q=${encodeURIComponent(submittedRef)}`;
-                                    const shareText = `ติดตามสถานะการเคลมสินค้า SEC RMS\nรหัสอ้างอิง: ${submittedRef}\n${pcUrl}`;
-                                    if (navigator.share) {
-                                        navigator.share({ title: `สถานะเคลมสินค้า ${submittedRef}`, text: shareText, url: pcUrl }).catch(() => {});
-                                    } else {
-                                        window.open(`https://line.me/R/msg/text/?${encodeURIComponent(shareText)}`, '_blank');
-                                    }
-                                }}
-                                className="flex items-center justify-center gap-2 py-3 px-3 sm:px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
-                            >
-                                <Share2 className="w-4 h-4" />
-                                <span>แชร์สถานะเข้า LINE</span>
-                            </button>
-
-                            {/* Save Image Button */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+                            {/* Download PDF Button */}
                             <button
                                 onClick={async () => {
-                                    if (!submittedData) return;
+                                    const html = getLabelHtml();
+                                    if (!html) return;
+                                    setIsDownloadingPdf(true);
+                                    try {
+                                        const pdfBlob = await renderHtmlToPdfBlob(html);
+                                        const url = URL.createObjectURL(pdfBlob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `SECRMA-Label-${submittedRef}.pdf`;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        document.body.removeChild(a);
+                                        URL.revokeObjectURL(url);
+                                        showToast('ดาวน์โหลดไฟล์ PDF ใบแปะหน้ากล่องเรียบร้อยแล้ว!', 'success');
+                                    } catch (err) {
+                                        console.error('Download PDF failed:', err);
+                                        showToast('เกิดข้อผิดพลาดในการสร้างไฟล์ PDF', 'error');
+                                    } finally {
+                                        setIsDownloadingPdf(false);
+                                    }
+                                }}
+                                disabled={isDownloadingPdf}
+                                className="flex items-center justify-center gap-2 py-3 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs md:text-sm font-bold transition-all shadow-md active:scale-95 disabled:opacity-50"
+                            >
+                                {isDownloadingPdf ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <FileText className="w-4 h-4 text-white" />}
+                                <span>{isDownloadingPdf ? 'กำลังสร้าง PDF...' : '📄 ดาวน์โหลดใบแปะหน้า (PDF)'}</span>
+                            </button>
+
+                            {/* Save Image PNG Button */}
+                            <button
+                                onClick={async () => {
+                                    const html = getLabelHtml();
+                                    if (!html) return;
                                     setIsDownloadingImage(true);
                                     try {
-                                        const { customer: sCustomer } = submittedData;
-                                        const sSelectedLineConfig = getLineAccountById(sCustomer.lineAccount);
-                                        const useCustomerAddress = sameAsReturn === true || (sameAsReturn === null && (!altSender.name));
-                                        const fromName = useCustomerAddress ? `${sCustomer.companyName} - ${sCustomer.contactName}` : altSender.name;
-                                        const fromPhone = useCustomerAddress ? sCustomer.phone : altSender.phone;
-                                        const fromAddress = useCustomerAddress ? sCustomer.returnAddress : `${altSender.address} ${altSender.postalCode}`;
-                                        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(submittedRef)}&margin=0`;
-
-                                        const labelHtml = `
-                                            <!DOCTYPE html>
-                                            <html>
-                                            <head>
-                                                <title>Shipping Label - ${submittedRef}</title>
-                                                <style>
-                                                    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
-                                                    * { margin: 0; padding: 0; box-sizing: border-box; }
-                                                    body { font-family: 'Sarabun', 'Inter', sans-serif; padding: 12mm; background: #fff; }
-                                                    .label { border: 2.5px solid #000; max-width: 190mm; margin: 0 auto; overflow: hidden; }
-                                                    .header { display: flex; border-bottom: 2.5px solid #000; }
-                                                    .header-left { flex: 1; padding: 14px 20px; display: flex; flex-direction: column; justify-content: center; }
-                                                    .header-title { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 2px; }
-                                                    .header-ref { font-size: 26px; font-weight: 800; color: #000; letter-spacing: 0.5px; font-family: 'Inter', monospace; line-height: 1.1; }
-                                                    .header-note { font-size: 10px; color: #555; margin-top: 4px; font-weight: 500; }
-                                                    .header-qr { width: 36mm; border-left: 2.5px solid #000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; background: #fafafa; }
-                                                    .header-qr img { width: 26mm; height: 26mm; }
-                                                    .header-qr span { font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-top: 4px; }
-                                                    .sender { padding: 14px 20px; border-bottom: 1.5px dashed #999; position: relative; }
-                                                    .section-badge { display: inline-block; font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #fff; background: #000; padding: 3px 10px; margin-bottom: 10px; }
-                                                    .sender-name { font-size: 16px; font-weight: 700; color: #000; margin-bottom: 3px; }
-                                                    .sender-address { font-size: 13px; color: #333; line-height: 1.5; white-space: pre-line; }
-                                                    .sender-phone { font-size: 13px; font-weight: 600; color: #000; margin-top: 4px; }
-                                                    .recipient { padding: 16px 20px 20px; }
-                                                    .recipient-badge { display: inline-block; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #fff; background: #000; padding: 4px 12px; margin-bottom: 12px; }
-                                                    .recipient-company { font-size: 20px; font-weight: 800; color: #000; margin-bottom: 4px; line-height: 1.2; }
-                                                    .recipient-line-id { display: inline-block; font-size: 12px; font-weight: 700; color: #333; border: 1.5px solid #000; padding: 2px 8px; margin-bottom: 8px; letter-spacing: 0.5px; }
-                                                    .recipient-address { font-size: 14px; color: #222; line-height: 1.6; margin-bottom: 8px; }
-                                                    .recipient-contacts { font-size: 13px; font-weight: 700; color: #000; line-height: 1.6; }
-                                                    .recipient-contacts span { font-weight: 400; color: #444; }
-                                                    .footer { border-top: 1.5px solid #000; padding: 8px 20px; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
-                                                    .footer-right { font-size: 9px; color: #888; font-weight: 600; font-family: 'Inter', monospace; }
-                                                </style>
-                                            </head>
-                                            <body>
-                                                <div class="label">
-                                                    <div class="header">
-                                                        <div class="header-left">
-                                                            <div class="header-title">${t('publicSubmit.refLabel')}</div>
-                                                            <div class="header-ref">${escapeHtml(submittedRef)}</div>
-                                                            <div class="header-note">กรุณาเก็บรักษาเลขนี้ไว้เพื่อติดตามสถานะ</div>
-                                                        </div>
-                                                        <div class="header-qr">
-                                                            <img src="${qrUrl}" alt="QR Code" />
-                                                            <span>SCAN TO TRACK</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="sender">
-                                                        <div class="section-badge">${t('publicSubmit.senderLabel')}</div>
-                                                        <div class="sender-name">${escapeHtml(fromName)}</div>
-                                                        <div class="sender-address">${escapeHtml(fromAddress)}</div>
-                                                        <div class="sender-phone">โทร. ${escapeHtml(fromPhone)}</div>
-                                                    </div>
-                                                    <div class="recipient">
-                                                        <div class="recipient-badge">${t('publicSubmit.recipientLabel')}</div>
-                                                        <div class="recipient-company">${SEC_ADDRESS.company}</div>
-                                                        ${sSelectedLineConfig?.lineId ? `<div class="recipient-line-id">${sSelectedLineConfig.lineId}</div>` : ''}
-                                                        <div class="recipient-address">${SEC_ADDRESS.address}</div>
-                                                        <div class="recipient-contacts">
-                                                            ${sSelectedLineConfig 
-                                                                ? sSelectedLineConfig.recipients.map((r: any) => `<span>โทร.</span> ${escapeHtml(r.name)} ${escapeHtml(r.phone)}`).join(' &nbsp;/&nbsp; ')
-                                                                : '-'
-                                                            }
-                                                        </div>
-                                                    </div>
-                                                    <div class="footer">
-                                                        <div class="footer-right">${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
-                                                    </div>
-                                                </div>
-                                            </body>
-                                            </html>
-                                        `;
-
-                                        const blob = await renderHtmlToBlob(labelHtml);
+                                        const blob = await renderHtmlToBlob(html);
                                         const url = URL.createObjectURL(blob);
                                         const a = document.createElement('a');
                                         a.href = url;
@@ -628,7 +631,7 @@ export const CustomerSubmit: React.FC = () => {
                                         a.click();
                                         document.body.removeChild(a);
                                         URL.revokeObjectURL(url);
-                                        showToast('บันทึกรูปภาพใบปะหน้ากล่องเรียบร้อยแล้ว!', 'success');
+                                        showToast('บันทึกรูปภาพใบแปะหน้ากล่องเรียบร้อยแล้ว!', 'success');
                                     } catch (err) {
                                         console.error('Download image failed:', err);
                                         showToast('เกิดข้อผิดพลาดในการสร้างรูปภาพ', 'error');
@@ -637,10 +640,10 @@ export const CustomerSubmit: React.FC = () => {
                                     }
                                 }}
                                 disabled={isDownloadingImage}
-                                className="flex items-center justify-center gap-2 py-3 px-3 sm:px-4 bg-white dark:bg-[#2c2c2e] hover:bg-gray-100 dark:hover:bg-[#3a3a3c] border border-gray-200 dark:border-white/10 text-[#1d1d1f] dark:text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                                className="flex items-center justify-center gap-2 py-3 px-4 bg-white dark:bg-[#2c2c2e] hover:bg-gray-100 dark:hover:bg-[#3a3a3c] border border-gray-200 dark:border-white/10 text-[#1d1d1f] dark:text-white rounded-xl text-xs md:text-sm font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50"
                             >
                                 {isDownloadingImage ? <Loader2 className="w-4 h-4 animate-spin text-[#0071e3]" /> : <Download className="w-4 h-4 text-[#0071e3]" />}
-                                <span>{isDownloadingImage ? 'กำลังสร้างรูป...' : 'บันทึกรูปภาพใบปะหน้า'}</span>
+                                <span>{isDownloadingImage ? 'กำลังสร้างรูป...' : '🖼️ บันทึกเป็นรูปภาพ (PNG)'}</span>
                             </button>
                         </div>
                     </div>

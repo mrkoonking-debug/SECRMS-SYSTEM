@@ -4,9 +4,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { RMA } from '../types';
 import { getImporterFormHTML, getCustomerFormHTML } from '../services/printService';
-import { ArrowLeft, Printer, Download, Loader2, Image as ImageIcon, X, Check, Copy } from 'lucide-react';
+import { ArrowLeft, Printer, Download, Loader2, Image as ImageIcon, X, Check, Copy, FileText } from 'lucide-react';
 import html2canvas from 'html2canvas';
-import { renderHtmlToBlob } from '../services/renderToImage';
+import { renderHtmlToBlob, renderHtmlToPdfBlob } from '../services/renderToImage';
 import { showToast } from '../services/toast';
 
 export const DocumentPreview: React.FC = () => {
@@ -16,6 +16,7 @@ export const DocumentPreview: React.FC = () => {
     const [htmlContent, setHtmlContent] = useState('');
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
     const hiddenRenderRef = useRef<HTMLDivElement>(null);
@@ -234,6 +235,35 @@ export const DocumentPreview: React.FC = () => {
                         title="คัดลอกทั้งรูปภาพและข้อความ (สำหรับ LINE)"
                     >
                         <Copy className="w-4 h-4" /> <span className="hidden sm:inline">ทั้งหมด (LINE)</span>
+                    </button>
+                    <button
+                        onClick={async () => {
+                            if (!htmlContent) return;
+                            setIsGeneratingPdf(true);
+                            try {
+                                const pdfBlob = await renderHtmlToPdfBlob(htmlContent);
+                                const url = URL.createObjectURL(pdfBlob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = `rma-${id}-${type}.pdf`;
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                                URL.revokeObjectURL(url);
+                                showToast('ดาวน์โหลดไฟล์ PDF เรียบร้อยแล้ว!', 'success');
+                            } catch (err) {
+                                console.error('PDF generation error:', err);
+                                showToast('เกิดข้อผิดพลาดในการสร้างไฟล์ PDF', 'error');
+                            } finally {
+                                setIsGeneratingPdf(false);
+                            }
+                        }}
+                        disabled={isGeneratingPdf}
+                        className="px-3 sm:px-4 py-2 sm:py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-lg shadow-red-500/30 transition-colors disabled:opacity-50"
+                        title="ดาวน์โหลดเอกสารเป็นไฟล์ PDF"
+                    >
+                        {isGeneratingPdf ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <FileText className="w-4 h-4 text-white" />}
+                        <span>{isGeneratingPdf ? 'สร้าง PDF...' : '📄 PDF'}</span>
                     </button>
                     <button onClick={handlePrint} className="px-4 sm:px-6 py-2 sm:py-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-lg shadow-blue-500/30"><Printer className="w-4 h-4" /> Print</button>
                 </div>

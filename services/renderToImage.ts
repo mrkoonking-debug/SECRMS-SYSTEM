@@ -150,6 +150,7 @@ async function inlineImages(html: string): Promise<string> {
 /**
  * Fetches an image and converts it to a data URI.
  */
+// Convert image URL to Data URI
 function toDataUri(url: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -174,5 +175,50 @@ function toDataUri(url: string): Promise<string> {
     } else {
       img.src = url;
     }
+  });
+}
+
+/**
+ * Renders HTML content to a PDF Blob using html2canvas and jsPDF.
+ */
+export async function renderHtmlToPdfBlob(htmlContent: string): Promise<Blob> {
+  const imageBlob = await renderHtmlToBlob(htmlContent);
+  const imageUrl = URL.createObjectURL(imageBlob);
+
+  return new Promise<Blob>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const loadJsPdf = () => {
+        try {
+          const { jsPDF } = (window as any).jspdf;
+          const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+          pdf.addImage(img, 'PNG', 0, 0, 210, 297);
+          const pdfBlob = pdf.output('blob');
+          URL.revokeObjectURL(imageUrl);
+          resolve(pdfBlob);
+        } catch (e) {
+          URL.revokeObjectURL(imageUrl);
+          reject(e);
+        }
+      };
+
+      if ((window as any).jspdf) {
+        loadJsPdf();
+      } else {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        script.onload = () => loadJsPdf();
+        script.onerror = () => {
+          URL.revokeObjectURL(imageUrl);
+          reject(new Error('Failed to load jsPDF library'));
+        };
+        document.head.appendChild(script);
+      }
+    };
+    img.onerror = (err) => {
+      URL.revokeObjectURL(imageUrl);
+      reject(err);
+    };
+    img.src = imageUrl;
   });
 }
