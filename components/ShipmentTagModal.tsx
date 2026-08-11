@@ -669,9 +669,9 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                     <div className="origin-top flex justify-center" style={{ zoom: 'min(0.8, calc(100vw / 850))' }}>
                         <iframe
                             id="preview-iframe"
-                            srcDoc={`<html><head><title>Preview</title><style>body{margin:0;padding:24px;background:#e5e7eb;}@media print{body{padding:0;margin:0;background:#fff !important;}}</style></head><body>${previewHtml}</body></html>`}
+                            srcDoc={`<html><head><title>Preview</title><style>body{margin:0;padding:0;background:#e5e7eb;}@media print{body{padding:0;margin:0;background:#fff !important;}}</style></head><body>${previewHtml}</body></html>`}
                             className="border-0 bg-gray-200"
-                            style={{ width: '850px', height: `${isTabbed ? Math.max(1, tabNames.length) * 620 : 1123}px`, minWidth: '794px' }}
+                            style={{ width: '850px', height: `${isTabbed ? Math.max(1, tabNames.length) * 1123 : 1123}px`, minWidth: '794px' }}
                         />
                     </div>
                 </div>

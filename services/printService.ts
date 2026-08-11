@@ -791,8 +791,7 @@ export const getCustomerShippingLabelHTML = async (payloads: ShippingLabelPayloa
               ${settings.logoUrl ? `<img src="${settings.logoUrl}" class="st-sender-logo" alt="Logo" />` : ''}
               <div class="st-sender-name">${settings.nameTh}</div>
               <div class="st-sender-details">
-                ${settings.address}<br/>
-                โทร: ${settings.tel}
+                ${settings.address}
               </div>
               <div class="st-sender-team">แผนกเคลม: ${teamName}</div>
               ${teamPhoneLines ? `<div class="st-team-phones">${teamPhoneLines}</div>` : ''}
@@ -862,15 +861,14 @@ export const getCustomerShippingLabelHTML = async (payloads: ShippingLabelPayloa
         font-family: 'Sarabun', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         color: #1d1d1f;
         width: 210mm;
-        height: auto;
-        min-height: 148mm;
+        height: 297mm;
+        min-height: 297mm;
         padding: 8mm;
-        margin: 0 0 24px 0;
+        margin: 0 auto;
         position: relative;
         box-sizing: border-box;
         background: #fff;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-        border-radius: 4px;
+        page-break-after: always;
       }
       
       .st-container {
