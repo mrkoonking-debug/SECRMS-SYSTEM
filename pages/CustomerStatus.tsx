@@ -137,7 +137,7 @@ export const CustomerStatus: React.FC = () => {
                     <h3 className="text-lg md:text-xl font-bold text-[#1d1d1f] dark:text-white mb-1">{rma.productModel}</h3>
                     <div className="text-xs font-mono text-[#86868b]">S/N: {rma.serialNumber}</div>
                   </div>
-                  <StatusBadge status={rma.status} />
+                  <StatusBadge status={rma.status} isPublic={true} />
                 </div>
 
                 {/* Visual Colored Stepper */}
