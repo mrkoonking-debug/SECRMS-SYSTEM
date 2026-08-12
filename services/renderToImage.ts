@@ -2,18 +2,21 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
 /**
- * Renders HTML content to an image blob using an invisible iframe.
+ * Renders HTML content to image blobs using an invisible iframe.
+ * If there are multiple printable documents/pages, returns a Blob for each page.
  */
-export async function renderHtmlToBlob(htmlContent: string, pageIndex?: number): Promise<Blob> {
+export async function renderHtmlToBlobs(htmlContent: string): Promise<Blob[]> {
   const processedHtml = await inlineImages(htmlContent);
 
-  return new Promise<Blob>((resolve, reject) => {
+  return new Promise<Blob[]>((resolve, reject) => {
     const iframe = document.createElement('iframe');
     iframe.style.cssText = 'position:fixed;left:0;top:0;width:794px;height:1123px;border:0;opacity:0;pointer-events:none;z-index:-99999;';
     document.body.appendChild(iframe);
 
     const cleanup = () => {
-      if (document.body.contains(iframe)) document.body.removeChild(iframe);
+      if (document.body.contains(iframe)) {
+        document.body.removeChild(iframe);
+      }
     };
 
     const timer = setTimeout(() => {
@@ -50,123 +53,156 @@ ${processedHtml}
     iframeDoc.write(fullHtml);
     iframeDoc.close();
 
-    iframe.onload = async () => {
+    // Execute rendering directly without relying on iframe.onload (which fails to fire in Chromium when document.write is used)
+    (async () => {
       try {
-        const iDoc = iframe.contentDocument!;
-        if (iDoc.fonts) {
-          try { await iDoc.fonts.ready; } catch { /* ignore font error */ }
+        if (iframeDoc.fonts) {
+          try { await iframeDoc.fonts.ready; } catch { /* ignore font error */ }
         }
 
-        const imgs = Array.from(iDoc.querySelectorAll('img')) as HTMLImageElement[];
+        const imgs = Array.from(iframeDoc.querySelectorAll('img')) as HTMLImageElement[];
         await Promise.allSettled(imgs.map(img =>
           img.complete ? Promise.resolve() : new Promise<void>(res => {
             img.onload = () => res();
-            img.onerror = () => { res(); };
-            setTimeout(res, 2500);
+            img.onerror = () => res();
+            setTimeout(res, 2000);
           })
         ));
 
-        await new Promise(r => setTimeout(r, 300));
+        // Brief delay for layout stabilization
+        await new Promise(r => setTimeout(r, 250));
 
-        let target: HTMLElement;
-        if (pageIndex !== undefined) {
-          const allDocs = Array.from(iDoc.querySelectorAll('.print-doc')) as HTMLElement[];
-          target = allDocs[pageIndex] || allDocs[0] || iDoc.body;
-        } else {
-          target = iDoc.querySelector('.print-doc') as HTMLElement
-                || iDoc.querySelector('.shipping-label') as HTMLElement
-                || iDoc.querySelector('.label') as HTMLElement
-                || iDoc.body;
+        // Locate target page elements (.print-doc, .shipping-label, .label, or body)
+        let targets: HTMLElement[] = Array.from(iframeDoc.querySelectorAll('.print-doc')) as HTMLElement[];
+        if (targets.length === 0) {
+          targets = Array.from(iframeDoc.querySelectorAll('.shipping-label')) as HTMLElement[];
+        }
+        if (targets.length === 0) {
+          targets = Array.from(iframeDoc.querySelectorAll('.label')) as HTMLElement[];
+        }
+        if (targets.length === 0) {
+          targets = [iframeDoc.body];
         }
 
-        const canvas = await html2canvas(target, {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          logging: false,
-          windowWidth: 794,
-        });
+        const blobs: Blob[] = [];
 
-        canvas.toBlob((blob: Blob | null) => {
-          clearTimeout(timer);
-          cleanup();
-          if (blob) resolve(blob);
-          else reject(new Error('toBlob failed'));
-        }, 'image/png');
+        for (const target of targets) {
+          const canvas = await html2canvas(target, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            windowWidth: 794,
+          });
+
+          const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, 'image/png'));
+          if (blob) {
+            blobs.push(blob);
+          }
+        }
+
+        clearTimeout(timer);
+        cleanup();
+
+        if (blobs.length > 0) {
+          resolve(blobs);
+        } else {
+          reject(new Error('toBlob returned empty canvas blobs'));
+        }
 
       } catch (err) {
         clearTimeout(timer);
         cleanup();
         reject(err);
       }
-    };
-
-    iframe.onerror = () => {
-      clearTimeout(timer);
-      cleanup();
-      reject(new Error('iframe error'));
-    };
+    })();
   });
 }
 
 /**
+ * Renders HTML content to a single image blob using an invisible iframe.
+ */
+export async function renderHtmlToBlob(htmlContent: string, pageIndex?: number): Promise<Blob> {
+  const blobs = await renderHtmlToBlobs(htmlContent);
+  if (pageIndex !== undefined && pageIndex >= 0 && pageIndex < blobs.length) {
+    return blobs[pageIndex];
+  }
+  return blobs[0];
+}
+
+/**
  * Directly downloads HTML content as a crisp A4 PDF file using jsPDF.save().
+ * Supports multi-page PDF generation if multiple pages exist.
  */
 export async function downloadHtmlAsPdf(htmlContent: string, fileName: string): Promise<void> {
-  const imageBlob = await renderHtmlToBlob(htmlContent);
-  const imageUrl = URL.createObjectURL(imageBlob);
+  const blobs = await renderHtmlToBlobs(htmlContent);
+  if (blobs.length === 0) throw new Error('No pages rendered');
 
-  return new Promise<void>((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      try {
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-        pdf.addImage(img, 'PNG', 0, 0, 210, 297);
-        const finalName = fileName.toLowerCase().endsWith('.pdf') ? fileName : `${fileName}.pdf`;
-        pdf.save(finalName);
-        URL.revokeObjectURL(imageUrl);
-        resolve();
-      } catch (err) {
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  for (let i = 0; i < blobs.length; i++) {
+    if (i > 0) pdf.addPage('a4', 'portrait');
+
+    const imageUrl = URL.createObjectURL(blobs[i]);
+    await new Promise<void>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          pdf.addImage(img, 'PNG', 0, 0, 210, 297);
+          URL.revokeObjectURL(imageUrl);
+          resolve();
+        } catch (err) {
+          URL.revokeObjectURL(imageUrl);
+          reject(err);
+        }
+      };
+      img.onerror = (err) => {
         URL.revokeObjectURL(imageUrl);
         reject(err);
-      }
-    };
-    img.onerror = (err) => {
-      URL.revokeObjectURL(imageUrl);
-      reject(err);
-    };
-    img.src = imageUrl;
-  });
+      };
+      img.src = imageUrl;
+    });
+  }
+
+  const finalName = fileName.toLowerCase().endsWith('.pdf') ? fileName : `${fileName}.pdf`;
+  pdf.save(finalName);
 }
 
 /**
  * Programmatically generates PDF Blob for other handlers.
  */
 export async function renderHtmlToPdfBlob(htmlContent: string): Promise<Blob> {
-  const imageBlob = await renderHtmlToBlob(htmlContent);
-  const imageUrl = URL.createObjectURL(imageBlob);
+  const blobs = await renderHtmlToBlobs(htmlContent);
+  if (blobs.length === 0) throw new Error('No pages rendered');
 
-  return new Promise<Blob>((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      try {
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-        pdf.addImage(img, 'PNG', 0, 0, 210, 297);
-        const pdfBlob = pdf.output('blob');
-        URL.revokeObjectURL(imageUrl);
-        resolve(pdfBlob);
-      } catch (err) {
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  for (let i = 0; i < blobs.length; i++) {
+    if (i > 0) pdf.addPage('a4', 'portrait');
+
+    const imageUrl = URL.createObjectURL(blobs[i]);
+    await new Promise<void>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          pdf.addImage(img, 'PNG', 0, 0, 210, 297);
+          URL.revokeObjectURL(imageUrl);
+          resolve();
+        } catch (err) {
+          URL.revokeObjectURL(imageUrl);
+          reject(err);
+        }
+      };
+      img.onerror = (err) => {
         URL.revokeObjectURL(imageUrl);
         reject(err);
-      }
-    };
-    img.onerror = (err) => {
-      URL.revokeObjectURL(imageUrl);
-      reject(err);
-    };
-    img.src = imageUrl;
-  });
+      };
+      img.src = imageUrl;
+    });
+  }
+
+  return pdf.output('blob');
 }
 
 /**
@@ -176,7 +212,7 @@ async function inlineImages(html: string): Promise<string> {
   const imgRegex = /(<img[^>]*\ssrc=["'])([^"']+)(["'][^>]*>)/gi;
   const matches: { full: string; url: string }[] = [];
   let match;
-  
+
   while ((match = imgRegex.exec(html)) !== null) {
     matches.push({ full: match[0], url: match[2] });
   }
@@ -184,10 +220,13 @@ async function inlineImages(html: string): Promise<string> {
   if (matches.length === 0) return html;
 
   const urlCache = new Map<string, string>();
-  
+
   for (const m of matches) {
     if (urlCache.has(m.url)) continue;
-    if (m.url.startsWith('data:')) { urlCache.set(m.url, m.url); continue; }
+    if (m.url.startsWith('data:')) {
+      urlCache.set(m.url, m.url);
+      continue;
+    }
 
     try {
       const dataUri = await toDataUri(m.url);
@@ -198,10 +237,9 @@ async function inlineImages(html: string): Promise<string> {
   }
 
   let result = html;
-  for (const m of matches) {
-    const newUrl = urlCache.get(m.url) || m.url;
-    if (newUrl !== m.url) {
-      result = result.replaceAll(m.url, newUrl);
+  for (const [originalUrl, newUrl] of urlCache.entries()) {
+    if (newUrl && newUrl !== originalUrl) {
+      result = result.replaceAll(originalUrl, newUrl);
     }
   }
 
@@ -209,30 +247,59 @@ async function inlineImages(html: string): Promise<string> {
 }
 
 function toDataUri(url: string): Promise<string> {
-  return new Promise((resolve) => {
-    if (url.startsWith('data:')) return resolve(url);
+  if (!url || url.startsWith('data:')) return Promise.resolve(url);
 
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return resolve(url);
-        ctx.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL('image/png'));
-      } catch {
-        resolve(url);
+  let fullUrl = url;
+  if (url.startsWith('/')) {
+    fullUrl = window.location.origin + url;
+  }
+
+  // Attempt 1: fetch blob & convert to base64 data URL
+  return (async () => {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 3000);
+      const response = await fetch(fullUrl, { signal: controller.signal });
+      clearTimeout(timer);
+      if (response.ok) {
+        const blob = await response.blob();
+        return await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
       }
-    };
-    img.onerror = () => resolve(url);
-
-    if (url.startsWith('/')) {
-      img.src = window.location.origin + url;
-    } else {
-      img.src = url;
+    } catch {
+      // Fall through to Attempt 2
     }
-  });
+
+    // Attempt 2: Image element + canvas
+    return new Promise<string>((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      const timer = setTimeout(() => resolve(fullUrl), 3000);
+
+      img.onload = () => {
+        clearTimeout(timer);
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || 150;
+          canvas.height = img.naturalHeight || 150;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return resolve(fullUrl);
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        } catch {
+          resolve(fullUrl);
+        }
+      };
+      img.onerror = () => {
+        clearTimeout(timer);
+        resolve(fullUrl);
+      };
+      img.src = fullUrl;
+    });
+  })();
 }
+
