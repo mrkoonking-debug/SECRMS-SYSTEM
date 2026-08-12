@@ -766,146 +766,67 @@ export const getCustomerInboundLabelHTML = async (rmas: RMA[]): Promise<string> 
     recipientContacts = lineConfig.recipients.map((r: any) => `โทร. ${escapeHtml(r.name)} ${escapeHtml(r.phone)}`).join(' / ');
   }
 
-  const itemsHTML = rmas.map((item, idx) => `
-    <tr style="border-bottom: 1px solid #eee;">
-      <td style="padding: 6px 10px; font-size: 11px; text-align: center;">${idx + 1}</td>
-      <td style="padding: 6px 10px; font-size: 11px; font-weight: 600;">${escapeHtml(item.brand || '')} ${escapeHtml(item.productModel || '')}</td>
-      <td style="padding: 6px 10px; font-size: 11px; font-family: monospace;">${escapeHtml(item.serialNumber || '-')}</td>
-      <td style="padding: 6px 10px; font-size: 11px; color: #555;">${escapeHtml(item.issueDescription || '-')}</td>
-    </tr>
-  `).join('');
-
   return `
     <!DOCTYPE html>
     <html>
     <head>
-        <meta charset="UTF-8">
         <title>Customer Inbound Label - ${escapeHtml(refId)}</title>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
-            @page { size: A4 portrait; margin: 0; }
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            html, body { background: #fff; font-family: 'Sarabun', 'Inter', sans-serif; width: 100%; color: #000; }
-            .page-container { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 15mm; background: #fff; box-sizing: border-box; }
-            
-            /* Company Header Block */
-            .company-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 16px; }
-            .logo-section { display: flex; align-items: center; gap: 12px; }
-            .logo-img { height: 42px; width: auto; object-fit: contain; }
-            .company-title-th { font-size: 16px; font-weight: 800; color: #000; line-height: 1.2; }
-            .company-title-en { font-size: 11px; font-weight: 700; color: #444; letter-spacing: 0.5px; text-transform: uppercase; }
-            .company-info { text-align: right; font-size: 10px; color: #444; line-height: 1.4; }
-            
-            /* Outer Border Box */
-            .label-border { border: 2.5px solid #000; border-radius: 4px; overflow: hidden; }
-            
-            /* Reference Header Bar */
-            .ref-header { display: flex; border-bottom: 2.5px solid #000; background: #fff; }
-            .ref-left { flex: 1; padding: 14px 20px; display: flex; flex-direction: column; justify-content: center; }
-            .ref-title { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 2px; }
-            .ref-id { font-size: 26px; font-weight: 800; color: #000; letter-spacing: 0.5px; font-family: 'Inter', monospace; line-height: 1.1; }
-            .ref-note { font-size: 10px; color: #555; margin-top: 4px; font-weight: 500; }
-            .ref-qr { width: 36mm; border-left: 2.5px solid #000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; background: #fafafa; }
-            .ref-qr img { width: 26mm; height: 26mm; }
-            .ref-qr span { font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-top: 4px; }
-            
-            /* Sender & Recipient Section */
-            .sender-box { padding: 14px 20px; border-bottom: 1.5px dashed #999; position: relative; }
-            .section-badge { display: inline-block; font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #fff; background: #000; padding: 3px 10px; margin-bottom: 8px; }
-            .sender-name { font-size: 15px; font-weight: 700; color: #000; margin-bottom: 3px; }
-            .sender-address { font-size: 12px; color: #333; line-height: 1.5; white-space: pre-line; }
-            .sender-phone { font-size: 12px; font-weight: 600; color: #000; margin-top: 4px; }
-            
-            .recipient-box { padding: 16px 20px; border-bottom: 2px solid #000; background: #fcfcfc; }
-            .recipient-company { font-size: 18px; font-weight: 800; color: #000; margin-bottom: 4px; line-height: 1.2; }
-            .recipient-line-id { display: inline-block; font-size: 11px; font-weight: 700; color: #333; border: 1.5px solid #000; padding: 2px 8px; margin-bottom: 8px; letter-spacing: 0.5px; }
-            .recipient-address { font-size: 13px; color: #222; line-height: 1.5; margin-bottom: 6px; }
-            .recipient-contacts { font-size: 12px; font-weight: 700; color: #000; line-height: 1.5; }
-            
-            /* Items List Table */
-            .items-section { padding: 14px 20px; }
-            .items-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #000; margin-bottom: 8px; }
-            .items-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-            .items-table th { background: #f0f0f0; padding: 6px 10px; font-size: 10px; font-weight: 700; text-align: left; border-bottom: 1px solid #ccc; }
-            
-            /* Footer */
-            .footer-bar { border-top: 1.5px solid #000; padding: 8px 20px; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
-            .footer-text { font-size: 9px; color: #666; font-weight: 500; }
-            .footer-date { font-size: 9px; color: #888; font-weight: 600; font-family: 'Inter', monospace; }
+            body { font-family: 'Sarabun', 'Inter', sans-serif; padding: 12mm; background: #fff; }
+            .label { border: 2.5px solid #000; max-width: 190mm; margin: 0 auto; overflow: hidden; page-break-after: always; }
+            .header { display: flex; border-bottom: 2.5px solid #000; }
+            .header-left { flex: 1; padding: 14px 20px; display: flex; flex-direction: column; justify-content: center; }
+            .header-title { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 2px; }
+            .header-ref { font-size: 26px; font-weight: 800; color: #000; letter-spacing: 0.5px; font-family: 'Inter', monospace; line-height: 1.1; }
+            .header-note { font-size: 10px; color: #555; margin-top: 4px; font-weight: 500; }
+            .header-qr { width: 36mm; border-left: 2.5px solid #000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; background: #fafafa; }
+            .header-qr img { width: 26mm; height: 26mm; }
+            .header-qr span { font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-top: 4px; }
+            .sender { padding: 14px 20px; border-bottom: 1.5px dashed #999; position: relative; }
+            .section-badge { display: inline-block; font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #fff; background: #000; padding: 3px 10px; margin-bottom: 10px; }
+            .sender-name { font-size: 16px; font-weight: 700; color: #000; margin-bottom: 3px; }
+            .sender-address { font-size: 13px; color: #333; line-height: 1.5; white-space: pre-line; }
+            .sender-phone { font-size: 13px; font-weight: 600; color: #000; margin-top: 4px; }
+            .recipient { padding: 16px 20px 20px; }
+            .recipient-badge { display: inline-block; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #fff; background: #000; padding: 4px 12px; margin-bottom: 12px; }
+            .recipient-company { font-size: 20px; font-weight: 800; color: #000; margin-bottom: 4px; line-height: 1.2; }
+            .recipient-line-id { display: inline-block; font-size: 12px; font-weight: 700; color: #333; border: 1.5px solid #000; padding: 2px 8px; margin-bottom: 8px; letter-spacing: 0.5px; }
+            .recipient-address { font-size: 14px; color: #222; line-height: 1.6; margin-bottom: 8px; }
+            .recipient-contacts { font-size: 13px; font-weight: 700; color: #000; line-height: 1.6; }
+            .footer { border-top: 1.5px solid #000; padding: 8px 20px; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
+            .footer-right { font-size: 9px; color: #888; font-weight: 600; font-family: 'Inter', monospace; }
         </style>
     </head>
     <body>
-        <div class="page-container">
-            <!-- Company Header Block -->
-            <div class="company-header">
-                <div class="logo-section">
-                    ${settings.logoUrl ? `<img src="${settings.logoUrl}" class="logo-img" alt="Logo" />` : ''}
-                    <div>
-                        <div class="company-title-th">${escapeHtml(settings.nameTh || 'บริษัท เอส อี ซี เทคโนโลยี จำกัด')}</div>
-                        <div class="company-title-en">${escapeHtml(settings.nameEn || 'SEC TECHNOLOGY CO., LTD.')}</div>
-                    </div>
+        <div class="label">
+            <div class="header">
+                <div class="header-left">
+                    <div class="header-title">รหัสอ้างอิงส่งเคลมสินค้า (RMA REF)</div>
+                    <div class="header-ref">${escapeHtml(refId)}</div>
+                    <div class="header-note">กรุณาแปะใบปะหน้านี้ไว้ที่กล่องพัสดุสำหรับส่งเคลมสินค้ามาที่บริษัทฯ</div>
                 </div>
-                <div class="company-info">
-                    <div>${escapeHtml(settings.address || '')}</div>
-                    <div>Tel: ${escapeHtml(settings.tel || '')} | Tax ID: ${escapeHtml(settings.taxId || '')}</div>
+                <div class="header-qr">
+                    <img src="${qrUrl}" alt="QR Code" />
+                    <span>SCAN TO TRACK</span>
                 </div>
             </div>
-
-            <!-- Label Outer Border -->
-            <div class="label-border">
-                <!-- Reference Header -->
-                <div class="ref-header">
-                    <div class="ref-left">
-                        <div class="ref-title">รหัสอ้างอิงส่งเคลมสินค้า (RMA REF)</div>
-                        <div class="ref-id">${escapeHtml(refId)}</div>
-                        <div class="ref-note">กรุณาแปะใบปะหน้านี้ไว้ที่กล่องพัสดุสำหรับส่งเคลมสินค้ามาที่บริษัทฯ</div>
-                    </div>
-                    <div class="ref-qr">
-                        <img src="${qrUrl}" alt="QR Code" />
-                        <span>SCAN TO TRACK</span>
-                    </div>
-                </div>
-
-                <!-- Sender Box -->
-                <div class="sender-box">
-                    <div class="section-badge">ผู้ส่ง (FROM SENDER)</div>
-                    <div class="sender-name">${escapeHtml(senderName)}</div>
-                    <div class="sender-address">${escapeHtml(senderAddress)}</div>
-                    <div class="sender-phone">โทร. ${escapeHtml(senderPhone)}</div>
-                </div>
-
-                <!-- Recipient Box -->
-                <div class="recipient-box">
-                    <div class="section-badge" style="background:#000;">จัดส่งถึง (TO RECIPIENT)</div>
-                    <div class="recipient-company">${escapeHtml(recipientCompany)}</div>
-                    ${lineConfig?.lineId ? `<div class="recipient-line-id">${lineConfig.lineId}</div>` : ''}
-                    <div class="recipient-address">${escapeHtml(recipientAddress)}</div>
-                    <div class="recipient-contacts">${recipientContacts}</div>
-                </div>
-
-                <!-- Items Section -->
-                <div class="items-section">
-                    <div class="items-title">รายการสินค้าที่ส่งเคลม (${rmas.length} รายการ)</div>
-                    <table class="items-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 40px; text-align: center;">#</th>
-                                <th style="width: 200px;">ยี่ห้อ / รุ่น</th>
-                                <th style="width: 140px;">Serial Number</th>
-                                <th>อาการที่แจ้ง</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${itemsHTML}
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Footer Bar -->
-                <div class="footer-bar">
-                    <div class="footer-text">SEC Technology Co., Ltd. - RMA Claim System</div>
-                    <div class="footer-date">${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
-                </div>
+            <div class="sender">
+                <div class="section-badge">ผู้ส่ง (FROM SENDER)</div>
+                <div class="sender-name">${escapeHtml(senderName)}</div>
+                <div class="sender-address">${escapeHtml(senderAddress)}</div>
+                <div class="sender-phone">โทร. ${escapeHtml(senderPhone)}</div>
+            </div>
+            <div class="recipient">
+                <div class="section-badge" style="background:#000;">จัดส่งถึง (TO RECIPIENT)</div>
+                <div class="recipient-company">${escapeHtml(recipientCompany)}</div>
+                ${lineConfig?.lineId ? `<div class="recipient-line-id">${lineConfig.lineId}</div>` : ''}
+                <div class="recipient-address">${escapeHtml(recipientAddress)}</div>
+                <div class="recipient-contacts">${recipientContacts}</div>
+            </div>
+            <div class="footer">
+                <div class="footer-right">${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
             </div>
         </div>
     </body>
