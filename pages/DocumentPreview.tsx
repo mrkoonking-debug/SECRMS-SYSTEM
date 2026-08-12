@@ -237,28 +237,6 @@ export const DocumentPreview: React.FC = () => {
                     >
                         <Copy className="w-4 h-4" /> <span className="hidden sm:inline">ทั้งหมด (LINE)</span>
                     </button>
-                    <button
-                        onClick={async () => {
-                            if (!htmlContent) return;
-                            setIsGeneratingPdf(true);
-                            try {
-                                const fileName = `rma-${id}-${type}.pdf`;
-                                await downloadHtmlAsPdf(htmlContent, fileName);
-                                showToast('ดาวน์โหลดไฟล์ PDF เรียบร้อยแล้ว!', 'success');
-                            } catch (err) {
-                                console.error('PDF generation error:', err);
-                                showToast('เกิดข้อผิดพลาดในการดาวน์โหลด PDF', 'error');
-                            } finally {
-                                setIsGeneratingPdf(false);
-                            }
-                        }}
-                        disabled={isGeneratingPdf}
-                        className="px-3 sm:px-4 py-2 sm:py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-lg shadow-red-500/30 transition-colors disabled:opacity-50"
-                        title="ดาวน์โหลดเอกสารเป็นไฟล์ PDF"
-                    >
-                        {isGeneratingPdf ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <FileText className="w-4 h-4 text-white" />}
-                        <span>{isGeneratingPdf ? 'สร้าง PDF...' : '📄 PDF'}</span>
-                    </button>
                     <button onClick={handlePrint} className="px-4 sm:px-6 py-2 sm:py-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-lg shadow-blue-500/30"><Printer className="w-4 h-4" /> Print</button>
                 </div>
             </div>

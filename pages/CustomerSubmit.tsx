@@ -515,31 +515,7 @@ export const CustomerSubmit: React.FC = () => {
                             ท่านสามารถบันทึกใบแปะหน้าเป็นไฟล์ PDF หรือรูปภาพ เพื่อนำไปเปิดพิมพ์บนคอมพิวเตอร์หรือเครื่องพิมพ์พัสดุได้ตามสะดวก:
                         </p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
-                            {/* Download PDF Button */}
-                            <button
-                                onClick={async () => {
-                                    const html = await getLabelHtml();
-                                    if (!html) return;
-                                    setIsDownloadingPdf(true);
-                                    try {
-                                        const fileName = `SECRMA-Label-${submittedRef}.pdf`;
-                                        await downloadHtmlAsPdf(html, fileName);
-                                        showToast('ดาวน์โหลดไฟล์ PDF ใบแปะหน้ากล่องเรียบร้อยแล้ว!', 'success');
-                                    } catch (err) {
-                                        console.error('Download PDF failed:', err);
-                                        showToast('เกิดข้อผิดพลาดในการสร้างไฟล์ PDF', 'error');
-                                    } finally {
-                                        setIsDownloadingPdf(false);
-                                    }
-                                }}
-                                disabled={isDownloadingPdf}
-                                className="flex items-center justify-center gap-2 py-3 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs md:text-sm font-bold transition-all shadow-md active:scale-95 disabled:opacity-50"
-                            >
-                                {isDownloadingPdf ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <FileText className="w-4 h-4 text-white" />}
-                                <span>{isDownloadingPdf ? 'กำลังสร้าง PDF...' : '📄 ดาวน์โหลดใบแปะหน้า (PDF)'}</span>
-                            </button>
-
+                        <div className="flex flex-col sm:flex-row gap-3 mb-2">
                             {/* Save Image PNG Button */}
                             <button
                                 onClick={async () => {

@@ -662,29 +662,6 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                         >
                             🖨️ พิมพ์
                         </button>
-                        
-                        <button
-                            onClick={async () => {
-                                if (!previewHtml) return;
-                                setIsGeneratingPdf(true);
-                                try {
-                                    const fileName = `Shipping-Label-${effectiveTrackingIds.join('-') || 'SEC'}.pdf`;
-                                    await downloadHtmlAsPdf(previewHtml, fileName);
-                                    showToast('ดาวน์โหลด PDF ใบแปะหน้าเรียบร้อยแล้ว!', 'success');
-                                } catch (err) {
-                                    console.error('PDF download error:', err);
-                                    showToast('เกิดข้อผิดพลาดในการสร้างไฟล์ PDF', 'error');
-                                } finally {
-                                    setIsGeneratingPdf(false);
-                                }
-                            }}
-                            disabled={isGeneratingPdf}
-                            className="px-2.5 py-1.5 md:px-4 md:py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-[11px] md:text-sm flex items-center gap-1 md:gap-2 transition-colors whitespace-nowrap disabled:opacity-50"
-                            title="ดาวน์โหลดเป็นไฟล์ PDF"
-                        >
-                            {isGeneratingPdf ? <Loader2 className="w-3.5 h-3.5 animate-spin text-white" /> : <FileText className="w-3.5 h-3.5 text-white" />}
-                            <span>{isGeneratingPdf ? 'สร้าง PDF...' : '📄 PDF'}</span>
-                        </button>
 
                         <button
                             onClick={() => setPreviewHtml(null)}
@@ -699,7 +676,7 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                     <div className="origin-top flex justify-center shadow-2xl rounded-sm overflow-hidden" style={{ zoom: 'min(0.85, calc((100vw - 48px) / 794))' }}>
                         <iframe
                             id="preview-iframe"
-                            srcDoc={`<!DOCTYPE html><html><head><title>Preview</title><meta name="viewport" content="width=794"><style>html,body{margin:0;padding:0;background:#fff;width:100%}</style></head><body style="margin:0;padding:0;background:#fff;">${previewHtml}</body></html>`}
+                            srcDoc={previewHtml}
                             className="border-0 bg-white"
                             style={{ width: '794px', height: `${isTabbed ? Math.max(1, tabNames.length) * 1123 : 1123}px` }}
                         />
