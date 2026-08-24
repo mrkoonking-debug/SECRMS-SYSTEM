@@ -1138,6 +1138,7 @@ export const MockDb = {
     const rawSearch = text.trim();
     if (!rawSearch || rawSearch.length < 3) return [];
     const searchString = rawSearch.toLowerCase();
+    const upperSearch = rawSearch.toUpperCase();
     const cleanQ = searchString.replace(/^(secrma|sec|rma)[-_\s]?/i, '');
 
     const resultsMap = new Map<string, RMA>();
@@ -1169,56 +1170,93 @@ export const MockDb = {
     };
 
     if (isConfigured && db) {
-      try {
-        // 1. Direct get by document ID
-        const directSnap = await getDoc(doc(db, 'rmas', rawSearch));
-        if (directSnap.exists()) {
-          const rma = mapDocToRMA(directSnap);
-          if (!rma.isDeleted) resultsMap.set(directSnap.id, rma);
+      // Build search key variations (e.g. "SECRMA-2026-0001", "2026-0001", raw, upper)
+      const searchTerms = Array.from(
+        new Set([
+          rawSearch,
+          upperSearch,
+          cleanQ ? `SECRMA-${cleanQ.toUpperCase()}` : '',
+          cleanQ ? `RMA-${cleanQ.toUpperCase()}` : ''
+        ].filter(Boolean))
+      );
+
+      // 1. Direct get by document ID (RMA ID)
+      for (const term of [rawSearch, upperSearch]) {
+        try {
+          const directSnap = await getDoc(doc(db, 'rmas', term));
+          if (directSnap.exists()) {
+            const rma = mapDocToRMA(directSnap);
+            if (!rma.isDeleted) resultsMap.set(directSnap.id, rma);
+          }
+        } catch (e) {
+          // Ignore not-found or single get errors
         }
+      }
 
-        // 2. Query quotationNumber == rawSearch
-        const quoteSnap = await getDocs(query(
-          collection(db, 'rmas'),
-          where('quotationNumber', '==', rawSearch),
-          limit(10)
-        ));
-        quoteSnap.docs.forEach(d => {
-          const rma = mapDocToRMA(d);
-          if (!rma.isDeleted) resultsMap.set(d.id, rma);
-        });
+      // 2. Query groupRequestId (Job Number) with limit(5)
+      for (const term of searchTerms) {
+        if (resultsMap.size >= 5) break;
+        try {
+          const groupSnap = await getDocs(query(
+            collection(db, 'rmas'),
+            where('groupRequestId', '==', term),
+            limit(5)
+          ));
+          groupSnap.docs.forEach(d => {
+            const rma = mapDocToRMA(d);
+            if (!rma.isDeleted) resultsMap.set(d.id, rma);
+          });
+        } catch (e) {
+          console.warn('Query groupRequestId error:', e);
+        }
+      }
 
-        // 3. Query groupRequestId == rawSearch
-        const groupSnap = await getDocs(query(
-          collection(db, 'rmas'),
-          where('groupRequestId', '==', rawSearch),
-          limit(10)
-        ));
-        groupSnap.docs.forEach(d => {
-          const rma = mapDocToRMA(d);
-          if (!rma.isDeleted) resultsMap.set(d.id, rma);
-        });
+      // 3. Query quotationNumber with limit(5)
+      for (const term of searchTerms) {
+        if (resultsMap.size >= 5) break;
+        try {
+          const quoteSnap = await getDocs(query(
+            collection(db, 'rmas'),
+            where('quotationNumber', '==', term),
+            limit(5)
+          ));
+          quoteSnap.docs.forEach(d => {
+            const rma = mapDocToRMA(d);
+            if (!rma.isDeleted) resultsMap.set(d.id, rma);
+          });
+        } catch (e) {
+          console.warn('Query quotationNumber error:', e);
+        }
+      }
 
-        // 4. Query serialNumber == rawSearch
-        const snSnap = await getDocs(query(
-          collection(db, 'rmas'),
-          where('serialNumber', '==', rawSearch),
-          limit(10)
-        ));
-        snSnap.docs.forEach(d => {
-          const rma = mapDocToRMA(d);
-          if (!rma.isDeleted) resultsMap.set(d.id, rma);
-        });
+      // 4. Query serialNumber with limit(5)
+      for (const term of [rawSearch, upperSearch]) {
+        if (resultsMap.size >= 5) break;
+        try {
+          const snSnap = await getDocs(query(
+            collection(db, 'rmas'),
+            where('serialNumber', '==', term),
+            limit(5)
+          ));
+          snSnap.docs.forEach(d => {
+            const rma = mapDocToRMA(d);
+            if (!rma.isDeleted) resultsMap.set(d.id, rma);
+          });
+        } catch (e) {
+          console.warn('Query serialNumber error:', e);
+        }
+      }
 
-        // 5. Fallback: Check active RMAs using strict isExactOrRefMatch only (NO partial customer/phone/model matches)
-        if (resultsMap.size === 0) {
+      // 5. Fallback: Check loaded/authenticated RMAs if logged in
+      if (resultsMap.size === 0 && MockDb.isAuthenticated()) {
+        try {
           const allRMAs = await MockDb.getRMAs();
           allRMAs.forEach(r => {
             if (isExactOrRefMatch(r)) resultsMap.set(r.id, r);
           });
+        } catch (e) {
+          console.warn('Fallback getRMAs error:', e);
         }
-      } catch (e) {
-        console.error('searchRMAsPublic error:', e);
       }
     } else {
       // Offline fallback
