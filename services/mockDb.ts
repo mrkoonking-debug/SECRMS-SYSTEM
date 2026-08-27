@@ -558,15 +558,30 @@ export const MockDb = {
     }
   },
 
-  // --- Seed Petty Cash Specifically ---
-  seedPettyCashDatabase: async () => {
-    if (!isConfigured || !db) return;
+  // --- Reset & Sync Petty Cash from Excel (Clears duplicates and seeds exact 262 clean records) ---
+  resetAndSyncPettyCashDatabase: async () => {
+    if (!isConfigured || !db) {
+      OFFLINE_PETTY_CASH = [...SEED_PETTY_CASH];
+      return;
+    }
     if (currentUser?.role !== 'admin') {
-      console.error('seedPettyCashDatabase: requires admin role');
+      console.error('resetAndSyncPettyCashDatabase: requires admin role');
       throw new Error('Unauthorized: admin access required');
     }
     try {
+      // 1. Fetch all existing pettycash documents to delete them
+      const snap = await getDocs(collection(db, 'pettycash'));
+      const existingDocs = snap.docs;
+      
       const batchSize = 400;
+      for (let i = 0; i < existingDocs.length; i += batchSize) {
+        const batch = writeBatch(db);
+        const chunk = existingDocs.slice(i, i + batchSize);
+        chunk.forEach(d => batch.delete(d.ref));
+        await batch.commit();
+      }
+
+      // 2. Insert all 262 clean records from SEED_PETTY_CASH
       for (let i = 0; i < SEED_PETTY_CASH.length; i += batchSize) {
         const batch = writeBatch(db);
         const chunk = SEED_PETTY_CASH.slice(i, i + batchSize);
@@ -582,11 +597,17 @@ export const MockDb = {
         }
         await batch.commit();
       }
-      console.log(`Seeded ${SEED_PETTY_CASH.length} petty cash records to Firestore.`);
+      
+      OFFLINE_PETTY_CASH = [...SEED_PETTY_CASH];
+      console.log(`Successfully reset & synced exactly ${SEED_PETTY_CASH.length} clean records to Firestore.`);
     } catch (e) {
-      console.error("Petty cash seeding failed", e);
+      console.error("Petty cash reset & sync failed", e);
       throw e;
     }
+  },
+
+  seedPettyCashDatabase: async () => {
+    await MockDb.resetAndSyncPettyCashDatabase();
   },
 
   // --- Staff Management ---

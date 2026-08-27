@@ -714,11 +714,11 @@ export const FinanceLedger: React.FC = () => {
       showToast('เฉพาะผู้ดูแลระบบเท่านั้นที่สามารถซิงค์ข้อมูลได้', 'error');
       return;
     }
-    if (!confirm('ต้องการซิงค์ข้อมูลรายการเงินสดย่อยประวัติทั้งหมด 262 รายการไปยัง Cloud Firestore หรือไม่?')) return;
+    if (!confirm('ต้องการล้างรายการเดิมทั้งหมด แล้วแทนที่ด้วยชุดข้อมูลแท้จาก Excel (262 รายการ) หรือไม่?\n\n(ระบบจะลบข้อมูลที่ซ้ำซ้อนออกทั้งหมด และบันทึกข้อมูลแท้ 262 รายการเข้าสู่ Cloud ถาวร)')) return;
     try {
       setLoading(true);
-      await (MockDb as any).seedPettyCashDatabase();
-      showToast('ซิงค์ข้อมูลรายการเงิน 262 รายการเข้าสู่ Cloud สำเร็จ', 'success');
+      await (MockDb as any).resetAndSyncPettyCashDatabase();
+      showToast('ล้างและบันทึกชุดข้อมูลแท้ 262 รายการเข้าสู่ Cloud สำเร็จ', 'success');
       await fetchData();
     } catch (e: any) {
       showToast(e.message || 'เกิดข้อผิดพลาดในการซิงค์ข้อมูล', 'error');
