@@ -1,13 +1,30 @@
 import { PettyCashTransaction } from '../types';
 
 /**
- * ข้อมูลรายการเงินสดย่อย (Petty Cash Ledger) ทั้งหมด 262 รายการ
- * ช่วงเวลา: 4 มีนาคม 2026 - 27 สิงหาคม 2026
+ * ข้อมูลรายการเงินสดย่อย (Petty Cash Ledger)
+ * ช่วงเวลา: 1 มีนาคม 2026 - 27 สิงหาคม 2026
  * สรุปยอด:
- * - รายการทั้งหมด: 262 รายการ
- * - ยอดรอจ่ายคืนพนักงาน (ณ 27 ส.ค. 2026): 111 บาท (คิง 90 บ., โอ๋ 20 บ., ไอซ์ 1 บ.)
+ * - ยอดเบิก Advance กองกลาง: 88,573.40 บาท
+ * - รายจ่ายทั้งหมดสะสม: 87,262.40 บาท
+ * - เงินสดในลิ้นชักคงเหลือ: 1,412.00 บาท
+ * - ยอดรอจ่ายคืนพนักงาน (ณ 27 ส.ค. 2026): 111.00 บาท (คิง 90 บ., โอ๋ 20 บ., ไอซ์ 1 บ.)
+ * - ยอดคงเหลือสุทธิในระบบ: 1,301.00 บาท
  */
 export const SEED_PETTY_CASH: PettyCashTransaction[] = [
+  {
+    "id": "tx-income-advance",
+    "date": "2026-03-01",
+    "time": "09:00",
+    "type": "INCOME",
+    "amount": 88573.4,
+    "description": "เบิกเงิน Advance กองกลางสะสม",
+    "category": "เติมเงินกองกลาง",
+    "paidBy": "PETTY_CASH",
+    "staffName": "ส่วนกลาง",
+    "isReimbursed": false,
+    "createdAt": "2026-03-01T09:00:00.000Z",
+    "updatedAt": "2026-03-01T09:00:00.000Z"
+  },
   {
     "id": "tx-import-001",
     "date": "2026-03-04",
@@ -2101,9 +2118,11 @@ export const SEED_PETTY_CASH: PettyCashTransaction[] = [
     "category": "ค่าบริการ",
     "paidBy": "PERSONAL_CASH",
     "staffName": "คิง",
-    "isReimbursed": false,
+    "isReimbursed": true,
     "createdAt": "2026-06-16T10:00:00.000Z",
-    "updatedAt": "2026-06-16T10:00:00.000Z"
+    "updatedAt": "2026-06-16T10:00:00.000Z",
+    "reimbursedAt": "2026-06-16T17:00:00.000Z",
+    "reimbursedBy": "Admin"
   },
   {
     "id": "tx-import-140",
