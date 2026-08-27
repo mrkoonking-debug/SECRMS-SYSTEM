@@ -2095,101 +2095,27 @@ export const FinanceLedger: React.FC = () => {
       {activeTab === 'records' ? (
         <>
           {/* Summary Widgets Row */}
-      {(() => {
-        const rollover = selectedMonth !== 'CUSTOM' ? getMonthRollover(selectedMonth) : null;
-        if (rollover) {
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        {/* Petty Cash Balance */}
+        <div className="bg-emerald-500/5 dark:bg-emerald-500/[0.02] border border-emerald-500/20 dark:border-emerald-500/10 rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
+          <div className="absolute right-3 top-3 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
+            <Coins className="w-4 h-4 sm:w-5 sm:h-5" />
+          </div>
+          <div className="min-w-0">
+            <span className="text-[9px] sm:text-xs text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">เงินสดกองกลาง</span>
+            <span className={`text-base sm:text-xl md:text-2xl font-black mt-1 sm:mt-2 block tabular-nums ${summary.pettyCashBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
+              {formatCurrency(summary.pettyCashBalance)}
+            </span>
+          </div>
+          <span className="text-[8px] sm:text-[10px] text-emerald-600/70 dark:text-emerald-400/60 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
+            *เงินสดพร้อมหยิบจ่ายในลิ้นชัก
+          </span>
+        </div>
+
+        {/* Net Remaining Balance */}
+        {(() => {
+          const netBalance = summary.pettyCashBalance - summary.totalPersonalAdvance;
           return (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-              {/* 1. Opening Balance */}
-              <div className="bg-indigo-500/5 dark:bg-indigo-500/[0.02] border border-indigo-500/20 dark:border-indigo-500/10 rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
-                <div className="absolute right-3 top-3 text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
-                  <Landmark className="w-4 h-4 sm:w-5 sm:h-5" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[9px] sm:text-xs text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">ยอดยกมาจากเดือนก่อน</span>
-                  <span className="text-base sm:text-xl md:text-2xl font-black text-indigo-700 dark:text-indigo-300 mt-1 sm:mt-2 block tabular-nums">
-                    {formatCurrency(rollover.openingBalance)}
-                  </span>
-                </div>
-                <span className="text-[8px] sm:text-[10px] text-indigo-600/70 dark:text-indigo-400/60 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
-                  *เงินสดคงเหลือยกมาจากสิ้นเดือนก่อน
-                </span>
-              </div>
-
-              {/* 2. Month Income / Top-up */}
-              <div className="bg-emerald-500/5 dark:bg-emerald-500/[0.02] border border-emerald-500/20 dark:border-emerald-500/10 rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
-                <div className="absolute right-3 top-3 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
-                  <Coins className="w-4 h-4 sm:w-5 sm:h-5" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[9px] sm:text-xs text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">เติมเงิน Advance เดือนนี้</span>
-                  <span className="text-base sm:text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 sm:mt-2 block tabular-nums">
-                    +{formatCurrency(rollover.monthIncome)}
-                  </span>
-                </div>
-                <span className="text-[8px] sm:text-[10px] text-emerald-600/70 dark:text-emerald-400/60 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
-                  *เบิก Advance เติมเงินกองกลาง
-                </span>
-              </div>
-
-              {/* 3. Month Expenses */}
-              <div className="bg-red-500/5 dark:bg-red-500/[0.02] border border-red-500/20 dark:border-red-500/10 rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
-                <div className="absolute right-3 top-3 text-red-600 dark:text-red-400 bg-red-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
-                  <ArrowDownLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[9px] sm:text-xs text-red-600 dark:text-red-400 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">รายจ่ายประจำเดือนนี้</span>
-                  <span className="text-base sm:text-xl md:text-2xl font-black text-red-600 dark:text-red-400 mt-1 sm:mt-2 block tabular-nums">
-                    -{formatCurrency(rollover.monthExpense)}
-                  </span>
-                </div>
-                <span className="text-[8px] sm:text-[10px] text-red-600/70 dark:text-red-400/60 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
-                  *ยอดค่าใช้จ่ายรวมทุกประเภทในเดือนนี้
-                </span>
-              </div>
-
-              {/* 4. Month Closing & Net */}
-              <div className="bg-blue-500/5 dark:bg-blue-500/[0.02] border border-blue-500/20 dark:border-blue-500/10 rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
-                <div className="absolute right-3 top-3 text-blue-600 dark:text-blue-400 bg-blue-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
-                  <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[9px] sm:text-xs text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">เงินสดคงเหลือยกไป</span>
-                  <span className={`text-base sm:text-xl md:text-2xl font-black mt-1 sm:mt-2 block tabular-nums ${rollover.closingBalance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-500'}`}>
-                    {formatCurrency(rollover.closingBalance)}
-                  </span>
-                </div>
-                <span className="text-[8px] sm:text-[10px] text-blue-600/70 dark:text-blue-400/60 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
-                  {rollover.monthPersonalUnreimbursed > 0 
-                    ? `*สุทธิหลังหักรอจ่าย (${formatCurrency(rollover.monthPersonalUnreimbursed)}): ${formatCurrency(rollover.netRemaining)}` 
-                    : '*ยกยอดไปเป็นเงินต้นเดือนถัดไป'}
-                </span>
-              </div>
-            </div>
-          );
-        }
-
-        // Custom / All-time view
-        const netBalance = summary.pettyCashBalance - summary.totalPersonalAdvance;
-        return (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-            {/* Petty Cash Balance */}
-            <div className="bg-emerald-500/5 dark:bg-emerald-500/[0.02] border border-emerald-500/20 dark:border-emerald-500/10 rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
-              <div className="absolute right-3 top-3 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
-                <Coins className="w-4 h-4 sm:w-5 sm:h-5" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-[9px] sm:text-xs text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">เงินสดกองกลาง</span>
-                <span className={`text-base sm:text-xl md:text-2xl font-black mt-1 sm:mt-2 block tabular-nums ${summary.pettyCashBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
-                  {formatCurrency(summary.pettyCashBalance)}
-                </span>
-              </div>
-              <span className="text-[8px] sm:text-[10px] text-emerald-600/70 dark:text-emerald-400/60 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
-                *เงินสดพร้อมหยิบจ่ายได้ทันที
-              </span>
-            </div>
-
-            {/* Net Remaining Balance */}
             <div className="bg-blue-500/5 dark:bg-blue-500/[0.02] border border-blue-500/20 dark:border-blue-500/10 rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
               <div className="absolute right-3 top-3 text-blue-600 dark:text-blue-400 bg-blue-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
                 <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -2201,53 +2127,53 @@ export const FinanceLedger: React.FC = () => {
                 </span>
               </div>
               <span className="text-[8px] sm:text-[10px] text-blue-600/70 dark:text-blue-400/60 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
-                *หักยอดค้างคืนพนักงานแล้ว
+                *ยอดสุทธิในระบบ (หักรอจ่ายแล้ว)
               </span>
             </div>
+          );
+        })()}
 
-            {/* Unpaid Advance Payments */}
-            <div className="bg-orange-500/5 dark:bg-orange-500/[0.02] border border-orange-500/20 dark:border-orange-500/10 rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
-              <div className="absolute right-3 top-3 text-orange-600 dark:text-orange-400 bg-orange-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
-                <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-[9px] sm:text-xs text-orange-600 dark:text-orange-400 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">สำรองจ่ายค้างคืน</span>
-                <span className="text-base sm:text-xl md:text-2xl font-black text-orange-600 dark:text-orange-400 mt-1 sm:mt-2 block tabular-nums">
-                  {formatCurrency(summary.totalPersonalAdvance)}
-                </span>
-              </div>
-              <span className="text-[8px] sm:text-[10px] text-orange-600/70 dark:text-orange-400/60 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
-                *พนักงานสำรองจ่ายเงินส่วนตัว
-              </span>
-            </div>
-
-            {/* Staff Breakdown settlement card */}
-            <div className="bg-purple-500/5 dark:bg-purple-500/[0.02] border border-purple-500/20 dark:border-purple-500/10 rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px]">
-              <span className="text-[9px] sm:text-xs text-purple-600 dark:text-purple-400 font-bold uppercase tracking-wider block mb-1 truncate whitespace-nowrap">ยอดค้างคืนแยกรายคน</span>
-              <div className="flex-1 overflow-y-auto max-h-[60px] sm:max-h-[85px] space-y-1 custom-scrollbar pr-0.5">
-                {Object.keys(summary.personalAdvanceByStaff).length === 0 ? (
-                  <p className="text-[9px] sm:text-xs text-purple-600/70 dark:text-purple-400/50 italic mt-1 sm:mt-2 truncate whitespace-nowrap">ไม่มีค้างจ่ายพนักงาน</p>
-                ) : (
-                  Object.entries(summary.personalAdvanceByStaff).map(([name, amount]) => (
-                    <div key={name} className="flex flex-col gap-1 py-1 border-b border-purple-200/30 dark:border-purple-500/5 last:border-0">
-                      <span className="font-semibold text-purple-800 dark:text-purple-300 truncate text-[10px] sm:text-xs" title={name}>{getDisplayName(name)}</span>
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="font-bold text-purple-600 dark:text-purple-400 tabular-nums text-[10px] sm:text-xs">{formatCurrency(amount)}</span>
-                        <button
-                          onClick={() => handleReimburseAllForStaff(name)}
-                          className="text-[8px] sm:text-[9px] px-2 py-0.5 bg-purple-500/10 hover:bg-[#0071e3] hover:text-white text-purple-600 dark:text-purple-400 font-bold rounded transition-colors active:scale-95 shrink-0"
-                        >
-                          คืนเงิน
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
+        {/* Unpaid Advance Payments */}
+        <div className="bg-orange-500/5 dark:bg-orange-500/[0.02] border border-orange-500/20 dark:border-orange-500/10 rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px] relative overflow-hidden">
+          <div className="absolute right-3 top-3 text-orange-600 dark:text-orange-400 bg-orange-500/10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
+            <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-        );
-      })()}
+          <div className="min-w-0">
+            <span className="text-[9px] sm:text-xs text-orange-600 dark:text-orange-400 font-bold uppercase tracking-wider block pr-6 truncate whitespace-nowrap">สำรองจ่ายค้างคืน</span>
+            <span className="text-base sm:text-xl md:text-2xl font-black text-orange-600 dark:text-orange-400 mt-1 sm:mt-2 block tabular-nums">
+              {formatCurrency(summary.totalPersonalAdvance)}
+            </span>
+          </div>
+          <span className="text-[8px] sm:text-[10px] text-orange-600/70 dark:text-orange-400/60 mt-1 sm:mt-2 block leading-tight truncate whitespace-nowrap">
+            *พนักงานสำรองจ่ายเงินส่วนตัว
+          </span>
+        </div>
+
+        {/* Staff Breakdown settlement card */}
+        <div className="bg-purple-500/5 dark:bg-purple-500/[0.02] border border-purple-500/20 dark:border-purple-500/10 rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl flex flex-col justify-between min-h-[110px] sm:min-h-[135px]">
+          <span className="text-[9px] sm:text-xs text-purple-600 dark:text-purple-400 font-bold uppercase tracking-wider block mb-1 truncate whitespace-nowrap">ยอดค้างคืนแยกรายคน</span>
+          <div className="flex-1 overflow-y-auto max-h-[60px] sm:max-h-[85px] space-y-1 custom-scrollbar pr-0.5">
+            {Object.keys(summary.personalAdvanceByStaff).length === 0 ? (
+              <p className="text-[9px] sm:text-xs text-purple-600/70 dark:text-purple-400/50 italic mt-1 sm:mt-2 truncate whitespace-nowrap">ไม่มีค้างจ่ายพนักงาน</p>
+            ) : (
+              Object.entries(summary.personalAdvanceByStaff).map(([name, amount]) => (
+                <div key={name} className="flex flex-col gap-1 py-1 border-b border-purple-200/30 dark:border-purple-500/5 last:border-0">
+                  <span className="font-semibold text-purple-800 dark:text-purple-300 truncate text-[10px] sm:text-xs" title={name}>{getDisplayName(name)}</span>
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-bold text-purple-600 dark:text-purple-400 tabular-nums text-[10px] sm:text-xs">{formatCurrency(amount)}</span>
+                    <button
+                      onClick={() => handleReimburseAllForStaff(name)}
+                      className="text-[8px] sm:text-[9px] px-2 py-0.5 bg-purple-500/10 hover:bg-[#0071e3] hover:text-white text-purple-600 dark:text-purple-400 font-bold rounded transition-colors active:scale-95 shrink-0"
+                    >
+                      คืนเงิน
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Filter and Table Section */}
       <div 
