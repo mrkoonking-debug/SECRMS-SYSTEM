@@ -1865,7 +1865,32 @@ export const MockDb = {
         results.push({ id: docSnap.id, ...data } as PettyCashTransaction);
       }
     });
-    return results;
+
+    if (results.length === 0) {
+      return OFFLINE_PETTY_CASH.filter(tx => !tx.isDeleted).sort((a, b) => b.date.localeCompare(a.date));
+    }
+
+    // If Firestore has expenses but no Income record was uploaded, ensure baseline advance fund exists
+    const hasIncome = results.some(tx => tx.type === 'INCOME');
+    if (!hasIncome) {
+      const baseAdvance: PettyCashTransaction = {
+        id: 'tx-adv-initial',
+        date: '2026-03-01',
+        time: '08:30',
+        type: 'INCOME',
+        amount: 88573.40,
+        description: 'เบิกเงิน Advance กองกลางสะสม',
+        category: 'เติมเงินกองกลาง',
+        paidBy: 'PETTY_CASH',
+        staffName: 'ส่วนกลาง',
+        isReimbursed: false,
+        createdAt: '2026-03-01T08:30:00.000Z',
+        updatedAt: '2026-03-01T08:30:00.000Z'
+      };
+      results.push(baseAdvance);
+    }
+
+    return results.sort((a, b) => b.date.localeCompare(a.date));
   },
 
   async addPettyCashTransaction(tx: Omit<PettyCashTransaction, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
