@@ -709,6 +709,24 @@ export const FinanceLedger: React.FC = () => {
     }
   };
 
+  const handleSeedPettyCash = async () => {
+    if (!isAdmin) {
+      showToast('เฉพาะผู้ดูแลระบบเท่านั้นที่สามารถซิงค์ข้อมูลได้', 'error');
+      return;
+    }
+    if (!confirm('ต้องการซิงค์ข้อมูลรายการเงินสดย่อยประวัติทั้งหมด 262 รายการไปยัง Cloud Firestore หรือไม่?')) return;
+    try {
+      setLoading(true);
+      await (MockDb as any).seedPettyCashDatabase();
+      showToast('ซิงค์ข้อมูลรายการเงิน 262 รายการเข้าสู่ Cloud สำเร็จ', 'success');
+      await fetchData();
+    } catch (e: any) {
+      showToast(e.message || 'เกิดข้อผิดพลาดในการซิงค์ข้อมูล', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(val);
   };
@@ -1942,6 +1960,17 @@ export const FinanceLedger: React.FC = () => {
           </div>
         </div>
         <div className="flex gap-2 w-full sm:w-auto shrink-0">
+          {isAdmin && (
+            <button
+              onClick={handleSeedPettyCash}
+              className="flex-1 sm:flex-none px-3 py-2 bg-purple-500/10 hover:bg-purple-500 hover:text-white border border-purple-500/20 text-purple-600 dark:text-purple-400 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 active:scale-95 transition-all outline-none"
+              title="ซิงค์ข้อมูลเริ่มต้น 262 รายการไปยัง Cloud Firestore"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">ซิงค์ 262 รายการ</span>
+              <span className="sm:hidden">ซิงค์</span>
+            </button>
+          )}
           <button
             onClick={handleExportCSV}
             className="flex-1 sm:flex-none px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-[#2c2c2e] dark:hover:bg-[#3a3a3c] border border-gray-200/50 dark:border-white/5 text-gray-700 dark:text-gray-300 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 active:scale-95 transition-all outline-none"

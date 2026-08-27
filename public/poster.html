@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEC RMA SYSTEM — Infographic Poster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    :root {
+      --primary: #f26522;
+      --primary-dark: #d94e0e;
+      --primary-gradient: linear-gradient(135deg, #f26522 0%, #ff8342 100%);
+      --blue-accent: #0071e3;
+      --bg-warm: #fff9f3;
+      --card-bg: #ffffff;
+      --text-main: #1e2022;
+      --text-sub: #636b74;
+      --border-color: #f0e6dc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: #e5e7eb;
+      font-family: 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px 12px 60px;
+    }
+
+    /* Action bar */
+    .action-bar {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      position: sticky;
+      top: 12px;
+      z-index: 999;
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(10px);
+      padding: 10px 20px;
+      border-radius: 999px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Prompt', sans-serif;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, #f26522, #e05310);
+      color: white;
+      box-shadow: 0 4px 14px rgba(242, 101, 34, 0.35);
+    }
+    .btn-download:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(242, 101, 34, 0.45);
+    }
+    .btn-secondary {
+      background: #f1f3f5;
+      color: #333;
+    }
+    .btn-secondary:hover {
+      background: #e9ecef;
+    }
+
+    /* Poster Container (Fixed Aspect Ratio 768px x 1120px for HD Output) */
+    .poster-canvas {
+      width: 768px;
+      min-height: 1120px;
+      background: linear-gradient(180deg, #fffaf5 0%, #fff6ed 45%, #fffbf7 100%);
+      border-radius: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 60px -15px rgba(242, 101, 34, 0.15), 0 0 1px 1px rgba(0,0,0,0.04);
+      padding: 36px 36px 30px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Decorative background shapes */
+    .bg-shape-1 {
+      position: absolute;
+      top: -80px;
+      left: -80px;
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(242, 101, 34, 0.12) 0%, rgba(242, 101, 34, 0) 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .bg-shape-2 {
+      position: absolute;
+      top: 120px;
+      right: -60px;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(0, 113, 227, 0.08) 0%, rgba(0, 113, 227, 0) 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    /* Floating badges & deco icons */
+    .deco-star {
+      position: absolute;
+      color: #f7b731;
+      font-size: 20px;
+      pointer-events: none;
+      animation: pulse 3s infinite ease-in-out;
+    }
+    .deco-pin {
+      position: absolute;
+      top: 48px;
+      left: 56px;
+      width: 36px;
+      height: 36px;
+      background: #ffe3d3;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+    }
+    .deco-mascot {
+      position: absolute;
+      top: 36px;
+      right: 48px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Header Section */
+    .poster-header {
+      text-align: center;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      padding: 6px 18px 6px 10px;
+      border-radius: 999px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+      border: 1px solid #fce8db;
+      margin-bottom: 12px;
+    }
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--primary-gradient);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 3px 8px rgba(242, 101, 34, 0.3);
+    }
+    .brand-text {
+      text-align: left;
+      line-height: 1.15;
+    }
+    .brand-name {
+      font-size: 18px;
+      font-weight: 800;
+      color: #1e2022;
+      letter-spacing: -0.3px;
+    }
+    .brand-tag {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .poster-title {
+      font-size: 44px;
+      font-weight: 900;
+      line-height: 1.15;
+      margin-bottom: 8px;
+      letter-spacing: -0.8px;
+    }
+    .poster-title .highlight {
+      background: linear-gradient(135deg, #f26522 0%, #ff521a 50%, #f77c38 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .poster-subtitle {
+      font-size: 16px;
+      font-weight: 500;
+      color: #4a5568;
+      max-width: 580px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    /* 3 Phones Display Showcase */
+    .phones-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* iPhone Device Frame Mockup */
+    .phone-mockup {
+      background: #121316;
+      border-radius: 34px;
+      padding: 7px;
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.22), 0 0 0 1px #2d3036;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .phone-screen {
+      background: #f8fafc;
+      border-radius: 28px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 380px;
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+
+    /* Dynamic Island / Notch */
+    .phone-notch {
+      width: 68px;
+      height: 16px;
+      background: #121316;
+      border-radius: 20px;
+      margin: 6px auto 4px;
+      z-index: 20;
+    }
+
+    .phone-app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      background: white;
+      border-bottom: 1px solid #edf2f7;
+    }
+    .phone-logo-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .phone-logo-icon {
+      width: 18px;
+      height: 18px;
+      background: var(--primary);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 9px;
+      font-weight: 800;
+    }
+    .phone-logo-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #1e2022;
+    }
+
+    .phone-content {
+      padding: 10px 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow: hidden;
+      flex: 1;
+      font-size: 11px;
+    }
+
+    /* Inside Screen 1: Search & Tracking */
+    .screen-heading {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e2022;
+      line-height: 1.2;
+    }
+    .screen-sub {
+      font-size: 9.5px;
+      color: #718096;
+      margin-bottom: 2px;
+    }
+    .mock-search {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 999px;
+      padding: 5px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+    .mock-search-text {
+      font-size: 9.5px;
+      color: #a0aec0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .mock-search-btn {
+      background: var(--primary);
+      color: white;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mock-card {
+      background: white;
+      border-radius: 12px;
+      padding: 8px;
+      border: 1px solid #edf2f7;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .mock-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .status-pill {
+      font-size: 8px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .status-pill.success {
+      background: #ecfdf5;
+      color: #059669;
+    }
+    .status-pill.warning {
+      background: #fffbeb;
+      color: #d97706;
+    }
+    .status-pill.primary {
+      background: #eef2ff;
+      color: #4f46e5;
+    }
+
+    /* Stepper preview */
+    .mock-stepper {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin: 10px 4px 6px;
+    }
+    .mock-stepper::before {
+      content: '';
+      position: absolute;
+      top: 7px;
+      left: 6px;
+      right: 6px;
+      height: 2px;
+      background: #e2e8f0;
+      z-index: 1;
+    }
+    .mock-stepper::after {
+      content: '';
+      position: absolute;
+      top: 7px;
+      left: 6px;
+      width: 75%;
+      height: 2px;
+      background: #0071e3;
+      z-index: 2;
+    }
+    .step-node {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .step-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7px;
+    }
+    .step-dot.active {
+      border-color: #0071e3;
+      background: #0071e3;
+      color: white;
+    }
+    .step-label {
+      font-size: 7.5px;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    /* Inside Screen 2: Registration Form */
+    .mock-form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .mock-form-label {
+      font-size: 8.5px;
+      font-weight: 600;
+      color: #475569;
+    }
+    .mock-input {
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      padding: 4px 7px;
+      font-size: 9px;
+      color: #1e293b;
+    }
+    .mock-btn-main {
+      background: var(--primary-gradient);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 7px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 3px 8px rgba(242, 101, 34, 0.3);
+      margin-top: 4px;
+    }
+
+    /* Inside Screen 3: Dashboard */
+    .stat-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .stat-box {
+      background: white;
+      border-radius: 8px;
+      padding: 6px 8px;
+      border: 1px solid #f1f5f9;
+    }
+    .stat-num {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .stat-title {
+      font-size: 8px;
+      color: #64748b;
+    }
+    .job-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 8.5px;
+    }
+
+    /* 4 Feature Highlights Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 10;
+    }
+    .feature-card {
+      background: white;
+      border-radius: 16px;
+      padding: 12px 10px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+      border: 1px solid #f3e9e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .feature-icon-wrapper {
+      width: 44px;
+      height: 44px;
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2px;
+    }
+    .feature-icon-wrapper.orange {
+      background: #fff0e6;
+      color: #f26522;
+    }
+    .feature-icon-wrapper.blue {
+      background: #e6f0fa;
+      color: #0071e3;
+    }
+    .feature-icon-wrapper.green {
+      background: #e6f7f0;
+      color: #10b981;
+    }
+    .feature-icon-wrapper.purple {
+      background: #f3e8ff;
+      color: #8b5cf6;
+    }
+    .feature-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #1e2022;
+      line-height: 1.25;
+    }
+    .feature-desc {
+      font-size: 10px;
+      color: #6b7280;
+      line-height: 1.3;
+    }
+
+    /* Highlight Slogan Bar */
+    .highlight-bar {
+      background: linear-gradient(90deg, #fff3eb 0%, #fff8f3 50%, #fff3eb 100%);
+      border: 1px solid #fed7aa;
+      border-radius: 999px;
+      padding: 10px 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #7c2d12;
+    }
+    .highlight-bar .dot {
+      color: #ea580c;
+      font-weight: 900;
+    }
+
+    /* Big CTA Button */
+    .cta-button {
+      background: linear-gradient(135deg, #f26522 0%, #ff732e 100%);
+      color: white;
+      border-radius: 999px;
+      padding: 15px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 800;
+      box-shadow: 0 8px 25px rgba(242, 101, 34, 0.4);
+      margin-bottom: 18px;
+      text-decoration: none;
+      letter-spacing: 0.2px;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      z-index: 10;
+    }
+    .cta-button:hover {
+      box-shadow: 0 10px 30px rgba(242, 101, 34, 0.5);
+    }
+
+    /* Footer City Skyline & Notes */
+    .poster-footer {
+      margin-top: auto;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+    }
+    .footer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 11px;
+      color: #4b5563;
+      font-weight: 500;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      margin-bottom: 8px;
+    }
+    .footer-credit {
+      font-size: 10.5px;
+      color: #9ca3af;
+    }
+
+    /* Skyline Graphic vector */
+    .skyline-svg {
+      width: 100%;
+      height: 38px;
+      opacity: 0.35;
+      margin-bottom: 4px;
+      color: #94a3b8;
+    }
+
+    @media (max-width: 800px) {
+      body {
+        padding: 10px 4px 40px;
+      }
+      .poster-canvas {
+        width: 100%;
+        max-width: 480px;
+        min-height: auto;
+        padding: 24px 16px 20px;
+      }
+      .poster-title {
+        font-size: 30px;
+      }
+      .poster-subtitle {
+        font-size: 13px;
+      }
+      .phones-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .phone-screen {
+        height: 300px;
+      }
+      .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .highlight-bar {
+        font-size: 11.5px;
+        flex-direction: column;
+        gap: 2px;
+        border-radius: 16px;
+      }
+      .highlight-bar .dot {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Controls Bar -->
+  <div class="action-bar">
+    <button class="btn btn-download" onclick="downloadPosterImage()">
+      <i data-lucide="download" style="width: 16px; height: 16px;"></i>
+      <span>ดาวน์โหลดรูปภาพโปสเตอร์ (High-Res PNG)</span>
+    </button>
+    <a href="/" class="btn btn-secondary">
+      <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+      <span>กลับสู่เว็บแอป</span>
+    </a>
+  </div>
+
+  <!-- MAIN POSTER CANVAS (Render Target) -->
+  <div class="poster-canvas" id="posterElement">
+
+    <!-- Decorative background elements -->
+    <div class="bg-shape-1"></div>
+    <div class="bg-shape-2"></div>
+    <div class="deco-pin">
+      <i data-lucide="shield-check" style="width: 20px; height: 20px;"></i>
+    </div>
+    <div class="deco-mascot">
+      <span style="font-size: 26px;">🛡️⚡</span>
+    </div>
+    <div class="deco-star" style="top: 80px; right: 90px;">✦</div>
+    <div class="deco-star" style="top: 140px; left: 40px; font-size: 14px; color: #ff7a45;">✧</div>
+
+    <!-- Header Section -->
+    <div class="poster-header">
+      <div class="brand-badge">
+        <div class="brand-icon">
+          <i data-lucide="shield" style="width: 22px; height: 22px;"></i>
+        </div>
+        <div class="brand-text">
+          <div class="brand-name">SEC RMA SYSTEM</div>
+          <div class="brand-tag">SEC TECHNOLOGY CO., LTD.</div>
+        </div>
+      </div>
+
+      <h1 class="poster-title">
+        <span class="highlight">SEC RMA</span> คืออะไร?
+      </h1>
+      <p class="poster-subtitle">
+        ระบบบริหารจัดการงานเคลมและติดตามสถานะสินค้าแบบครบวงจร<br>
+        เชื่อมโยงลูกค้า ทีมช่าง และศูนย์นำเข้าสินค้าไว้ในที่เดียว
+      </p>
+    </div>
+
+    <!-- 3 Smartphone Mockups Showcase -->
+    <div class="phones-grid">
+
+      <!-- Phone 1: Customer Tracking -->
+      <div class="phone-mockup">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="phone-app-header">
+            <div class="phone-logo-badge">
+              <div class="phone-logo-icon">S</div>
+              <div class="phone-logo-title">เช็คสถานะเคลม</div>
+            </div>
+            <i data-lucide="search" style="width: 12px; height: 12px; color: #94a3b8;"></i>
+          </div>
+          <div class="phone-content">
+            <div>
+              <div class="screen-heading">ค้นหาสถานะงาน</div>
+              <div class="screen-sub">ระบุเลขเคลม หรือ S/N สินค้า</div>
+            </div>
+
+            <div class="mock-search">
+              <div class="mock-search-text">
+                <i data-lucide="search" style="width: 10px; height: 10px;"></i>
+                <span>HK882190...</span>
+              </div>
+              <div class="mock-search-btn">
+                <i data-lucide="arrow-right" style="width: 10px; height: 10px;"></i>
+              </div>
+            </div>
+
+            <!-- Claim Result Card -->
+            <div class="mock-card">
+              <div class="mock-card-header">
+                <div>
+                  <div style="font-weight: 700; color: #0f172a; font-size: 10px;">RMA-2026-0089</div>
+                  <div style="font-size: 8px; color: #64748b;">Hikvision ColorVu 4MP</div>
+                </div>
+                <span class="status-pill success">
+                  <i data-lucide="check-circle" style="width: 8px; height: 8px;"></i>
+                  <span>ซ่อมเสร็จแล้ว</span>
+                </span>
+              </div>
+
+              <!-- Progress Stepper -->
+              <div class="mock-stepper">
+                <div class="step-node">
+                  <div class="step-dot active"><i data-lucide="check" style="width: 8px; height: 8px;"></i></div>
+                  <span class="step-label">รับของ</span>
+                </div>
+                <div class="step-node">
+                  <div class="step-dot active"><i data-lucide="check" style="width: 8px; height: 8px;"></i></div>
+                  <span class="step-label">ตรวจเช็ค</span>
+                </div>
+                <div class="step-node">
+                  <div class="step-dot active"><i data-lucide="check" style="width: 8px; height: 8px;"></i></div>
+                  <span class="step-label">ส่งศูนย์</span>
+                </div>
+                <div class="step-node">
+                  <div class="step-dot active"><i data-lucide="check" style="width: 8px; height: 8px;"></i></div>
+                  <span class="step-label" style="color: #059669; font-weight: 700;">พร้อมคืน</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="background: #eff6ff; border-radius: 8px; padding: 6px; font-size: 8px; color: #1e40af; border: 1px solid #dbeafe;">
+              ✨ <strong>พร้อมส่งมอบ:</strong> สินค้าเปลี่ยนเมนบอร์ดใหม่ ผ่านการทดสอบเรียบร้อย
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone 2: Online Claim Registration -->
+      <div class="phone-mockup">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="phone-app-header">
+            <div class="phone-logo-badge">
+              <div class="phone-logo-icon">S</div>
+              <div class="phone-logo-title">แจ้งส่งเคลมออนไลน์</div>
+            </div>
+            <i data-lucide="file-plus" style="width: 12px; height: 12px; color: #94a3b8;"></i>
+          </div>
+          <div class="phone-content">
+            <div>
+              <div class="screen-heading">ลงทะเบียนส่งซ่อม</div>
+              <div class="screen-sub">กรอกข้อมูลเพื่อรับเลขเคลมทันที</div>
+            </div>
+
+            <div class="mock-form-group">
+              <span class="mock-form-label">ผู้ส่งเคลม / บริษัท *</span>
+              <div class="mock-input">คุณกิตติภพ (สยามเทคฯ)</div>
+            </div>
+
+            <div class="mock-form-group">
+              <span class="mock-form-label">ยี่ห้อและรุ่นสินค้า *</span>
+              <div class="mock-input">Dahua NVR 16CH 4K</div>
+            </div>
+
+            <div class="mock-form-group">
+              <span class="mock-form-label">อาการเสียที่พบ *</span>
+              <div class="mock-input" style="color: #475569;">เปิดไม่ติด มีเสียงร้องเตือน 3 ครั้ง</div>
+            </div>
+
+            <div class="mock-btn-main">
+              <i data-lucide="printer" style="width: 10px; height: 10px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i>
+              พิมพ์ใบปะหน้า & ส่งข้อมูล
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone 3: Technician & Admin Dashboard -->
+      <div class="phone-mockup">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="phone-app-header">
+            <div class="phone-logo-badge">
+              <div class="phone-logo-icon">S</div>
+              <div class="phone-logo-title">แดชบอร์ดงานซ่อม</div>
+            </div>
+            <i data-lucide="bell" style="width: 12px; height: 12px; color: #94a3b8;"></i>
+          </div>
+          <div class="phone-content">
+            <div>
+              <div class="screen-heading">ภาพรวม RMA วันนี้</div>
+              <div class="screen-sub">สถิติและสถานะแบบ Real-time</div>
+            </div>
+
+            <!-- Stats Boxes -->
+            <div class="stat-row">
+              <div class="stat-box">
+                <div class="stat-num" style="color: #0071e3;">148</div>
+                <div class="stat-title">งานทั้งหมดในระบบ</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-num" style="color: #10b981;">42</div>
+                <div class="stat-title">พร้อมส่งคืนลูกค้า</div>
+              </div>
+            </div>
+
+            <!-- Recent Jobs -->
+            <div class="mock-card" style="padding: 6px 8px;">
+              <div style="font-size: 8px; font-weight: 700; color: #64748b; margin-bottom: 4px;">รายการอัปเดตล่าสุด</div>
+              <div class="job-list-item">
+                <span style="font-weight: 600; color: #1e293b;">Hikvision 4MP Dome</span>
+                <span class="status-pill success">ซ่อมเสร็จ</span>
+              </div>
+              <div class="job-list-item">
+                <span style="font-weight: 600; color: #1e293b;">Dahua PTZ Speed</span>
+                <span class="status-pill warning">ส่งผู้นำเข้า</span>
+              </div>
+              <div class="job-list-item" style="border-bottom: none;">
+                <span style="font-weight: 600; color: #1e293b;">Ruijie Cloud Switch</span>
+                <span class="status-pill primary">กำลังตรวจเช็ค</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 4 Core Feature Cards -->
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon-wrapper orange">
+          <i data-lucide="search" style="width: 22px; height: 22px;"></i>
+        </div>
+        <div class="feature-title">เช็คสถานะ Real-time</div>
+        <div class="feature-desc">ติดตามความคืบหน้า 24 ชม. ด้วย S/N หรือเลขอ้างอิง</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-wrapper blue">
+          <i data-lucide="clipboard-edit" style="width: 22px; height: 22px;"></i>
+        </div>
+        <div class="feature-title">ลงทะเบียนเคลมง่าย</div>
+        <div class="feature-desc">เปิดงานออนไลน์ พร้อมพิมพ์ใบปะหน้าพัสดุได้ทันที</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-wrapper green">
+          <i data-lucide="zap" style="width: 22px; height: 22px;"></i>
+        </div>
+        <div class="feature-title">อัปเดตงานฉับไว</div>
+        <div class="feature-desc">บันทึกผลการซ่อม สลับของสต๊อก หรือส่งศูนย์แม่นยำ</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-wrapper purple">
+          <i data-lucide="layers" style="width: 22px; height: 22px;"></i>
+        </div>
+        <div class="feature-title">แยกตามทีมสินค้า</div>
+        <div class="feature-desc">รองรับทั้ง Hikvision, Dahua, Network, และ UPS</div>
+      </div>
+    </div>
+
+    <!-- Highlight Banner -->
+    <div class="highlight-bar">
+      <span>✨ ลูกค้าเช็คสถานะง่าย</span>
+      <span class="dot">•</span>
+      <span>ช่างและแอดมินจัดการงานเคลมสะดวกรวดเร็ว</span>
+      <span class="dot">•</span>
+      <span>ลดข้อผิดพลาด 100%</span>
+    </div>
+
+    <!-- Large CTA Button -->
+    <a href="/" class="cta-button">
+      <i data-lucide="sparkles" style="width: 22px; height: 22px;"></i>
+      <span>เริ่มใช้งาน SEC RMA SYSTEM</span>
+      <i data-lucide="chevron-right" style="width: 22px; height: 22px;"></i>
+    </a>
+
+    <!-- Footer -->
+    <div class="poster-footer">
+      <!-- Modern City Skyline Vector -->
+      <svg class="skyline-svg" viewBox="0 0 1200 120" fill="currentColor" preserveAspectRatio="none">
+        <rect x="20" y="60" width="30" height="60" rx="2" />
+        <rect x="55" y="40" width="25" height="80" rx="2" />
+        <rect x="85" y="70" width="40" height="50" rx="2" />
+        <rect x="130" y="30" width="35" height="90" rx="2" />
+        <rect x="170" y="55" width="28" height="65" rx="2" />
+        <rect x="205" y="20" width="45" height="100" rx="2" />
+        <rect x="255" y="50" width="35" height="70" rx="2" />
+        <rect x="295" y="35" width="50" height="85" rx="2" />
+        <rect x="350" y="65" width="30" height="55" rx="2" />
+        <rect x="385" y="25" width="40" height="95" rx="2" />
+        <rect x="430" y="45" width="45" height="75" rx="2" />
+        <rect x="480" y="60" width="35" height="60" rx="2" />
+        <rect x="520" y="15" width="50" height="105" rx="2" />
+        <rect x="575" y="40" width="35" height="80" rx="2" />
+        <rect x="615" y="55" width="40" height="65" rx="2" />
+        <rect x="660" y="30" width="30" height="90" rx="2" />
+        <rect x="695" y="45" width="45" height="75" rx="2" />
+        <rect x="745" y="20" width="35" height="100" rx="2" />
+        <rect x="785" y="60" width="40" height="60" rx="2" />
+        <rect x="830" y="35" width="50" height="85" rx="2" />
+        <rect x="885" y="50" width="35" height="70" rx="2" />
+        <rect x="925" y="15" width="45" height="105" rx="2" />
+        <rect x="975" y="45" width="30" height="75" rx="2" />
+        <rect x="1010" y="65" width="40" height="55" rx="2" />
+        <rect x="1055" y="30" width="35" height="90" rx="2" />
+        <rect x="1095" y="55" width="45" height="65" rx="2" />
+        <rect x="1145" y="40" width="35" height="80" rx="2" />
+      </svg>
+
+      <div class="footer-badge">
+        <i data-lucide="building-2" style="width: 14px; height: 14px; color: #f26522;"></i>
+        <span>เหมาะสำหรับลูกค้า, ร้านค้าตัวแทนจำหน่าย และทีมช่างผู้ให้บริการ</span>
+      </div>
+      <div class="footer-credit">
+        🌐 secrmssystem.web.app • บริษัท เอสอีซี เทคโนโลยี จำกัด (SEC Technology Co., Ltd.)
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // High-Res Image Export using html2canvas
+    async function downloadPosterImage() {
+      const poster = document.getElementById('posterElement');
+      const btn = document.querySelector('.btn-download');
+      const originalText = btn.innerHTML;
+      
+      try {
+        btn.innerHTML = '⏳ กำลังสร้างรูปภาพความละเอียดสูง...';
+        btn.style.pointerEvents = 'none';
+
+        // Wait for fonts to load
+        if (document.fonts) {
+          await document.fonts.ready;
+        }
+
+        const canvas = await html2canvas(poster, {
+          scale: 3, // 3x Ultra-sharp Retina quality (approx 2300px x 3360px)
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#fffaf5',
+          logging: false
+        });
+
+        const link = document.createElement('a');
+        link.download = 'SEC_RMA_SYSTEM_Infographic.png';
+        link.href = canvas.toDataURL('image/png', 1.0);
+        link.click();
+      } catch (err) {
+        alert('เกิดข้อผิดพลาดในการบันทึกรูปภาพ: ' + err.message);
+      } finally {
+        btn.innerHTML = originalText;
+        btn.style.pointerEvents = 'auto';
+        lucide.createIcons();
+      }
+    }
+  </script>
+</body>
+</html>
