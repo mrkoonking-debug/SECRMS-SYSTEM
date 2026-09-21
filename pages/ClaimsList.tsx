@@ -190,6 +190,11 @@ export const ClaimsList: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'IN_PROGRESS' | 'DONE'>(() => (sessionStorage.getItem('rmas_statusFilter') as any) || 'ALL');
     const [teamFilter, setTeamFilter] = useState<'ALL' | 'GROUP_C' | Team>(() => (sessionStorage.getItem('rmas_teamFilter') as any) || 'ALL');
     const [dateFilter, setDateFilter] = useState<string>(() => (sessionStorage.getItem('rmas_dateFilter') || 'ALL'));
+    const [customStartDate, setCustomStartDate] = useState<string>(() => sessionStorage.getItem('rmas_customStartDate') || '');
+    const [customEndDate, setCustomEndDate] = useState<string>(() => sessionStorage.getItem('rmas_customEndDate') || '');
+    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+    const [datePickerTab, setDatePickerTab] = useState<'MONTHS' | 'CUSTOM'>('MONTHS');
+    const datePickerRef = useRef<HTMLDivElement>(null);
     const [expandedDates, setExpandedDates] = useState<Set<string> | null>(null);
     const [isTeamCExpanded, setIsTeamCExpanded] = useState(() => sessionStorage.getItem('rmas_isTeamCExpanded') === 'true');
 
@@ -217,6 +222,19 @@ export const ClaimsList: React.FC = () => {
         });
 
         return Array.from(monthSet).sort().reverse();
+    }, [rmas]);
+
+    const monthItemCounts = useMemo(() => {
+        const counts: Record<string, number> = {};
+        rmas.forEach(c => {
+            if (!c || !c.createdAt) return;
+            const d = new Date(c.createdAt);
+            if (!isNaN(d.getTime())) {
+                const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                counts[ym] = (counts[ym] || 0) + 1;
+            }
+        });
+        return counts;
     }, [rmas]);
 
     const formatMonthTitle = useCallback((ymKey: string) => {
@@ -251,15 +269,30 @@ export const ClaimsList: React.FC = () => {
     // Reset pagination to page 1 whenever search or filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [debouncedSearch, statusFilter, teamFilter, dateFilter, pageSize]);
+    }, [debouncedSearch, statusFilter, teamFilter, dateFilter, customStartDate, customEndDate, pageSize]);
 
     useEffect(() => {
         sessionStorage.setItem('rmas_search', search);
         sessionStorage.setItem('rmas_statusFilter', statusFilter);
         sessionStorage.setItem('rmas_teamFilter', teamFilter);
         sessionStorage.setItem('rmas_dateFilter', dateFilter);
+        sessionStorage.setItem('rmas_customStartDate', customStartDate);
+        sessionStorage.setItem('rmas_customEndDate', customEndDate);
         sessionStorage.setItem('rmas_isTeamCExpanded', String(isTeamCExpanded));
-    }, [search, statusFilter, teamFilter, dateFilter, isTeamCExpanded]);
+    }, [search, statusFilter, teamFilter, dateFilter, customStartDate, customEndDate, isTeamCExpanded]);
+
+    // Close date picker popover on click outside
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (datePickerRef.current && !datePickerRef.current.contains(e.target as Node)) {
+                setIsDatePickerOpen(false);
+            }
+        };
+        if (isDatePickerOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isDatePickerOpen]);
 
     useEffect(() => {
         const fetchAllRMAs = async () => {
@@ -365,15 +398,41 @@ export const ClaimsList: React.FC = () => {
             if (!c.createdAt) return false;
             const d = new Date(c.createdAt);
             if (isNaN(d.getTime())) return false;
-            const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+
             const now = new Date();
-            const nowYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-            if (dateFilter === 'THIS_MONTH') return ym === nowYM;
-            return ym === dateFilter;
+            const nowYear = now.getFullYear();
+            const nowMonth = now.getMonth();
+            const nowYM = `${nowYear}-${String(nowMonth + 1).padStart(2, '0')}`;
+
+            const itemYear = d.getFullYear();
+            const itemMonth = d.getMonth();
+            const itemYM = `${itemYear}-${String(itemMonth + 1).padStart(2, '0')}`;
+
+            if (dateFilter === 'THIS_MONTH') return itemYM === nowYM;
+
+            if (dateFilter === 'LAST_MONTH') {
+                const lastMonthDate = new Date(nowYear, nowMonth - 1, 1);
+                const lastMonthYM = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`;
+                return itemYM === lastMonthYM;
+            }
+
+            if (dateFilter === '3_MONTHS') {
+                const threeMonthsAgo = new Date(nowYear, nowMonth - 2, 1);
+                threeMonthsAgo.setHours(0, 0, 0, 0);
+                return d >= threeMonthsAgo;
+            }
+
+            if (dateFilter === 'CUSTOM') {
+                if (customStartDate && d < new Date(`${customStartDate}T00:00:00`)) return false;
+                if (customEndDate && d > new Date(`${customEndDate}T23:59:59`)) return false;
+                return true;
+            }
+
+            return itemYM === dateFilter;
         };
 
         return rmas.filter(c => matchesSearch(c) && matchesStatus(c) && matchesTeam(c) && matchesDate(c));
-    }, [rmas, debouncedSearch, statusFilter, teamFilter, dateFilter]);
+    }, [rmas, debouncedSearch, statusFilter, teamFilter, dateFilter, customStartDate, customEndDate]);
 
     // Group jobs across dates and create a flat list of sorted jobs
     const allFilteredJobsList = useMemo(() => {
@@ -473,9 +532,9 @@ export const ClaimsList: React.FC = () => {
     const getGroupCCount = () => rmas.filter(c => [Team.TEAM_C, Team.TEAM_E, Team.TEAM_G].includes(c.team) && !DONE_STATUSES.includes(c.status)).length;
     const handleGroupCClick = () => { setIsTeamCExpanded(!isTeamCExpanded); setTeamFilter('GROUP_C'); };
     const handleClearFilters = () => {
-        setSearch(''); setDebouncedSearch(''); setStatusFilter('IN_PROGRESS'); setTeamFilter('ALL'); setDateFilter('ALL'); setIsTeamCExpanded(false);
+        setSearch(''); setDebouncedSearch(''); setStatusFilter('ALL'); setTeamFilter('ALL'); setDateFilter('ALL'); setCustomStartDate(''); setCustomEndDate(''); setIsTeamCExpanded(false);
     };
-    const isAnyFilterActive = search !== '' || statusFilter !== 'IN_PROGRESS' || teamFilter !== 'ALL' || dateFilter !== 'ALL';
+    const isAnyFilterActive = search !== '' || statusFilter !== 'ALL' || teamFilter !== 'ALL' || dateFilter !== 'ALL' || customStartDate !== '' || customEndDate !== '';
 
     if (loading) return <div className="p-12 text-center text-gray-500 font-medium">กำลังโหลดรายการแจ้งเคลม...</div>;
 
@@ -554,26 +613,225 @@ export const ClaimsList: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 px-1.5 scrollbar-hide border-t border-gray-100 dark:border-white/5 pt-2">
-                    <span className="text-gray-400 dark:text-gray-500 font-bold text-[11px] uppercase tracking-wider shrink-0 flex items-center gap-1 mr-1"><Calendar className="w-3.5 h-3.5 text-blue-500" /> ช่วงเวลา:</span>
-                    <button onClick={() => setDateFilter('ALL')} className={`px-3 py-1 rounded-full font-bold text-xs ${dateFilter === 'ALL' ? 'bg-[#0071e3] text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-400'}`}>ทั้งหมด</button>
-                    <button onClick={() => setDateFilter('THIS_MONTH')} className={`px-3 py-1 rounded-full font-bold text-xs ${dateFilter === 'THIS_MONTH' ? 'bg-[#0071e3] text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-400'}`}>เดือนนี้</button>
-                    {availableMonthKeys.map((ymKey) => {
-                        const title = formatMonthTitle(ymKey);
-                        if (title.isThisMonth) return null;
-                        return (
-                            <button key={ymKey} onClick={() => setDateFilter(ymKey)} className={`px-3 py-1 rounded-full font-bold text-xs ${dateFilter === ymKey ? 'bg-[#0071e3] text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-400'}`}>
-                                {title.short}
-                            </button>
-                        );
-                    })}
-                </div>
+                {/* Modern Standard Period / Date Filter Control */}
+                <div className="flex flex-wrap items-center justify-between gap-2.5 border-t border-gray-150/50 dark:border-white/5 pt-2.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-gray-400 dark:text-gray-500 font-bold text-[11px] uppercase tracking-wider shrink-0 flex items-center gap-1.5 mr-0.5">
+                            <Calendar className="w-3.5 h-3.5 text-[#0071e3]" /> ช่วงเวลา:
+                        </span>
 
-                {isAnyFilterActive && (
-                    <div className="w-full px-1 pb-1 flex justify-center border-t border-gray-150/10 dark:border-white/5 pt-1.5">
-                        <button onClick={handleClearFilters} className="w-full md:w-auto px-4 py-2 text-xs font-bold rounded-xl bg-red-500/10 text-red-600 flex items-center gap-1.5"><X className="w-4 h-4" /> {t('claimsList.clearFilters')}</button>
+                        {/* Standard Quick Presets (Modern Segmented Bar) */}
+                        <div className="inline-flex bg-gray-100/90 dark:bg-white/[0.04] p-0.5 rounded-xl border border-gray-200/60 dark:border-white/[0.06] shadow-sm">
+                            {[
+                                { id: 'ALL', label: 'ทั้งหมด' },
+                                { id: 'THIS_MONTH', label: 'เดือนนี้' },
+                                { id: 'LAST_MONTH', label: 'เดือนที่แล้ว' },
+                                { id: '3_MONTHS', label: '3 เดือนล่าสุด' },
+                            ].map(preset => {
+                                const isActive = dateFilter === preset.id;
+                                return (
+                                    <button
+                                        key={preset.id}
+                                        type="button"
+                                        onClick={() => {
+                                            setDateFilter(preset.id);
+                                            setIsDatePickerOpen(false);
+                                        }}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                            isActive
+                                                ? 'bg-white dark:bg-[#252528] text-[#0071e3] dark:text-white shadow-sm font-bold'
+                                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/[0.02]'
+                                        }`}
+                                    >
+                                        {preset.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* Month / Custom Range Popover Trigger */}
+                        <div className="relative" ref={datePickerRef}>
+                            <div className="inline-flex items-center gap-1">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                                        dateFilter !== 'ALL' && dateFilter !== 'THIS_MONTH' && dateFilter !== 'LAST_MONTH' && dateFilter !== '3_MONTHS'
+                                            ? 'bg-[#0071e3]/10 text-[#0071e3] dark:text-blue-400 border-[#0071e3]/40 font-bold shadow-sm'
+                                            : 'bg-white dark:bg-[#1c1c1e] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 shadow-sm'
+                                    }`}
+                                >
+                                    <span>
+                                        {(() => {
+                                            if (dateFilter === 'CUSTOM') {
+                                                if (customStartDate && customEndDate) {
+                                                    const s = customStartDate.split('-');
+                                                    const e = customEndDate.split('-');
+                                                    return `${s[2]}/${s[1]} - ${e[2]}/${e[1]}`;
+                                                }
+                                                return 'กำหนดช่วงเวลาเอง';
+                                            }
+                                            if (dateFilter !== 'ALL' && dateFilter !== 'THIS_MONTH' && dateFilter !== 'LAST_MONTH' && dateFilter !== '3_MONTHS') {
+                                                const info = formatMonthTitle(dateFilter);
+                                                return info.full.replace('เดือนนี้ (', '').replace(')', '');
+                                            }
+                                            return 'เลือกเดือน / กำหนดเอง';
+                                        })()}
+                                    </span>
+                                    <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform ${isDatePickerOpen ? 'rotate-180 text-[#0071e3]' : ''}`} />
+                                </button>
+
+                                {dateFilter !== 'ALL' && dateFilter !== 'THIS_MONTH' && dateFilter !== 'LAST_MONTH' && dateFilter !== '3_MONTHS' && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setDateFilter('ALL')}
+                                        className="p-1 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                        title="กลับสู่ทั้งหมด"
+                                    >
+                                        <X className="w-3.5 h-3.5" />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Dropdown Popover */}
+                            {isDatePickerOpen && (
+                                <div className="absolute left-0 top-full mt-2 w-[320px] sm:w-[350px] bg-white dark:bg-[#1e1e22] rounded-2xl shadow-2xl border border-gray-200/80 dark:border-white/10 z-50 p-4 animate-fade-in backdrop-blur-xl">
+                                    {/* Tabs */}
+                                    <div className="flex bg-gray-100 dark:bg-white/[0.06] p-1 rounded-xl mb-3 text-xs font-bold">
+                                        <button
+                                            type="button"
+                                            onClick={() => setDatePickerTab('MONTHS')}
+                                            className={`flex-1 py-1.5 rounded-lg transition-all text-center ${
+                                                datePickerTab === 'MONTHS'
+                                                    ? 'bg-white dark:bg-[#2c2c30] text-[#0071e3] dark:text-white shadow-sm'
+                                                    : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'
+                                            }`}
+                                        >
+                                            เลือกตามเดือน
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setDatePickerTab('CUSTOM')}
+                                            className={`flex-1 py-1.5 rounded-lg transition-all text-center ${
+                                                datePickerTab === 'CUSTOM'
+                                                    ? 'bg-white dark:bg-[#2c2c30] text-[#0071e3] dark:text-white shadow-sm'
+                                                    : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'
+                                            }`}
+                                        >
+                                            กำหนดวันที่เอง
+                                        </button>
+                                    </div>
+
+                                    {/* Tab 1: Monthly Archive List */}
+                                    {datePickerTab === 'MONTHS' && (
+                                        <div className="space-y-2">
+                                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">
+                                                ประวัติเดือนที่มีข้อมูล
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-1.5 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                                                {availableMonthKeys.map(ymKey => {
+                                                    const title = formatMonthTitle(ymKey);
+                                                    const isSelected = dateFilter === ymKey;
+                                                    const count = monthItemCounts[ymKey] || 0;
+                                                    return (
+                                                        <button
+                                                            key={ymKey}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setDateFilter(ymKey);
+                                                                setIsDatePickerOpen(false);
+                                                            }}
+                                                            className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs text-left transition-all ${
+                                                                isSelected
+                                                                    ? 'bg-[#0071e3] text-white font-bold shadow-sm shadow-blue-500/20'
+                                                                    : 'bg-gray-50 dark:bg-white/[0.03] text-gray-700 dark:text-gray-300 hover:bg-blue-50/70 dark:hover:bg-blue-500/10 hover:text-[#0071e3] dark:hover:text-blue-400 border border-gray-100 dark:border-white/5'
+                                                            }`}
+                                                        >
+                                                            <span className="truncate">{title.full.replace('เดือนนี้ (', '').replace(')', '')}</span>
+                                                            <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
+                                                                isSelected
+                                                                    ? 'bg-white/20 text-white font-bold'
+                                                                    : 'bg-gray-200/60 dark:bg-white/10 text-gray-500 dark:text-gray-400'
+                                                            }`}>
+                                                                {count}
+                                                            </span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Tab 2: Custom Date Range */}
+                                    {datePickerTab === 'CUSTOM' && (
+                                        <div className="space-y-3">
+                                            <div className="space-y-2">
+                                                <div>
+                                                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1">
+                                                        ตั้งแต่วันที่
+                                                    </label>
+                                                    <input
+                                                        type="date"
+                                                        value={customStartDate}
+                                                        onChange={e => setCustomStartDate(e.target.value)}
+                                                        className="w-full bg-gray-50 dark:bg-[#16161a] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-gray-800 dark:text-white outline-none focus:border-[#0071e3]"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1">
+                                                        ถึงวันที่
+                                                    </label>
+                                                    <input
+                                                        type="date"
+                                                        value={customEndDate}
+                                                        onChange={e => setCustomEndDate(e.target.value)}
+                                                        className="w-full bg-gray-50 dark:bg-[#16161a] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-gray-800 dark:text-white outline-none focus:border-[#0071e3]"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2 pt-1">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setCustomStartDate('');
+                                                        setCustomEndDate('');
+                                                        setDateFilter('ALL');
+                                                        setIsDatePickerOpen(false);
+                                                    }}
+                                                    className="flex-1 py-2 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-white/[0.06] hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"
+                                                >
+                                                    รีเซ็ต
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    disabled={!customStartDate && !customEndDate}
+                                                    onClick={() => {
+                                                        setDateFilter('CUSTOM');
+                                                        setIsDatePickerOpen(false);
+                                                    }}
+                                                    className="flex-1 py-2 rounded-xl text-xs font-bold text-white bg-[#0071e3] hover:bg-[#0077ed] disabled:opacity-40 transition-colors shadow-sm"
+                                                >
+                                                    นำไปใช้
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                )}
+
+                    {/* Integrated Clear Filter Button */}
+                    {isAnyFilterActive && (
+                        <button
+                            onClick={handleClearFilters}
+                            className="px-3 py-1 text-xs font-bold rounded-xl bg-red-500/10 text-red-600 hover:bg-red-500/20 flex items-center gap-1.5 transition-colors shrink-0"
+                            title="ล้างตัวกรองทั้งหมด"
+                        >
+                            <X className="w-3.5 h-3.5" /> ล้างตัวกรอง
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* List Results Counter */}
