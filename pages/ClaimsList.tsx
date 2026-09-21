@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { MockDb, matchesSmartRef } from '../services/mockDb';
 import { RMA, RMAStatus, Team } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
-import { Search, Plus, ChevronRight, ChevronDown, Package, ChevronsUpDown, AlertTriangle, RefreshCw, CheckCircle2, X, Calendar, ChevronLeft, ChevronsLeft, ChevronsRight, Clock, Wrench, TrendingUp } from 'lucide-react';
+import { Search, Plus, ChevronRight, ChevronDown, Package, ChevronsUpDown, AlertTriangle, RefreshCw, CheckCircle2, X, Calendar, ChevronLeft, ChevronsLeft, ChevronsRight, Clock, Wrench, TrendingUp, Building2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ModernDateRangePickerModal, DateRangeSelection } from '../components/ModernDateRangePickerModal';
@@ -123,12 +123,29 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
             <div className="w-full pl-0 sm:pl-10">
                 <div className="mt-1 space-y-1.5 bg-gray-50/50 dark:bg-white/[0.01] border border-gray-100 dark:border-white/5 apple-card-inner rounded-[22px] p-3 md:p-3.5 max-w-full overflow-hidden">
                     {jobItems.slice(0, 3).map((item) => (
-                        <div key={item.id} className="grid grid-cols-1 md:grid-cols-[240px_1fr_auto] gap-2 md:gap-4 items-center text-[11px] border-b border-gray-100/50 dark:border-white/5 last:border-0 pb-2.5 last:pb-0 pt-2.5 first:pt-0">
-                            {/* Left: Product Info */}
-                            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                                <span className="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">{item.brand}</span>
-                                <span className="text-gray-500 dark:text-gray-400 truncate">{item.productModel}</span>
-                                <span className="text-gray-400 dark:text-gray-500 font-mono text-[10px]">({item.serialNumber})</span>
+                        <div key={item.id} className="grid grid-cols-1 md:grid-cols-[280px_1fr_auto] gap-2 md:gap-4 items-center text-[11px] border-b border-gray-100/50 dark:border-white/5 last:border-0 pb-2.5 last:pb-0 pt-2.5 first:pt-0">
+                            {/* Left: Product Info & Distributor */}
+                            <div className="flex flex-col min-w-0">
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    <span className="font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap">{item.brand}</span>
+                                    <span className="text-gray-600 dark:text-gray-300 truncate font-medium" title={item.productModel}>{item.productModel}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                    <span className="text-gray-400 dark:text-gray-500 font-mono text-[10px]">({item.serialNumber})</span>
+                                    {item.distributor && item.distributor.trim() !== '' && item.distributor !== 'Pending Staff Input' ? (
+                                        <span 
+                                            className="inline-flex items-center gap-1 text-[9.5px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-white/10 font-semibold shrink-0" 
+                                            title={`ศูนย์เคลม / ผู้นำเข้า: ${item.distributor}`}
+                                        >
+                                            <Building2 className="w-2.5 h-2.5 text-[#0071e3] shrink-0" />
+                                            <span>{item.distributor}</span>
+                                        </span>
+                                    ) : (
+                                        <span className="text-[9.5px] text-gray-400/80 dark:text-gray-500 italic">
+                                            (ไม่ระบุศูนย์)
+                                        </span>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Middle: Symptoms, Root Cause, & Resolution Action */}
@@ -400,6 +417,7 @@ export const ClaimsList: React.FC = () => {
                 (c.customerEmail && c.customerEmail.toLowerCase().includes(term)) ||
                 (c.productModel && c.productModel.toLowerCase().includes(term)) ||
                 (c.brand && c.brand.toLowerCase().includes(term)) ||
+                (c.distributor && c.distributor.toLowerCase().includes(term)) ||
                 (c.issueDescription && c.issueDescription.toLowerCase().includes(term)) ||
                 (c.resolution?.rootCause && c.resolution.rootCause.toLowerCase().includes(term)) ||
                 (c.resolution?.actionTaken && c.resolution.actionTaken.toLowerCase().includes(term)) ||
