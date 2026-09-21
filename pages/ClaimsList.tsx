@@ -672,10 +672,10 @@ export const ClaimsList: React.FC = () => {
 
             {/* Top Workflow Status & Progress Pipeline (Unified Cupertino Container) */}
             <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[34px] md:rounded-[42px] border border-gray-200/70 dark:border-white/[0.08] p-4 md:p-5 shadow-sm mb-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6 lg:gap-8 mb-4">
                     {/* All items */}
-                    <div className="flex items-center gap-3.5 p-3.5 md:p-4 rounded-[22px] md:rounded-[26px] bg-gray-50/80 dark:bg-white/[0.03] border border-gray-200/60 dark:border-white/[0.06] transition-all">
-                        <div className="w-11 h-11 apple-card-sm rounded-[16px] bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                    <div className="flex items-center gap-3.5 p-3 md:px-4">
+                        <div className="w-10 h-10 md:w-11 md:h-11 apple-card-sm rounded-[16px] bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                             <Package className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
@@ -691,13 +691,13 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'PENDING' ? 'ALL' : 'PENDING')}
-                        className={`flex items-center gap-3.5 p-3.5 md:p-4 text-left transition-all rounded-[22px] md:rounded-[26px] border active:scale-[0.98] ${
+                        className={`flex items-center gap-3.5 p-3 md:px-4 text-left transition-all apple-card-inner rounded-[22px] active:scale-[0.98] ${
                             statusFilter === 'PENDING'
-                                ? 'bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-400 font-bold ring-2 ring-amber-500/20 shadow-sm'
-                                : 'bg-gray-50/80 dark:bg-white/[0.03] border-gray-200/60 dark:border-white/[0.06] hover:bg-gray-100/80 dark:hover:bg-white/[0.06] hover:border-gray-300/80 dark:hover:border-white/15'
+                                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold ring-1 ring-amber-500/30'
+                                : 'hover:bg-gray-100/70 dark:hover:bg-white/[0.04]'
                         }`}
                     >
-                        <div className={`w-11 h-11 apple-card-sm rounded-[16px] flex items-center justify-center shrink-0 transition-colors ${
+                        <div className={`w-10 h-10 md:w-11 md:h-11 apple-card-sm rounded-[16px] flex items-center justify-center shrink-0 transition-colors ${
                             statusFilter === 'PENDING' ? 'bg-amber-500 text-white shadow-sm' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
                         }`}>
                             <Clock className="w-5 h-5" />
@@ -714,13 +714,13 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'IN_PROGRESS' ? 'ALL' : 'IN_PROGRESS')}
-                        className={`flex items-center gap-3.5 p-3.5 md:p-4 text-left transition-all rounded-[22px] md:rounded-[26px] border active:scale-[0.98] ${
+                        className={`flex items-center gap-3.5 p-3 md:px-4 text-left transition-all apple-card-inner rounded-[22px] active:scale-[0.98] ${
                             statusFilter === 'IN_PROGRESS'
-                                ? 'bg-blue-500/15 border-blue-500/40 text-blue-600 dark:text-blue-400 font-bold ring-2 ring-blue-500/20 shadow-sm'
-                                : 'bg-gray-50/80 dark:bg-white/[0.03] border-gray-200/60 dark:border-white/[0.06] hover:bg-gray-100/80 dark:hover:bg-white/[0.06] hover:border-gray-300/80 dark:hover:border-white/15'
+                                ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold ring-1 ring-blue-500/30'
+                                : 'hover:bg-gray-100/70 dark:hover:bg-white/[0.04]'
                         }`}
                     >
-                        <div className={`w-11 h-11 apple-card-sm rounded-[16px] flex items-center justify-center shrink-0 transition-colors ${
+                        <div className={`w-10 h-10 md:w-11 md:h-11 apple-card-sm rounded-[16px] flex items-center justify-center shrink-0 transition-colors ${
                             statusFilter === 'IN_PROGRESS' ? 'bg-[#0071e3] text-white shadow-sm' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
                         }`}>
                             <Wrench className="w-5 h-5" />
@@ -737,13 +737,13 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'DONE' ? 'ALL' : 'DONE')}
-                        className={`flex items-center gap-3.5 p-3.5 md:p-4 text-left transition-all rounded-[22px] md:rounded-[26px] border active:scale-[0.98] ${
+                        className={`flex items-center gap-3.5 p-3 md:px-4 text-left transition-all apple-card-inner rounded-[22px] active:scale-[0.98] ${
                             statusFilter === 'DONE'
-                                ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 font-bold ring-2 ring-emerald-500/20 shadow-sm'
-                                : 'bg-gray-50/80 dark:bg-white/[0.03] border-gray-200/60 dark:border-white/[0.06] hover:bg-gray-100/80 dark:hover:bg-white/[0.06] hover:border-gray-300/80 dark:hover:border-white/15'
+                                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold ring-1 ring-emerald-500/30'
+                                : 'hover:bg-gray-100/70 dark:hover:bg-white/[0.04]'
                         }`}
                     >
-                        <div className={`w-11 h-11 apple-card-sm rounded-[16px] flex items-center justify-center shrink-0 transition-colors ${
+                        <div className={`w-10 h-10 md:w-11 md:h-11 apple-card-sm rounded-[16px] flex items-center justify-center shrink-0 transition-colors ${
                             statusFilter === 'DONE' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                         }`}>
                             <CheckCircle2 className="w-5 h-5" />
