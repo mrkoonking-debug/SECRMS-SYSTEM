@@ -982,8 +982,9 @@ export const ClaimsList: React.FC = () => {
             </div>
 
             <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[30px] md:rounded-[36px] p-3 md:p-4.5 shadow-sm mb-4 md:mb-6 space-y-2.5">
-                <div className="flex flex-col xl:flex-row items-center justify-between gap-2.5">
-                    <div className="relative w-full xl:flex-1">
+                <div className="flex items-center gap-2">
+                    {/* Search Input */}
+                    <div className="relative flex-1">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                         <input 
                             type="text" 
@@ -1002,23 +1003,27 @@ export const ClaimsList: React.FC = () => {
                             </button>
                         )}
                     </div>
-                    <div className="flex items-center gap-2">
-                        <button onClick={handleExpandAll} className="p-2.5 apple-card-sm rounded-[16px] text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06] border border-transparent hover:border-gray-200/50" title="ขยาย/หุบทั้งหมด"><ChevronsUpDown className="w-4 h-4" /></button>
-                        <div className="bg-gray-100 dark:bg-[#2c2c2e]/60 border border-gray-200/50 p-1 rounded-full grid grid-cols-4 relative w-[310px]">
-                            <div 
-                                className={`absolute top-1 bottom-1 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ${getStatusColorClass(statusFilter)}`} 
-                                style={{ 
-                                    width: 'calc((100% - 8px) / 4)', 
-                                    left: `calc(4px + ${['IN_PROGRESS', 'PENDING', 'DONE', 'ALL'].indexOf(statusFilter)} * ((100% - 8px) / 4))` 
-                                }} 
-                            />
-                            {(['IN_PROGRESS', 'PENDING', 'DONE', 'ALL'] as const).map((s) => (
-                                <button key={s} onClick={() => setStatusFilter(s as any)} className={`relative z-10 py-1.5 text-[11px] font-bold rounded-full transition-colors ${statusFilter === s ? 'text-white' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'}`}>
-                                    {language === 'en' ? (s === 'ALL' ? 'All' : s === 'PENDING' ? 'Recv' : s === 'IN_PROGRESS' ? 'Prog' : 'Done') : (s === 'ALL' ? 'ทั้งหมด' : s === 'PENDING' ? 'รับเรื่อง' : s === 'IN_PROGRESS' ? 'ดำเนินการ' : 'เสร็จ')}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+
+                    {/* Active status filter chip — appears only when a status is selected */}
+                    {statusFilter !== 'ALL' && (
+                        <button
+                            onClick={() => setStatusFilter('ALL')}
+                            className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-bold transition-all ${
+                                statusFilter === 'PENDING'
+                                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                    : statusFilter === 'IN_PROGRESS'
+                                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                            }`}
+                            title="ล้างตัวกรองสถานะ"
+                        >
+                            {statusFilter === 'PENDING' ? 'รอรับเรื่อง' : statusFilter === 'IN_PROGRESS' ? 'กำลังดำเนินการ' : 'เสร็จสิ้น'}
+                            <X className="w-3 h-3 opacity-60" />
+                        </button>
+                    )}
+
+                    {/* Expand/Collapse all month groups */}
+                    <button onClick={handleExpandAll} className="shrink-0 p-2.5 apple-card-sm rounded-[16px] text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06]" title="ขยาย/หุบทั้งหมด"><ChevronsUpDown className="w-4 h-4" /></button>
                 </div>
 
                 {/* Modern Standard Period / Date Filter Control */}
