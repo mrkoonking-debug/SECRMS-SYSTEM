@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { MockDb, matchesSmartRef } from '../services/mockDb';
 import { RMA, RMAStatus, Team } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
-import { Search, Plus, ChevronRight, ChevronDown, Package, ChevronsUpDown, AlertTriangle, RefreshCw, CheckCircle2, X, Calendar, ChevronLeft, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Search, Plus, ChevronRight, ChevronDown, Package, ChevronsUpDown, AlertTriangle, RefreshCw, CheckCircle2, X, Calendar, ChevronLeft, ChevronsLeft, ChevronsRight, Clock, Wrench, TrendingUp } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ModernDateRangePickerModal, DateRangeSelection } from '../components/ModernDateRangePickerModal';
@@ -580,8 +580,51 @@ export const ClaimsList: React.FC = () => {
         return finalGroups;
     }, [paginatedJobsList]);
 
-    const getTeamCount = (team: Team) => rmas.filter(c => c.team === team && !DONE_STATUSES.includes(c.status)).length;
-    const getGroupCCount = () => rmas.filter(c => [Team.TEAM_C, Team.TEAM_E, Team.TEAM_G].includes(c.team) && !DONE_STATUSES.includes(c.status)).length;
+    // Comprehensive Workflow & Team Statistics
+    const dashboardStats = useMemo(() => {
+        const total = rmas.length;
+        const totalJobs = new Set(rmas.map(r => r.groupRequestId || r.id)).size;
+
+        const pendingCount = rmas.filter(c => c.status === RMAStatus.PENDING).length;
+        const inProgressCount = rmas.filter(c => !DONE_STATUSES.includes(c.status) && c.status !== RMAStatus.PENDING).length;
+        const activeCount = rmas.filter(c => !DONE_STATUSES.includes(c.status)).length;
+        const doneCount = rmas.filter(c => DONE_STATUSES.includes(c.status)).length;
+        const completionRate = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+
+        const getTeamStats = (teams: Team[]) => {
+            const teamRMAs = rmas.filter(c => teams.includes(c.team));
+            const teamTotal = teamRMAs.length;
+            const teamActive = teamRMAs.filter(c => !DONE_STATUSES.includes(c.status)).length;
+            const teamDone = teamTotal - teamActive;
+            const teamRate = teamTotal > 0 ? Math.round((teamDone / teamTotal) * 100) : 0;
+            return { total: teamTotal, active: teamActive, done: teamDone, rate: teamRate };
+        };
+
+        const hik = getTeamStats([Team.HIKVISION]);
+        const dahua = getTeamStats([Team.DAHUA]);
+        const groupC = getTeamStats([Team.TEAM_C, Team.TEAM_E, Team.TEAM_G]);
+        const teamC = getTeamStats([Team.TEAM_C]);
+        const teamE = getTeamStats([Team.TEAM_E]);
+        const teamG = getTeamStats([Team.TEAM_G]);
+
+        return {
+            total,
+            totalJobs,
+            pendingCount,
+            inProgressCount,
+            activeCount,
+            doneCount,
+            completionRate,
+            all: { total, active: activeCount, done: doneCount, rate: completionRate },
+            hik,
+            dahua,
+            groupC,
+            teamC,
+            teamE,
+            teamG,
+        };
+    }, [rmas]);
+
     const handleGroupCClick = () => { setIsTeamCExpanded(!isTeamCExpanded); setTeamFilter('GROUP_C'); };
     const handleClearFilters = () => {
         setSearch(''); setDebouncedSearch(''); setStatusFilter('ALL'); setTeamFilter('ALL'); setDateFilter('ALL'); setCustomStartDate(''); setCustomEndDate(''); setIsTeamCExpanded(false);
@@ -609,18 +652,310 @@ export const ClaimsList: React.FC = () => {
                 <Link to="/admin/submit" className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-4 md:px-5 py-2 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-1.5 shadow-sm transition-all whitespace-nowrap hover:shadow-md active:scale-[0.97]"><Plus className="h-4 w-4" /> <span className="hidden md:inline">{t('nav.newRequest')}</span><span className="md:hidden">เพิ่ม</span></Link>
             </div>
 
+            {/* Top Workflow Status & Progress Pipeline */}
+            <div className="bg-white dark:bg-[#16161a] rounded-2xl md:rounded-[20px] border border-gray-200/60 dark:border-white/[0.08] p-3 md:p-4 shadow-sm mb-3 md:mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 md:gap-3 mb-3">
+                    {/* All items */}
+                    <div className="flex items-center gap-3 p-2.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
+                        <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                            <Package className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <div className="text-[10px] font-bold uppercase text-gray-400 dark:text-gray-500 tracking-wider">งานทั้งหมด</div>
+                            <div className="text-base md:text-xl font-extrabold text-[#1d1d1f] dark:text-white truncate">
+                                {dashboardStats.totalJobs} <span className="text-xs font-semibold text-gray-400 font-sans">ใบงาน</span>
+                                <span className="text-[10px] text-gray-400 font-normal ml-1">({dashboardStats.total} ชิ้น)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Pending */}
+                    <button 
+                        type="button"
+                        onClick={() => setStatusFilter(statusFilter === 'PENDING' ? 'ALL' : 'PENDING')}
+                        className={`flex items-center gap-3 p-2.5 rounded-xl text-left transition-all border ${
+                            statusFilter === 'PENDING'
+                                ? 'bg-amber-500/15 border-amber-500/40 ring-1 ring-amber-500/30'
+                                : 'bg-gray-50/80 dark:bg-white/[0.03] border-gray-100 dark:border-white/5 hover:border-amber-400/40'
+                        }`}
+                    >
+                        <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                            <Clock className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <div className="text-[10px] font-bold uppercase text-amber-600 dark:text-amber-400 tracking-wider">รอรับเรื่อง</div>
+                            <div className="text-base md:text-xl font-extrabold text-[#1d1d1f] dark:text-white">
+                                {dashboardStats.pendingCount} <span className="text-xs font-semibold text-gray-400 font-sans">รายการ</span>
+                            </div>
+                        </div>
+                    </button>
+
+                    {/* In Progress */}
+                    <button 
+                        type="button"
+                        onClick={() => setStatusFilter(statusFilter === 'IN_PROGRESS' ? 'ALL' : 'IN_PROGRESS')}
+                        className={`flex items-center gap-3 p-2.5 rounded-xl text-left transition-all border ${
+                            statusFilter === 'IN_PROGRESS'
+                                ? 'bg-blue-500/15 border-blue-500/40 ring-1 ring-blue-500/30'
+                                : 'bg-gray-50/80 dark:bg-white/[0.03] border-gray-100 dark:border-white/5 hover:border-blue-400/40'
+                        }`}
+                    >
+                        <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                            <Wrench className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <div className="text-[10px] font-bold uppercase text-blue-600 dark:text-blue-400 tracking-wider">กำลังดำเนินการ</div>
+                            <div className="text-base md:text-xl font-extrabold text-[#1d1d1f] dark:text-white">
+                                {dashboardStats.inProgressCount} <span className="text-xs font-semibold text-gray-400 font-sans">รายการ</span>
+                            </div>
+                        </div>
+                    </button>
+
+                    {/* Done */}
+                    <button 
+                        type="button"
+                        onClick={() => setStatusFilter(statusFilter === 'DONE' ? 'ALL' : 'DONE')}
+                        className={`flex items-center gap-3 p-2.5 rounded-xl text-left transition-all border ${
+                            statusFilter === 'DONE'
+                                ? 'bg-emerald-500/15 border-emerald-500/40 ring-1 ring-emerald-500/30'
+                                : 'bg-gray-50/80 dark:bg-white/[0.03] border-gray-100 dark:border-white/5 hover:border-emerald-400/40'
+                        }`}
+                    >
+                        <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                            <CheckCircle2 className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <div className="text-[10px] font-bold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">เสร็จสิ้นแล้ว</div>
+                            <div className="text-base md:text-xl font-extrabold text-[#1d1d1f] dark:text-white">
+                                {dashboardStats.doneCount} <span className="text-xs font-semibold text-gray-400 font-sans">รายการ</span>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+
+                {/* Progress Bar & Completion Metric */}
+                <div className="pt-2.5 border-t border-gray-150/60 dark:border-white/5 flex flex-col sm:flex-row items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <div className="text-[11px] font-bold text-gray-500 dark:text-gray-400 whitespace-nowrap flex items-center gap-1.5">
+                            <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                            อัตราการปิดงานสำเร็จ:
+                        </div>
+                        <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
+                            {dashboardStats.completionRate}%
+                        </span>
+                        <span className="text-[10px] text-gray-400 hidden md:inline">
+                            ({dashboardStats.doneCount} จาก {dashboardStats.total} รายการ)
+                        </span>
+                    </div>
+
+                    {/* Progress track */}
+                    <div className="w-full sm:w-64 h-2 bg-gray-100 dark:bg-white/[0.06] rounded-full overflow-hidden flex">
+                        <div 
+                            className="bg-gradient-to-r from-blue-500 via-teal-500 to-emerald-500 h-full rounded-full transition-all duration-500"
+                            style={{ width: `${dashboardStats.completionRate}%` }}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Team Cards Grid */}
             <div className="mb-4 md:mb-6 space-y-2.5">
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:flex gap-2.5 md:gap-3 pb-1">
-                    <button onClick={() => { setTeamFilter('ALL'); setIsTeamCExpanded(false); }} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${teamFilter === 'ALL' ? 'bg-[#0071e3] text-white shadow-sm border border-[#0071e3]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-blue-300 dark:hover:border-blue-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 truncate ${teamFilter === 'ALL' ? 'text-blue-100' : 'text-gray-400 dark:text-gray-500'}`}>{t('claimsList.active')}</div><div className={`text-base md:text-2xl font-extrabold ${teamFilter === 'ALL' ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{rmas.filter(c => !DONE_STATUSES.includes(c.status)).length}</div></button>
-                    <button onClick={() => { setTeamFilter(Team.HIKVISION); setIsTeamCExpanded(false); }} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${teamFilter === Team.HIKVISION ? 'bg-[#e53e3e] text-white shadow-sm border border-[#e53e3e]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-red-300 dark:hover:border-red-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${teamFilter === Team.HIKVISION ? 'text-red-100' : 'text-red-500'}`}>HIK</div><div className={`text-base md:text-2xl font-extrabold ${teamFilter === Team.HIKVISION ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{getTeamCount(Team.HIKVISION)}</div></button>
-                    <button onClick={() => { setTeamFilter(Team.DAHUA); setIsTeamCExpanded(false); }} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${teamFilter === Team.DAHUA ? 'bg-[#dd6b20] text-white shadow-sm border border-[#dd6b20]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-orange-300 dark:hover:border-orange-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${teamFilter === Team.DAHUA ? 'text-orange-100' : 'text-orange-500'}`}>DAHUA</div><div className={`text-base md:text-2xl font-extrabold ${teamFilter === Team.DAHUA ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{getTeamCount(Team.DAHUA)}</div></button>
-                    <button onClick={handleGroupCClick} className={`rounded-2xl md:rounded-[20px] px-3.5 py-3 md:px-5 md:py-4 text-left transition-all duration-200 md:flex-1 ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'bg-[#805ad5] text-white shadow-sm border border-[#805ad5]/30' : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-violet-300 dark:hover:border-violet-500/30 active:scale-[0.97]'}`}><div className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-violet-100' : 'text-violet-500'}`}>Team C</div><div className={`text-base md:text-2xl font-extrabold ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>{getGroupCCount()}</div></button>
+                    {/* All Teams Card */}
+                    <button
+                        onClick={() => { setTeamFilter('ALL'); setIsTeamCExpanded(false); }}
+                        className={`rounded-2xl md:rounded-[20px] p-3.5 md:p-4 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
+                            teamFilter === 'ALL'
+                                ? 'bg-gradient-to-br from-[#0071e3] to-[#005bb5] text-white shadow-md shadow-blue-500/20 border border-blue-400/40'
+                                : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-blue-300 dark:hover:border-blue-500/30 active:scale-[0.98]'
+                        }`}
+                    >
+                        <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <span className={`text-[10px] font-extrabold uppercase tracking-wider ${teamFilter === 'ALL' ? 'text-blue-100' : 'text-gray-400 dark:text-gray-500'}`}>
+                                    {t('claimsList.active')}
+                                </span>
+                                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${teamFilter === 'ALL' ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'}`}>
+                                    เสร็จ {dashboardStats.all.rate}%
+                                </span>
+                            </div>
+                            <div className="flex items-baseline gap-1.5">
+                                <span className={`text-xl md:text-3xl font-extrabold ${teamFilter === 'ALL' ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>
+                                    {dashboardStats.all.active}
+                                </span>
+                                <span className={`text-xs font-semibold ${teamFilter === 'ALL' ? 'text-blue-100/80' : 'text-gray-400'}`}>
+                                    ค้างอยู่
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="mt-2.5 pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[10px]">
+                            <span className={teamFilter === 'ALL' ? 'text-blue-100' : 'text-gray-400'}>
+                                ทั้งหมด {dashboardStats.all.total} งาน
+                            </span>
+                            <span className={teamFilter === 'ALL' ? 'text-blue-100' : 'text-emerald-600 dark:text-emerald-400 font-semibold'}>
+                                เสร็จ {dashboardStats.all.done}
+                            </span>
+                        </div>
+                    </button>
+
+                    {/* Team HIK Card */}
+                    <button
+                        onClick={() => { setTeamFilter(Team.HIKVISION); setIsTeamCExpanded(false); }}
+                        className={`rounded-2xl md:rounded-[20px] p-3.5 md:p-4 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
+                            teamFilter === Team.HIKVISION
+                                ? 'bg-gradient-to-br from-[#e53e3e] to-[#c53030] text-white shadow-md shadow-red-500/20 border border-red-400/40'
+                                : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-red-300 dark:hover:border-red-500/30 active:scale-[0.98]'
+                        }`}
+                    >
+                        <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <span className={`text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 ${teamFilter === Team.HIKVISION ? 'text-red-100' : 'text-red-500'}`}>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span> ทีม A (HIK)
+                                </span>
+                                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${teamFilter === Team.HIKVISION ? 'bg-white/20 text-white' : 'bg-red-500/10 text-red-600 dark:text-red-400'}`}>
+                                    เสร็จ {dashboardStats.hik.rate}%
+                                </span>
+                            </div>
+                            <div className="flex items-baseline gap-1.5">
+                                <span className={`text-xl md:text-3xl font-extrabold ${teamFilter === Team.HIKVISION ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>
+                                    {dashboardStats.hik.active}
+                                </span>
+                                <span className={`text-xs font-semibold ${teamFilter === Team.HIKVISION ? 'text-red-100/80' : 'text-gray-400'}`}>
+                                    ค้างอยู่
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="mt-2.5 pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[10px]">
+                            <span className={teamFilter === Team.HIKVISION ? 'text-red-100' : 'text-gray-400'}>
+                                ทั้งหมด {dashboardStats.hik.total} งาน
+                            </span>
+                            <span className={teamFilter === Team.HIKVISION ? 'text-red-100' : 'text-emerald-600 dark:text-emerald-400 font-semibold'}>
+                                เสร็จ {dashboardStats.hik.done}
+                            </span>
+                        </div>
+                    </button>
+
+                    {/* Team DAHUA Card */}
+                    <button
+                        onClick={() => { setTeamFilter(Team.DAHUA); setIsTeamCExpanded(false); }}
+                        className={`rounded-2xl md:rounded-[20px] p-3.5 md:p-4 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
+                            teamFilter === Team.DAHUA
+                                ? 'bg-gradient-to-br from-[#dd6b20] to-[#c05621] text-white shadow-md shadow-orange-500/20 border border-orange-400/40'
+                                : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-orange-300 dark:hover:border-orange-500/30 active:scale-[0.98]'
+                        }`}
+                    >
+                        <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <span className={`text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 ${teamFilter === Team.DAHUA ? 'text-orange-100' : 'text-orange-500'}`}>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block"></span> ทีม B (DAHUA)
+                                </span>
+                                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${teamFilter === Team.DAHUA ? 'bg-white/20 text-white' : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'}`}>
+                                    เสร็จ {dashboardStats.dahua.rate}%
+                                </span>
+                            </div>
+                            <div className="flex items-baseline gap-1.5">
+                                <span className={`text-xl md:text-3xl font-extrabold ${teamFilter === Team.DAHUA ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>
+                                    {dashboardStats.dahua.active}
+                                </span>
+                                <span className={`text-xs font-semibold ${teamFilter === Team.DAHUA ? 'text-orange-100/80' : 'text-gray-400'}`}>
+                                    ค้างอยู่
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="mt-2.5 pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[10px]">
+                            <span className={teamFilter === Team.DAHUA ? 'text-orange-100' : 'text-gray-400'}>
+                                ทั้งหมด {dashboardStats.dahua.total} งาน
+                            </span>
+                            <span className={teamFilter === Team.DAHUA ? 'text-orange-100' : 'text-emerald-600 dark:text-emerald-400 font-semibold'}>
+                                เสร็จ {dashboardStats.dahua.done}
+                            </span>
+                        </div>
+                    </button>
+
+                    {/* Team C Group Card */}
+                    <button
+                        onClick={handleGroupCClick}
+                        className={`rounded-2xl md:rounded-[20px] p-3.5 md:p-4 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
+                            isTeamCExpanded || teamFilter === 'GROUP_C'
+                                ? 'bg-gradient-to-br from-[#805ad5] to-[#6b46c1] text-white shadow-md shadow-violet-500/20 border border-violet-400/40'
+                                : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-violet-300 dark:hover:border-violet-500/30 active:scale-[0.98]'
+                        }`}
+                    >
+                        <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <span className={`text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-violet-100' : 'text-violet-500'}`}>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-violet-500 inline-block"></span> ทีม C (รวม)
+                                </span>
+                                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'bg-white/20 text-white' : 'bg-violet-500/10 text-violet-600 dark:text-violet-400'}`}>
+                                    เสร็จ {dashboardStats.groupC.rate}%
+                                </span>
+                            </div>
+                            <div className="flex items-baseline gap-1.5">
+                                <span className={`text-xl md:text-3xl font-extrabold ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>
+                                    {dashboardStats.groupC.active}
+                                </span>
+                                <span className={`text-xs font-semibold ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-violet-100/80' : 'text-gray-400'}`}>
+                                    ค้างอยู่
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="mt-2.5 pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[10px]">
+                            <span className={isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-violet-100' : 'text-gray-400'}>
+                                ทั้งหมด {dashboardStats.groupC.total} งาน
+                            </span>
+                            <span className={isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-violet-100' : 'text-emerald-600 dark:text-emerald-400 font-semibold'}>
+                                เสร็จ {dashboardStats.groupC.done}
+                            </span>
+                        </div>
+                    </button>
                 </div>
+
+                {/* Expanded Sub-teams of Team C */}
                 {isTeamCExpanded && (
                     <div className="flex gap-2 overflow-x-auto scrollbar-hide animate-fade-in pl-2 border-l-2 border-violet-500/30">
-                        <button onClick={() => setTeamFilter(Team.TEAM_C)} className={`rounded-xl px-4 py-2 border whitespace-nowrap text-sm transition-all ${teamFilter === Team.TEAM_C ? 'border-cyan-400 text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10' : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] shadow-sm'} dark:text-white`}>Network ({getTeamCount(Team.TEAM_C)})</button>
-                        <button onClick={() => setTeamFilter(Team.TEAM_E)} className={`rounded-xl px-4 py-2 border whitespace-nowrap text-sm transition-all ${teamFilter === Team.TEAM_E ? 'border-yellow-400 text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-500/10' : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] shadow-sm'} dark:text-white`}>UPS ({getTeamCount(Team.TEAM_E)})</button>
-                        <button onClick={() => setTeamFilter(Team.TEAM_G)} className={`rounded-xl px-4 py-2 border whitespace-nowrap text-sm transition-all ${teamFilter === Team.TEAM_G ? 'border-fuchsia-400 text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-500/10' : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] shadow-sm'} dark:text-white`}>Online ({getTeamCount(Team.TEAM_G)})</button>
+                        <button 
+                            onClick={() => setTeamFilter(Team.TEAM_C)} 
+                            className={`rounded-xl px-3.5 py-2 border whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
+                                teamFilter === Team.TEAM_C 
+                                    ? 'border-cyan-400 text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10 font-bold' 
+                                    : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] shadow-sm text-gray-700 dark:text-gray-300'
+                            }`}
+                        >
+                            <span>🌐 Network</span>
+                            <span className="font-mono text-[10px] bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 px-1.5 py-0.5 rounded font-bold">
+                                ค้าง {dashboardStats.teamC.active} / รวม {dashboardStats.teamC.total}
+                            </span>
+                        </button>
+                        <button 
+                            onClick={() => setTeamFilter(Team.TEAM_E)} 
+                            className={`rounded-xl px-3.5 py-2 border whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
+                                teamFilter === Team.TEAM_E 
+                                    ? 'border-amber-400 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 font-bold' 
+                                    : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] shadow-sm text-gray-700 dark:text-gray-300'
+                            }`}
+                        >
+                            <span>🔋 UPS</span>
+                            <span className="font-mono text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold">
+                                ค้าง {dashboardStats.teamE.active} / รวม {dashboardStats.teamE.total}
+                            </span>
+                        </button>
+                        <button 
+                            onClick={() => setTeamFilter(Team.TEAM_G)} 
+                            className={`rounded-xl px-3.5 py-2 border whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
+                                teamFilter === Team.TEAM_G 
+                                    ? 'border-fuchsia-400 text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-500/10 font-bold' 
+                                    : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] shadow-sm text-gray-700 dark:text-gray-300'
+                            }`}
+                        >
+                            <span>🛒 Online</span>
+                            <span className="font-mono text-[10px] bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 px-1.5 py-0.5 rounded font-bold">
+                                ค้าง {dashboardStats.teamG.active} / รวม {dashboardStats.teamG.total}
+                            </span>
+                        </button>
                     </div>
                 )}
             </div>
