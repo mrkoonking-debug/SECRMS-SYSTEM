@@ -5,41 +5,18 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
-import { Calendar, Loader2, TrendingUp, CheckCircle2, Clock, AlertTriangle, ChevronDown, ChevronRight, Package, Wrench } from 'lucide-react';
+import { Calendar, Loader2, TrendingUp, CheckCircle2, Clock, AlertTriangle, ChevronDown, ChevronRight, Package, Wrench, X } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { RMA, RMAStatus } from '../types';
-
-type DateRange = 'week' | 'month' | '3months' | 'year' | 'all';
-
-const DATE_RANGE_LABELS: Record<DateRange, string> = {
-  week: 'สัปดาห์นี้',
-  month: 'เดือนนี้',
-  '3months': '3 เดือนล่าสุด',
-  year: 'ปีนี้',
-  all: 'ทั้งหมด',
-};
-
-const getStartDate = (range: DateRange): Date | null => {
-  const now = new Date();
-  switch (range) {
-    case 'week': {
-      const d = new Date(now);
-      d.setDate(d.getDate() - d.getDay()); // Start of week (Sunday)
-      d.setHours(0, 0, 0, 0);
-      return d;
-    }
-    case 'month': return new Date(now.getFullYear(), now.getMonth(), 1);
-    case '3months': return new Date(now.getFullYear(), now.getMonth() - 2, 1);
-    case 'year': return new Date(now.getFullYear(), 0, 1);
-    case 'all': return null;
-  }
-};
+import { ModernDateRangePickerModal, DateRangeSelection } from '../components/ModernDateRangePickerModal';
 
 export const ReportsPage: React.FC = () => {
   const [allRMAs, setAllRMAs] = useState<RMA[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState<DateRange>('all');
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
+  const [showDatePickerModal, setShowDatePickerModal] = useState(false);
   const [expandedBrand, setExpandedBrand] = useState<string | null>(null);
   const { t } = useLanguage();
 
@@ -52,19 +29,147 @@ export const ReportsPage: React.FC = () => {
     fetchData();
   }, []);
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handler = () => setShowDropdown(false);
-    if (showDropdown) document.addEventListener('click', handler);
-    return () => document.removeEventListener('click', handler);
-  }, [showDropdown]);
+  const availableMonthKeys = useMemo(() => {
+    const monthSet = new Set<string>();
+    const now = new Date();
+    const currentYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    monthSet.add(currentYM);
+
+    allRMAs.forEach(c => {
+      if (!c || !c.createdAt) return;
+      const d = new Date(c.createdAt);
+      if (!isNaN(d.getTime())) {
+        const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        monthSet.add(ym);
+      }
+    });
+
+    return Array.from(monthSet).sort().reverse();
+  }, [allRMAs]);
+
+  const monthItemCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allRMAs.forEach(c => {
+      if (!c || !c.createdAt) return;
+      const d = new Date(c.createdAt);
+      if (!isNaN(d.getTime())) {
+        const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        counts[ym] = (counts[ym] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [allRMAs]);
+
+  const activePeriodLabel = useMemo(() => {
+    if ((dateFilter === 'all' || dateFilter === 'ALL') && !customStartDate && !customEndDate) {
+      return 'ทั้งหมด (ทุกช่วงเวลา)';
+    }
+    if (dateFilter === 'THIS_MONTH' || dateFilter === 'month') {
+      const now = new Date();
+      const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+      return `เดือนนี้ (${thaiMonths[now.getMonth()]} ${now.getFullYear() + 543})`;
+    }
+    if (dateFilter === 'LAST_MONTH') {
+      const now = new Date();
+      const d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+      return `เดือนที่แล้ว (${thaiMonths[d.getMonth()]} ${d.getFullYear() + 543})`;
+    }
+    if (dateFilter === '3_MONTHS' || dateFilter === '3months') return '3 เดือนล่าสุด';
+    if (dateFilter === '7_DAYS' || dateFilter === 'week') return '7 วันล่าสุด';
+    if (dateFilter === 'TODAY') return 'วันนี้';
+    if (dateFilter === 'THIS_YEAR' || dateFilter === 'year') return `ปีนี้ (พ.ศ. ${new Date().getFullYear() + 543})`;
+
+    if (customStartDate && customEndDate) {
+      const formatD = (str: string) => {
+        const [y, m, d] = str.split('-').map(Number);
+        const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+        return `${d} ${months[m - 1]} ${y + 543}`;
+      };
+      if (customStartDate === customEndDate) return formatD(customStartDate);
+      return `${formatD(customStartDate)} — ${formatD(customEndDate)}`;
+    }
+    if (customStartDate) {
+      const [y, m, d] = customStartDate.split('-').map(Number);
+      const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+      return `ตั้งแต่วันที่ ${d} ${months[m - 1]} ${y + 543}`;
+    }
+
+    if (dateFilter.match(/^\d{4}-\d{2}$/)) {
+      const [yStr, mStr] = dateFilter.split('-');
+      const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+      const y = parseInt(yStr, 10);
+      const m = parseInt(mStr, 10) - 1;
+      return `${thaiMonths[m]} ${y + 543}`;
+    }
+
+    return dateFilter;
+  }, [dateFilter, customStartDate, customEndDate]);
 
   // Filter RMAs by date range
   const filteredRMAs = useMemo(() => {
-    const start = getStartDate(dateRange);
-    if (!start) return allRMAs;
-    return allRMAs.filter(rma => new Date(rma.createdAt) >= start);
-  }, [allRMAs, dateRange]);
+    if ((dateFilter === 'all' || dateFilter === 'ALL') && !customStartDate && !customEndDate) {
+      return allRMAs;
+    }
+
+    const now = new Date();
+    const nowYear = now.getFullYear();
+    const nowMonth = now.getMonth();
+    const nowYM = `${nowYear}-${String(nowMonth + 1).padStart(2, '0')}`;
+
+    return allRMAs.filter(rma => {
+      if (!rma.createdAt) return false;
+      const d = new Date(rma.createdAt);
+      if (isNaN(d.getTime())) return false;
+
+      const itemYear = d.getFullYear();
+      const itemMonth = d.getMonth();
+      const itemYM = `${itemYear}-${String(itemMonth + 1).padStart(2, '0')}`;
+
+      if (dateFilter === 'THIS_MONTH' || dateFilter === 'month') return itemYM === nowYM;
+
+      if (dateFilter === 'LAST_MONTH') {
+        const lastMonthDate = new Date(nowYear, nowMonth - 1, 1);
+        const lastMonthYM = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`;
+        return itemYM === lastMonthYM;
+      }
+
+      if (dateFilter === '3months' || dateFilter === '3_MONTHS') {
+        const threeMonthsAgo = new Date(nowYear, nowMonth - 2, 1);
+        threeMonthsAgo.setHours(0, 0, 0, 0);
+        return d >= threeMonthsAgo;
+      }
+
+      if (dateFilter === 'week' || dateFilter === '7_DAYS') {
+        const sevenDaysAgo = new Date(now);
+        sevenDaysAgo.setDate(now.getDate() - 6);
+        sevenDaysAgo.setHours(0, 0, 0, 0);
+        return d >= sevenDaysAgo;
+      }
+
+      if (dateFilter === 'TODAY') {
+        const todayStart = new Date(nowYear, nowMonth, now.getDate(), 0, 0, 0);
+        const todayEnd = new Date(nowYear, nowMonth, now.getDate(), 23, 59, 59);
+        return d >= todayStart && d <= todayEnd;
+      }
+
+      if (dateFilter === 'year' || dateFilter === 'THIS_YEAR') {
+        return itemYear === nowYear;
+      }
+
+      if (dateFilter === 'CUSTOM' || customStartDate || customEndDate) {
+        if (customStartDate && d < new Date(`${customStartDate}T00:00:00`)) return false;
+        if (customEndDate && d > new Date(`${customEndDate}T23:59:59`)) return false;
+        return true;
+      }
+
+      if (dateFilter.match(/^\d{4}-\d{2}$/)) {
+        return itemYM === dateFilter;
+      }
+
+      return true;
+    });
+  }, [allRMAs, dateFilter, customStartDate, customEndDate]);
 
   // ==================== KPI CALCULATIONS ====================
 
@@ -256,34 +361,68 @@ export const ReportsPage: React.FC = () => {
           <h1 className="text-2xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white mb-1">{t('nav.reports')}</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm">วิเคราะห์ข้อมูลเชิงลึก เพื่อการตัดสินใจที่แม่นยำ</p>
         </div>
-        <div className="flex gap-3">
-          {/* Date Range Dropdown */}
-          <div className="relative">
-            <button
-              onClick={(e) => { e.stopPropagation(); setShowDropdown(!showDropdown); }}
-              className="px-5 py-2.5 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-[#333] rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-[#2c2c2e] transition-colors"
-            >
-              <Calendar className="w-4 h-4 text-[#0071e3]" />
-              {DATE_RANGE_LABELS[dateRange]}
-              <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
-            </button>
-            {showDropdown && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-[#333] rounded-2xl shadow-xl overflow-hidden z-50">
-                {(Object.keys(DATE_RANGE_LABELS) as DateRange[]).map(key => (
-                  <button
-                    key={key}
-                    onClick={() => { setDateRange(key); setShowDropdown(false); }}
-                    className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors ${dateRange === key
-                      ? 'bg-[#0071e3] text-white'
-                      : 'text-[#1d1d1f] dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#2c2c2e]'
-                      }`}
-                  >
-                    {DATE_RANGE_LABELS[key]}
-                  </button>
-                ))}
-              </div>
-            )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Quick Segmented Presets */}
+          <div className="inline-flex bg-gray-100/90 dark:bg-white/[0.04] p-0.5 rounded-xl border border-gray-200/60 dark:border-white/[0.06] shadow-sm">
+            {[
+              { id: 'all', label: 'ทั้งหมด' },
+              { id: 'THIS_MONTH', label: 'เดือนนี้' },
+              { id: 'LAST_MONTH', label: 'เดือนที่แล้ว' },
+              { id: '3_MONTHS', label: '3 เดือนล่าสุด' },
+            ].map(preset => {
+              const isActive = (dateFilter === preset.id || (preset.id === 'all' && dateFilter === 'ALL')) && !customStartDate && !customEndDate;
+              return (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => {
+                    setDateFilter(preset.id);
+                    setCustomStartDate('');
+                    setCustomEndDate('');
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    isActive
+                      ? 'bg-white dark:bg-[#252528] text-[#0071e3] dark:text-white shadow-sm font-bold'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/[0.02]'
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              );
+            })}
           </div>
+
+          {/* Interactive Custom Calendar / Extended Period Trigger Button */}
+          <button
+            type="button"
+            onClick={() => setShowDatePickerModal(true)}
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-[#1c1c1e] border rounded-xl text-xs font-semibold transition-all shadow-sm ${
+              (dateFilter !== 'all' && dateFilter !== 'ALL' && dateFilter !== 'THIS_MONTH' && dateFilter !== 'LAST_MONTH' && dateFilter !== '3_MONTHS') || (customStartDate && customEndDate)
+                ? 'bg-[#0071e3]/10 text-[#0071e3] dark:text-blue-400 border-[#0071e3]/40 font-bold'
+                : 'border-gray-200 dark:border-[#333] text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20'
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5 text-[#0071e3]" />
+            <span>{activePeriodLabel}</span>
+            <ChevronDown className="w-3 h-3 text-gray-400 ml-0.5" />
+          </button>
+
+          {/* Clear Filter Button if not all */}
+          {((dateFilter !== 'all' && dateFilter !== 'ALL') || customStartDate || customEndDate) && (
+            <button
+              type="button"
+              onClick={() => {
+                setDateFilter('all');
+                setCustomStartDate('');
+                setCustomEndDate('');
+              }}
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-dashed border-gray-300 dark:border-white/10"
+              title="ล้างตัวกรองช่วงเวลา"
+            >
+              <X className="w-3 h-3" />
+              <span>รีเซ็ต</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -548,6 +687,23 @@ export const ReportsPage: React.FC = () => {
 
       </div>
 
+      {/* Modern Date Range Picker Modal */}
+      {showDatePickerModal && (
+        <ModernDateRangePickerModal
+          isOpen={showDatePickerModal}
+          onClose={() => setShowDatePickerModal(false)}
+          currentPreset={dateFilter}
+          currentStartDate={customStartDate}
+          currentEndDate={customEndDate}
+          availableMonthKeys={availableMonthKeys}
+          monthItemCounts={monthItemCounts}
+          onApply={(selection: DateRangeSelection) => {
+            setDateFilter(selection.preset);
+            setCustomStartDate(selection.startDate);
+            setCustomEndDate(selection.endDate);
+          }}
+        />
+      )}
     </div>
   );
 };
