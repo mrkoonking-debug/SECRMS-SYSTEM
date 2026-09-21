@@ -95,8 +95,6 @@ export const ModernDateRangePickerModal: React.FC<ModernDateRangePickerModalProp
     }
   }, [isOpen, currentPreset, currentStartDate, currentEndDate]);
 
-  if (!isOpen) return null;
-
   // Calendar calculations
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
   const firstDayOfWeek = new Date(calYear, calMonth, 1).getDay(); // 0 = Sun
@@ -280,6 +278,8 @@ export const ModernDateRangePickerModal: React.FC<ModernDateRangePickerModalProp
   };
 
   const todayStr = toDateStr(new Date());
+
+  if (!isOpen || typeof document === 'undefined') return null;
 
   return createPortal(
     <div className="fixed inset-0 z-[999] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md animate-fade-in font-sans">

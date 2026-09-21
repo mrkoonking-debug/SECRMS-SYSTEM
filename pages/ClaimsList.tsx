@@ -842,20 +842,22 @@ export const ClaimsList: React.FC = () => {
             </div>
 
             {/* Modern Date Range Picker Modal */}
-            <ModernDateRangePickerModal
-                isOpen={showDatePickerModal}
-                onClose={() => setShowDatePickerModal(false)}
-                currentPreset={dateFilter}
-                currentStartDate={customStartDate}
-                currentEndDate={customEndDate}
-                availableMonthKeys={availableMonthKeys}
-                monthItemCounts={monthItemCounts}
-                onApply={(selection: DateRangeSelection) => {
-                    setDateFilter(selection.preset);
-                    setCustomStartDate(selection.startDate);
-                    setCustomEndDate(selection.endDate);
-                }}
-            />
+            {showDatePickerModal && (
+                <ModernDateRangePickerModal
+                    isOpen={showDatePickerModal}
+                    onClose={() => setShowDatePickerModal(false)}
+                    currentPreset={dateFilter}
+                    currentStartDate={customStartDate}
+                    currentEndDate={customEndDate}
+                    availableMonthKeys={availableMonthKeys}
+                    monthItemCounts={monthItemCounts}
+                    onApply={(selection: DateRangeSelection) => {
+                        setDateFilter(selection.preset);
+                        setCustomStartDate(selection.startDate);
+                        setCustomEndDate(selection.endDate);
+                    }}
+                />
+            )}
         </div>
     );
 };
