@@ -295,11 +295,15 @@ export const ClaimsList: React.FC = () => {
     }, []);
 
     const isDateGroupExpanded = useCallback((ymKey: string) => {
+        // When searching, auto-expand all month groups containing matching jobs
+        if (debouncedSearch.trim()) {
+            return true;
+        }
         if (expandedDates !== null) {
             return expandedDates.has(ymKey);
         }
         return ymKey === availableMonthKeys[0]; // Default: ONLY latest month is expanded!
-    }, [expandedDates, availableMonthKeys]);
+    }, [expandedDates, availableMonthKeys, debouncedSearch]);
 
     const toggleDateGroup = (dateLabel: string) => {
         let currentSet: Set<string>;
@@ -369,6 +373,8 @@ export const ClaimsList: React.FC = () => {
         };
 
         const matchesDate = (c: RMA) => {
+            // When actively searching, search across all dates so older jobs are found
+            if (debouncedSearch.trim()) return true;
             if (dateFilter === 'ALL') return true;
             if (!c.createdAt) return false;
             const d = new Date(c.createdAt);

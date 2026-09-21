@@ -757,17 +757,17 @@ export const MockDb = {
            break;
          }
          
-         const batchRmas = snap.docs.map(mapDocToRMA);
-         const activeBatch = batchRmas.filter(r => !r.isDeleted);
-         
-         // Add active items to our results, up to the pageSize limit
-         for (const rma of activeBatch) {
-           if (rmas.length < pageSize) {
+         for (const docSnap of snap.docs) {
+           currentLastDoc = docSnap;
+           const rma = mapDocToRMA(docSnap);
+           if (!rma.isDeleted) {
              rmas.push(rma);
+             if (rmas.length >= pageSize) {
+               break;
+             }
            }
          }
          
-         currentLastDoc = snap.docs[snap.docs.length - 1];
          // If we fetched fewer documents than requested, it means we reached the end
          if (snap.docs.length < batchLimit) {
            hasMore = false;
