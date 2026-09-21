@@ -318,21 +318,21 @@ export const IncomingClaims: React.FC = () => {
             </div>
 
             {/* Search and Brand Filter Controls */}
-            <div className="bg-white dark:bg-[#16161a] rounded-2xl md:rounded-[24px] border border-gray-200/60 dark:border-white/[0.08] p-3 shadow-sm mb-6 space-y-3">
+            <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[28px] md:rounded-[32px] p-3.5 md:p-4.5 shadow-sm mb-5 md:mb-6 space-y-3">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                     <div className="relative w-full flex-1">
-                        <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                         <input
                             type="text"
                             placeholder="ค้นหาตามชื่อลูกค้า, เบอร์โทร, Ref #, S/N, รุ่นสินค้า, อาการเสีย..."
                             value={search}
                             onChange={(e) => handleSearchChange(e.target.value)}
-                            className="w-full bg-transparent border-none rounded-xl py-2 pl-10 pr-10 text-sm dark:text-white focus:ring-0"
+                            className="w-full bg-gray-50/70 dark:bg-white/[0.03] border border-gray-150/60 dark:border-white/5 apple-card-inner rounded-[20px] md:rounded-[22px] py-2.5 pl-11 pr-10 text-xs md:text-sm dark:text-white focus:ring-2 focus:ring-[#0071e3]/30 transition-all outline-none"
                         />
                         {search && (
                             <button
                                 onClick={handleClearSearch}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                                className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
                             >
                                 <X className="w-3.5 h-3.5" />
                             </button>
@@ -343,7 +343,7 @@ export const IncomingClaims: React.FC = () => {
                         <select
                             value={brandFilter}
                             onChange={(e) => setBrandFilter(e.target.value)}
-                            className="bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-white/10 text-xs font-bold rounded-xl px-3 py-2 text-gray-700 dark:text-white focus:ring-0 w-full sm:w-auto"
+                            className="bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/10 apple-card-inner text-xs font-bold rounded-[18px] px-3.5 py-2.5 text-gray-700 dark:text-white focus:ring-2 focus:ring-[#0071e3]/30 outline-none w-full sm:w-auto transition-all cursor-pointer"
                         >
                             <option value="ALL">ยี่ห้อทั้งหมด</option>
                             {brandOptions.map(b => (
@@ -353,22 +353,24 @@ export const IncomingClaims: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-gray-500 border-t border-gray-100 dark:border-white/5 pt-2 px-1">
-                    <div>
-                        พบงานรอดำเนินการ <span className="font-bold text-[#0071e3]">{totalJobsCount}</span> ใบงาน ({filteredIncoming.length} รายการสินค้า)
+                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 border-t border-black/5 dark:border-white/5 pt-2.5 px-1">
+                    <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-[#0071e3] inline-block"></span>
+                        พบงานรอดำเนินการ <span className="font-extrabold text-[#0071e3] dark:text-blue-400">{totalJobsCount}</span> ใบงาน ({filteredIncoming.length} รายการสินค้า)
                     </div>
                     {pageSize !== -1 && totalPages > 1 && (
-                        <div>หน้า {activePage} / {totalPages}</div>
+                        <div className="font-medium">หน้า {activePage} / {totalPages}</div>
                     )}
                 </div>
             </div>
 
             {totalJobsCount === 0 ? (
-                <div className="glass-panel p-12 md:p-20 text-center rounded-2xl md:rounded-[3rem]">
-                    <div className="w-14 h-14 md:w-20 md:h-20 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
-                        <CheckCircle2 className="w-7 h-7 md:w-10 md:h-10 text-gray-400" />
+                <div className="bg-white dark:bg-[#16161a] apple-liquid-glass p-12 md:p-20 text-center rounded-[28px] md:rounded-[36px]">
+                    <div className="w-14 h-14 md:w-20 md:h-20 bg-blue-50 dark:bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 text-[#0071e3]">
+                        <CheckCircle2 className="w-7 h-7 md:w-10 md:h-10 text-emerald-500" />
                     </div>
-                    <h3 className="text-base md:text-xl font-bold text-gray-400">{t('incoming.noIncoming')}</h3>
+                    <h3 className="text-base md:text-xl font-bold text-gray-700 dark:text-gray-300">{t('incoming.noIncoming')}</h3>
+                    <p className="text-xs md:text-sm text-gray-400 mt-1">ไม่มีงานแจ้งเคลมใหม่ที่รอดำเนินการ</p>
                 </div>
             ) : (
                 <div className="space-y-4 md:space-y-6">
@@ -377,97 +379,125 @@ export const IncomingClaims: React.FC = () => {
                         const isSelected = selectedGroupId === job.groupId;
 
                         return (
-                            <div key={job.groupId} className={`glass-panel overflow-hidden transition-all duration-300 ${isSelected ? 'ring-2 ring-[#0071e3] scale-[1.01] shadow-2xl' : 'hover:scale-[1.005]'}`}>
-                                <div className="p-3.5 md:p-8 flex flex-col gap-3 md:gap-6">
-                                    {/* Summary Row */}
-                                    <div className="flex flex-col gap-3 md:gap-6">
-                                        <div className="flex-1 space-y-2 md:space-y-4 cursor-pointer" onClick={() => toggleExpand(job.groupId)}>
-                                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2.5">
-                                                <div className="min-w-0 flex-1">
-                                                    <div className="text-[9px] md:text-[10px] font-bold text-[#0071e3] uppercase tracking-widest mb-0.5 md:mb-1 flex items-center gap-1.5">
-                                                        <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0"></div>
-                                                        {t('incoming.receivedFrom')}
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <h3 className="text-base md:text-2xl font-bold text-[#1d1d1f] dark:text-white break-words">
-                                                            {job.customerName}
-                                                        </h3>
+                            <div 
+                                key={job.groupId} 
+                                className={`bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[28px] md:rounded-[36px] overflow-hidden transition-all duration-200 ${
+                                    isSelected 
+                                        ? 'ring-2 ring-[#0071e3] shadow-2xl shadow-blue-500/25' 
+                                        : 'hover:-translate-y-0.5 hover:shadow-lg'
+                                }`}
+                            >
+                                <div className="p-5 sm:p-6 md:p-7 flex flex-col gap-4 md:gap-5">
+                                    {/* Top Header Row: Source, Items Count, and REF ID */}
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 apple-card-sm">
+                                                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0"></span>
+                                                {t('incoming.receivedFrom')}
+                                            </span>
+                                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-blue-500/10 text-[#0071e3] dark:text-blue-400 border border-blue-500/25 apple-card-sm">
+                                                <Package className="w-3.5 h-3.5" />
+                                                {job.rmas.length} {job.rmas.length === 1 ? 'item' : 'items'}
+                                            </span>
+                                        </div>
 
-                                                        {/* Quick Action Buttons for Job Customer Info */}
-                                                        <div className="flex items-center gap-1 ml-2">
-                                                            <button
-                                                                onClick={(e) => startEditJob(job, e)}
-                                                                title="แก้ไขข้อมูลลูกค้า"
-                                                                className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
-                                                            >
-                                                                <Pencil className="w-3.5 h-3.5 text-[#0071e3]" />
-                                                            </button>
-                                                            <button
-                                                                onClick={(e) => handleDeleteJob(job, e)}
-                                                                title="ลบรายการแจ้งเคลมนี้"
-                                                                className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-500 transition-colors cursor-pointer"
-                                                            >
-                                                                <Trash2 className="w-3.5 h-3.5" />
-                                                            </button>
-                                                        </div>
-                                                    </div>
+                                        <div className="flex items-center gap-2 px-3 py-1 rounded-[14px] bg-black/[0.04] dark:bg-black/40 border border-black/5 dark:border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
+                                            <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 tracking-wider uppercase">REF ID</span>
+                                            <span className="text-xs md:text-sm font-mono font-black text-gray-800 dark:text-gray-200">{job.groupId}</span>
+                                        </div>
+                                    </div>
 
-                                                    <div className="flex items-center gap-2 mt-1.5">
-                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 md:px-3 md:py-1 bg-[#0071e3]/10 text-[#0071e3] rounded-full text-[11px] md:text-sm font-bold">
-                                                            <Package className="w-3 h-3 md:w-4 md:h-4" />
-                                                            {job.rmas.length} {job.rmas.length === 1 ? 'item' : 'items'}
+                                    {/* Customer Name Row */}
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <h3 
+                                                    onClick={() => toggleExpand(job.groupId)}
+                                                    className="text-xl sm:text-2xl md:text-[25px] font-black text-[#1d1d1f] dark:text-white tracking-tight leading-snug cursor-pointer hover:text-[#0071e3] dark:hover:text-blue-400 transition-colors"
+                                                >
+                                                    {job.customerName}
+                                                </h3>
+
+                                                {/* Quick Action Buttons for Job Customer Info */}
+                                                <div className="flex items-center gap-1.5 ml-1">
+                                                    <button
+                                                        onClick={(e) => startEditJob(job, e)}
+                                                        title="แก้ไขข้อมูลลูกค้า"
+                                                        className="p-1.5 rounded-[10px] bg-black/5 hover:bg-black/10 dark:bg-white/[0.06] dark:hover:bg-white/[0.12] text-gray-600 dark:text-gray-300 border border-black/5 dark:border-white/[0.08] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                                                    >
+                                                        <Pencil className="w-3.5 h-3.5 text-[#0071e3]" />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => handleDeleteJob(job, e)}
+                                                        title="ลบรายการแจ้งเคลมนี้"
+                                                        className="p-1.5 rounded-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {job.customerEmail && (
+                                                <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 font-medium">{job.customerEmail}</div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Metadata & Assign Button Row (Tactile Capsule Design) */}
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
+                                        <div className="flex items-center gap-3 flex-wrap">
+                                            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/[0.03] dark:bg-black/40 border border-black/5 dark:border-white/[0.08] text-xs text-gray-500 dark:text-gray-400 apple-card-sm">
+                                                <span className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 font-medium">
+                                                    <Clock className="w-3.5 h-3.5 text-[#0071e3] shrink-0" />
+                                                    {new Date(job.createdAt).toLocaleString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                                </span>
+                                                {job.quotationNumber && job.quotationNumber !== 'N/A' && (
+                                                    <>
+                                                        <span className="text-gray-300 dark:text-gray-600">·</span>
+                                                        <span className="font-mono text-[11px] font-bold text-gray-600 dark:text-gray-300">
+                                                            QT: {job.quotationNumber}
                                                         </span>
-                                                    </div>
-                                                    <div className="hidden md:block text-sm text-gray-500 mt-1">{job.customerEmail}</div>
-                                                </div>
-                                                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-1 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-none border-gray-150/10 dark:border-white/5 mt-1 sm:mt-0 w-full sm:w-auto">
-                                                    <div className="text-[9px] md:text-xs font-bold text-gray-400 uppercase tracking-wider mr-1 sm:mr-0">REF ID</div>
-                                                    <div className="text-[11px] md:text-sm font-mono font-bold dark:text-gray-300 whitespace-nowrap">{job.groupId}</div>
-                                                </div>
+                                                    </>
+                                                )}
                                             </div>
 
-                                            <div className="flex items-center gap-2 md:gap-4 text-[10px] md:text-xs text-gray-400">
-                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3 md:w-3.5 md:h-3.5 text-blue-500" /> {new Date(job.createdAt).toLocaleString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-                                                <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
-                                                <span className={job.quotationNumber && job.quotationNumber !== 'N/A' ? '' : 'italic opacity-60'}>{job.quotationNumber && job.quotationNumber !== 'N/A' ? `QT: ${job.quotationNumber}` : 'ไม่มี Ref'}</span>
-                                            </div>
-
-                                            <button className="flex items-center gap-1.5 text-xs md:text-sm text-[#0071e3] font-semibold hover:underline transition-colors">
+                                            <button 
+                                                onClick={() => toggleExpand(job.groupId)}
+                                                className="flex items-center gap-1.5 text-xs md:text-sm text-[#0071e3] dark:text-blue-400 font-bold hover:underline transition-colors cursor-pointer"
+                                            >
                                                 {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                                                 {isExpanded ? 'ซ่อนรายละเอียด' : `ดูรายละเอียด ${job.rmas.length} รายการ`}
                                             </button>
                                         </div>
 
-                                        <div className="w-full sm:w-auto flex-shrink-0 flex items-center gap-2">
-                                            {!isSelected && (
-                                                <button
-                                                    onClick={() => { setSelectedGroupId(job.groupId); setExpandedGroupId(job.groupId); }}
-                                                    className="w-full sm:w-auto py-3 md:py-4 px-5 md:px-6 bg-[#1d1d1f] dark:bg-white text-white dark:text-black rounded-xl md:rounded-2xl text-sm md:text-base font-bold flex items-center justify-center gap-2 md:gap-3 transition-all hover:scale-105 active:scale-95 shadow-lg md:shadow-xl cursor-pointer"
-                                                >
-                                                    {t('incoming.assignBtn')}
-                                                    <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
-                                                </button>
-                                            )}
-                                        </div>
+                                        {!isSelected && (
+                                            <button
+                                                onClick={() => { setSelectedGroupId(job.groupId); setExpandedGroupId(job.groupId); }}
+                                                className="w-full sm:w-auto py-2.5 md:py-3 px-6 md:px-7 bg-white hover:bg-gray-100 text-[#111] dark:bg-white dark:text-[#111] dark:hover:bg-gray-150 rounded-[18px] md:rounded-[20px] text-xs md:text-sm font-black flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(0,0,0,0.12)] dark:shadow-[0_4px_24px_rgba(255,255,255,0.16)] transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                                            >
+                                                <span>{t('incoming.assignBtn')}</span>
+                                                <ChevronRight className="w-4 h-4 text-black" />
+                                            </button>
+                                        )}
                                     </div>
 
                                     {/* Expanded Item Details */}
                                     {isExpanded && (
-                                        <div className="border-t border-gray-100 dark:border-white/5 pt-4 md:pt-6 animate-slide-up">
-                                            <div className="space-y-2 md:space-y-3">
+                                        <div className="border-t border-black/5 dark:border-white/5 pt-4 md:pt-5 animate-slide-up">
+                                            <div className="space-y-2.5 md:space-y-3">
                                                 {job.rmas.map((rma, idx) => (
-                                                    <div key={rma.id} className="p-3 md:p-4 bg-gray-50 dark:bg-white/5 rounded-xl md:rounded-2xl flex flex-col md:flex-row md:items-center gap-2.5 md:gap-4 relative group">
-                                                        <div className="w-8 h-8 rounded-full bg-[#0071e3]/10 text-[#0071e3] flex items-center justify-center text-sm font-bold flex-shrink-0">
+                                                    <div key={rma.id} className="p-3.5 md:p-4.5 bg-gray-50/70 dark:bg-white/[0.03] apple-card-inner rounded-[18px] md:rounded-[22px] border border-gray-200/60 dark:border-white/[0.06] flex flex-col md:flex-row md:items-center gap-3 md:gap-4.5 relative group">
+                                                        <div className="w-8 h-8 rounded-[11px] bg-[#0071e3] text-white flex items-center justify-center text-xs font-black flex-shrink-0 shadow-sm">
                                                             {idx + 1}
                                                         </div>
-                                                        <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3 pr-16 md:pr-0">
+                                                        <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-2.5 md:gap-4 pr-16 md:pr-0">
                                                             <div>
                                                                 <div className="text-[10px] font-extrabold text-[#0071e3] dark:text-blue-400 uppercase tracking-wider">{rma.brand}</div>
                                                                 <div className="text-sm font-bold text-[#1d1d1f] dark:text-white leading-snug">{rma.productModel}</div>
                                                             </div>
                                                             <div>
                                                                 <div className="text-[10px] font-bold text-gray-400 uppercase">S/N</div>
-                                                                <div className="text-sm font-mono text-[#1d1d1f] dark:text-gray-300">{rma.serialNumber}</div>
+                                                                <div className="text-sm font-mono font-medium text-[#1d1d1f] dark:text-gray-300">{rma.serialNumber}</div>
                                                             </div>
                                                             <div className="md:col-span-2">
                                                                 <div className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1"><Info className="w-3 h-3" /> Issue</div>
@@ -476,18 +506,18 @@ export const IncomingClaims: React.FC = () => {
                                                         </div>
 
                                                         {/* Action buttons for individual item */}
-                                                        <div className="flex items-center gap-1 self-end md:self-center">
+                                                        <div className="flex items-center gap-1.5 self-end md:self-center">
                                                             <button
                                                                 onClick={(e) => startEditRMA(rma, e)}
                                                                 title="แก้ไขรายการสินค้านี้"
-                                                                className="p-1.5 rounded-lg bg-white dark:bg-[#2c2c2e] hover:bg-gray-100 dark:hover:bg-white/20 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10 transition-colors cursor-pointer"
+                                                                className="p-1.5 rounded-[10px] bg-white dark:bg-white/[0.08] hover:bg-gray-100 dark:hover:bg-white/20 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10 transition-colors cursor-pointer"
                                                             >
                                                                 <Pencil className="w-3.5 h-3.5 text-[#0071e3]" />
                                                             </button>
                                                             <button
                                                                 onClick={(e) => handleDeleteRMA(rma, e)}
                                                                 title="ลบเฉพาะสินค้าชิ้นนี้"
-                                                                className="p-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 border border-red-200 dark:border-red-800/30 transition-colors cursor-pointer"
+                                                                className="p-1.5 rounded-[10px] bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 border border-red-200 dark:border-red-800/30 transition-colors cursor-pointer"
                                                             >
                                                                 <Trash2 className="w-3.5 h-3.5" />
                                                             </button>
@@ -500,53 +530,69 @@ export const IncomingClaims: React.FC = () => {
 
                                     {/* Team Selection UI */}
                                     {isSelected && (
-                                        <div className="border-t border-gray-100 dark:border-white/5 pt-4 md:pt-8 animate-slide-up">
+                                        <div className="border-t border-black/5 dark:border-white/5 pt-4 md:pt-6 animate-slide-up">
                                             <div className="mb-4 md:mb-6">
                                                 <h4 className="text-xs md:text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 md:mb-4">{t('incoming.selectTeamTitle')}</h4>
-                                                <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-4">
+                                                <div className="grid grid-cols-3 gap-2.5 md:gap-4">
                                                     <button
                                                         onClick={() => handleMainGroupSelect('A')}
-                                                        className={`p-2.5 md:p-4 rounded-xl md:rounded-2xl border text-left transition-all flex flex-col md:flex-row items-center gap-2 md:gap-4 cursor-pointer ${selectedMainGroup === 'A' ? 'bg-white dark:bg-[#2c2c2e] border-red-500 ring-2 ring-red-500/20 shadow-lg' : 'bg-gray-50 dark:bg-white/5 border-transparent hover:bg-white dark:hover:bg-[#2c2c2e]'}`}
+                                                        className={`p-3 md:p-4 apple-card-inner rounded-[20px] md:rounded-[24px] border text-left transition-all flex flex-col md:flex-row items-center gap-2 md:gap-4 cursor-pointer ${
+                                                            selectedMainGroup === 'A' 
+                                                                ? 'bg-red-500/10 dark:bg-red-500/15 border-red-500 ring-2 ring-red-500/30 shadow-lg shadow-red-500/20' 
+                                                                : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] hover:border-red-400/40'
+                                                        }`}
                                                     >
-                                                        <div className={`p-2 md:p-3 rounded-lg md:rounded-xl ${selectedMainGroup === 'A' ? 'bg-red-500 text-white' : 'bg-gray-200 dark:bg-white/10 text-gray-400'}`}><Box className="w-4 h-4 md:w-6 md:h-6" /></div>
-                                                        <div className="text-center md:text-left"><div className="font-bold text-xs md:text-base text-[#1d1d1f] dark:text-white">HIK</div><div className="text-[9px] md:text-[10px] text-gray-500">Team A</div></div>
+                                                        <div className={`p-2 md:p-3 rounded-[14px] ${selectedMainGroup === 'A' ? 'bg-red-500 text-white shadow-md' : 'bg-red-500/10 text-red-500'}`}><Box className="w-4 h-4 md:w-5 md:h-5" /></div>
+                                                        <div className="text-center md:text-left"><div className="font-extrabold text-xs md:text-base text-[#1d1d1f] dark:text-white">HIK</div><div className="text-[10px] text-gray-400">Team A</div></div>
                                                     </button>
 
                                                     <button
                                                         onClick={() => handleMainGroupSelect('B')}
-                                                        className={`p-2.5 md:p-4 rounded-xl md:rounded-2xl border text-left transition-all flex flex-col md:flex-row items-center gap-2 md:gap-4 cursor-pointer ${selectedMainGroup === 'B' ? 'bg-white dark:bg-[#2c2c2e] border-orange-500 ring-2 ring-orange-500/20 shadow-lg' : 'bg-gray-50 dark:bg-white/5 border-transparent hover:bg-white dark:hover:bg-[#2c2c2e]'}`}
+                                                        className={`p-3 md:p-4 apple-card-inner rounded-[20px] md:rounded-[24px] border text-left transition-all flex flex-col md:flex-row items-center gap-2 md:gap-4 cursor-pointer ${
+                                                            selectedMainGroup === 'B' 
+                                                                ? 'bg-orange-500/10 dark:bg-orange-500/15 border-orange-500 ring-2 ring-orange-500/30 shadow-lg shadow-orange-500/20' 
+                                                                : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] hover:border-orange-400/40'
+                                                        }`}
                                                     >
-                                                        <div className={`p-2 md:p-3 rounded-lg md:rounded-xl ${selectedMainGroup === 'B' ? 'bg-orange-500 text-white' : 'bg-gray-200 dark:bg-white/10 text-gray-400'}`}><Layers className="w-4 h-4 md:w-6 md:h-6" /></div>
-                                                        <div className="text-center md:text-left"><div className="font-bold text-xs md:text-base text-[#1d1d1f] dark:text-white">DAHUA</div><div className="text-[9px] md:text-[10px] text-gray-500">Team B</div></div>
+                                                        <div className={`p-2 md:p-3 rounded-[14px] ${selectedMainGroup === 'B' ? 'bg-orange-500 text-white shadow-md' : 'bg-orange-500/10 text-orange-500'}`}><Layers className="w-4 h-4 md:w-5 md:h-5" /></div>
+                                                        <div className="text-center md:text-left"><div className="font-extrabold text-xs md:text-base text-[#1d1d1f] dark:text-white">DAHUA</div><div className="text-[10px] text-gray-400">Team B</div></div>
                                                     </button>
 
                                                     <button
                                                         onClick={() => handleMainGroupSelect('C')}
-                                                        className={`p-2.5 md:p-4 rounded-xl md:rounded-2xl border text-left transition-all flex flex-col md:flex-row items-center gap-2 md:gap-4 cursor-pointer ${selectedMainGroup === 'C' ? 'bg-white dark:bg-[#2c2c2e] border-blue-500 ring-2 ring-blue-500/20 shadow-lg' : 'bg-gray-50 dark:bg-white/5 border-transparent hover:bg-white dark:hover:bg-[#2c2c2e]'}`}
+                                                        className={`p-3 md:p-4 apple-card-inner rounded-[20px] md:rounded-[24px] border text-left transition-all flex flex-col md:flex-row items-center gap-2 md:gap-4 cursor-pointer ${
+                                                            selectedMainGroup === 'C' 
+                                                                ? 'bg-blue-500/10 dark:bg-blue-500/15 border-blue-500 ring-2 ring-blue-500/30 shadow-lg shadow-blue-500/20' 
+                                                                : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] hover:border-blue-400/40'
+                                                        }`}
                                                     >
-                                                        <div className={`p-2 md:p-3 rounded-lg md:rounded-xl ${selectedMainGroup === 'C' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-white/10 text-gray-400'}`}><Wifi className="w-4 h-4 md:w-6 md:h-6" /></div>
-                                                        <div className="text-center md:text-left"><div className="font-bold text-xs md:text-base text-[#1d1d1f] dark:text-white">Network</div><div className="text-[9px] md:text-[10px] text-gray-500">C / E / G</div></div>
+                                                        <div className={`p-2 md:p-3 rounded-[14px] ${selectedMainGroup === 'C' ? 'bg-blue-500 text-white shadow-md' : 'bg-blue-500/10 text-blue-500'}`}><Wifi className="w-4 h-4 md:w-5 md:h-5" /></div>
+                                                        <div className="text-center md:text-left"><div className="font-extrabold text-xs md:text-base text-[#1d1d1f] dark:text-white">Network</div><div className="text-[10px] text-gray-400">C / E / G</div></div>
                                                     </button>
                                                 </div>
                                             </div>
 
                                             {/* Sub-Selection for Team C Group */}
                                             {selectedMainGroup === 'C' && (
-                                                <div className="animate-fade-in mb-4 md:mb-8 pl-3 md:pl-6 border-l-4 border-blue-500/20 py-1 md:py-2">
-                                                    <div className="text-[10px] md:text-xs font-black text-blue-500 uppercase mb-2 md:mb-4 tracking-widest">Select Specific Sub-Team</div>
-                                                    <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-4">
+                                                <div className="animate-fade-in mb-4 md:mb-6 pl-3 md:pl-5 border-l-2 border-blue-500/40 py-1">
+                                                    <div className="text-[10px] md:text-xs font-black text-blue-500 uppercase mb-2 md:mb-3 tracking-widest">Select Specific Sub-Team</div>
+                                                    <div className="grid grid-cols-3 gap-2 md:gap-3.5">
                                                         {[
                                                             { val: Team.TEAM_C, label: t('teams.teamC'), icon: Wifi, color: 'cyan' },
-                                                            { val: Team.TEAM_E, label: t('teams.teamE'), icon: Zap, color: 'yellow' },
+                                                            { val: Team.TEAM_E, label: t('teams.teamE'), icon: Zap, color: 'amber' },
                                                             { val: Team.TEAM_G, label: t('teams.teamG'), icon: ShoppingBag, color: 'fuchsia' }
                                                         ].map(sub => (
                                                             <button
                                                                 key={sub.val}
                                                                 onClick={() => setFinalTeam(sub.val)}
-                                                                className={`p-2.5 md:p-4 rounded-lg md:rounded-xl border text-center md:text-left transition-all flex flex-col md:flex-row items-center gap-1.5 md:gap-3 cursor-pointer ${finalTeam === sub.val ? 'bg-white dark:bg-[#2c2c2e] border-[#0071e3] ring-1 ring-[#0071e3] shadow-md' : 'bg-white dark:bg-[#1c1c1e] border-transparent hover:border-gray-300 dark:hover:border-gray-600'}`}
+                                                                className={`p-2.5 md:p-3.5 apple-card-sm rounded-[16px] md:rounded-[18px] border text-center md:text-left transition-all flex flex-col md:flex-row items-center gap-1.5 md:gap-3 cursor-pointer ${
+                                                                    finalTeam === sub.val 
+                                                                        ? 'bg-blue-500/10 dark:bg-blue-500/15 border-[#0071e3] ring-1 ring-[#0071e3] shadow-md' 
+                                                                        : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] hover:border-gray-300 dark:hover:border-white/20'
+                                                                }`}
                                                             >
                                                                 <sub.icon className={`w-4 h-4 md:w-5 md:h-5 ${finalTeam === sub.val ? 'text-[#0071e3]' : 'text-gray-400'}`} />
-                                                                <span className={`text-[11px] md:text-sm font-bold ${finalTeam === sub.val ? 'text-[#1d1d1f] dark:text-white' : 'text-gray-500'}`}>{sub.label}</span>
+                                                                <span className={`text-[11px] md:text-sm font-bold ${finalTeam === sub.val ? 'text-[#0071e3] dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`}>{sub.label}</span>
                                                             </button>
                                                         ))}
                                                     </div>
@@ -556,14 +602,14 @@ export const IncomingClaims: React.FC = () => {
                                             <div className="flex flex-row justify-end items-center gap-2 md:gap-3 pt-2 md:pt-4">
                                                 <button
                                                     onClick={resetSelection}
-                                                    className="px-4 md:px-8 py-2 md:py-3 bg-gray-100 dark:bg-white/10 rounded-lg md:rounded-xl text-xs md:text-sm font-bold text-gray-500 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors cursor-pointer"
+                                                    className="px-4 md:px-7 py-2.5 md:py-3 bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 rounded-[16px] md:rounded-[18px] text-xs md:text-sm font-bold text-gray-600 dark:text-gray-300 transition-all cursor-pointer"
                                                 >
                                                     Cancel
                                                 </button>
                                                 <button
                                                     disabled={!finalTeam || isAssigning}
                                                     onClick={() => handleAssignGroup(job)}
-                                                    className="flex-1 sm:flex-none px-4 md:px-10 py-2 md:py-3 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-lg md:rounded-xl text-xs md:text-sm font-bold shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 md:gap-3 disabled:opacity-50 disabled:shadow-none transition-all active:scale-95 cursor-pointer"
+                                                    className="flex-1 sm:flex-none px-5 md:px-9 py-2.5 md:py-3 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-[16px] md:rounded-[18px] text-xs md:text-sm font-bold shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:shadow-none transition-all active:scale-95 cursor-pointer"
                                                 >
                                                     {isAssigning ? <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" /> : <><Check className="w-4 h-4 md:w-5 md:h-5" /> {t('incoming.assignBtn')} ({job.rmas.length} items)</>}
                                                 </button>
