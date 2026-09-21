@@ -788,7 +788,7 @@ export const ClaimsList: React.FC = () => {
                         className={`apple-card rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             teamFilter === 'ALL'
                                 ? 'bg-gradient-to-br from-[#0071e3] to-[#005bb5] text-white shadow-lg shadow-blue-500/20'
-                                : 'bg-white dark:bg-white/[0.06] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_6px_20px_-2px_rgba(0,0,0,0.5)] hover:dark:bg-white/[0.08] active:scale-[0.98]'
+                                : 'bg-white dark:bg-black/[0.35] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_6px_20px_-2px_rgba(0,0,0,0.6)] hover:dark:bg-black/[0.25] active:scale-[0.98]'
                         }`}
                     >
                         <div>
@@ -826,7 +826,7 @@ export const ClaimsList: React.FC = () => {
                         className={`apple-card rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             teamFilter === Team.HIKVISION
                                 ? 'bg-gradient-to-br from-[#e53e3e] to-[#c53030] text-white shadow-lg shadow-red-500/20'
-                                : 'bg-white dark:bg-white/[0.06] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_6px_20px_-2px_rgba(0,0,0,0.5)] hover:dark:bg-white/[0.08] active:scale-[0.98]'
+                                : 'bg-white dark:bg-black/[0.35] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_6px_20px_-2px_rgba(0,0,0,0.6)] hover:dark:bg-black/[0.25] active:scale-[0.98]'
                         }`}
                     >
                         <div>
@@ -864,7 +864,7 @@ export const ClaimsList: React.FC = () => {
                         className={`apple-card rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             teamFilter === Team.DAHUA
                                 ? 'bg-gradient-to-br from-[#dd6b20] to-[#c05621] text-white shadow-lg shadow-orange-500/20'
-                                : 'bg-white dark:bg-white/[0.06] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_6px_20px_-2px_rgba(0,0,0,0.5)] hover:dark:bg-white/[0.08] active:scale-[0.98]'
+                                : 'bg-white dark:bg-black/[0.35] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_6px_20px_-2px_rgba(0,0,0,0.6)] hover:dark:bg-black/[0.25] active:scale-[0.98]'
                         }`}
                     >
                         <div>
@@ -902,7 +902,7 @@ export const ClaimsList: React.FC = () => {
                         className={`apple-card rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             isTeamCExpanded || teamFilter === 'GROUP_C'
                                 ? 'bg-gradient-to-br from-[#805ad5] to-[#6b46c1] text-white shadow-lg shadow-violet-500/20'
-                                : 'bg-white dark:bg-white/[0.06] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_6px_20px_-2px_rgba(0,0,0,0.5)] hover:dark:bg-white/[0.08] active:scale-[0.98]'
+                                : 'bg-white dark:bg-black/[0.35] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_6px_20px_-2px_rgba(0,0,0,0.6)] hover:dark:bg-black/[0.25] active:scale-[0.98]'
                         }`}
                     >
                         <div>
@@ -943,7 +943,7 @@ export const ClaimsList: React.FC = () => {
                             className={`apple-card-sm rounded-[18px] md:rounded-[22px] px-4 py-2.5 whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
                                 teamFilter === Team.TEAM_C 
                                     ? 'text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/15 font-bold dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_2px_10px_rgba(0,0,0,0.4)]' 
-                                    : 'bg-white dark:bg-white/[0.06] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_2px_8px_rgba(0,0,0,0.4)] text-gray-700 dark:text-gray-300'
+                                    : 'bg-white dark:bg-black/[0.35] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_2px_8px_rgba(0,0,0,0.5)] text-gray-700 dark:text-gray-300'
                             }`}
                         >
                             <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-cyan-500 shrink-0"></span>Network</span>
@@ -956,7 +956,7 @@ export const ClaimsList: React.FC = () => {
                             className={`apple-card-sm rounded-[18px] md:rounded-[22px] px-4 py-2.5 whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
                                 teamFilter === Team.TEAM_E 
                                     ? 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/15 font-bold dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_2px_10px_rgba(0,0,0,0.4)]' 
-                                    : 'bg-white dark:bg-white/[0.06] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_2px_8px_rgba(0,0,0,0.4)] text-gray-700 dark:text-gray-300'
+                                    : 'bg-white dark:bg-black/[0.35] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_2px_8px_rgba(0,0,0,0.5)] text-gray-700 dark:text-gray-300'
                             }`}
                         >
                             <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>UPS</span>
