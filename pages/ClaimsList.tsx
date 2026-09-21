@@ -298,7 +298,8 @@ export const ClaimsList: React.FC = () => {
         const fetchAllRMAs = async () => {
             try {
                 const all = await MockDb.getRMAs();
-                setRMAs(all);
+                const assigned = all.filter(c => c && c.id && c.team && (c.team as any) !== 'UNASSIGNED');
+                setRMAs(assigned);
                 setLoading(false);
             } catch (err: unknown) {
                 console.error('ClaimsList fetch failed:', err);
