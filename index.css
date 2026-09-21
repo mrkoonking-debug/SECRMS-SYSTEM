@@ -512,8 +512,11 @@ select:-webkit-autofill:active {
 /* ==========================================================================
    Apple Cupertino Squircle & Deep Continuous Curvature
    ========================================================================== */
+/* ==========================================================================
+   Apple Cupertino Squircle & Deep Continuous Curvature
+   ========================================================================== */
 .apple-card {
-  border-radius: 34px;
+  border-radius: 38px;
   corner-shape: squircle;
   -webkit-corner-shape: squircle;
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08), 0 3px 16px rgba(0, 0, 0, 0.04);
@@ -521,14 +524,14 @@ select:-webkit-autofill:active {
 }
 
 .apple-card-lg {
-  border-radius: 40px;
+  border-radius: 46px;
   corner-shape: squircle;
   -webkit-corner-shape: squircle;
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08), 0 6px 24px rgba(0, 0, 0, 0.04);
 }
 
 .apple-card-inner {
-  border-radius: 24px;
+  border-radius: 26px;
   corner-shape: squircle;
   -webkit-corner-shape: squircle;
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
@@ -536,7 +539,7 @@ select:-webkit-autofill:active {
 }
 
 .apple-card-sm {
-  border-radius: 18px;
+  border-radius: 20px;
   corner-shape: squircle;
   -webkit-corner-shape: squircle;
   transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
@@ -551,7 +554,7 @@ select:-webkit-autofill:active {
    Apple Liquid Glass Design System
    ========================================================================== */
 .apple-liquid-glass {
-  border-radius: 28px;
+  border-radius: 36px;
   corner-shape: squircle;
   -webkit-corner-shape: squircle;
   border: 1px solid rgba(0, 0, 0, 0.07);
@@ -588,9 +591,7 @@ select:-webkit-autofill:active {
 }
 
 .apple-liquid-pill {
-  border-radius: 22px;
-  corner-shape: squircle;
-  -webkit-corner-shape: squircle;
+  border-radius: 9999px;
   border: 1px solid rgba(0, 0, 0, 0.06);
   background-color: rgba(0, 0, 0, 0.02);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.5);

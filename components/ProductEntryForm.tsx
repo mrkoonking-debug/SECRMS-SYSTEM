@@ -16,7 +16,7 @@ import { compressImage } from '../services/imageCompressor';
 const DEFAULT_ACCESSORIES = COMMON_ACCESSORIES.filter(a => a !== 'acc_hdd');
 
 const getInputClass = (hasError: boolean) => `
-  w-full px-3.5 py-2 md:px-4 md:py-2.5 text-xs md:text-sm apple-card-inner rounded-[18px] md:rounded-[22px] outline-none transition-all
+  w-full px-4 py-2.5 md:px-5 md:py-3.5 text-xs md:text-sm apple-card-inner rounded-[22px] md:rounded-[26px] outline-none transition-all
   bg-gray-50/70 dark:bg-white/[0.03] 
   border border-gray-200/90 dark:border-white/[0.08]
   text-[#1d1d1f] dark:text-white
@@ -218,8 +218,8 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                 <div className="relative">
                     {noSerial ? (
                         <>
-                            <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">จำนวน (Quantity)</label>
-                            <div className="flex items-center gap-4 px-3 py-1.5 bg-white dark:bg-[#16161a] border border-gray-200/80 dark:border-white/[0.08] apple-card-inner rounded-[18px]">
+                            <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-2">จำนวน (Quantity)</label>
+                            <div className="flex items-center gap-4 px-4 py-2 bg-white dark:bg-[#16161a] border border-gray-200/80 dark:border-white/[0.08] apple-card-inner rounded-full">
                                 <button type="button" onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-9 h-9 rounded-full bg-gray-100 dark:bg-white/[0.06] border border-gray-200 dark:border-white/10 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-white/10 transition-all active:scale-95 cursor-pointer">
                                     <Minus className="w-4 h-4 text-gray-500" />
                                 </button>
@@ -229,28 +229,28 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                                 </button>
                                 <span className="text-xs text-gray-400 ml-1 font-semibold">ชิ้น (สูงสุด 20)</span>
                             </div>
-                            <p className="text-[11px] text-amber-500 mt-1.5 ml-2 font-medium flex items-center gap-1">{`⚡ ระบบจะสร้าง S/N อัตโนมัติ: N/A-001 ถึง N/A-${String(quantity).padStart(3, '0')}`}</p>
+                            <p className="text-[11px] text-amber-500 mt-1.5 ml-3 font-medium flex items-center gap-1">{`⚡ ระบบจะสร้าง S/N อัตโนมัติ: N/A-001 ถึง N/A-${String(quantity).padStart(3, '0')}`}</p>
                         </>
                     ) : (
                         <>
-                            <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">{t('submit.serial')} <span className="text-red-500 font-bold">*</span></label>
+                            <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-2">{t('submit.serial')} <span className="text-red-500 font-bold">*</span></label>
                             <div className="relative">
-                                <input value={currentItem.serial} onChange={e => setCurrentItem({ ...currentItem, serial: e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase() })} className={`${getInputClass(!!errors.serial)} pr-10 uppercase`} placeholder={t('submit.enterSn')} style={{ textTransform: 'uppercase' }} />
-                                <button type="button" onClick={() => { setScanTarget('serial'); setShowScanner(true); }} className="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 transition-colors cursor-pointer"><ScanBarcode className="w-5 h-5" /></button>
+                                <input value={currentItem.serial} onChange={e => setCurrentItem({ ...currentItem, serial: e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase() })} className={`${getInputClass(!!errors.serial)} pr-11 uppercase`} placeholder={t('submit.enterSn')} style={{ textTransform: 'uppercase' }} />
+                                <button type="button" onClick={() => { setScanTarget('serial'); setShowScanner(true); }} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 transition-colors cursor-pointer"><ScanBarcode className="w-5 h-5" /></button>
                             </div>
-                            {mode === 'customer' && <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mt-1.5 ml-2 flex items-center gap-1">💡 หมายเลข S/N อยู่บนสติกเกอร์ด้านหลังเครื่อง</p>}
-                            {mode !== 'customer' && <p className="text-[11px] text-gray-400 mt-1.5 ml-2">{t('submit.serialHint')}</p>}
+                            {mode === 'customer' && <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mt-1.5 ml-3 flex items-center gap-1">💡 หมายเลข S/N อยู่บนสติกเกอร์ด้านหลังเครื่อง</p>}
+                            {mode !== 'customer' && <p className="text-[11px] text-gray-400 mt-1.5 ml-3">{t('submit.serialHint')}</p>}
                         </>
                     )}
                     <button
                         type="button"
                         onClick={() => { setNoSerial(!noSerial); if (!noSerial) { setCurrentItem(p => ({ ...p, serial: '' })); setQuantity(1); } }}
-                        className={`mt-2 flex items-center gap-2 px-3 py-1.5 rounded-[14px] text-xs font-semibold transition-all border apple-card-sm cursor-pointer ${noSerial
+                        className={`mt-2.5 flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all border apple-card-sm cursor-pointer ${noSerial
                             ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
                             : 'bg-black/[0.02] dark:bg-white/[0.03] text-gray-500 dark:text-gray-400 border-gray-200/80 dark:border-white/[0.08] hover:border-amber-400/50 hover:text-amber-500'
                         }`}
                     >
-                        <div className={`w-4 h-4 rounded-[6px] border-2 flex items-center justify-center transition-all ${noSerial ? 'bg-amber-500 border-amber-500' : 'border-gray-300 dark:border-gray-600'}`}>
+                        <div className={`w-4 h-4 rounded-[7px] border-2 flex items-center justify-center transition-all ${noSerial ? 'bg-amber-500 border-amber-500' : 'border-gray-300 dark:border-gray-600'}`}>
                             {noSerial && <Check className="w-3 h-3 text-white" />}
                         </div>
                         ไม่มี S/N (เช่น บัตร, อุปกรณ์เล็ก)
@@ -271,13 +271,13 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                 )}
 
                 <div className={mode === 'customer' ? 'col-span-2' : ''} data-tour="tour-accessories">
-                    <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">{t('submit.accessories')} <span className="text-red-500 font-bold">*</span></label>
-                    {mode === 'customer' && <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mb-2 ml-2 flex items-center gap-1"><Info className="w-3 h-3 text-blue-500 flex-shrink-0" /> เลือกสิ่งที่ส่งมาพร้อมเครื่อง (ไม่จำเป็นต้องเลือก ข้ามได้)</p>}
+                    <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-2">{t('submit.accessories')} <span className="text-red-500 font-bold">*</span></label>
+                    {mode === 'customer' && <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mb-2 ml-3 flex items-center gap-1"><Info className="w-3 h-3 text-blue-500 flex-shrink-0" /> เลือกสิ่งที่ส่งมาพร้อมเครื่อง (ไม่จำเป็นต้องเลือก ข้ามได้)</p>}
                     <div className="flex flex-wrap gap-2 mb-2.5">
                         <button
                             type="button"
                             onClick={(e) => { e.preventDefault(); setCurrentItem(prev => ({ ...prev, accessories: prev.accessories.includes('unit_only') ? prev.accessories.filter(a => a !== 'unit_only') : ['unit_only'] })); setErrors(p => ({ ...p, accessories: '' })); }}
-                            className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-all flex items-center gap-1.5 outline-none cursor-pointer apple-card-sm ${currentItem.accessories.includes('unit_only') ? 'bg-amber-500 text-white border-amber-500 shadow-md' : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-gray-300 hover:border-amber-500/50 hover:text-amber-500'}`}
+                            className={`px-3.5 py-1.5 text-xs font-semibold rounded-full border transition-all flex items-center gap-1.5 outline-none cursor-pointer apple-card-sm ${currentItem.accessories.includes('unit_only') ? 'bg-amber-500 text-white border-amber-500 shadow-md' : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-gray-300 hover:border-amber-500/50 hover:text-amber-500'}`}
                         >
                             {t('accessories_list.unit_only')}
                         </button>
@@ -289,7 +289,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                                     type="button"
                                     key={acc}
                                     onClick={(e) => { e.preventDefault(); toggleAccessory(acc); }}
-                                    className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-all flex items-center gap-1.5 outline-none cursor-pointer apple-card-sm ${isActive ? 'bg-[#0071e3] text-white border-[#0071e3] shadow-md' : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-gray-300 hover:border-blue-500/50 hover:text-blue-500'}`}
+                                    className={`px-3.5 py-1.5 text-xs font-semibold rounded-full border transition-all flex items-center gap-1.5 outline-none cursor-pointer apple-card-sm ${isActive ? 'bg-[#0071e3] text-white border-[#0071e3] shadow-md' : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-gray-300 hover:border-blue-500/50 hover:text-blue-500'}`}
                                 >
                                     {t(`accessories_list.${acc}`)}
                                     {acc === 'acc_hdd' && <span className={`flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold ${hddCount > 0 ? 'bg-white text-[#0071e3]' : 'bg-black/10 dark:bg-white/10 text-gray-400'}`}>{hddCount > 0 ? hddCount : <Plus className="w-2.5 h-2.5" />}</span>}
@@ -298,58 +298,58 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                         })}
                     </div>
                     <div className="flex gap-2 mb-3">
-                        <input type="text" value={customAccessory} onChange={e => setCustomAccessory(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), setCustomAccessory(''), toggleAccessory(customAccessory))} placeholder={t('publicSubmit.otherAccPlaceholder')} className={`flex-1 ${getInputClass(false)} !py-2`} />
-                        <button type="button" onClick={() => { if (customAccessory) { toggleAccessory(customAccessory); setCustomAccessory(''); } }} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-[#1d1d1f] dark:text-white rounded-[14px] transition-all cursor-pointer"><Plus className="w-4 h-4" /></button>
+                        <input type="text" value={customAccessory} onChange={e => setCustomAccessory(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), setCustomAccessory(''), toggleAccessory(customAccessory))} placeholder={t('publicSubmit.otherAccPlaceholder')} className={`flex-1 ${getInputClass(false)} !py-2.5`} />
+                        <button type="button" onClick={() => { if (customAccessory) { toggleAccessory(customAccessory); setCustomAccessory(''); } }} className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-[#1d1d1f] dark:text-white rounded-full transition-all cursor-pointer"><Plus className="w-4 h-4" /></button>
                     </div>
                     {currentItem.accessories.length > 0 && (
-                        <div className="flex flex-wrap gap-2 p-3 bg-black/[0.02] dark:bg-black/40 rounded-[18px] border border-black/5 dark:border-white/10 apple-card-inner">
+                        <div className="flex flex-wrap gap-2 p-3.5 bg-black/[0.02] dark:bg-black/40 rounded-[24px] border border-black/5 dark:border-white/10 apple-card-inner">
                             {currentItem.accessories.map((acc, idx) => (
-                                <span key={`${acc}-${idx}`} className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#1a1a1e] text-xs font-semibold rounded-[12px] shadow-sm border border-gray-200/80 dark:border-white/10 text-[#1d1d1f] dark:text-white apple-card-sm">
+                                <span key={`${acc}-${idx}`} className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white dark:bg-[#1a1a1e] text-xs font-semibold rounded-full shadow-sm border border-gray-200/80 dark:border-white/10 text-[#1d1d1f] dark:text-white apple-card-sm">
                                     {acc.startsWith('acc_hdd::') ? `HDD (${acc.split('::')[1]})` : (acc.startsWith('acc_') || acc === 'unit_only' ? t(`accessories_list.${acc}`) : acc)}
-                                    <button type="button" onClick={() => setCurrentItem(p => ({ ...p, accessories: p.accessories.filter(a => a !== acc) }))} className="text-gray-400 hover:text-red-500 ml-1 cursor-pointer"><X className="w-3 h-3" /></button>
+                                    <button type="button" onClick={() => setCurrentItem(p => ({ ...p, accessories: p.accessories.filter(a => a !== acc) }))} className="text-gray-400 hover:text-red-500 ml-1 rounded-full cursor-pointer"><X className="w-3 h-3" /></button>
                                 </span>
                             ))}
                         </div>
                     )}
-                    {errors.accessories && <p className="text-red-500 text-xs mt-2 font-medium ml-2">{errors.accessories}</p>}
+                    {errors.accessories && <p className="text-red-500 text-xs mt-2 font-medium ml-3">{errors.accessories}</p>}
                 </div>
             </div>
 
             <div data-tour="tour-issue">
-                <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">{t('submit.issueDesc')} <span className="text-red-500 font-bold">*</span></label>
-                <textarea value={currentItem.issue} onChange={e => setCurrentItem({ ...currentItem, issue: e.target.value })} rows={3} className={getInputClass(!!errors.issue)} placeholder={mode === 'customer' ? t('placeholders.issueCustomer') : t('placeholders.issueAdmin')} />
+                <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-2">{t('submit.issueDesc')} <span className="text-red-500 font-bold">*</span></label>
+                <textarea value={currentItem.issue} onChange={e => setCurrentItem({ ...currentItem, issue: e.target.value })} rows={3} className={`w-full px-4 py-3 md:px-5 md:py-3.5 text-xs md:text-sm apple-card-inner rounded-[24px] md:rounded-[28px] outline-none transition-all bg-gray-50/70 dark:bg-white/[0.03] border border-gray-200/90 dark:border-white/[0.08] text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c20] focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3] ${errors.issue ? 'border-red-500 focus:ring-red-500 ring-2 ring-red-500/20' : ''}`} placeholder={mode === 'customer' ? t('placeholders.issueCustomer') : t('placeholders.issueAdmin')} />
                 {mode === 'customer'
-                    ? <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mt-1.5 ml-2 flex items-center gap-1"><Info className="w-3 h-3 text-blue-500 flex-shrink-0" /> เช่น &quot;ภาพมืด&quot;, &quot;เชื่อมต่อไม่ได้&quot;, &quot;มีเสียงดัง&quot;</p>
-                    : <p className="text-[11px] text-gray-400 mt-1.5 ml-2">{t('submit.issueHint')}</p>
+                    ? <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mt-1.5 ml-3 flex items-center gap-1"><Info className="w-3 h-3 text-blue-500 flex-shrink-0" /> เช่น &quot;ภาพมืด&quot;, &quot;เชื่อมต่อไม่ได้&quot;, &quot;มีเสียงดัง&quot;</p>
+                    : <p className="text-[11px] text-gray-400 mt-1.5 ml-3">{t('submit.issueHint')}</p>
                 }
             </div>
 
             {/* Device Username / Password (Optional) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                 <div>
-                    <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">{t('submit.deviceUsername')}</label>
+                    <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-2">{t('submit.deviceUsername')}</label>
                     <input value={currentItem.deviceUsername} onChange={e => setCurrentItem({ ...currentItem, deviceUsername: e.target.value })} className={getInputClass(false)} placeholder={t('placeholders.username')} />
                     {mode === 'customer'
-                        ? <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mt-1.5 ml-2 flex items-center gap-1"><Info className="w-3 h-3 text-blue-500 flex-shrink-0" /> ถ้ามีรหัสเข้าเครื่อง กรุณาแจ้งด้วย ช่วยให้ซ่อมเร็วขึ้น</p>
-                        : <p className="text-[11px] text-gray-400 mt-1.5 ml-2">{t('submit.usernameHint')}</p>
+                        ? <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mt-1.5 ml-3 flex items-center gap-1"><Info className="w-3 h-3 text-blue-500 flex-shrink-0" /> ถ้ามีรหัสเข้าเครื่อง กรุณาแจ้งด้วย ช่วยให้ซ่อมเร็วขึ้น</p>
+                        : <p className="text-[11px] text-gray-400 mt-1.5 ml-3">{t('submit.usernameHint')}</p>
                     }
                 </div>
                 <div>
-                    <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">{t('submit.devicePassword')}</label>
+                    <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-2">{t('submit.devicePassword')}</label>
                     <input value={currentItem.devicePassword} onChange={e => setCurrentItem({ ...currentItem, devicePassword: e.target.value })} className={getInputClass(false)} placeholder={t('placeholders.password')} />
-                    {mode !== 'customer' && <p className="text-[11px] text-gray-400 mt-1.5 ml-2">{t('submit.passwordHint')}</p>}
+                    {mode !== 'customer' && <p className="text-[11px] text-gray-400 mt-1.5 ml-3">{t('submit.passwordHint')}</p>}
                 </div>
             </div>
 
             {/* แนบรูปภาพอุปกรณ์ */}
             <div>
-                <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1 flex items-center gap-1">
+                <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-2 flex items-center gap-1.5">
                     <ImageIcon className="w-3.5 h-3.5" /> แนบรูปภาพตัวเครื่อง / อาการเสีย (Optional)
                 </label>
                 
-                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3.5">
                     {attachments.map((att) => (
-                        <div key={att.id} className="relative aspect-square w-full rounded-[20px] overflow-hidden border border-gray-200/80 dark:border-white/10 group bg-black/[0.02] dark:bg-white/[0.03] flex items-center justify-center cursor-pointer apple-card-sm">
+                        <div key={att.id} className="relative aspect-square w-full rounded-[24px] overflow-hidden border border-gray-200/80 dark:border-white/10 group bg-black/[0.02] dark:bg-white/[0.03] flex items-center justify-center cursor-pointer apple-card-sm">
                             <img 
                                 src={att.previewUrl} 
                                 alt="Product Attachment Preview" 
@@ -363,7 +363,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                                     e.stopPropagation();
                                     removeAttachment(att.id);
                                 }}
-                                className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-[10px] opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow z-10 cursor-pointer"
+                                className="absolute top-2.5 right-2.5 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow z-10 cursor-pointer"
                                 title="ลบรูปภาพ"
                             >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -372,7 +372,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                     ))}
                     
                     {attachments.length < 5 && (
-                        <div className="relative aspect-square w-full border-2 border-dashed border-gray-300/80 dark:border-white/15 hover:border-blue-500 dark:hover:border-blue-400 transition-colors rounded-[20px] bg-black/[0.01] dark:bg-white/[0.02] flex flex-col items-center justify-center cursor-pointer p-2 apple-card-sm">
+                        <div className="relative aspect-square w-full border-2 border-dashed border-gray-300/80 dark:border-white/15 hover:border-blue-500 dark:hover:border-blue-400 transition-colors rounded-[24px] bg-black/[0.01] dark:bg-white/[0.02] flex flex-col items-center justify-center cursor-pointer p-2 apple-card-sm">
                             {isUploadingImage ? (
                                 <div className="flex flex-col items-center gap-1 text-[10px] text-gray-400 text-center">
                                     <Loader2 className="w-5 h-5 text-[#0071e3] animate-spin" />
@@ -394,12 +394,12 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                         </div>
                     )}
                 </div>
-                <p className="text-[10.5px] text-gray-400 mt-2 ml-1">
+                <p className="text-[10.5px] text-gray-400 mt-2 ml-2">
                     *ระบบจะบีบอัดรูปภาพอุปกรณ์ให้อัตโนมัติ เพื่อไม่ให้เปลืองปริมาณการส่งข้อมูลมือถือ
                 </p>
             </div>
 
-            <button data-tour="tour-add-button" onClick={handleAddClick} className="w-full py-4 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-[18px] md:rounded-[22px] text-sm md:text-base font-extrabold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.01] active:scale-[0.98] outline-none cursor-pointer">
+            <button data-tour="tour-add-button" onClick={handleAddClick} className="w-full py-4 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-full text-sm md:text-base font-extrabold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.01] active:scale-[0.98] outline-none cursor-pointer">
                 <Plus className="w-5 h-5" /> {noSerial && quantity > 1 ? `เพิ่ม ${quantity} รายการ` : t(mode === 'customer' ? 'publicSubmit.addAnother' : 'submit.addToJob')}
             </button>
 
@@ -432,11 +432,11 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
 
 const TeamSelector = ({ selectedMain, onSelectMain, currentTeam, onSelectSub, t, error }: any) => {
     return (
-        <div className="bg-black/[0.02] dark:bg-black/40 rounded-[22px] md:rounded-[26px] p-4 sm:p-5 md:p-6 border border-gray-200/70 dark:border-white/[0.08] apple-card-inner">
-            <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-3 ml-1">
+        <div className="bg-black/[0.02] dark:bg-black/40 rounded-[28px] md:rounded-[34px] p-4 sm:p-6 md:p-7 border border-gray-200/70 dark:border-white/[0.08] apple-card-inner">
+            <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-3.5 ml-2">
                 {t('submit.assignTeam')} <span className="text-red-500 font-bold">*</span>
             </label>
-            <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5 mb-4">
+            <div className="grid grid-cols-3 gap-2.5 sm:gap-4 mb-4">
                 {[
                     { id: 'A', label: 'HIKVISION', sub: 'Team A', icon: Box, color: 'red', val: Team.HIKVISION },
                     { id: 'B', label: 'DAHUA', sub: 'Team B', icon: Layers, color: 'orange', val: Team.DAHUA },
@@ -448,7 +448,7 @@ const TeamSelector = ({ selectedMain, onSelectMain, currentTeam, onSelectSub, t,
                             type="button"
                             key={item.id}
                             onClick={() => onSelectMain(item.id)}
-                            className={`relative p-3 sm:p-4 rounded-[18px] md:rounded-[20px] border text-center transition-all flex flex-col items-center justify-center gap-2 cursor-pointer outline-none apple-card-sm ${
+                            className={`relative p-3.5 sm:p-5 rounded-[24px] md:rounded-[28px] border text-center transition-all flex flex-col items-center justify-center gap-2.5 cursor-pointer outline-none apple-card-sm ${
                                 isSelected 
                                     ? (item.color === 'red' 
                                         ? 'bg-red-500/10 dark:bg-red-500/15 border-red-500 ring-2 ring-red-500/30 shadow-md shadow-red-500/20' 
@@ -458,7 +458,7 @@ const TeamSelector = ({ selectedMain, onSelectMain, currentTeam, onSelectSub, t,
                                     : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] hover:border-gray-300 dark:hover:border-white/20 hover:scale-[1.01]'
                             }`}
                         >
-                            <div className={`p-2 rounded-[12px] ${
+                            <div className={`p-2.5 rounded-[16px] ${
                                 isSelected 
                                     ? (item.color === 'red' ? 'bg-red-500 text-white shadow-md' : item.color === 'orange' ? 'bg-orange-500 text-white shadow-md' : 'bg-blue-500 text-white shadow-md') 
                                     : (item.color === 'red' ? 'bg-red-500/10 text-red-500' : item.color === 'orange' ? 'bg-orange-500/10 text-orange-500' : 'bg-blue-500/10 text-blue-500')
@@ -474,7 +474,7 @@ const TeamSelector = ({ selectedMain, onSelectMain, currentTeam, onSelectSub, t,
                 })}
             </div>
             {selectedMain === 'C' && (
-                <div className="animate-fade-in pl-3 sm:pl-4 border-l-2 border-[#0071e3]/40 ml-1.5 my-2">
+                <div className="animate-fade-in pl-3 sm:pl-4 border-l-2 border-[#0071e3]/40 ml-2 my-2">
                     <div className="text-[10.5px] md:text-xs font-black text-[#0071e3] dark:text-blue-400 uppercase tracking-wider mb-2.5">{t('modals.selectSubUnit')}</div>
                     <div className="grid grid-cols-3 gap-2 sm:gap-3">
                         {[
@@ -488,7 +488,7 @@ const TeamSelector = ({ selectedMain, onSelectMain, currentTeam, onSelectSub, t,
                                     type="button"
                                     key={sub.val}
                                     onClick={() => onSelectSub(sub.val)}
-                                    className={`p-2.5 sm:p-3 rounded-[16px] border text-center transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer outline-none apple-card-sm ${
+                                    className={`p-2.5 sm:p-3 rounded-full sm:rounded-[20px] border text-center transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer outline-none apple-card-sm ${
                                         isSubActive 
                                             ? 'bg-blue-500/10 dark:bg-blue-500/15 border-[#0071e3] ring-1 ring-[#0071e3] shadow-sm text-[#0071e3] dark:text-blue-400 font-bold' 
                                             : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] hover:bg-gray-50 dark:hover:bg-white/[0.05] text-gray-600 dark:text-gray-400'
@@ -502,7 +502,7 @@ const TeamSelector = ({ selectedMain, onSelectMain, currentTeam, onSelectSub, t,
                     </div>
                 </div>
             )}
-            {error && <p className="text-red-500 text-xs mt-2 font-medium ml-1">{error}</p>}
+            {error && <p className="text-red-500 text-xs mt-2 font-medium ml-2">{error}</p>}
         </div>
     );
 };

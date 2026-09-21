@@ -37,14 +37,14 @@ interface StatCardProps {
 }
 
 const StatCard: React.FC<StatCardProps> = ({ label, value, icon, color, pillLabel, pillColor, subLabel }) => (
-    <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[26px] md:rounded-[32px] p-5 md:p-6 flex flex-col justify-between relative overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-xl group border border-gray-200/80 dark:border-white/[0.08]">
-        <div className="flex items-center justify-between gap-2 mb-3 md:mb-4">
+    <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[32px] md:rounded-[38px] p-5 sm:p-6 md:p-7 flex flex-col justify-between relative overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-xl group border border-gray-200/80 dark:border-white/[0.08]">
+        <div className="flex items-center justify-between gap-2 mb-3.5 md:mb-5">
             {/* macOS / Apple-style Squircle Icon Badge with 3D Bevel */}
-            <div className={`w-11 h-11 md:w-12 md:h-12 rounded-[14px] md:rounded-[16px] flex items-center justify-center flex-shrink-0 text-white shadow-md ${color} apple-card-sm transition-transform group-hover:scale-105`}>
+            <div className={`w-11 h-11 md:w-12 md:h-12 rounded-[18px] flex items-center justify-center flex-shrink-0 text-white shadow-md ${color} apple-card-sm transition-transform group-hover:scale-105`}>
                 {icon}
             </div>
             {pillLabel && (
-                <span className={`text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full border apple-card-sm ${pillColor || 'bg-black/5 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400 border-black/5 dark:border-white/10'}`}>
+                <span className={`text-[10px] md:text-[11px] font-bold px-3 py-1 rounded-full border apple-card-sm ${pillColor || 'bg-black/5 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400 border-black/5 dark:border-white/10'}`}>
                     {pillLabel}
                 </span>
             )}
@@ -259,24 +259,24 @@ export const Dashboard: React.FC = () => {
             {/* Main Bento Grid: Status Chart & Urgent Action Deck */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-7">
                 {/* Left Card: Status Distribution Bar Chart */}
-                <div className="lg:col-span-2 bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[28px] md:rounded-[36px] p-5 sm:p-7 md:p-8 border border-gray-200/80 dark:border-white/[0.08] shadow-md flex flex-col justify-between">
+                <div className="lg:col-span-2 bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[32px] sm:rounded-[38px] md:rounded-[44px] p-6 sm:p-8 md:p-9 border border-gray-200/80 dark:border-white/[0.08] shadow-md flex flex-col justify-between">
                     <div>
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                             <div>
                                 <div className="flex items-center gap-2.5">
-                                    <div className="w-8 h-8 rounded-[10px] bg-blue-500/10 text-[#0071e3] flex items-center justify-center font-black">
+                                    <div className="w-9 h-9 rounded-[14px] bg-blue-500/10 text-[#0071e3] flex items-center justify-center font-black">
                                         <Layers className="w-4 h-4" />
                                     </div>
                                     <h3 className="text-base md:text-xl font-extrabold text-[#1d1d1f] dark:text-white">
                                         สรุปงานแยกตามสถานะ
                                     </h3>
                                 </div>
-                                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1 pl-10.5">
+                                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1 pl-11.5">
                                     จำนวนงานเคลมในแต่ละขั้นตอนปัจจุบัน
                                 </p>
                             </div>
 
-                            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/[0.03] dark:bg-black/40 border border-black/5 dark:border-white/10 text-xs font-bold text-gray-700 dark:text-gray-300 self-start sm:self-auto apple-card-sm">
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/[0.03] dark:bg-black/40 border border-black/5 dark:border-white/10 text-xs font-bold text-gray-700 dark:text-gray-300 self-start sm:self-auto apple-card-sm">
                                 <span className="w-2 h-2 rounded-full bg-[#0071e3] animate-pulse"></span>
                                 รวม <span className="font-extrabold text-[#0071e3] dark:text-blue-400">{stats.totalRMAs}</span> งานในระบบ
                             </div>
@@ -291,7 +291,7 @@ export const Dashboard: React.FC = () => {
                                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#86868b', fontWeight: 600 }} allowDecimals={false} />
                                     <Tooltip
                                         contentStyle={{ 
-                                            borderRadius: '18px', 
+                                            borderRadius: '20px', 
                                             background: '#1c1c20', 
                                             border: '1px solid rgba(255,255,255,0.12)', 
                                             boxShadow: '0 8px 30px rgba(0,0,0,0.5)', 
@@ -301,7 +301,7 @@ export const Dashboard: React.FC = () => {
                                         cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                                         formatter={(value: number) => [`${value} งาน`, 'จำนวน']}
                                     />
-                                    <Bar dataKey="value" radius={[8, 8, 8, 8]}>
+                                    <Bar dataKey="value" radius={[12, 12, 12, 12]}>
                                         {statusData.map((entry, index) => (
                                             <Cell key={index} fill={entry.fill} />
                                         ))}
@@ -314,7 +314,7 @@ export const Dashboard: React.FC = () => {
                     {/* Status Distribution Pills Footer */}
                     <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/5 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                         {statusData.map((s, i) => (
-                            <div key={i} className="flex items-center justify-between p-2 rounded-[14px] bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.03] dark:border-white/[0.04]">
+                            <div key={i} className="flex items-center justify-between px-3 py-2 rounded-full bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.03] dark:border-white/[0.04]">
                                 <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-600 dark:text-gray-400">
                                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: s.fill }}></span>
                                     {s.name}
@@ -326,7 +326,7 @@ export const Dashboard: React.FC = () => {
                 </div>
 
                 {/* Right Card: Urgent Attention Items Deck */}
-                <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[28px] md:rounded-[36px] p-5 sm:p-7 md:p-8 flex flex-col border border-gray-200/80 dark:border-white/[0.08] shadow-md">
+                <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[32px] sm:rounded-[38px] md:rounded-[44px] p-6 sm:p-8 md:p-9 flex flex-col border border-gray-200/80 dark:border-white/[0.08] shadow-md">
                     <div className="flex items-center justify-between gap-2 mb-4 md:mb-6">
                         <div>
                             <h3 className="text-base md:text-xl font-extrabold text-[#1d1d1f] dark:text-white flex items-center gap-2">
@@ -334,14 +334,14 @@ export const Dashboard: React.FC = () => {
                             </h3>
                             <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">ต้องได้รับการติดตามทันที</p>
                         </div>
-                        <span className="px-3 py-1 rounded-full text-xs font-black bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30">
+                        <span className="px-3.5 py-1 rounded-full text-xs font-black bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30">
                             {stats.urgentRMAs.length} งาน
                         </span>
                     </div>
 
                     <div className="flex-1 overflow-y-auto pr-1 space-y-3 custom-scrollbar max-h-[360px] sm:max-h-[460px]">
                         {stats.urgentRMAs.length === 0 ? (
-                            <div className="h-full min-h-[220px] flex flex-col items-center justify-center p-8 text-center bg-emerald-500/5 rounded-[22px] border border-emerald-500/20">
+                            <div className="h-full min-h-[220px] flex flex-col items-center justify-center p-8 text-center bg-emerald-500/5 rounded-[28px] border border-emerald-500/20">
                                 <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-3">
                                     <CheckCircle2 className="w-6 h-6" />
                                 </div>
@@ -353,7 +353,7 @@ export const Dashboard: React.FC = () => {
                                 <Link 
                                     key={rma.id} 
                                     to={`/admin/job/${encodeURIComponent(rma.groupRequestId || rma.id)}`} 
-                                    className="block bg-black/[0.02] dark:bg-white/[0.03] apple-card-inner rounded-[20px] md:rounded-[22px] p-3.5 md:p-4 border border-gray-200/70 dark:border-white/[0.06] hover:border-[#0071e3]/40 dark:hover:border-blue-400/40 hover:-translate-y-0.5 hover:shadow-md transition-all group outline-none"
+                                    className="block bg-black/[0.02] dark:bg-white/[0.03] apple-card-inner rounded-[24px] md:rounded-[26px] p-4 border border-gray-200/70 dark:border-white/[0.06] hover:border-[#0071e3]/40 dark:hover:border-blue-400/40 hover:-translate-y-0.5 hover:shadow-md transition-all group outline-none"
                                 >
                                     <div className="flex justify-between items-start mb-1.5 gap-2">
                                         <div className="font-extrabold text-xs md:text-sm text-[#1d1d1f] dark:text-white group-hover:text-[#0071e3] transition-colors line-clamp-1">
@@ -381,10 +381,10 @@ export const Dashboard: React.FC = () => {
 
             {/* Bottom Section: Aging Analysis Deck */}
             {stats.agingBuckets && (
-                <div className="mt-6 md:mt-8 bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[28px] md:rounded-[36px] p-5 sm:p-7 md:p-8 border border-gray-200/80 dark:border-white/[0.08] shadow-md">
+                <div className="mt-6 md:mt-8 bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[32px] sm:rounded-[38px] md:rounded-[44px] p-6 sm:p-8 md:p-9 border border-gray-200/80 dark:border-white/[0.08] shadow-md">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                         <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-[10px] bg-purple-500/10 text-purple-500 flex items-center justify-center font-black">
+                            <div className="w-9 h-9 rounded-[14px] bg-purple-500/10 text-purple-500 flex items-center justify-center font-black">
                                 <Activity className="w-4 h-4" />
                             </div>
                             <div>
@@ -406,7 +406,7 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     {/* Stacked Horizontal Aging Bar */}
-                    <div className="w-full h-3 bg-black/5 dark:bg-white/[0.05] rounded-full overflow-hidden flex gap-1 p-0.5">
+                    <div className="w-full h-3.5 bg-black/5 dark:bg-white/[0.05] rounded-full overflow-hidden flex gap-1 p-0.5">
                         <div 
                             className="bg-emerald-500 h-full rounded-full transition-all duration-500" 
                             style={{ width: `${stats.totalRMAs > 0 ? Math.max(5, (stats.agingBuckets.bucket0_7 / stats.totalRMAs) * 100) : 33.3}%` }}
@@ -426,21 +426,21 @@ export const Dashboard: React.FC = () => {
 
                     {/* Legend */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 text-xs">
-                        <div className="p-3 rounded-[18px] bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center justify-between">
+                        <div className="p-3.5 rounded-full sm:rounded-[22px] bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center justify-between">
                             <span className="flex items-center gap-2 text-gray-600 dark:text-gray-400 font-medium">
                                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                                 {t('dashboard.fresh')} (0-7 วัน)
                             </span>
                             <span className="font-extrabold text-emerald-600 dark:text-emerald-400">{stats.agingBuckets.bucket0_7} งาน</span>
                         </div>
-                        <div className="p-3 rounded-[18px] bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center justify-between">
+                        <div className="p-3.5 rounded-full sm:rounded-[22px] bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center justify-between">
                             <span className="flex items-center gap-2 text-gray-600 dark:text-gray-400 font-medium">
                                 <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
                                 {t('dashboard.aging')} (8-15 วัน)
                             </span>
                             <span className="font-extrabold text-amber-600 dark:text-amber-400">{stats.agingBuckets.bucket8_15} งาน</span>
                         </div>
-                        <div className="p-3 rounded-[18px] bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center justify-between">
+                        <div className="p-3.5 rounded-full sm:rounded-[22px] bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center justify-between">
                             <span className="flex items-center gap-2 text-gray-600 dark:text-gray-400 font-medium">
                                 <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>
                                 {t('dashboard.stale')} (15+ วัน)

@@ -661,14 +661,14 @@ export const ClaimsList: React.FC = () => {
             </div>
 
             {/* Top Workflow Status & Progress Pipeline */}
-            <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[28px] md:rounded-[36px] p-3.5 sm:p-4 md:p-5 shadow-sm mb-4 md:mb-5">
+            <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[32px] sm:rounded-[36px] md:rounded-[42px] p-4 sm:p-5 md:p-6 shadow-sm mb-5">
                 {/* 4 Interactive Status Cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 md:gap-4">
                     {/* All items */}
                     <button 
                         type="button"
                         onClick={() => setStatusFilter('ALL')}
-                        className={`group p-3 sm:p-3.5 md:p-4 text-left rounded-[20px] md:rounded-[24px] border transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
+                        className={`group p-3.5 sm:p-4 md:p-5 text-left rounded-[24px] md:rounded-[28px] border transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
                             statusFilter === 'ALL'
                                 ? 'bg-blue-50/80 dark:bg-blue-500/15 border-blue-500/40 dark:border-blue-400/40 shadow-sm ring-2 ring-blue-500/20'
                                 : 'bg-gray-50/50 dark:bg-white/[0.03] border-gray-200/60 dark:border-white/[0.06] hover:border-blue-400/40 dark:hover:border-blue-400/30 hover:bg-blue-50/30 dark:hover:bg-white/[0.05]'
@@ -676,7 +676,7 @@ export const ClaimsList: React.FC = () => {
                     >
                         <div className="flex items-center justify-between gap-2 mb-2">
                             <div className="flex items-center gap-2 min-w-0">
-                                <div className={`w-8 h-8 rounded-[11px] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                                <div className={`w-8 h-8 rounded-[14px] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
                                     statusFilter === 'ALL' ? 'bg-[#0071e3] text-white shadow-sm' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
                                 }`}>
                                     <Package className="w-4 h-4" />
@@ -685,7 +685,7 @@ export const ClaimsList: React.FC = () => {
                                     งานทั้งหมด
                                 </span>
                             </div>
-                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0">
+                            <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0">
                                 100%
                             </span>
                         </div>
@@ -705,7 +705,7 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'PENDING' ? 'ALL' : 'PENDING')}
-                        className={`group p-3 sm:p-3.5 md:p-4 text-left rounded-[20px] md:rounded-[24px] border transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
+                        className={`group p-3.5 sm:p-4 md:p-5 text-left rounded-[24px] md:rounded-[28px] border transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
                             statusFilter === 'PENDING'
                                 ? 'bg-amber-50/80 dark:bg-amber-500/15 border-amber-500/40 dark:border-amber-400/40 shadow-sm ring-2 ring-amber-500/20'
                                 : 'bg-gray-50/50 dark:bg-white/[0.03] border-gray-200/60 dark:border-white/[0.06] hover:border-amber-400/40 dark:hover:border-amber-400/30 hover:bg-amber-50/30 dark:hover:bg-white/[0.05]'
@@ -713,7 +713,7 @@ export const ClaimsList: React.FC = () => {
                     >
                         <div className="flex items-center justify-between gap-2 mb-2">
                             <div className="flex items-center gap-2 min-w-0">
-                                <div className={`w-8 h-8 rounded-[11px] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                                <div className={`w-8 h-8 rounded-[14px] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
                                     statusFilter === 'PENDING' ? 'bg-amber-500 text-white shadow-sm' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
                                 }`}>
                                     <Clock className="w-4 h-4" />
@@ -723,7 +723,7 @@ export const ClaimsList: React.FC = () => {
                                 </span>
                             </div>
                             {dashboardStats.pendingCount > 0 && (
-                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 shrink-0">
+                                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 shrink-0">
                                     {Math.round(dashboardStats.pendingPercent)}%
                                 </span>
                             )}
@@ -743,7 +743,7 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'IN_PROGRESS' ? 'ALL' : 'IN_PROGRESS')}
-                        className={`group p-3 sm:p-3.5 md:p-4 text-left rounded-[20px] md:rounded-[24px] border transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
+                        className={`group p-3.5 sm:p-4 md:p-5 text-left rounded-[24px] md:rounded-[28px] border transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
                             statusFilter === 'IN_PROGRESS'
                                 ? 'bg-sky-50/80 dark:bg-sky-500/15 border-sky-500/40 dark:border-sky-400/40 shadow-sm ring-2 ring-sky-500/20'
                                 : 'bg-gray-50/50 dark:bg-white/[0.03] border-gray-200/60 dark:border-white/[0.06] hover:border-sky-400/40 dark:hover:border-sky-400/30 hover:bg-sky-50/30 dark:hover:bg-white/[0.05]'
@@ -751,7 +751,7 @@ export const ClaimsList: React.FC = () => {
                     >
                         <div className="flex items-center justify-between gap-2 mb-2">
                             <div className="flex items-center gap-2 min-w-0">
-                                <div className={`w-8 h-8 rounded-[11px] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                                <div className={`w-8 h-8 rounded-[14px] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
                                     statusFilter === 'IN_PROGRESS' ? 'bg-[#0071e3] text-white shadow-sm' : 'bg-sky-500/10 text-sky-600 dark:text-sky-400'
                                 }`}>
                                     <Wrench className="w-4 h-4" />
@@ -760,7 +760,7 @@ export const ClaimsList: React.FC = () => {
                                     กำลังดำเนินการ
                                 </span>
                             </div>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-700 dark:text-sky-300 shrink-0">
+                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-700 dark:text-sky-300 shrink-0">
                                 {Math.round(dashboardStats.inProgressPercent)}%
                             </span>
                         </div>
@@ -779,7 +779,7 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'DONE' ? 'ALL' : 'DONE')}
-                        className={`group p-3 sm:p-3.5 md:p-4 text-left rounded-[20px] md:rounded-[24px] border transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
+                        className={`group p-3.5 sm:p-4 md:p-5 text-left rounded-[24px] md:rounded-[28px] border transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
                             statusFilter === 'DONE'
                                 ? 'bg-emerald-50/80 dark:bg-emerald-500/15 border-emerald-500/40 dark:border-emerald-400/40 shadow-sm ring-2 ring-emerald-500/20'
                                 : 'bg-gray-50/50 dark:bg-white/[0.03] border-gray-200/60 dark:border-white/[0.06] hover:border-emerald-400/40 dark:hover:border-emerald-400/30 hover:bg-emerald-50/30 dark:hover:bg-white/[0.05]'
@@ -787,7 +787,7 @@ export const ClaimsList: React.FC = () => {
                     >
                         <div className="flex items-center justify-between gap-2 mb-2">
                             <div className="flex items-center gap-2 min-w-0">
-                                <div className={`w-8 h-8 rounded-[11px] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                                <div className={`w-8 h-8 rounded-[14px] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
                                     statusFilter === 'DONE' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                                 }`}>
                                     <CheckCircle2 className="w-4 h-4" />

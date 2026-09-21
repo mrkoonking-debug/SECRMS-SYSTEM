@@ -318,7 +318,7 @@ export const IncomingClaims: React.FC = () => {
             </div>
 
             {/* Search and Brand Filter Controls */}
-            <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[28px] md:rounded-[32px] p-3.5 md:p-4.5 shadow-sm mb-5 md:mb-6 space-y-3">
+            <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[32px] sm:rounded-[36px] md:rounded-[42px] p-4 sm:p-5 md:p-6 shadow-sm mb-6 space-y-3">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                     <div className="relative w-full flex-1">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
@@ -327,7 +327,7 @@ export const IncomingClaims: React.FC = () => {
                             placeholder="ค้นหาตามชื่อลูกค้า, เบอร์โทร, Ref #, S/N, รุ่นสินค้า, อาการเสีย..."
                             value={search}
                             onChange={(e) => handleSearchChange(e.target.value)}
-                            className="w-full bg-gray-50/70 dark:bg-white/[0.03] border border-gray-150/60 dark:border-white/5 apple-card-inner rounded-[20px] md:rounded-[22px] py-2.5 pl-11 pr-10 text-xs md:text-sm dark:text-white focus:ring-2 focus:ring-[#0071e3]/30 transition-all outline-none"
+                            className="w-full bg-gray-50/70 dark:bg-white/[0.03] border border-gray-150/60 dark:border-white/5 apple-card-inner rounded-full py-2.5 pl-11 pr-10 text-xs md:text-sm dark:text-white focus:ring-2 focus:ring-[#0071e3]/30 transition-all outline-none"
                         />
                         {search && (
                             <button
@@ -343,7 +343,7 @@ export const IncomingClaims: React.FC = () => {
                         <select
                             value={brandFilter}
                             onChange={(e) => setBrandFilter(e.target.value)}
-                            className="bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/10 apple-card-inner text-xs font-bold rounded-[18px] px-3.5 py-2.5 text-gray-700 dark:text-white focus:ring-2 focus:ring-[#0071e3]/30 outline-none w-full sm:w-auto transition-all cursor-pointer"
+                            className="bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/10 apple-card-inner text-xs font-bold rounded-full px-4 py-2.5 text-gray-700 dark:text-white focus:ring-2 focus:ring-[#0071e3]/30 outline-none w-full sm:w-auto transition-all cursor-pointer"
                         >
                             <option value="ALL">ยี่ห้อทั้งหมด</option>
                             {brandOptions.map(b => (
@@ -365,7 +365,7 @@ export const IncomingClaims: React.FC = () => {
             </div>
 
             {totalJobsCount === 0 ? (
-                <div className="bg-white dark:bg-[#16161a] apple-liquid-glass p-12 md:p-20 text-center rounded-[28px] md:rounded-[36px]">
+                <div className="bg-white dark:bg-[#16161a] apple-liquid-glass p-12 md:p-20 text-center rounded-[34px] sm:rounded-[38px] md:rounded-[44px]">
                     <div className="w-14 h-14 md:w-20 md:h-20 bg-blue-50 dark:bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 text-[#0071e3]">
                         <CheckCircle2 className="w-7 h-7 md:w-10 md:h-10 text-emerald-500" />
                     </div>
@@ -381,7 +381,7 @@ export const IncomingClaims: React.FC = () => {
                         return (
                             <div 
                                 key={job.groupId} 
-                                className={`bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[28px] md:rounded-[36px] overflow-hidden transition-all duration-200 ${
+                                className={`bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[32px] sm:rounded-[36px] md:rounded-[42px] overflow-hidden transition-all duration-200 ${
                                     isSelected 
                                         ? 'ring-2 ring-[#0071e3] shadow-2xl shadow-blue-500/25' 
                                         : 'hover:-translate-y-0.5 hover:shadow-lg'
@@ -473,7 +473,7 @@ export const IncomingClaims: React.FC = () => {
                                         {!isSelected && (
                                             <button
                                                 onClick={() => { setSelectedGroupId(job.groupId); setExpandedGroupId(job.groupId); }}
-                                                className="w-full sm:w-auto py-2.5 md:py-3 px-6 md:px-7 bg-white hover:bg-gray-100 text-[#111] dark:bg-white dark:text-[#111] dark:hover:bg-gray-150 rounded-[18px] md:rounded-[20px] text-xs md:text-sm font-black flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(0,0,0,0.12)] dark:shadow-[0_4px_24px_rgba(255,255,255,0.16)] transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                                                className="w-full sm:w-auto py-2.5 md:py-3 px-6 md:px-8 bg-white hover:bg-gray-100 text-[#111] dark:bg-white dark:text-[#111] dark:hover:bg-gray-150 rounded-full text-xs md:text-sm font-black flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(0,0,0,0.12)] dark:shadow-[0_4px_24px_rgba(255,255,255,0.16)] transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                                             >
                                                 <span>{t('incoming.assignBtn')}</span>
                                                 <ChevronRight className="w-4 h-4 text-black" />
@@ -486,8 +486,8 @@ export const IncomingClaims: React.FC = () => {
                                         <div className="border-t border-black/5 dark:border-white/5 pt-4 md:pt-5 animate-slide-up">
                                             <div className="space-y-2.5 md:space-y-3">
                                                 {job.rmas.map((rma, idx) => (
-                                                    <div key={rma.id} className="p-3.5 md:p-4.5 bg-gray-50/70 dark:bg-white/[0.03] apple-card-inner rounded-[18px] md:rounded-[22px] border border-gray-200/60 dark:border-white/[0.06] flex flex-col md:flex-row md:items-center gap-3 md:gap-4.5 relative group">
-                                                        <div className="w-8 h-8 rounded-[11px] bg-[#0071e3] text-white flex items-center justify-center text-xs font-black flex-shrink-0 shadow-sm">
+                                                    <div key={rma.id} className="p-4 md:p-5 bg-gray-50/70 dark:bg-white/[0.03] apple-card-inner rounded-[24px] md:rounded-[28px] border border-gray-200/60 dark:border-white/[0.06] flex flex-col md:flex-row md:items-center gap-3 md:gap-4.5 relative group">
+                                                        <div className="w-8 h-8 rounded-[14px] bg-[#0071e3] text-white flex items-center justify-center text-xs font-black flex-shrink-0 shadow-sm">
                                                             {idx + 1}
                                                         </div>
                                                         <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-2.5 md:gap-4 pr-16 md:pr-0">
@@ -510,14 +510,14 @@ export const IncomingClaims: React.FC = () => {
                                                             <button
                                                                 onClick={(e) => startEditRMA(rma, e)}
                                                                 title="แก้ไขรายการสินค้านี้"
-                                                                className="p-1.5 rounded-[10px] bg-white dark:bg-white/[0.08] hover:bg-gray-100 dark:hover:bg-white/20 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10 transition-colors cursor-pointer"
+                                                                className="p-2 rounded-full bg-white dark:bg-white/[0.08] hover:bg-gray-100 dark:hover:bg-white/20 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10 transition-colors cursor-pointer"
                                                             >
                                                                 <Pencil className="w-3.5 h-3.5 text-[#0071e3]" />
                                                             </button>
                                                             <button
                                                                 onClick={(e) => handleDeleteRMA(rma, e)}
                                                                 title="ลบเฉพาะสินค้าชิ้นนี้"
-                                                                className="p-1.5 rounded-[10px] bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 border border-red-200 dark:border-red-800/30 transition-colors cursor-pointer"
+                                                                className="p-2 rounded-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 border border-red-200 dark:border-red-800/30 transition-colors cursor-pointer"
                                                             >
                                                                 <Trash2 className="w-3.5 h-3.5" />
                                                             </button>
@@ -536,37 +536,37 @@ export const IncomingClaims: React.FC = () => {
                                                 <div className="grid grid-cols-3 gap-2.5 md:gap-4">
                                                     <button
                                                         onClick={() => handleMainGroupSelect('A')}
-                                                        className={`p-3 md:p-4 apple-card-inner rounded-[20px] md:rounded-[24px] border text-left transition-all flex flex-col md:flex-row items-center gap-2 md:gap-4 cursor-pointer ${
+                                                        className={`p-3.5 md:p-4.5 apple-card-inner rounded-[24px] md:rounded-[28px] border text-left transition-all flex flex-col md:flex-row items-center gap-2 md:gap-4 cursor-pointer ${
                                                             selectedMainGroup === 'A' 
                                                                 ? 'bg-red-500/10 dark:bg-red-500/15 border-red-500 ring-2 ring-red-500/30 shadow-lg shadow-red-500/20' 
                                                                 : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] hover:border-red-400/40'
                                                         }`}
                                                     >
-                                                        <div className={`p-2 md:p-3 rounded-[14px] ${selectedMainGroup === 'A' ? 'bg-red-500 text-white shadow-md' : 'bg-red-500/10 text-red-500'}`}><Box className="w-4 h-4 md:w-5 md:h-5" /></div>
+                                                        <div className={`p-2.5 md:p-3 rounded-[16px] ${selectedMainGroup === 'A' ? 'bg-red-500 text-white shadow-md' : 'bg-red-500/10 text-red-500'}`}><Box className="w-4 h-4 md:w-5 md:h-5" /></div>
                                                         <div className="text-center md:text-left"><div className="font-extrabold text-xs md:text-base text-[#1d1d1f] dark:text-white">HIK</div><div className="text-[10px] text-gray-400">Team A</div></div>
                                                     </button>
 
                                                     <button
                                                         onClick={() => handleMainGroupSelect('B')}
-                                                        className={`p-3 md:p-4 apple-card-inner rounded-[20px] md:rounded-[24px] border text-left transition-all flex flex-col md:flex-row items-center gap-2 md:gap-4 cursor-pointer ${
+                                                        className={`p-3.5 md:p-4.5 apple-card-inner rounded-[24px] md:rounded-[28px] border text-left transition-all flex flex-col md:flex-row items-center gap-2 md:gap-4 cursor-pointer ${
                                                             selectedMainGroup === 'B' 
                                                                 ? 'bg-orange-500/10 dark:bg-orange-500/15 border-orange-500 ring-2 ring-orange-500/30 shadow-lg shadow-orange-500/20' 
                                                                 : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] hover:border-orange-400/40'
                                                         }`}
                                                     >
-                                                        <div className={`p-2 md:p-3 rounded-[14px] ${selectedMainGroup === 'B' ? 'bg-orange-500 text-white shadow-md' : 'bg-orange-500/10 text-orange-500'}`}><Layers className="w-4 h-4 md:w-5 md:h-5" /></div>
+                                                        <div className={`p-2.5 md:p-3 rounded-[16px] ${selectedMainGroup === 'B' ? 'bg-orange-500 text-white shadow-md' : 'bg-orange-500/10 text-orange-500'}`}><Layers className="w-4 h-4 md:w-5 md:h-5" /></div>
                                                         <div className="text-center md:text-left"><div className="font-extrabold text-xs md:text-base text-[#1d1d1f] dark:text-white">DAHUA</div><div className="text-[10px] text-gray-400">Team B</div></div>
                                                     </button>
 
                                                     <button
                                                         onClick={() => handleMainGroupSelect('C')}
-                                                        className={`p-3 md:p-4 apple-card-inner rounded-[20px] md:rounded-[24px] border text-left transition-all flex flex-col md:flex-row items-center gap-2 md:gap-4 cursor-pointer ${
+                                                        className={`p-3.5 md:p-4.5 apple-card-inner rounded-[24px] md:rounded-[28px] border text-left transition-all flex flex-col md:flex-row items-center gap-2 md:gap-4 cursor-pointer ${
                                                             selectedMainGroup === 'C' 
                                                                 ? 'bg-blue-500/10 dark:bg-blue-500/15 border-blue-500 ring-2 ring-blue-500/30 shadow-lg shadow-blue-500/20' 
                                                                 : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] hover:border-blue-400/40'
                                                         }`}
                                                     >
-                                                        <div className={`p-2 md:p-3 rounded-[14px] ${selectedMainGroup === 'C' ? 'bg-blue-500 text-white shadow-md' : 'bg-blue-500/10 text-blue-500'}`}><Wifi className="w-4 h-4 md:w-5 md:h-5" /></div>
+                                                        <div className={`p-2.5 md:p-3 rounded-[16px] ${selectedMainGroup === 'C' ? 'bg-blue-500 text-white shadow-md' : 'bg-blue-500/10 text-blue-500'}`}><Wifi className="w-4 h-4 md:w-5 md:h-5" /></div>
                                                         <div className="text-center md:text-left"><div className="font-extrabold text-xs md:text-base text-[#1d1d1f] dark:text-white">Network</div><div className="text-[10px] text-gray-400">C / E / G</div></div>
                                                     </button>
                                                 </div>
@@ -585,7 +585,7 @@ export const IncomingClaims: React.FC = () => {
                                                             <button
                                                                 key={sub.val}
                                                                 onClick={() => setFinalTeam(sub.val)}
-                                                                className={`p-2.5 md:p-3.5 apple-card-sm rounded-[16px] md:rounded-[18px] border text-center md:text-left transition-all flex flex-col md:flex-row items-center gap-1.5 md:gap-3 cursor-pointer ${
+                                                                className={`p-2.5 md:p-3.5 apple-card-sm rounded-full sm:rounded-[20px] border text-center md:text-left transition-all flex flex-col md:flex-row items-center gap-1.5 md:gap-3 cursor-pointer ${
                                                                     finalTeam === sub.val 
                                                                         ? 'bg-blue-500/10 dark:bg-blue-500/15 border-[#0071e3] ring-1 ring-[#0071e3] shadow-md' 
                                                                         : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] hover:border-gray-300 dark:hover:border-white/20'
@@ -602,14 +602,14 @@ export const IncomingClaims: React.FC = () => {
                                             <div className="flex flex-row justify-end items-center gap-2 md:gap-3 pt-2 md:pt-4">
                                                 <button
                                                     onClick={resetSelection}
-                                                    className="px-4 md:px-7 py-2.5 md:py-3 bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 rounded-[16px] md:rounded-[18px] text-xs md:text-sm font-bold text-gray-600 dark:text-gray-300 transition-all cursor-pointer"
+                                                    className="px-5 md:px-8 py-2.5 md:py-3 bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 rounded-full text-xs md:text-sm font-bold text-gray-600 dark:text-gray-300 transition-all cursor-pointer"
                                                 >
                                                     Cancel
                                                 </button>
                                                 <button
                                                     disabled={!finalTeam || isAssigning}
                                                     onClick={() => handleAssignGroup(job)}
-                                                    className="flex-1 sm:flex-none px-5 md:px-9 py-2.5 md:py-3 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-[16px] md:rounded-[18px] text-xs md:text-sm font-bold shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:shadow-none transition-all active:scale-95 cursor-pointer"
+                                                    className="flex-1 sm:flex-none px-6 md:px-10 py-2.5 md:py-3 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-full text-xs md:text-sm font-bold shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:shadow-none transition-all active:scale-95 cursor-pointer"
                                                 >
                                                     {isAssigning ? <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" /> : <><Check className="w-4 h-4 md:w-5 md:h-5" /> {t('incoming.assignBtn')} ({job.rmas.length} items)</>}
                                                 </button>
