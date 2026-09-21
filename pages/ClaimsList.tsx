@@ -870,23 +870,23 @@ export const ClaimsList: React.FC = () => {
                     {/* All Teams Card */}
                     <button
                         onClick={() => { setTeamFilter('ALL'); setIsTeamCExpanded(false); }}
-                        className={`rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
+                        className={`rounded-[26px] md:rounded-[28px] p-4.5 sm:p-5 md:p-5.5 lg:px-6 lg:py-5.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             teamFilter === 'ALL'
                                 ? 'apple-card bg-gradient-to-br from-[#0071e3] to-[#005bb5] text-white shadow-lg shadow-blue-500/20'
                                 : 'bg-white dark:bg-[#16161a] apple-liquid-glass hover:dark:bg-[#1c1c22] active:scale-[0.98]'
                         }`}
                     >
                         <div>
-                            <div className="flex items-center justify-between mb-2">
-                                <span className={`text-[10.5px] font-extrabold uppercase tracking-wider ${teamFilter === 'ALL' ? 'text-blue-100' : 'text-gray-400 dark:text-gray-500'}`}>
+                            <div className="flex items-center justify-between gap-2 mb-2.5">
+                                <span className={`text-[10.5px] md:text-[11px] font-extrabold uppercase tracking-wider truncate ${teamFilter === 'ALL' ? 'text-blue-100' : 'text-gray-400 dark:text-gray-500'}`}>
                                     ทุกทีม (รวมทุกแบรนด์)
                                 </span>
-                                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${teamFilter === 'ALL' ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'}`}>
+                                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${teamFilter === 'ALL' ? 'bg-white/20 text-white shadow-xs' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'}`}>
                                     เสร็จ {dashboardStats.all.rate}%
                                 </span>
                             </div>
-                            <div className="flex items-baseline gap-2">
-                                <span className={`text-2xl md:text-3xl font-black ${teamFilter === 'ALL' ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>
+                            <div className="flex items-baseline gap-2 my-0.5">
+                                <span className={`text-2xl md:text-3xl font-black tracking-tight ${teamFilter === 'ALL' ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>
                                     {dashboardStats.all.active}
                                 </span>
                                 <span className={`text-xs font-semibold ${teamFilter === 'ALL' ? 'text-blue-100/80' : 'text-gray-400'}`}>
@@ -895,7 +895,7 @@ export const ClaimsList: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="mt-3 pt-2.5 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px]">
+                        <div className="mt-3.5 pt-2.5 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px]">
                             <span className={teamFilter === 'ALL' ? 'text-blue-100' : 'text-gray-400'}>
                                 ทั้งหมด {dashboardStats.all.total} งาน
                             </span>
@@ -908,23 +908,23 @@ export const ClaimsList: React.FC = () => {
                     {/* Team HIK Card */}
                     <button
                         onClick={() => { setTeamFilter(Team.HIKVISION); setIsTeamCExpanded(false); }}
-                        className={`rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
+                        className={`rounded-[26px] md:rounded-[28px] p-4.5 sm:p-5 md:p-5.5 lg:px-6 lg:py-5.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             teamFilter === Team.HIKVISION
                                 ? 'apple-card bg-gradient-to-br from-[#e53e3e] to-[#c53030] text-white shadow-lg shadow-red-500/20'
                                 : 'bg-white dark:bg-[#16161a] apple-liquid-glass hover:dark:bg-[#1c1c22] active:scale-[0.98]'
                         }`}
                     >
                         <div>
-                            <div className="flex items-center justify-between mb-2">
-                                <span className={`text-[10.5px] font-extrabold uppercase tracking-wider flex items-center gap-1.5 ${teamFilter === Team.HIKVISION ? 'text-red-100' : 'text-red-500'}`}>
-                                    <span className="w-2 h-2 rounded-full bg-red-500 inline-block"></span> ทีม A (HIK)
+                            <div className="flex items-center justify-between gap-2 mb-2.5">
+                                <span className={`text-[10.5px] md:text-[11px] font-extrabold uppercase tracking-wider flex items-center gap-1.5 truncate ${teamFilter === Team.HIKVISION ? 'text-red-100' : 'text-red-500'}`}>
+                                    <span className="w-2 h-2 rounded-full bg-red-500 inline-block shrink-0"></span> ทีม A (HIK)
                                 </span>
-                                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${teamFilter === Team.HIKVISION ? 'bg-white/20 text-white' : 'bg-red-500/10 text-red-600 dark:text-red-400'}`}>
+                                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${teamFilter === Team.HIKVISION ? 'bg-white/20 text-white shadow-xs' : 'bg-red-500/10 text-red-600 dark:text-red-400'}`}>
                                     เสร็จ {dashboardStats.hik.rate}%
                                 </span>
                             </div>
-                            <div className="flex items-baseline gap-2">
-                                <span className={`text-2xl md:text-3xl font-black ${teamFilter === Team.HIKVISION ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>
+                            <div className="flex items-baseline gap-2 my-0.5">
+                                <span className={`text-2xl md:text-3xl font-black tracking-tight ${teamFilter === Team.HIKVISION ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>
                                     {dashboardStats.hik.active}
                                 </span>
                                 <span className={`text-xs font-semibold ${teamFilter === Team.HIKVISION ? 'text-red-100/80' : 'text-gray-400'}`}>
@@ -933,7 +933,7 @@ export const ClaimsList: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="mt-3 pt-2.5 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px]">
+                        <div className="mt-3.5 pt-2.5 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px]">
                             <span className={teamFilter === Team.HIKVISION ? 'text-red-100' : 'text-gray-400'}>
                                 ทั้งหมด {dashboardStats.hik.total} งาน
                             </span>
@@ -946,23 +946,23 @@ export const ClaimsList: React.FC = () => {
                     {/* Team DAHUA Card */}
                     <button
                         onClick={() => { setTeamFilter(Team.DAHUA); setIsTeamCExpanded(false); }}
-                        className={`rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
+                        className={`rounded-[26px] md:rounded-[28px] p-4.5 sm:p-5 md:p-5.5 lg:px-6 lg:py-5.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             teamFilter === Team.DAHUA
                                 ? 'apple-card bg-gradient-to-br from-[#dd6b20] to-[#c05621] text-white shadow-lg shadow-orange-500/20'
                                 : 'bg-white dark:bg-[#16161a] apple-liquid-glass hover:dark:bg-[#1c1c22] active:scale-[0.98]'
                         }`}
                     >
                         <div>
-                            <div className="flex items-center justify-between mb-2">
-                                <span className={`text-[10.5px] font-extrabold uppercase tracking-wider flex items-center gap-1.5 ${teamFilter === Team.DAHUA ? 'text-orange-100' : 'text-orange-500'}`}>
-                                    <span className="w-2 h-2 rounded-full bg-orange-500 inline-block"></span> ทีม B (DAHUA)
+                            <div className="flex items-center justify-between gap-2 mb-2.5">
+                                <span className={`text-[10.5px] md:text-[11px] font-extrabold uppercase tracking-wider flex items-center gap-1.5 truncate ${teamFilter === Team.DAHUA ? 'text-orange-100' : 'text-orange-500'}`}>
+                                    <span className="w-2 h-2 rounded-full bg-orange-500 inline-block shrink-0"></span> ทีม B (DAHUA)
                                 </span>
-                                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${teamFilter === Team.DAHUA ? 'bg-white/20 text-white' : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'}`}>
+                                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${teamFilter === Team.DAHUA ? 'bg-white/20 text-white shadow-xs' : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'}`}>
                                     เสร็จ {dashboardStats.dahua.rate}%
                                 </span>
                             </div>
-                            <div className="flex items-baseline gap-2">
-                                <span className={`text-2xl md:text-3xl font-black ${teamFilter === Team.DAHUA ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>
+                            <div className="flex items-baseline gap-2 my-0.5">
+                                <span className={`text-2xl md:text-3xl font-black tracking-tight ${teamFilter === Team.DAHUA ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>
                                     {dashboardStats.dahua.active}
                                 </span>
                                 <span className={`text-xs font-semibold ${teamFilter === Team.DAHUA ? 'text-orange-100/80' : 'text-gray-400'}`}>
@@ -971,7 +971,7 @@ export const ClaimsList: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="mt-3 pt-2.5 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px]">
+                        <div className="mt-3.5 pt-2.5 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px]">
                             <span className={teamFilter === Team.DAHUA ? 'text-orange-100' : 'text-gray-400'}>
                                 ทั้งหมด {dashboardStats.dahua.total} งาน
                             </span>
@@ -984,23 +984,23 @@ export const ClaimsList: React.FC = () => {
                     {/* Team C Group Card */}
                     <button
                         onClick={handleGroupCClick}
-                        className={`rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
+                        className={`rounded-[26px] md:rounded-[28px] p-4.5 sm:p-5 md:p-5.5 lg:px-6 lg:py-5.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             isTeamCExpanded || teamFilter === 'GROUP_C'
                                 ? 'apple-card bg-gradient-to-br from-[#805ad5] to-[#6b46c1] text-white shadow-lg shadow-violet-500/20'
                                 : 'bg-white dark:bg-[#16161a] apple-liquid-glass hover:dark:bg-[#1c1c22] active:scale-[0.98]'
                         }`}
                     >
                         <div>
-                            <div className="flex items-center justify-between mb-2">
-                                <span className={`text-[10.5px] font-extrabold uppercase tracking-wider flex items-center gap-1.5 ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-violet-100' : 'text-violet-500'}`}>
-                                    <span className="w-2 h-2 rounded-full bg-violet-500 inline-block"></span> ทีม C (รวม)
+                            <div className="flex items-center justify-between gap-2 mb-2.5">
+                                <span className={`text-[10.5px] md:text-[11px] font-extrabold uppercase tracking-wider flex items-center gap-1.5 truncate ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-violet-100' : 'text-violet-500'}`}>
+                                    <span className="w-2 h-2 rounded-full bg-violet-500 inline-block shrink-0"></span> ทีม C (รวม)
                                 </span>
-                                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'bg-white/20 text-white' : 'bg-violet-500/10 text-violet-600 dark:text-violet-400'}`}>
+                                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'bg-white/20 text-white shadow-xs' : 'bg-violet-500/10 text-violet-600 dark:text-violet-400'}`}>
                                     เสร็จ {dashboardStats.groupC.rate}%
                                 </span>
                             </div>
-                            <div className="flex items-baseline gap-2">
-                                <span className={`text-2xl md:text-3xl font-black ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>
+                            <div className="flex items-baseline gap-2 my-0.5">
+                                <span className={`text-2xl md:text-3xl font-black tracking-tight ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-white' : 'text-[#1d1d1f] dark:text-white'}`}>
                                     {dashboardStats.groupC.active}
                                 </span>
                                 <span className={`text-xs font-semibold ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-violet-100/80' : 'text-gray-400'}`}>
@@ -1009,7 +1009,7 @@ export const ClaimsList: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="mt-3 pt-2.5 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px]">
+                        <div className="mt-3.5 pt-2.5 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px]">
                             <span className={isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-violet-100' : 'text-gray-400'}>
                                 ทั้งหมด {dashboardStats.groupC.total} งาน
                             </span>
