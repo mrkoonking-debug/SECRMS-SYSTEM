@@ -77,7 +77,7 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
     return (
         <div 
             onClick={() => onJobClick(jobKey)} 
-            className={`p-4 md:p-5 flex flex-col gap-3.5 cursor-pointer bg-white dark:bg-[#121214] apple-card rounded-[26px] md:rounded-[32px] shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.01)] dark:shadow-none hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-[0_12px_28px_-8px_rgba(0,0,0,0.6)] active:scale-[0.99] transition-all duration-150 ease-out group ${isJobCancelled ? 'opacity-50 grayscale bg-gray-50/20 dark:bg-black/10' : ''}`}
+            className={`p-4 md:p-5 flex flex-col gap-3.5 cursor-pointer bg-white dark:bg-[#16161a] apple-card rounded-[26px] md:rounded-[32px] shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.01)] dark:shadow-none hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-[0_12px_28px_-8px_rgba(0,0,0,0.6)] active:scale-[0.99] transition-all duration-150 ease-out group ${isJobCancelled ? 'opacity-50 grayscale bg-gray-50/20 dark:bg-black/10' : ''}`}
         >
             {/* Top Row: Icon, Key, Badges, and Chevron */}
             <div className="flex items-center justify-between gap-3 w-full">
@@ -90,7 +90,7 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
                         <span className="text-[13px] md:text-[15px] font-bold text-[#1d1d1f] dark:text-white whitespace-nowrap shrink-0">{jobKey}</span>
                     </div>
                     <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className={`text-[10px] px-2 py-0.5 apple-card-sm rounded-[10px] border whitespace-nowrap ${quotationNumber ? 'bg-gray-100/80 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400 border-gray-200/60 dark:border-white/[0.06]' : 'bg-gray-50/80 dark:bg-white/[0.03] text-gray-400 dark:text-gray-500 border-gray-100 dark:border-white/[0.04] italic'}`}>{quotationNumber ? `Ref: ${quotationNumber}` : 'ไม่มี Ref'}</span>
+                        <span className={`text-[10px] px-2 py-0.5 apple-card-sm rounded-[10px] border whitespace-nowrap ${quotationNumber ? 'bg-gray-100/80 dark:bg-white/[0.08] text-gray-600 dark:text-gray-300 border-gray-200/60 dark:border-white/[0.08]' : 'bg-gray-50/80 dark:bg-white/[0.03] text-gray-400 dark:text-gray-500 border-gray-100 dark:border-white/[0.04] italic'}`}>{quotationNumber ? `Ref: ${quotationNumber}` : 'ไม่มี Ref'}</span>
                         {jobTeam && getTeamBadge(jobTeam)}
                     </div>
                 </div>
@@ -98,49 +98,49 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
                 <div className="flex items-center gap-2 flex-shrink-0">
                     <div className="hidden sm:flex -space-x-1.5 mr-1">
                         {jobItems.slice(0, 3).map((item) => (
-                            <div key={item.id} className={`w-6 h-6 apple-card-sm rounded-[8px] border border-white dark:border-[#121214] flex items-center justify-center text-[9px] font-bold text-white shadow-sm ${item.team === Team.HIKVISION ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>{item.brand.substring(0, 1)}</div>
+                            <div key={item.id} className={`w-6 h-6 apple-card-sm rounded-[8px] border border-white dark:border-[#16161a] flex items-center justify-center text-[9px] font-bold text-white shadow-sm ${item.team === Team.HIKVISION ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>{item.brand.substring(0, 1)}</div>
                         ))}
-                        {jobItems.length > 3 && <div className="w-6 h-6 apple-card-sm rounded-[8px] border border-white dark:border-[#121214] bg-gray-100 dark:bg-white/[0.06] text-gray-400 text-[9px] flex items-center justify-center shadow-sm">+{jobItems.length - 3}</div>}
+                        {jobItems.length > 3 && <div className="w-6 h-6 apple-card-sm rounded-[8px] border border-white dark:border-[#16161a] bg-gray-100 dark:bg-white/[0.08] text-gray-300 text-[9px] flex items-center justify-center shadow-sm">+{jobItems.length - 3}</div>}
                     </div>
-                    <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 transition-transform group-hover:translate-x-0.5" />
+                    <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-500 transition-transform group-hover:translate-x-0.5" />
                 </div>
             </div>
 
             {/* Mid Row: Customer Info */}
-            <div className="flex items-center gap-1.5 md:gap-2 flex-wrap text-[11px] md:text-[13px] text-gray-500 dark:text-gray-400 pl-10 sm:pl-10">
-                <span className="font-semibold text-gray-700 dark:text-gray-300">{customerName}</span>
-                <span className="text-gray-300 dark:text-gray-700">·</span>
-                <span>{jobItems.length} {t('claimsList.items')}</span>
+            <div className="flex items-center gap-1.5 md:gap-2 flex-wrap text-[11px] md:text-[13px] text-gray-500 dark:text-gray-300 pl-10 sm:pl-10">
+                <span className="font-semibold text-gray-800 dark:text-gray-200">{customerName}</span>
+                <span className="text-gray-300 dark:text-gray-600">·</span>
+                <span className="text-gray-500 dark:text-gray-400">{jobItems.length} {t('claimsList.items')}</span>
                 {isJobCancelled ? (
                     <span className="bg-gray-500/10 text-gray-500 dark:text-gray-400 text-[9px] px-1.5 py-0.2 rounded-full border border-gray-500/20 font-bold ml-1">ยกเลิกแล้ว</span>
                 ) : isJobDone ? (
-                    <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] px-1.5 py-0.2 rounded-full border border-emerald-500/20 font-bold flex items-center gap-0.5 ml-1"><CheckCircle2 className="w-2.5 h-2.5" /> เสร็จสิ้น</span>
+                    <span className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[9px] px-1.5 py-0.2 rounded-full border border-emerald-500/30 font-bold flex items-center gap-0.5 ml-1"><CheckCircle2 className="w-2.5 h-2.5" /> เสร็จสิ้น</span>
                 ) : null}
-                {!isJobDone && jobItems.some(i => isRMAOverdue(i)) && <span className="bg-[#ff3b30]/10 text-[#ff3b30] text-[9px] px-1.5 py-0.2 rounded-full border border-[#ff3b30]/15 font-bold ml-1">Overdue</span>}
+                {!isJobDone && jobItems.some(i => isRMAOverdue(i)) && <span className="bg-[#ff3b30]/15 text-[#ff3b30] text-[9px] px-1.5 py-0.2 rounded-full border border-[#ff3b30]/20 font-bold ml-1">Overdue</span>}
             </div>
 
             {/* Bottom Row: Detailed Items Preview */}
             <div className="w-full pl-0 sm:pl-10">
-                <div className="mt-1 bg-gray-50/70 dark:bg-[#1d1d21] rounded-[18px] px-3.5 py-1.5 max-w-full overflow-hidden">
+                <div className="mt-1 bg-gray-50/80 dark:bg-[#212127] rounded-[18px] px-3.5 py-2 max-w-full overflow-hidden">
                     {jobItems.slice(0, 3).map((item, idx) => (
-                        <div key={item.id} className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 py-2.5 ${idx < Math.min(jobItems.length, 3) - 1 ? 'border-b border-black/[0.05] dark:border-white/[0.05]' : ''}` }>
+                        <div key={item.id} className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3.5 py-2.5 ${idx < Math.min(jobItems.length, 3) - 1 ? 'border-b border-black/[0.06] dark:border-white/[0.06]' : ''}` }>
                             {/* Left: Product Icon + Info */}
-                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                 <div className={`w-7 h-7 rounded-[10px] flex items-center justify-center shrink-0 text-white ${
-                                    item.status && ['CLOSED','CANCELLED','REPAIRED','REJECTED','RETURNED_FROM_VENDOR'].includes(item.status) ? 'bg-gray-400/60 dark:bg-gray-600/60' : 'bg-[#007aff]/80'
+                                    item.status && ['CLOSED','CANCELLED','REPAIRED','REJECTED','RETURNED_FROM_VENDOR'].includes(item.status) ? 'bg-gray-400/70 dark:bg-gray-600/70' : 'bg-[#007aff]'
                                 }`}>
                                     <Package className="w-3.5 h-3.5" />
                                 </div>
                                 <div className="flex flex-col min-w-0">
                                     <div className="flex items-center gap-1.5 min-w-0">
-                                        <span className="text-[11px] font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap">{item.brand}</span>
-                                        <span className="text-[10.5px] text-gray-600 dark:text-gray-300 truncate font-medium" title={item.productModel}>{item.productModel}</span>
+                                        <span className="text-[11.5px] font-bold text-gray-900 dark:text-white whitespace-nowrap">{item.brand}</span>
+                                        <span className="text-[11px] text-gray-700 dark:text-gray-200 truncate font-medium" title={item.productModel}>{item.productModel}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-                                        <span className="text-[9.5px] text-gray-400 dark:text-gray-400 font-mono">{item.serialNumber}</span>
+                                        <span className="text-[10px] text-gray-500 dark:text-gray-400 font-mono font-medium">{item.serialNumber}</span>
                                         {item.distributor && item.distributor.trim() !== '' && item.distributor !== 'Pending Staff Input' && (
                                             <span
-                                                className="inline-flex items-center gap-1 text-[9px] px-1.5 py-px rounded-full bg-black/5 dark:bg-white/[0.08] text-slate-600 dark:text-slate-300 font-medium shrink-0"
+                                                className="inline-flex items-center gap-1 text-[9.5px] px-1.5 py-px rounded-full bg-black/5 dark:bg-white/[0.08] text-slate-700 dark:text-slate-200 font-medium shrink-0"
                                                 title={`ศูนย์เคลม / ผู้นำเข้า: ${item.distributor}`}
                                             >
                                                 <Building2 className="w-2.5 h-2.5 text-[#0071e3] shrink-0" />
@@ -154,12 +154,12 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
                             {/* Middle: Issue/Resolution (compact single line) */}
                             <div className="flex-1 min-w-0 hidden sm:block">
                                 {item.issueDescription && (
-                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate" title={item.issueDescription}>
+                                    <p className="text-[10.5px] text-gray-600 dark:text-gray-300 truncate font-normal" title={item.issueDescription}>
                                         {item.issueDescription}
                                     </p>
                                 )}
                                 {item.resolution?.actionTaken && (
-                                    <p className="text-[10px] text-emerald-600/90 dark:text-emerald-400/90 truncate font-medium">
+                                    <p className="text-[10.5px] text-emerald-600 dark:text-emerald-400 truncate font-medium">
                                         {(() => {
                                             const key = `actions.${item.resolution.actionTaken.toLowerCase().replace(/ /g, '_')}`;
                                             const trans = t(key);
@@ -176,7 +176,7 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
                         </div>
                     ))}
                     {jobItems.length > 3 && (
-                        <div className="text-[9.5px] text-gray-400 dark:text-gray-400 py-2 text-center">
+                        <div className="text-[10px] text-gray-400 dark:text-gray-400 py-2 text-center font-medium">
                             + อีก {jobItems.length - 3} รายการ
                         </div>
                     )}
