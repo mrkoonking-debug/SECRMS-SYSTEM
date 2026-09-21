@@ -20,6 +20,7 @@ interface GlassSelectProps {
   searchable?: boolean;
   recentKey?: string;
   required?: boolean;
+  searchPlaceholder?: string;
 }
 
 export const GlassSelect: React.FC<GlassSelectProps> = ({
@@ -33,7 +34,8 @@ export const GlassSelect: React.FC<GlassSelectProps> = ({
   disabled = false,
   searchable = false,
   recentKey,
-  required = false
+  required = false,
+  searchPlaceholder = 'ค้นหา...'
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -152,15 +154,15 @@ export const GlassSelect: React.FC<GlassSelectProps> = ({
       type="button"
       onClick={() => handleSelect(option.value)}
       className={`
-        w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-all mb-0.5 last:mb-0 text-left outline-none focus:outline-none
+        w-full flex items-center justify-between px-3 py-2.5 rounded-[12px] text-sm transition-all mb-0.5 last:mb-0 text-left outline-none focus:outline-none cursor-pointer
         ${option.value === value
-          ? 'bg-[#0071e3] text-white shadow-sm'
-          : 'text-[#1d1d1f] dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#282a2c]'}
+          ? 'bg-[#0071e3] text-white font-bold shadow-sm'
+          : 'text-[#1d1d1f] dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-white/[0.06]'}
       `}
     >
       <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
         {option.icon}
-        <span className="font-medium truncate block w-full">
+        <span className="truncate block w-full">
           {option.label}
         </span>
       </div>
@@ -172,10 +174,10 @@ export const GlassSelect: React.FC<GlassSelectProps> = ({
     <div
       ref={dropdownRef}
       style={dropdownStyle}
-      className="bg-white dark:bg-[#1e1e1f] border border-gray-200 dark:border-white/10 rounded-xl shadow-2xl overflow-hidden animate-fade-in origin-top"
+      className="bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-xl border border-gray-200/90 dark:border-white/[0.1] rounded-[22px] shadow-2xl overflow-hidden animate-fade-in origin-top p-1.5 z-[9999]"
     >
       {searchable && (
-        <div className="p-2 border-b border-gray-200 dark:border-white/10 sticky top-0 bg-white dark:bg-[#1e1e1f] z-10">
+        <div className="p-1.5 border-b border-gray-200/60 dark:border-white/[0.06] sticky top-0 bg-white/90 dark:bg-[#16161a]/90 backdrop-blur-md z-10">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <input
@@ -184,25 +186,25 @@ export const GlassSelect: React.FC<GlassSelectProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onClick={(e) => e.stopPropagation()}
-              placeholder="ค้นหารายการการเงิน..."
-              className="w-full bg-gray-100 dark:bg-[#282a2c] border-none rounded-lg py-2 pl-9 pr-3 text-sm text-[#1d1d1f] dark:text-white focus:ring-2 focus:ring-[#0071e3]/50 placeholder-gray-400 outline-none focus:outline-none"
+              placeholder={searchPlaceholder || 'ค้นหา...'}
+              className="w-full bg-gray-100/80 dark:bg-white/[0.05] border border-gray-200/50 dark:border-white/[0.06] rounded-[14px] py-2 pl-9 pr-3 text-xs md:text-sm text-[#1d1d1f] dark:text-white focus:ring-2 focus:ring-[#0071e3]/40 placeholder-gray-400 dark:placeholder-gray-500 outline-none"
             />
           </div>
         </div>
       )}
 
-      <div className="max-h-60 overflow-y-auto p-1.5 custom-scrollbar">
+      <div className="max-h-60 overflow-y-auto p-1 custom-scrollbar">
         {filteredOptions.length === 0 ? (
-          <div className="p-4 text-center text-sm text-gray-400">No results found</div>
+          <div className="p-4 text-center text-xs md:text-sm text-gray-400">ไม่พบข้อมูล</div>
         ) : (
           <>
             {frequentOptions.length > 0 && (
               <>
-                <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                  Frequently / Recently Used
+                <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                  ใช้บ่อย / ล่าสุด
                 </div>
                 {frequentOptions.map(renderOption)}
-                <div className="h-px bg-gray-200 dark:bg-gray-800 my-1.5 mx-2" />
+                <div className="h-px bg-gray-200/60 dark:bg-white/[0.06] my-1.5 mx-2" />
               </>
             )}
             {normalOptions.map(renderOption)}
