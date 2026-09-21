@@ -187,7 +187,7 @@ export const ClaimsList: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState(() => sessionStorage.getItem('rmas_search') || '');
     const [debouncedSearch, setDebouncedSearch] = useState(() => sessionStorage.getItem('rmas_search') || '');
-    const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'IN_PROGRESS' | 'DONE'>(() => (sessionStorage.getItem('rmas_statusFilter') as any) || 'IN_PROGRESS');
+    const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'IN_PROGRESS' | 'DONE'>(() => (sessionStorage.getItem('rmas_statusFilter') as any) || 'ALL');
     const [teamFilter, setTeamFilter] = useState<'ALL' | 'GROUP_C' | Team>(() => (sessionStorage.getItem('rmas_teamFilter') as any) || 'ALL');
     const [dateFilter, setDateFilter] = useState<string>(() => (sessionStorage.getItem('rmas_dateFilter') || 'ALL'));
     const [expandedDates, setExpandedDates] = useState<Set<string> | null>(null);
@@ -262,36 +262,18 @@ export const ClaimsList: React.FC = () => {
     }, [search, statusFilter, teamFilter, dateFilter, isTeamCExpanded]);
 
     useEffect(() => {
-        const fetchInitialAndRemaining = async () => {
+        const fetchAllRMAs = async () => {
             try {
-                const result = await MockDb.getRMAsPaginated(PAGE_SIZE, null);
-                const assignedRMAs = result.rmas.filter(c => c && c.id && c.team && (c.team as any) !== 'UNASSIGNED');
-                setRMAs(assignedRMAs);
+                const all = await MockDb.getRMAs();
+                setRMAs(all);
                 setLoading(false);
-                if (result.hasMore) {
-                    let cursor = result.lastDoc;
-                    let more = true;
-                    while (more) {
-                        const nextResult = await MockDb.getRMAsPaginated(PAGE_SIZE, cursor);
-                        const nextAssigned = nextResult.rmas.filter(c => c && c.id && c.team && (c.team as any) !== 'UNASSIGNED');
-                        if (nextAssigned.length > 0) {
-                            setRMAs(prev => {
-                                const existingIds = new Set(prev.map(r => r.id));
-                                const newUnique = nextAssigned.filter(r => !existingIds.has(r.id));
-                                return [...prev, ...newUnique];
-                            });
-                        }
-                        cursor = nextResult.lastDoc;
-                        more = nextResult.hasMore;
-                    }
-                }
             } catch (err: unknown) {
                 console.error('ClaimsList fetch failed:', err);
                 setError(err instanceof Error ? err.message : 'ไม่สามารถโหลดข้อมูลได้');
                 setLoading(false);
             }
         };
-        fetchInitialAndRemaining();
+        fetchAllRMAs();
     }, []);
 
     const isDateGroupExpanded = useCallback((ymKey: string) => {
@@ -359,6 +341,8 @@ export const ClaimsList: React.FC = () => {
         };
 
         const matchesStatus = (c: RMA) => {
+            // When actively searching, search across all statuses so completed/closed jobs are NEVER hidden
+            if (debouncedSearch.trim()) return true;
             if (statusFilter === 'ALL') return true;
             if (statusFilter === 'PENDING') return c.status === RMAStatus.PENDING;
             if (statusFilter === 'IN_PROGRESS') return !DONE_STATUSES.includes(c.status);
@@ -367,6 +351,8 @@ export const ClaimsList: React.FC = () => {
         };
 
         const matchesTeam = (c: RMA) => {
+            // When actively searching, search across all teams
+            if (debouncedSearch.trim()) return true;
             if (teamFilter === 'ALL') return true;
             if (teamFilter === 'GROUP_C') return [Team.TEAM_C, Team.TEAM_E, Team.TEAM_G].includes(c.team);
             return c.team === teamFilter;

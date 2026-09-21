@@ -715,7 +715,7 @@ export const MockDb = {
       throw new Error("Firebase not configured");
     }
     try {
-      const q = query(collection(db, 'rmas'), orderBy('createdAt', 'desc'), limit(500));
+      const q = query(collection(db, 'rmas'), orderBy('createdAt', 'desc'), limit(2000));
       const snap = await getDocs(q);
       return snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
     } catch (e) {
