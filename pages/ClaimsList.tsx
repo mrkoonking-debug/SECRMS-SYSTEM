@@ -620,6 +620,9 @@ export const ClaimsList: React.FC = () => {
             activeCount,
             doneCount,
             completionRate,
+            pendingPercent: total > 0 ? (pendingCount / total) * 100 : 0,
+            inProgressPercent: total > 0 ? (inProgressCount / total) * 100 : 0,
+            donePercent: total > 0 ? (doneCount / total) * 100 : 0,
             all: { total, active: activeCount, done: doneCount, rate: completionRate },
             hik,
             dahua,
@@ -657,30 +660,44 @@ export const ClaimsList: React.FC = () => {
                 <Link to="/admin/submit" className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-4 md:px-5 py-2 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-1.5 shadow-sm transition-all whitespace-nowrap hover:shadow-md active:scale-[0.97]"><Plus className="h-4 w-4" /> <span className="hidden md:inline">{t('nav.newRequest')}</span><span className="md:hidden">เพิ่ม</span></Link>
             </div>
 
-            {/* Top Workflow Status & Progress Pipeline (Apple Liquid Glass Container) */}
-            <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[32px] md:rounded-[40px] p-4 md:p-5 shadow-sm mb-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 lg:gap-5 mb-4">
+            {/* Top Workflow Status & Progress Pipeline */}
+            <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[28px] md:rounded-[36px] p-3.5 sm:p-4 md:p-5 shadow-sm mb-4 md:mb-5">
+                {/* 4 Interactive Status Cards */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 md:gap-4">
                     {/* All items */}
                     <button 
                         type="button"
                         onClick={() => setStatusFilter('ALL')}
-                        className={`flex items-center gap-3 p-3 md:px-4 text-left rounded-[18px] transition-colors duration-150 active:scale-[0.98] ${
+                        className={`group p-3 sm:p-3.5 md:p-4 text-left rounded-[20px] md:rounded-[24px] border transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
                             statusFilter === 'ALL'
-                                ? 'bg-blue-500/10 dark:bg-blue-500/10'
-                                : 'hover:bg-black/[0.03] dark:hover:bg-white/[0.03]'
+                                ? 'bg-blue-50/80 dark:bg-blue-500/15 border-blue-500/40 dark:border-blue-400/40 shadow-sm ring-2 ring-blue-500/20'
+                                : 'bg-gray-50/50 dark:bg-white/[0.03] border-gray-200/60 dark:border-white/[0.06] hover:border-blue-400/40 dark:hover:border-blue-400/30 hover:bg-blue-50/30 dark:hover:bg-white/[0.05]'
                         }`}
                     >
-                        <div className={`w-9 h-9 rounded-[13px] flex items-center justify-center shrink-0 ${
-                            statusFilter === 'ALL' ? 'bg-[#0071e3] text-white' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                        }`}>
-                            <Package className="w-4.5 h-4.5" />
-                        </div>
-                        <div className="min-w-0">
-                            <div className={`text-[10px] font-semibold uppercase tracking-wider ${statusFilter === 'ALL' ? 'text-[#0071e3] dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}>งานทั้งหมด</div>
-                            <div className="text-lg md:text-2xl font-black text-[#1d1d1f] dark:text-white leading-tight">
-                                {dashboardStats.totalJobs} <span className="text-[11px] font-semibold text-gray-400">ใบงาน</span>
-                                <span className="text-[10px] text-gray-400 font-normal ml-1">({dashboardStats.total})</span>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                                <div className={`w-8 h-8 rounded-[11px] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                                    statusFilter === 'ALL' ? 'bg-[#0071e3] text-white shadow-sm' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                                }`}>
+                                    <Package className="w-4 h-4" />
+                                </div>
+                                <span className={`text-xs font-bold truncate ${statusFilter === 'ALL' ? 'text-[#0071e3] dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                                    งานทั้งหมด
+                                </span>
                             </div>
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0">
+                                100%
+                            </span>
+                        </div>
+                        <div className="flex items-baseline gap-1.5 mt-1">
+                            <span className="text-xl sm:text-2xl md:text-3xl font-black text-[#1d1d1f] dark:text-white leading-tight">
+                                {dashboardStats.totalJobs}
+                            </span>
+                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">ใบงาน</span>
+                            <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">({dashboardStats.total} ชิ้น)</span>
+                        </div>
+                        <div className="mt-2 text-[11px] text-gray-400 dark:text-gray-500 truncate">
+                            ภาพรวมงานเคลมทั้งหมดในระบบ
                         </div>
                     </button>
 
@@ -688,22 +705,37 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'PENDING' ? 'ALL' : 'PENDING')}
-                        className={`flex items-center gap-3 p-3 md:px-4 text-left rounded-[18px] transition-colors duration-150 active:scale-[0.98] ${
+                        className={`group p-3 sm:p-3.5 md:p-4 text-left rounded-[20px] md:rounded-[24px] border transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
                             statusFilter === 'PENDING'
-                                ? 'bg-amber-500/10 dark:bg-amber-500/10'
-                                : 'hover:bg-black/[0.03] dark:hover:bg-white/[0.03]'
+                                ? 'bg-amber-50/80 dark:bg-amber-500/15 border-amber-500/40 dark:border-amber-400/40 shadow-sm ring-2 ring-amber-500/20'
+                                : 'bg-gray-50/50 dark:bg-white/[0.03] border-gray-200/60 dark:border-white/[0.06] hover:border-amber-400/40 dark:hover:border-amber-400/30 hover:bg-amber-50/30 dark:hover:bg-white/[0.05]'
                         }`}
                     >
-                        <div className={`w-9 h-9 rounded-[13px] flex items-center justify-center shrink-0 ${
-                            statusFilter === 'PENDING' ? 'bg-amber-500 text-white' : 'bg-amber-500/10 text-amber-500 dark:text-amber-400'
-                        }`}>
-                            <Clock className="w-4.5 h-4.5" />
-                        </div>
-                        <div className="min-w-0">
-                            <div className="text-[10px] font-semibold uppercase tracking-wider text-amber-500 dark:text-amber-400">รอรับเรื่อง</div>
-                            <div className="text-lg md:text-2xl font-black text-[#1d1d1f] dark:text-white leading-tight">
-                                {dashboardStats.pendingCount} <span className="text-[11px] font-semibold text-gray-400">รายการ</span>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                                <div className={`w-8 h-8 rounded-[11px] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                                    statusFilter === 'PENDING' ? 'bg-amber-500 text-white shadow-sm' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                }`}>
+                                    <Clock className="w-4 h-4" />
+                                </div>
+                                <span className={`text-xs font-bold truncate ${statusFilter === 'PENDING' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                                    รอรับเรื่อง
+                                </span>
                             </div>
+                            {dashboardStats.pendingCount > 0 && (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 shrink-0">
+                                    {Math.round(dashboardStats.pendingPercent)}%
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex items-baseline gap-1.5 mt-1">
+                            <span className="text-xl sm:text-2xl md:text-3xl font-black text-[#1d1d1f] dark:text-white leading-tight">
+                                {dashboardStats.pendingCount}
+                            </span>
+                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">รายการ</span>
+                        </div>
+                        <div className="mt-2 text-[11px] text-gray-400 dark:text-gray-500 truncate">
+                            {dashboardStats.pendingCount > 0 ? 'รอดำเนินการรับเรื่องเข้าระบบ' : 'ไม่มีงานรอรับเรื่อง'}
                         </div>
                     </button>
 
@@ -711,22 +743,35 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'IN_PROGRESS' ? 'ALL' : 'IN_PROGRESS')}
-                        className={`flex items-center gap-3 p-3 md:px-4 text-left rounded-[18px] transition-colors duration-150 active:scale-[0.98] ${
+                        className={`group p-3 sm:p-3.5 md:p-4 text-left rounded-[20px] md:rounded-[24px] border transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
                             statusFilter === 'IN_PROGRESS'
-                                ? 'bg-blue-500/10 dark:bg-blue-500/10'
-                                : 'hover:bg-black/[0.03] dark:hover:bg-white/[0.03]'
+                                ? 'bg-sky-50/80 dark:bg-sky-500/15 border-sky-500/40 dark:border-sky-400/40 shadow-sm ring-2 ring-sky-500/20'
+                                : 'bg-gray-50/50 dark:bg-white/[0.03] border-gray-200/60 dark:border-white/[0.06] hover:border-sky-400/40 dark:hover:border-sky-400/30 hover:bg-sky-50/30 dark:hover:bg-white/[0.05]'
                         }`}
                     >
-                        <div className={`w-9 h-9 rounded-[13px] flex items-center justify-center shrink-0 ${
-                            statusFilter === 'IN_PROGRESS' ? 'bg-[#0071e3] text-white' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                        }`}>
-                            <Wrench className="w-4.5 h-4.5" />
-                        </div>
-                        <div className="min-w-0">
-                            <div className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">กำลังดำเนินการ</div>
-                            <div className="text-lg md:text-2xl font-black text-[#1d1d1f] dark:text-white leading-tight">
-                                {dashboardStats.inProgressCount} <span className="text-[11px] font-semibold text-gray-400">รายการ</span>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                                <div className={`w-8 h-8 rounded-[11px] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                                    statusFilter === 'IN_PROGRESS' ? 'bg-[#0071e3] text-white shadow-sm' : 'bg-sky-500/10 text-sky-600 dark:text-sky-400'
+                                }`}>
+                                    <Wrench className="w-4 h-4" />
+                                </div>
+                                <span className={`text-xs font-bold truncate ${statusFilter === 'IN_PROGRESS' ? 'text-sky-600 dark:text-sky-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                                    กำลังดำเนินการ
+                                </span>
                             </div>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-700 dark:text-sky-300 shrink-0">
+                                {Math.round(dashboardStats.inProgressPercent)}%
+                            </span>
+                        </div>
+                        <div className="flex items-baseline gap-1.5 mt-1">
+                            <span className="text-xl sm:text-2xl md:text-3xl font-black text-[#1d1d1f] dark:text-white leading-tight">
+                                {dashboardStats.inProgressCount}
+                            </span>
+                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">รายการ</span>
+                        </div>
+                        <div className="mt-2 text-[11px] text-gray-400 dark:text-gray-500 truncate">
+                            ช่างกำลังตรวจเช็คหรือส่งศูนย์
                         </div>
                     </button>
 
@@ -734,46 +779,86 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'DONE' ? 'ALL' : 'DONE')}
-                        className={`flex items-center gap-3 p-3 md:px-4 text-left rounded-[18px] transition-colors duration-150 active:scale-[0.98] ${
+                        className={`group p-3 sm:p-3.5 md:p-4 text-left rounded-[20px] md:rounded-[24px] border transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
                             statusFilter === 'DONE'
-                                ? 'bg-emerald-500/10 dark:bg-emerald-500/10'
-                                : 'hover:bg-black/[0.03] dark:hover:bg-white/[0.03]'
+                                ? 'bg-emerald-50/80 dark:bg-emerald-500/15 border-emerald-500/40 dark:border-emerald-400/40 shadow-sm ring-2 ring-emerald-500/20'
+                                : 'bg-gray-50/50 dark:bg-white/[0.03] border-gray-200/60 dark:border-white/[0.06] hover:border-emerald-400/40 dark:hover:border-emerald-400/30 hover:bg-emerald-50/30 dark:hover:bg-white/[0.05]'
                         }`}
                     >
-                        <div className={`w-9 h-9 rounded-[13px] flex items-center justify-center shrink-0 ${
-                            statusFilter === 'DONE' ? 'bg-emerald-500 text-white' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                        }`}>
-                            <CheckCircle2 className="w-4.5 h-4.5" />
-                        </div>
-                        <div className="min-w-0">
-                            <div className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">เสร็จสิ้นแล้ว</div>
-                            <div className="text-lg md:text-2xl font-black text-[#1d1d1f] dark:text-white leading-tight">
-                                {dashboardStats.doneCount} <span className="text-[11px] font-semibold text-gray-400">รายการ</span>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                                <div className={`w-8 h-8 rounded-[11px] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                                    statusFilter === 'DONE' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                }`}>
+                                    <CheckCircle2 className="w-4 h-4" />
+                                </div>
+                                <span className={`text-xs font-bold truncate ${statusFilter === 'DONE' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                                    เสร็จสิ้นแล้ว
+                                </span>
                             </div>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 shrink-0">
+                                {dashboardStats.completionRate}%
+                            </span>
+                        </div>
+                        <div className="flex items-baseline gap-1.5 mt-1">
+                            <span className="text-xl sm:text-2xl md:text-3xl font-black text-[#1d1d1f] dark:text-white leading-tight">
+                                {dashboardStats.doneCount}
+                            </span>
+                            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">รายการ</span>
+                        </div>
+                        <div className="mt-2 text-[11px] text-gray-400 dark:text-gray-500 truncate">
+                            ปิดงานหรือส่งคืนลูกค้าเรียบร้อย
                         </div>
                     </button>
                 </div>
 
-                {/* Progress Bar & Completion Metric */}
-                <div className="pt-3 border-t border-gray-150/60 dark:border-white/5 flex flex-col sm:flex-row items-center justify-between gap-2.5">
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <div className="text-[11px] font-bold text-gray-500 dark:text-gray-400 whitespace-nowrap flex items-center gap-1.5">
-                            <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
-                            อัตราการปิดงานสำเร็จ:
+                {/* Workflow Funnel & Progress Track */}
+                <div className="mt-3.5 pt-3 border-t border-black/5 dark:border-white/5 flex flex-col gap-2">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center flex-wrap gap-x-3.5 gap-y-1 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
+                            <span className="flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span> รอรับเรื่อง {dashboardStats.pendingCount}
+                            </span>
+                            <span className="text-gray-300 dark:text-gray-600">·</span>
+                            <span className="flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-[#0071e3] shrink-0"></span> กำลังดำเนินการ {dashboardStats.inProgressCount}
+                            </span>
+                            <span className="text-gray-300 dark:text-gray-600">·</span>
+                            <span className="flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span> เสร็จสิ้น {dashboardStats.doneCount}
+                            </span>
                         </div>
-                        <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
-                            {dashboardStats.completionRate}%
-                        </span>
-                        <span className="text-[10px] text-gray-400 hidden md:inline">
-                            ({dashboardStats.doneCount} จาก {dashboardStats.total} รายการ)
-                        </span>
+
+                        <div className="flex items-center gap-2 self-end sm:self-auto">
+                            <span className="text-[11px] font-medium text-gray-400 flex items-center gap-1">
+                                <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                                อัตราปิดงานสำเร็จ:
+                            </span>
+                            <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
+                                {dashboardStats.completionRate}%
+                            </span>
+                            <span className="text-[10px] text-gray-400 hidden md:inline">
+                                ({dashboardStats.doneCount}/{dashboardStats.total})
+                            </span>
+                        </div>
                     </div>
 
-                    {/* Progress track */}
-                    <div className="w-full sm:w-72 h-2.5 bg-gray-100 dark:bg-white/[0.06] rounded-full overflow-hidden flex">
+                    {/* Stacked Workflow Distribution Bar */}
+                    <div className="w-full h-2 bg-gray-100 dark:bg-white/[0.06] rounded-full overflow-hidden flex gap-0.5">
                         <div 
-                            className="bg-gradient-to-r from-blue-500 via-teal-500 to-emerald-500 h-full rounded-full transition-all duration-500"
-                            style={{ width: `${dashboardStats.completionRate}%` }}
+                            className="bg-amber-500 h-full rounded-full transition-all duration-500"
+                            style={{ width: `${dashboardStats.pendingPercent}%` }}
+                            title={`รอรับเรื่อง: ${dashboardStats.pendingCount} รายการ (${Math.round(dashboardStats.pendingPercent)}%)`}
+                        />
+                        <div 
+                            className="bg-[#0071e3] h-full rounded-full transition-all duration-500"
+                            style={{ width: `${dashboardStats.inProgressPercent}%` }}
+                            title={`กำลังดำเนินการ: ${dashboardStats.inProgressCount} รายการ (${Math.round(dashboardStats.inProgressPercent)}%)`}
+                        />
+                        <div 
+                            className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                            style={{ width: `${dashboardStats.donePercent}%` }}
+                            title={`เสร็จสิ้น: ${dashboardStats.doneCount} รายการ (${dashboardStats.completionRate}%)`}
                         />
                     </div>
                 </div>
@@ -794,7 +879,7 @@ export const ClaimsList: React.FC = () => {
                         <div>
                             <div className="flex items-center justify-between mb-2">
                                 <span className={`text-[10.5px] font-extrabold uppercase tracking-wider ${teamFilter === 'ALL' ? 'text-blue-100' : 'text-gray-400 dark:text-gray-500'}`}>
-                                    {t('claimsList.active')}
+                                    ทุกทีม (รวมทุกแบรนด์)
                                 </span>
                                 <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${teamFilter === 'ALL' ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'}`}>
                                     เสร็จ {dashboardStats.all.rate}%
