@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, useRef } from 'react';
-import { ShieldCheck, LogOut, Globe, LayoutGrid, List, PlusCircle, Plus, User, Users, Menu, X, Truck, Settings, BarChart3, Tag, Building2, Bell, History, RefreshCw, Wallet, Trash2 } from 'lucide-react';
+import { ShieldCheck, LogOut, Globe, LayoutGrid, List, PlusCircle, Plus, User, Users, Menu, X, Truck, Settings, BarChart3, Tag, Building2, Bell, History, RefreshCw, Wallet, Trash2, ChevronRight } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -167,40 +167,121 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
 
   if (location.pathname === '/login') return null;
 
-  const NavLink = ({ to, label, icon: Icon, badgeCount = 0 }: { to: string, label: string, icon: any, badgeCount?: number }) => {
+  const NavLink = ({ 
+    to, 
+    label, 
+    subLabel,
+    icon: Icon, 
+    badgeCount = 0,
+    compact = false
+  }: { 
+    to: string; 
+    label: string; 
+    subLabel?: string;
+    icon: any; 
+    badgeCount?: number;
+    compact?: boolean;
+  }) => {
     const isActive = location.pathname === to;
     
-    // Get macOS style icon background color
-    const getIconBgColor = () => {
+    // Vibrant solid/gradient circular icon background (Image 2 style)
+    const getIconStyle = () => {
       switch (to) {
-        case '/admin/dashboard': return 'bg-[#007aff]'; // Blue
-        case '/admin/incoming': return 'bg-[#ff3b30]'; // Red
-        case '/admin/rmas': return 'bg-[#5856d6]'; // Purple
-        case '/admin/submit': return 'bg-[#34c759]'; // Green
-        case '/admin/reports': return 'bg-[#af52de]'; // Pink/Purple
-        case '/admin/users': return 'bg-[#ff9500]'; // Orange
-        case '/admin/logs': return 'bg-[#8e8e93]'; // Gray
-        case '/admin/brands': return 'bg-[#ff2d55]'; // Rose
-        case '/admin/distributors': return 'bg-[#30b0c7]'; // Teal
-        case '/admin/settings': return 'bg-[#555]'; // Gear Gray
-        case '/admin/recycle-bin': return 'bg-[#ef4444]'; // Red for Trash
-        default: return 'bg-[#007aff]';
+        case '/admin/dashboard': 
+          return 'bg-gradient-to-br from-[#007aff] to-[#005bb5] shadow-blue-500/25';
+        case '/admin/incoming': 
+          return 'bg-gradient-to-br from-[#ff3b30] to-[#d62217] shadow-red-500/25';
+        case '/admin/rmas': 
+          return 'bg-gradient-to-br from-[#5856d6] to-[#4338ca] shadow-indigo-500/25';
+        case '/admin/submit': 
+          return 'bg-gradient-to-br from-[#34c759] to-[#248a3d] shadow-emerald-500/25';
+        case '/admin/reports': 
+          return 'bg-gradient-to-br from-[#af52de] to-[#8b2fc9] shadow-purple-500/25';
+        case '/admin/finance': 
+          return 'bg-gradient-to-br from-[#0284c7] to-[#0369a1] shadow-sky-500/25';
+        case '/admin/users': 
+          return 'bg-gradient-to-br from-[#ff9500] to-[#d97706] shadow-amber-500/25';
+        case '/admin/logs': 
+          return 'bg-gradient-to-br from-[#64748b] to-[#475569] shadow-slate-500/25';
+        case '/admin/brands': 
+          return 'bg-gradient-to-br from-[#ff2d55] to-[#e11d48] shadow-rose-500/25';
+        case '/admin/distributors': 
+          return 'bg-gradient-to-br from-[#0d9488] to-[#0f766e] shadow-teal-500/25';
+        case '/admin/settings': 
+          return 'bg-gradient-to-br from-[#52525b] to-[#3f3f46] shadow-zinc-500/25';
+        case '/admin/recycle-bin': 
+          return 'bg-gradient-to-br from-[#dc2626] to-[#b91c1c] shadow-red-500/25';
+        default: 
+          return 'bg-gradient-to-br from-[#007aff] to-[#005bb5] shadow-blue-500/25';
       }
     };
 
-    return (
-      <Link to={to} className={`group relative flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg transition-all duration-150 ${isActive ? 'bg-[#007aff] text-white' : 'text-[#1d1d1f] dark:text-gray-200 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] active:scale-[0.98]'}`}>
-        <div className={`w-[26px] h-[26px] rounded-[6px] flex items-center justify-center flex-shrink-0 ${getIconBgColor()} shadow-sm`}>
-          <Icon className="w-3.5 h-3.5 text-white" strokeWidth={2.2} />
-        </div>
-        <span className="text-[13px] font-medium tracking-tight flex-1">{label}</span>
-
-        {/* Badge count */}
-        {badgeCount > 0 && (
-          <div className={`min-w-[18px] h-4.5 flex items-center justify-center text-[10px] font-bold px-1.5 rounded-full ${isActive ? 'bg-white text-[#007aff]' : 'bg-red-500 text-white'}`}>
-            {badgeCount > 99 ? '99+' : badgeCount}
+    if (compact) {
+      return (
+        <Link 
+          to={to} 
+          className={`group relative flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all duration-150 active:scale-[0.98] ${
+            isActive 
+              ? 'bg-blue-500/10 dark:bg-white/[0.08] text-[#0071e3] dark:text-white font-bold border border-blue-500/30' 
+              : 'text-[#1d1d1f] dark:text-gray-200 hover:bg-black/[0.04] dark:hover:bg-white/[0.05]'
+          }`}
+        >
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white shadow-sm ${getIconStyle()}`}>
+            <Icon className="w-4 h-4 text-white" strokeWidth={2.2} />
           </div>
-        )}
+          <span className="text-xs font-semibold tracking-tight flex-1 truncate">{label}</span>
+          {badgeCount > 0 && (
+            <div className="min-w-[18px] h-4.5 flex items-center justify-center text-[10px] font-bold px-1.5 rounded-full bg-red-500 text-white">
+              {badgeCount > 99 ? '99+' : badgeCount}
+            </div>
+          )}
+        </Link>
+      );
+    }
+
+    return (
+      <Link 
+        to={to} 
+        className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-[18px] transition-all duration-200 active:scale-[0.98] ${
+          isActive 
+            ? 'bg-blue-500/[0.08] dark:bg-white/[0.05] border border-blue-500/40 dark:border-amber-400/35 shadow-sm' 
+            : 'border border-transparent hover:bg-black/[0.03] dark:hover:bg-white/[0.035] hover:border-black/[0.04] dark:hover:border-white/[0.04]'
+        }`}
+      >
+        {/* Large Circular Icon (Image 2 style) */}
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white shadow-md ${getIconStyle()} transition-transform duration-200 group-hover:scale-105`}>
+          <Icon className="w-5 h-5 text-white" strokeWidth={2.2} />
+        </div>
+
+        {/* 2-line Text Column (Title + Subtitle) */}
+        <div className="flex flex-col min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <span className={`text-[13px] md:text-[13.5px] font-bold tracking-tight truncate ${
+              isActive ? 'text-[#0071e3] dark:text-white' : 'text-[#1d1d1f] dark:text-gray-200 group-hover:text-[#0071e3] dark:group-hover:text-white'
+            }`}>
+              {label}
+            </span>
+            {badgeCount > 0 && (
+              <span className="min-w-[18px] h-4.5 flex items-center justify-center text-[10px] font-bold px-1.5 rounded-full bg-red-500 text-white shadow-sm">
+                {badgeCount > 99 ? '99+' : badgeCount}
+              </span>
+            )}
+          </div>
+          {subLabel && (
+            <span className="text-[11px] text-gray-400 dark:text-gray-500 truncate leading-tight mt-0.5 group-hover:text-gray-500 dark:group-hover:text-gray-400">
+              {subLabel}
+            </span>
+          )}
+        </div>
+
+        {/* Right Indicator: Active Dot vs Subtle Chevron */}
+        <div className="shrink-0 flex items-center pl-1">
+          {isActive ? (
+            <span className="w-2 h-2 rounded-full bg-[#0071e3] dark:bg-[#38bdf8] shadow-[0_0_8px_rgba(0,113,227,0.8)] dark:shadow-[0_0_8px_rgba(56,189,248,0.8)] animate-pulse" />
+          ) : (
+            <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 transition-transform group-hover:translate-x-0.5 group-hover:text-gray-400" />
+          )}
+        </div>
       </Link>
     );
   };
@@ -208,33 +289,118 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
   const navContent = (
     <>
       {user ? (
-        <>
-          <div className="text-[9.5px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1.5 mt-3 pl-3">Management</div>
-          <NavLink to="/admin/dashboard" label={t('nav.overview')} icon={LayoutGrid} badgeCount={overdueCount} />
-          <NavLink to="/admin/incoming" label={t('nav.incoming')} icon={Bell} badgeCount={unassignedCount} />
-          <NavLink to="/admin/rmas" label={t('nav.claims')} icon={List} />
-          <NavLink to="/admin/submit" label={t('nav.newRequest')} icon={PlusCircle} />
-          <NavLink to="/admin/reports" label={t('nav.reports')} icon={BarChart3} />
+        <div className="space-y-4">
+          {/* Section 1: การนำทางหลัก · NAVIGATION */}
+          <div>
+            <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-3 mb-2 flex items-center gap-1.5">
+              <span>การนำทางหลัก</span>
+              <span className="text-gray-300 dark:text-gray-600 font-mono">·</span>
+              <span className="text-[9px] text-gray-400/80 dark:text-gray-500 tracking-widest font-sans">NAVIGATION</span>
+            </div>
+            <div className="space-y-1">
+              <NavLink 
+                to="/admin/dashboard" 
+                label={t('nav.overview')} 
+                subLabel="ภาพรวมระบบ & สถิติสำคัญ"
+                icon={LayoutGrid} 
+                badgeCount={overdueCount} 
+              />
+              <NavLink 
+                to="/admin/incoming" 
+                label={t('nav.incoming')} 
+                subLabel="งานรอดำเนินการจากลูกค้า"
+                icon={Bell} 
+                badgeCount={unassignedCount} 
+              />
+              <NavLink 
+                to="/admin/rmas" 
+                label={t('nav.claims')} 
+                subLabel="ติดตามสถานะ & ค้นหางาน"
+                icon={List} 
+              />
+              <NavLink 
+                to="/admin/submit" 
+                label={t('nav.newRequest')} 
+                subLabel="ลงทะเบียนรับเคลมสินค้า"
+                icon={PlusCircle} 
+              />
+              <NavLink 
+                to="/admin/reports" 
+                label={t('nav.reports')} 
+                subLabel="วิเคราะห์ข้อมูล & ออกรายงาน"
+                icon={BarChart3} 
+              />
+            </div>
+          </div>
 
+          {/* Section 2: การเงินและบัญชี · FINANCE */}
           {(user.role === 'admin' || (user as any).canAccessFinance) && (
-            <>
-              <div className="text-[9.5px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-6 mb-1.5 pl-3">Finance</div>
-              <NavLink to="/admin/finance" label="การเงิน / บันทึกรายจ่าย" icon={Wallet} />
-            </>
+            <div>
+              <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-3 mb-2 flex items-center gap-1.5">
+                <span>การเงินและบัญชี</span>
+                <span className="text-gray-300 dark:text-gray-600 font-mono">·</span>
+                <span className="text-[9px] text-gray-400/80 dark:text-gray-500 tracking-widest font-sans">FINANCE</span>
+              </div>
+              <div className="space-y-1">
+                <NavLink 
+                  to="/admin/finance" 
+                  label="การเงิน / บันทึกรายจ่าย" 
+                  subLabel="เงินสดย่อย & รายรับรายจ่าย"
+                  icon={Wallet} 
+                />
+              </div>
+            </div>
           )}
 
+          {/* Section 3: การจัดการระบบ · SYSTEM */}
           {user.role === 'admin' && (
-            <>
-              <div className="text-[9.5px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-6 mb-1.5 pl-3">System</div>
-              <NavLink to="/admin/users" label={t('nav.users')} icon={Users} />
-              <NavLink to="/admin/logs" label="System Logs" icon={History} />
-              <NavLink to="/admin/brands" label={t('nav.brands')} icon={Tag} />
-              <NavLink to="/admin/distributors" label={t('nav.distributors')} icon={Building2} />
-              <NavLink to="/admin/settings" label={t('nav.settings')} icon={Settings} />
-              <NavLink to="/admin/recycle-bin" label="ถังขยะระบบ" icon={Trash2} />
-            </>
+            <div>
+              <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-3 mb-2 flex items-center gap-1.5">
+                <span>การจัดการระบบ</span>
+                <span className="text-gray-300 dark:text-gray-600 font-mono">·</span>
+                <span className="text-[9px] text-gray-400/80 dark:text-gray-500 tracking-widest font-sans">SYSTEM</span>
+              </div>
+              <div className="space-y-1">
+                <NavLink 
+                  to="/admin/users" 
+                  label={t('nav.users')} 
+                  subLabel="ผู้ใช้งาน & สิทธิ์การเข้าถึง"
+                  icon={Users} 
+                />
+                <NavLink 
+                  to="/admin/logs" 
+                  label="System Logs" 
+                  subLabel="ประวัติการทำงานในระบบ"
+                  icon={History} 
+                />
+                <NavLink 
+                  to="/admin/brands" 
+                  label={t('nav.brands')} 
+                  subLabel="ข้อมูลยี่ห้อ & การรับประกัน"
+                  icon={Tag} 
+                />
+                <NavLink 
+                  to="/admin/distributors" 
+                  label={t('nav.distributors')} 
+                  subLabel="ศูนย์เคลม & ผู้นำเข้าสินค้า"
+                  icon={Building2} 
+                />
+                <NavLink 
+                  to="/admin/settings" 
+                  label={t('nav.settings')} 
+                  subLabel="ตั้งค่าการทำงานของระบบ"
+                  icon={Settings} 
+                />
+                <NavLink 
+                  to="/admin/recycle-bin" 
+                  label="ถังขยะระบบ" 
+                  subLabel="กู้คืน & ลบข้อมูลถาวร"
+                  icon={Trash2} 
+                />
+              </div>
+            </div>
           )}
-        </>
+        </div>
       ) : (
         <div className="p-6 rounded-3xl bg-white dark:bg-[#1c1c1e] text-center mt-4 shadow-sm border border-gray-100 dark:border-[#333]">
           <p className="text-base font-bold text-[#1d1d1f] dark:text-white mb-2">Customer Portal</p>
@@ -367,21 +533,21 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
                 {user?.role === 'admin' ? (
                   <>
                     <div className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-2 mb-1.5">การจัดการระบบ</div>
-                    <NavLink to="/admin/users" label={t('nav.users')} icon={Users} />
-                    <NavLink to="/admin/logs" label="System Logs" icon={History} />
-                    <NavLink to="/admin/brands" label={t('nav.brands')} icon={Tag} />
-                    <NavLink to="/admin/distributors" label={t('nav.distributors')} icon={Building2} />
-                    <NavLink to="/admin/settings" label={t('nav.settings')} icon={Settings} />
-                    <NavLink to="/admin/recycle-bin" label="ถังขยะระบบ" icon={Trash2} />
-                    <NavLink to="/admin/reports" label={t('nav.reports')} icon={BarChart3} />
-                    <NavLink to="/admin/finance" label="การเงิน / บันทึกรายจ่าย" icon={Wallet} />
+                    <NavLink to="/admin/users" label={t('nav.users')} icon={Users} compact={true} />
+                    <NavLink to="/admin/logs" label="System Logs" icon={History} compact={true} />
+                    <NavLink to="/admin/brands" label={t('nav.brands')} icon={Tag} compact={true} />
+                    <NavLink to="/admin/distributors" label={t('nav.distributors')} icon={Building2} compact={true} />
+                    <NavLink to="/admin/settings" label={t('nav.settings')} icon={Settings} compact={true} />
+                    <NavLink to="/admin/recycle-bin" label="ถังขยะระบบ" icon={Trash2} compact={true} />
+                    <NavLink to="/admin/reports" label={t('nav.reports')} icon={BarChart3} compact={true} />
+                    <NavLink to="/admin/finance" label="การเงิน / บันทึกรายจ่าย" icon={Wallet} compact={true} />
                   </>
                 ) : (
                   <>
                     <div className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-2 mb-1.5">การจัดการ</div>
-                    <NavLink to="/admin/reports" label={t('nav.reports')} icon={BarChart3} />
-                    <NavLink to="/admin/settings" label={t('nav.settings')} icon={Settings} />
-                    <NavLink to="/admin/finance" label="การเงิน / บันทึกรายจ่าย" icon={Wallet} />
+                    <NavLink to="/admin/reports" label={t('nav.reports')} icon={BarChart3} compact={true} />
+                    <NavLink to="/admin/settings" label={t('nav.settings')} icon={Settings} compact={true} />
+                    <NavLink to="/admin/finance" label="การเงิน / บันทึกรายจ่าย" icon={Wallet} compact={true} />
                   </>
                 )}
               </div>
@@ -408,8 +574,8 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
 
 
 
-      <aside className={`hidden md:flex flex-col w-72 z-50 bg-white dark:bg-[#1c1c1e] shrink-0 border-r border-gray-200/50 dark:border-white/[0.08] ${embedded ? 'h-full' : 'fixed left-0 top-0 bottom-0'}`}>
-        <div className="p-6 pb-2">
+      <aside className={`hidden md:flex flex-col w-80 z-50 bg-white dark:bg-[#1c1c1e] shrink-0 border-r border-gray-200/50 dark:border-white/[0.08] ${embedded ? 'h-full' : 'fixed left-0 top-0 bottom-0'}`}>
+        <div className="p-6 pb-3">
           <Link to={user ? "/admin/dashboard" : "/"} className="flex items-center gap-3 group">
             <div className="h-9 w-9 flex items-center justify-center transition-transform group-hover:scale-105">
               <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
@@ -418,7 +584,7 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
           </Link>
         </div>
 
-        <div className="flex-1 flex flex-col gap-1 px-4 py-4 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 flex flex-col gap-1 px-3.5 py-3 overflow-y-auto custom-scrollbar">
           {navContent}
         </div>
 
