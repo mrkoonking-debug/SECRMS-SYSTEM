@@ -16,9 +16,9 @@ import { compressImage } from '../services/imageCompressor';
 const DEFAULT_ACCESSORIES = COMMON_ACCESSORIES.filter(a => a !== 'acc_hdd');
 
 const getInputClass = (hasError: boolean) => `
-  w-full px-3 py-1.5 md:px-4 md:py-2.5 text-xs md:text-sm rounded-xl md:rounded-2xl outline-none transition-all
-  bg-white dark:bg-[#1e1e1f] 
-  border border-gray-200 dark:border-white/10
+  w-full px-3.5 py-2 md:px-4 md:py-2.5 text-xs md:text-sm apple-card-inner rounded-[18px] md:rounded-[22px] outline-none transition-all
+  bg-white dark:bg-[#1a1a1c] 
+  border border-gray-200/90 dark:border-white/[0.08]
   text-[#1d1d1f] dark:text-white
   placeholder-gray-400 dark:placeholder-gray-500
   focus:bg-white dark:focus:bg-[#1e1e1f]
@@ -399,7 +399,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                 </p>
             </div>
 
-            <button data-tour="tour-add-button" onClick={handleAddClick} className="w-full py-3 md:py-4 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl md:rounded-2xl text-sm md:text-base font-bold flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-[0.98] outline-none focus:outline-none">
+            <button data-tour="tour-add-button" onClick={handleAddClick} className="w-full py-3.5 md:py-4 bg-[#0071e3] hover:bg-[#0077ed] text-white apple-card-inner rounded-[18px] md:rounded-[22px] text-sm md:text-base font-bold flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 transition-all active:scale-[0.98] outline-none focus:outline-none">
                 <Plus className="w-5 h-5" /> {noSerial && quantity > 1 ? `เพิ่ม ${quantity} รายการ` : t(mode === 'customer' ? 'publicSubmit.addAnother' : 'submit.addToJob')}
             </button>
 

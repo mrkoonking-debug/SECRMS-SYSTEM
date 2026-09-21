@@ -88,25 +88,12 @@ body {
   border: 1px solid var(--border);
   border-radius: 1.5rem;
   box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition-smooth), transform var(--transition-smooth), border-color var(--transition-smooth);
-}
-
-/* Blurs disabled globally for performance */
-
-.glass-panel:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-hover);
 }
 
 .dark .glass-panel {
   background: #1e1e1f;
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: var(--shadow-sm);
-}
-
-.dark .glass-panel:hover {
-  background: #282a2c;
-  box-shadow: var(--shadow-md);
 }
 
 /* Soft shadow for ALL white cards */

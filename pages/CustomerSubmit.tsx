@@ -13,7 +13,7 @@ import { ProductEntryForm } from '../components/ProductEntryForm';
 import { showToast, showValidationError } from '../services/toast';
 
 
-const INPUT_CLASS = "w-full bg-white dark:bg-[#1e1e1f] border border-gray-200 dark:border-white/10 rounded-xl md:rounded-2xl px-3 py-1.5 md:px-4 md:py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1e1e1f] focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3] transition-all outline-none";
+const INPUT_CLASS = "w-full bg-white dark:bg-[#1a1a1c] border border-gray-200/90 dark:border-white/[0.08] apple-card-inner rounded-[18px] md:rounded-[22px] px-3.5 py-2 md:px-4 md:py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1e1e1f] focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3] transition-all outline-none";
 
 export const CustomerSubmit: React.FC = () => {
     const navigate = useNavigate();
@@ -496,7 +496,7 @@ export const CustomerSubmit: React.FC = () => {
     if (step === 'success') {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center px-2 py-12">
-                <div className="glass-panel rounded-[3rem] p-5 md:p-12 max-w-2xl w-full text-center shadow-2xl">
+                <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[36px] md:rounded-[46px] border border-gray-200/70 dark:border-white/[0.08] p-5 md:p-12 max-w-2xl w-full text-center shadow-2xl">
                     <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6"><CheckCircle2 className="w-12 h-12 text-green-600 dark:text-green-400" /></div>
                     <h1 className="text-3xl font-bold text-[#1d1d1f] dark:text-white mb-4">{t('publicSubmit.successTitle')}</h1>
                     <p className="text-gray-500 dark:text-gray-400 mb-8">{t('publicSubmit.successDesc')}</p>
@@ -706,21 +706,21 @@ export const CustomerSubmit: React.FC = () => {
         <div className="min-h-screen py-4 md:py-12 px-2 sm:px-6 md:px-8">
             <div className="max-w-4xl mx-auto">
                 <div className="mb-6 md:mb-8 flex items-center gap-3 md:gap-4"><button onClick={handleBack} className="p-2 rounded-full bg-white/40 dark:bg-white/5 hover:bg-white/60 transition-colors"><ArrowLeft className="w-5 h-5 text-[#1d1d1f] dark:text-white" /></button><div><h1 className="text-2xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white">{t('publicSubmit.title')}</h1><p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm">{t('publicSubmit.subtitle')}</p></div></div>
-                <div className="glass-panel rounded-[2rem] p-3.5 sm:p-6 md:p-8 mb-4 md:mb-8 relative overflow-hidden">
+                <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[34px] md:rounded-[42px] border border-gray-200/70 dark:border-white/[0.08] p-4 sm:p-6 md:p-8 mb-4 md:mb-8 relative overflow-hidden shadow-sm">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500/0 via-blue-500/20 to-blue-500/0"></div>
                     <h2 className="text-lg md:text-xl font-bold text-[#1d1d1f] dark:text-white mb-4 md:mb-6 text-center">{t('publicSubmit.howToTitle')}</h2>
                     {/* Simplified steps display just as info */}
                     <div className="flex flex-wrap justify-center gap-4 md:gap-12">
                         <div className="flex flex-col items-center text-center max-w-[120px]">
-                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-1.5 md:mb-2"><Box className="w-4 h-4 md:w-5 md:h-5" /></div>
+                            <div className="w-9 h-9 md:w-11 md:h-11 apple-card-sm rounded-[16px] bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-1.5 md:mb-2"><Box className="w-4.5 h-4.5 md:w-5 md:h-5" /></div>
                             <div className="text-[10px] md:text-xs font-bold text-gray-500">1. {t('publicSubmit.step1')}</div>
                         </div>
                         <div className="flex flex-col items-center text-center max-w-[120px]">
-                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-1.5 md:mb-2"><User className="w-4 h-4 md:w-5 md:h-5" /></div>
+                            <div className="w-9 h-9 md:w-11 md:h-11 apple-card-sm rounded-[16px] bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-1.5 md:mb-2"><User className="w-4.5 h-4.5 md:w-5 md:h-5" /></div>
                             <div className="text-[10px] md:text-xs font-bold text-gray-500">2. {t('publicSubmit.step2')}</div>
                         </div>
                         <div className="flex flex-col items-center text-center max-w-[120px]">
-                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-1.5 md:mb-2"><PenTool className="w-4 h-4 md:w-5 md:h-5" /></div>
+                            <div className="w-9 h-9 md:w-11 md:h-11 apple-card-sm rounded-[16px] bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-1.5 md:mb-2"><PenTool className="w-4.5 h-4.5 md:w-5 md:h-5" /></div>
                             <div className="text-[10px] md:text-xs font-bold text-gray-500">3. {t('publicSubmit.step3')}</div>
                         </div>
                     </div>
@@ -730,7 +730,7 @@ export const CustomerSubmit: React.FC = () => {
                 <div className="space-y-4 md:space-y-8">
 
                     {/* Section 1: Customer Details */}
-                    <div className="glass-panel rounded-[2rem] p-3.5 sm:p-6 md:p-8 relative overflow-hidden">
+                    <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[34px] md:rounded-[42px] border border-gray-200/70 dark:border-white/[0.08] p-4 sm:p-6 md:p-8 relative overflow-hidden shadow-sm">
                         <h2 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
                             <span className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-xs md:text-sm font-bold">1</span>
                             {t('publicSubmit.contactInfo')}
@@ -828,14 +828,14 @@ export const CustomerSubmit: React.FC = () => {
                     </div>
 
                     {/* Section 2: Product Info */}
-                    <div className="glass-panel rounded-[2rem] p-3.5 sm:p-6 md:p-8 relative overflow-hidden">
+                    <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[34px] md:rounded-[42px] border border-gray-200/70 dark:border-white/[0.08] p-4 sm:p-6 md:p-8 relative overflow-hidden shadow-sm">
                         <h2 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
                             <span className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-xs md:text-sm font-bold">2</span>
                             {t('publicSubmit.productInfo')}
                         </h2>
 
                         {/* Step-by-step guide for customers */}
-                        <div className="mb-4 md:mb-6 p-4 md:p-5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/60 dark:border-blue-800/30 rounded-2xl">
+                        <div className="mb-4 md:mb-6 p-4 md:p-5 bg-gradient-to-br from-blue-50/80 to-indigo-50/80 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/60 dark:border-blue-800/30 apple-card-inner rounded-[22px] md:rounded-[26px]">
                             <h3 className="text-xs md:text-sm font-bold text-blue-700 dark:text-blue-300 mb-2 md:mb-3 flex items-center gap-2">
                                 📋 วิธีเพิ่มรายการเข้าระบบ
                             </h3>
@@ -846,7 +846,7 @@ export const CustomerSubmit: React.FC = () => {
                                     { num: '③', text: 'อธิบายอาการเสีย เช่น "ภาพมืด", "เชื่อมต่อไม่ได้"' },
                                     { num: '④', text: 'กดปุ่ม "เพิ่มรายการ" ด้านล่าง เพื่อเพิ่มเข้ารายการ' },
                                     { num: '⑤', text: 'ถ้ามีสินค้ามากกว่า 1 ชิ้น ให้กรอกข้อมูลชิ้นถัดไป แล้วกด "เพิ่มรายการ" อีกครั้ง ทำซ้ำจนครบทุกชิ้น' },
-                                ].map((s, i) => (
+                                ]?.map((s, i) => (
                                     <div key={i} className="flex items-start gap-2 text-xs md:text-sm text-blue-800/80 dark:text-blue-200/80">
                                         <span className="text-blue-500 font-bold text-sm md:text-base leading-4 md:leading-5">{s.num}</span>
                                         <span>{s.text}</span>
@@ -865,7 +865,7 @@ export const CustomerSubmit: React.FC = () => {
                                 </h3>
                                 <div className="space-y-3">
                                     {basket.map((item, idx) => (
-                                        <div key={idx} className="p-4 bg-white/40 dark:bg-white/5 rounded-2xl border border-white/20 flex justify-between items-start">
+                                        <div key={idx} className="p-4 bg-gray-50/70 dark:bg-white/[0.03] apple-card-inner rounded-[20px] md:rounded-[24px] border border-gray-200/60 dark:border-white/[0.06] flex justify-between items-start">
                                             <div>
                                                 <div className="font-bold text-sm text-[#1d1d1f] dark:text-white flex items-center gap-2">
                                                     <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 text-[10px] flex items-center justify-center font-bold">{idx + 1}</span>
@@ -891,7 +891,7 @@ export const CustomerSubmit: React.FC = () => {
                         )}
                     </div>
                     {/* Submit Section */}
-                    <div className="glass-panel rounded-[2rem] p-8 text-center">
+                    <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[34px] md:rounded-[42px] border border-gray-200/70 dark:border-white/[0.08] p-6 md:p-8 text-center shadow-sm">
                         <div className="max-w-md mx-auto">
                             {!basket.length ? (
                                 <p className="text-sm text-gray-500 mb-4 italic">{t('validation.atLeastOneProduct')}</p>
@@ -904,7 +904,7 @@ export const CustomerSubmit: React.FC = () => {
                             <button
                                 onClick={handleSubmit}
                                 disabled={isSubmitting || basket.length === 0}
-                                className="w-full py-4 bg-[#0071e3] hover:bg-[#0077ed] disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-2xl font-bold shadow-xl shadow-blue-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+                                className="w-full py-4 bg-[#0071e3] hover:bg-[#0077ed] disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white apple-card-inner rounded-[22px] md:rounded-[26px] font-bold shadow-xl shadow-blue-500/30 transition-all hover:scale-[1.01] active:scale-[0.98] flex items-center justify-center gap-2"
                             >
                                 {isSubmitting ? (
                                     <>Loading...</>
