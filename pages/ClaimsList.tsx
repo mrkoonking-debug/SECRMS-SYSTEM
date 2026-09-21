@@ -664,21 +664,21 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter('ALL')}
-                        className={`flex items-center gap-3.5 p-3 md:px-4 text-left apple-liquid-pill rounded-[22px] transition-all duration-200 active:scale-[0.98] ${
+                        className={`flex items-center gap-3 p-3 md:px-4 text-left rounded-[18px] transition-colors duration-150 active:scale-[0.98] ${
                             statusFilter === 'ALL'
-                                ? 'bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/40 dark:border-white/[0.18] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_6px_20px_-2px_rgba(0,113,227,0.3)] -translate-y-0.5 font-bold'
-                                : 'hover:bg-gray-100/70 dark:hover:bg-white/[0.04]'
+                                ? 'bg-blue-500/10 dark:bg-blue-500/10'
+                                : 'hover:bg-black/[0.03] dark:hover:bg-white/[0.03]'
                         }`}
                     >
-                        <div className={`w-10 h-10 md:w-11 md:h-11 apple-card-sm rounded-[16px] flex items-center justify-center shrink-0 transition-all ${
-                            statusFilter === 'ALL' ? 'bg-[#0071e3] text-white shadow-md' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                        <div className={`w-9 h-9 rounded-[13px] flex items-center justify-center shrink-0 ${
+                            statusFilter === 'ALL' ? 'bg-[#0071e3] text-white' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
                         }`}>
-                            <Package className="w-5 h-5" />
+                            <Package className="w-4.5 h-4.5" />
                         </div>
                         <div className="min-w-0">
-                            <div className={`text-[10px] md:text-[11px] font-bold uppercase tracking-wider ${statusFilter === 'ALL' ? 'text-[#0071e3] dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}>งานทั้งหมด</div>
-                            <div className="text-base md:text-xl font-extrabold text-[#1d1d1f] dark:text-white truncate">
-                                {dashboardStats.totalJobs} <span className="text-xs font-semibold text-gray-400 font-sans">ใบงาน</span>
+                            <div className={`text-[10px] font-semibold uppercase tracking-wider ${statusFilter === 'ALL' ? 'text-[#0071e3] dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}>งานทั้งหมด</div>
+                            <div className="text-lg md:text-2xl font-black text-[#1d1d1f] dark:text-white leading-tight">
+                                {dashboardStats.totalJobs} <span className="text-[11px] font-semibold text-gray-400">ใบงาน</span>
                                 <span className="text-[10px] text-gray-400 font-normal ml-1">({dashboardStats.total})</span>
                             </div>
                         </div>
@@ -688,21 +688,21 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'PENDING' ? 'ALL' : 'PENDING')}
-                        className={`flex items-center gap-3.5 p-3 md:px-4 text-left apple-liquid-pill rounded-[22px] transition-all duration-200 active:scale-[0.98] ${
+                        className={`flex items-center gap-3 p-3 md:px-4 text-left rounded-[18px] transition-colors duration-150 active:scale-[0.98] ${
                             statusFilter === 'PENDING'
-                                ? 'bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/40 dark:border-white/[0.18] text-amber-600 dark:text-amber-400 font-bold shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_6px_20px_-2px_rgba(245,158,11,0.3)] -translate-y-0.5'
-                                : 'hover:bg-gray-100/70 dark:hover:bg-white/[0.04]'
+                                ? 'bg-amber-500/10 dark:bg-amber-500/10'
+                                : 'hover:bg-black/[0.03] dark:hover:bg-white/[0.03]'
                         }`}
                     >
-                        <div className={`w-10 h-10 md:w-11 md:h-11 apple-card-sm rounded-[16px] flex items-center justify-center shrink-0 transition-colors ${
-                            statusFilter === 'PENDING' ? 'bg-amber-500 text-white shadow-md' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                        <div className={`w-9 h-9 rounded-[13px] flex items-center justify-center shrink-0 ${
+                            statusFilter === 'PENDING' ? 'bg-amber-500 text-white' : 'bg-amber-500/10 text-amber-500 dark:text-amber-400'
                         }`}>
-                            <Clock className="w-5 h-5" />
+                            <Clock className="w-4.5 h-4.5" />
                         </div>
                         <div className="min-w-0">
-                            <div className="text-[10px] md:text-[11px] font-bold uppercase text-amber-600 dark:text-amber-400 tracking-wider">รอรับเรื่อง</div>
-                            <div className="text-base md:text-xl font-extrabold text-[#1d1d1f] dark:text-white">
-                                {dashboardStats.pendingCount} <span className="text-xs font-semibold text-gray-400 font-sans">รายการ</span>
+                            <div className="text-[10px] font-semibold uppercase tracking-wider text-amber-500 dark:text-amber-400">รอรับเรื่อง</div>
+                            <div className="text-lg md:text-2xl font-black text-[#1d1d1f] dark:text-white leading-tight">
+                                {dashboardStats.pendingCount} <span className="text-[11px] font-semibold text-gray-400">รายการ</span>
                             </div>
                         </div>
                     </button>
@@ -711,21 +711,21 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'IN_PROGRESS' ? 'ALL' : 'IN_PROGRESS')}
-                        className={`flex items-center gap-3.5 p-3 md:px-4 text-left apple-liquid-pill rounded-[22px] transition-all duration-200 active:scale-[0.98] ${
+                        className={`flex items-center gap-3 p-3 md:px-4 text-left rounded-[18px] transition-colors duration-150 active:scale-[0.98] ${
                             statusFilter === 'IN_PROGRESS'
-                                ? 'bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/40 dark:border-white/[0.18] text-blue-600 dark:text-blue-400 font-bold shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_6px_20px_-2px_rgba(59,130,246,0.3)] -translate-y-0.5'
-                                : 'hover:bg-gray-100/70 dark:hover:bg-white/[0.04]'
+                                ? 'bg-blue-500/10 dark:bg-blue-500/10'
+                                : 'hover:bg-black/[0.03] dark:hover:bg-white/[0.03]'
                         }`}
                     >
-                        <div className={`w-10 h-10 md:w-11 md:h-11 apple-card-sm rounded-[16px] flex items-center justify-center shrink-0 transition-colors ${
-                            statusFilter === 'IN_PROGRESS' ? 'bg-[#0071e3] text-white shadow-md' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                        <div className={`w-9 h-9 rounded-[13px] flex items-center justify-center shrink-0 ${
+                            statusFilter === 'IN_PROGRESS' ? 'bg-[#0071e3] text-white' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
                         }`}>
-                            <Wrench className="w-5 h-5" />
+                            <Wrench className="w-4.5 h-4.5" />
                         </div>
                         <div className="min-w-0">
-                            <div className="text-[10px] md:text-[11px] font-bold uppercase text-blue-600 dark:text-blue-400 tracking-wider">กำลังดำเนินการ</div>
-                            <div className="text-base md:text-xl font-extrabold text-[#1d1d1f] dark:text-white">
-                                {dashboardStats.inProgressCount} <span className="text-xs font-semibold text-gray-400 font-sans">รายการ</span>
+                            <div className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">กำลังดำเนินการ</div>
+                            <div className="text-lg md:text-2xl font-black text-[#1d1d1f] dark:text-white leading-tight">
+                                {dashboardStats.inProgressCount} <span className="text-[11px] font-semibold text-gray-400">รายการ</span>
                             </div>
                         </div>
                     </button>
@@ -734,21 +734,21 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'DONE' ? 'ALL' : 'DONE')}
-                        className={`flex items-center gap-3.5 p-3 md:px-4 text-left apple-liquid-pill rounded-[22px] transition-all duration-200 active:scale-[0.98] ${
+                        className={`flex items-center gap-3 p-3 md:px-4 text-left rounded-[18px] transition-colors duration-150 active:scale-[0.98] ${
                             statusFilter === 'DONE'
-                                ? 'bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/40 dark:border-white/[0.18] text-emerald-600 dark:text-emerald-400 font-bold shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_6px_20px_-2px_rgba(16,185,129,0.3)] -translate-y-0.5'
-                                : 'hover:bg-gray-100/70 dark:hover:bg-white/[0.04]'
+                                ? 'bg-emerald-500/10 dark:bg-emerald-500/10'
+                                : 'hover:bg-black/[0.03] dark:hover:bg-white/[0.03]'
                         }`}
                     >
-                        <div className={`w-10 h-10 md:w-11 md:h-11 apple-card-sm rounded-[16px] flex items-center justify-center shrink-0 transition-colors ${
-                            statusFilter === 'DONE' ? 'bg-emerald-500 text-white shadow-md' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                        <div className={`w-9 h-9 rounded-[13px] flex items-center justify-center shrink-0 ${
+                            statusFilter === 'DONE' ? 'bg-emerald-500 text-white' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                         }`}>
-                            <CheckCircle2 className="w-5 h-5" />
+                            <CheckCircle2 className="w-4.5 h-4.5" />
                         </div>
                         <div className="min-w-0">
-                            <div className="text-[10px] md:text-[11px] font-bold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">เสร็จสิ้นแล้ว</div>
-                            <div className="text-base md:text-xl font-extrabold text-[#1d1d1f] dark:text-white">
-                                {dashboardStats.doneCount} <span className="text-xs font-semibold text-gray-400 font-sans">รายการ</span>
+                            <div className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">เสร็จสิ้นแล้ว</div>
+                            <div className="text-lg md:text-2xl font-black text-[#1d1d1f] dark:text-white leading-tight">
+                                {dashboardStats.doneCount} <span className="text-[11px] font-semibold text-gray-400">รายการ</span>
                             </div>
                         </div>
                     </button>
