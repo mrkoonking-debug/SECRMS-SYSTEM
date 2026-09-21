@@ -814,7 +814,7 @@ export const ClaimsList: React.FC = () => {
                             <span className={teamFilter === 'ALL' ? 'text-blue-100' : 'text-gray-400'}>
                                 ทั้งหมด {dashboardStats.all.total} งาน
                             </span>
-                            <span className={teamFilter === 'ALL' ? 'text-blue-100' : 'text-emerald-600 dark:text-emerald-400 font-bold'}>
+                            <span className={teamFilter === 'ALL' ? 'text-blue-100' : 'text-gray-400'}>
                                 เสร็จ {dashboardStats.all.done}
                             </span>
                         </div>
@@ -852,7 +852,7 @@ export const ClaimsList: React.FC = () => {
                             <span className={teamFilter === Team.HIKVISION ? 'text-red-100' : 'text-gray-400'}>
                                 ทั้งหมด {dashboardStats.hik.total} งาน
                             </span>
-                            <span className={teamFilter === Team.HIKVISION ? 'text-red-100' : 'text-emerald-600 dark:text-emerald-400 font-bold'}>
+                            <span className={teamFilter === Team.HIKVISION ? 'text-red-100' : 'text-gray-400'}>
                                 เสร็จ {dashboardStats.hik.done}
                             </span>
                         </div>
@@ -890,7 +890,7 @@ export const ClaimsList: React.FC = () => {
                             <span className={teamFilter === Team.DAHUA ? 'text-orange-100' : 'text-gray-400'}>
                                 ทั้งหมด {dashboardStats.dahua.total} งาน
                             </span>
-                            <span className={teamFilter === Team.DAHUA ? 'text-orange-100' : 'text-emerald-600 dark:text-emerald-400 font-bold'}>
+                            <span className={teamFilter === Team.DAHUA ? 'text-orange-100' : 'text-gray-400'}>
                                 เสร็จ {dashboardStats.dahua.done}
                             </span>
                         </div>
@@ -928,7 +928,7 @@ export const ClaimsList: React.FC = () => {
                             <span className={isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-violet-100' : 'text-gray-400'}>
                                 ทั้งหมด {dashboardStats.groupC.total} งาน
                             </span>
-                            <span className={isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-violet-100' : 'text-emerald-600 dark:text-emerald-400 font-bold'}>
+                            <span className={isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-violet-100' : 'text-gray-400'}>
                                 เสร็จ {dashboardStats.groupC.done}
                             </span>
                         </div>
