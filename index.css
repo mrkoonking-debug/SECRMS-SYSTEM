@@ -507,3 +507,42 @@ select:-webkit-autofill:active {
   -webkit-text-fill-color: #ffffff !important;
   box-shadow: inset 0 0 0 1000px #1e1e1f !important;
 }
+
+/* ==========================================================================
+   Apple Cupertino Squircle & Continuous Curvature (Superellipse G2)
+   ========================================================================== */
+.apple-card {
+  border-radius: 28px;
+  corner-shape: squircle;
+  -webkit-corner-shape: squircle;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08), 0 2px 12px rgba(0, 0, 0, 0.03);
+  transition: transform 0.22s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.22s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.22s ease;
+}
+
+.apple-card-lg {
+  border-radius: 32px;
+  corner-shape: squircle;
+  -webkit-corner-shape: squircle;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08), 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.apple-card-inner {
+  border-radius: 20px;
+  corner-shape: squircle;
+  -webkit-corner-shape: squircle;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.apple-card-sm {
+  border-radius: 16px;
+  corner-shape: squircle;
+  -webkit-corner-shape: squircle;
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.apple-squircle {
+  corner-shape: squircle;
+  -webkit-corner-shape: squircle;
+}
+

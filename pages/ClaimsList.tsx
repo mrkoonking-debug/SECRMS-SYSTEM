@@ -77,20 +77,20 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
     return (
         <div 
             onClick={() => onJobClick(jobKey)} 
-            className={`p-4 flex flex-col gap-3 cursor-pointer bg-white dark:bg-[#1e1e1f] rounded-2xl border border-gray-200/70 dark:border-white/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.01)] dark:shadow-none hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500/50 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-all duration-200 group ${isJobCancelled ? 'opacity-50 grayscale bg-gray-50/20 dark:bg-black/10' : ''}`}
+            className={`p-4 flex flex-col gap-3 cursor-pointer bg-white dark:bg-[#1e1e1f] apple-card rounded-[22px] md:rounded-[26px] border border-gray-200/70 dark:border-white/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.01)] dark:shadow-none hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500/50 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-all duration-200 group ${isJobCancelled ? 'opacity-50 grayscale bg-gray-50/20 dark:bg-black/10' : ''}`}
         >
             {/* Top Row: Icon, Key, Badges, and Chevron */}
             <div className="flex items-center justify-between gap-3 w-full">
                 <div className="flex items-center gap-2 flex-wrap min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                         {/* macOS-style Icon Badge */}
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-white shadow-sm transition-transform group-hover:scale-105 ${isJobCancelled ? 'bg-gray-400 dark:bg-gray-600' : isJobDone ? 'bg-[#34c759]' : jobItems.some(i => isRMAOverdue(i)) ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>
+                        <div className={`w-7 h-7 apple-card-sm rounded-[10px] flex items-center justify-center flex-shrink-0 text-white shadow-sm transition-transform group-hover:scale-105 ${isJobCancelled ? 'bg-gray-400 dark:bg-gray-600' : isJobDone ? 'bg-[#34c759]' : jobItems.some(i => isRMAOverdue(i)) ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>
                             {isJobCancelled ? <X className="w-3.5 h-3.5 text-white" /> : isJobDone ? <CheckCircle2 className="w-3.5 h-3.5 text-white" /> : <Package className="w-3.5 h-3.5 text-white" />}
                         </div>
                         <span className="text-[13px] md:text-[15px] font-bold text-[#1d1d1f] dark:text-white whitespace-nowrap shrink-0">{jobKey}</span>
                     </div>
                     <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-md border whitespace-nowrap ${quotationNumber ? 'bg-gray-100/80 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400 border-gray-200/60 dark:border-white/[0.06]' : 'bg-gray-50/80 dark:bg-white/[0.03] text-gray-400 dark:text-gray-500 border-gray-100 dark:border-white/[0.04] italic'}`}>{quotationNumber ? `Ref: ${quotationNumber}` : 'ไม่มี Ref'}</span>
+                        <span className={`text-[10px] px-1.5 py-0.5 apple-card-sm rounded-[8px] border whitespace-nowrap ${quotationNumber ? 'bg-gray-100/80 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400 border-gray-200/60 dark:border-white/[0.06]' : 'bg-gray-50/80 dark:bg-white/[0.03] text-gray-400 dark:text-gray-500 border-gray-100 dark:border-white/[0.04] italic'}`}>{quotationNumber ? `Ref: ${quotationNumber}` : 'ไม่มี Ref'}</span>
                         {jobTeam && getTeamBadge(jobTeam)}
                     </div>
                 </div>
@@ -98,9 +98,9 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
                 <div className="flex items-center gap-2 flex-shrink-0">
                     <div className="hidden sm:flex -space-x-1.5 mr-1">
                         {jobItems.slice(0, 3).map((item) => (
-                            <div key={item.id} className={`w-6 h-6 rounded-md border border-white dark:border-[#1c1c1e] flex items-center justify-center text-[9px] font-bold text-white shadow-sm ${item.team === Team.HIKVISION ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>{item.brand.substring(0, 1)}</div>
+                            <div key={item.id} className={`w-6 h-6 apple-card-sm rounded-[8px] border border-white dark:border-[#1c1c1e] flex items-center justify-center text-[9px] font-bold text-white shadow-sm ${item.team === Team.HIKVISION ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>{item.brand.substring(0, 1)}</div>
                         ))}
-                        {jobItems.length > 3 && <div className="w-6 h-6 rounded-md border border-white dark:border-[#1c1c1e] bg-gray-100 dark:bg-white/[0.06] text-gray-400 text-[9px] flex items-center justify-center shadow-sm">+{jobItems.length - 3}</div>}
+                        {jobItems.length > 3 && <div className="w-6 h-6 apple-card-sm rounded-[8px] border border-white dark:border-[#1c1c1e] bg-gray-100 dark:bg-white/[0.06] text-gray-400 text-[9px] flex items-center justify-center shadow-sm">+{jobItems.length - 3}</div>}
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 transition-transform group-hover:translate-x-0.5" />
                 </div>
@@ -121,7 +121,7 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
 
             {/* Bottom Row: Detailed Items Preview */}
             <div className="w-full pl-0 sm:pl-9">
-                <div className="mt-1 space-y-1.5 bg-gray-50/50 dark:bg-white/[0.01] border border-gray-100 dark:border-white/5 rounded-xl p-2.5 max-w-full overflow-hidden">
+                <div className="mt-1 space-y-1.5 bg-gray-50/50 dark:bg-white/[0.01] border border-gray-100 dark:border-white/5 apple-card-inner rounded-[18px] p-2.5 max-w-full overflow-hidden">
                     {jobItems.slice(0, 3).map((item) => (
                         <div key={item.id} className="grid grid-cols-1 md:grid-cols-[240px_1fr_auto] gap-2 md:gap-4 items-center text-[11px] border-b border-gray-100/50 dark:border-white/5 last:border-0 pb-2.5 last:pb-0 pt-2.5 first:pt-0">
                             {/* Left: Product Info */}
@@ -653,11 +653,11 @@ export const ClaimsList: React.FC = () => {
             </div>
 
             {/* Top Workflow Status & Progress Pipeline */}
-            <div className="bg-white dark:bg-[#16161a] rounded-2xl md:rounded-[20px] border border-gray-200/60 dark:border-white/[0.08] p-3 md:p-4 shadow-sm mb-3 md:mb-4">
+            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[32px] border border-gray-200/60 dark:border-white/[0.08] p-3.5 md:p-4.5 shadow-sm mb-3 md:mb-4">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 md:gap-3 mb-3">
                     {/* All items */}
-                    <div className="flex items-center gap-3 p-2.5 rounded-xl bg-gray-50/80 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
-                        <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                    <div className="flex items-center gap-3 p-3 apple-card-inner rounded-[20px] md:rounded-[22px] bg-gray-50/80 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
+                        <div className="w-9 h-9 apple-card-sm rounded-[14px] bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                             <Package className="w-4 h-4" />
                         </div>
                         <div className="min-w-0">
@@ -673,13 +673,13 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'PENDING' ? 'ALL' : 'PENDING')}
-                        className={`flex items-center gap-3 p-2.5 rounded-xl text-left transition-all border ${
+                        className={`flex items-center gap-3 p-3 apple-card-inner rounded-[20px] md:rounded-[22px] text-left transition-all border ${
                             statusFilter === 'PENDING'
                                 ? 'bg-amber-500/15 border-amber-500/40 ring-1 ring-amber-500/30'
                                 : 'bg-gray-50/80 dark:bg-white/[0.03] border-gray-100 dark:border-white/5 hover:border-amber-400/40'
                         }`}
                     >
-                        <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 apple-card-sm rounded-[14px] bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                             <Clock className="w-4 h-4" />
                         </div>
                         <div className="min-w-0">
@@ -694,13 +694,13 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'IN_PROGRESS' ? 'ALL' : 'IN_PROGRESS')}
-                        className={`flex items-center gap-3 p-2.5 rounded-xl text-left transition-all border ${
+                        className={`flex items-center gap-3 p-3 apple-card-inner rounded-[20px] md:rounded-[22px] text-left transition-all border ${
                             statusFilter === 'IN_PROGRESS'
                                 ? 'bg-blue-500/15 border-blue-500/40 ring-1 ring-blue-500/30'
                                 : 'bg-gray-50/80 dark:bg-white/[0.03] border-gray-100 dark:border-white/5 hover:border-blue-400/40'
                         }`}
                     >
-                        <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 apple-card-sm rounded-[14px] bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                             <Wrench className="w-4 h-4" />
                         </div>
                         <div className="min-w-0">
@@ -715,13 +715,13 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'DONE' ? 'ALL' : 'DONE')}
-                        className={`flex items-center gap-3 p-2.5 rounded-xl text-left transition-all border ${
+                        className={`flex items-center gap-3 p-3 apple-card-inner rounded-[20px] md:rounded-[22px] text-left transition-all border ${
                             statusFilter === 'DONE'
                                 ? 'bg-emerald-500/15 border-emerald-500/40 ring-1 ring-emerald-500/30'
                                 : 'bg-gray-50/80 dark:bg-white/[0.03] border-gray-100 dark:border-white/5 hover:border-emerald-400/40'
                         }`}
                     >
-                        <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 apple-card-sm rounded-[14px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                             <CheckCircle2 className="w-4 h-4" />
                         </div>
                         <div className="min-w-0">
@@ -764,7 +764,7 @@ export const ClaimsList: React.FC = () => {
                     {/* All Teams Card */}
                     <button
                         onClick={() => { setTeamFilter('ALL'); setIsTeamCExpanded(false); }}
-                        className={`rounded-2xl md:rounded-[20px] p-3.5 md:p-4 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
+                        className={`apple-card rounded-[26px] md:rounded-[30px] p-3.5 md:p-4 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             teamFilter === 'ALL'
                                 ? 'bg-gradient-to-br from-[#0071e3] to-[#005bb5] text-white shadow-md shadow-blue-500/20 border border-blue-400/40'
                                 : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-blue-300 dark:hover:border-blue-500/30 active:scale-[0.98]'
@@ -775,7 +775,7 @@ export const ClaimsList: React.FC = () => {
                                 <span className={`text-[10px] font-extrabold uppercase tracking-wider ${teamFilter === 'ALL' ? 'text-blue-100' : 'text-gray-400 dark:text-gray-500'}`}>
                                     {t('claimsList.active')}
                                 </span>
-                                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${teamFilter === 'ALL' ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'}`}>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 apple-card-sm rounded-[10px] ${teamFilter === 'ALL' ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'}`}>
                                     เสร็จ {dashboardStats.all.rate}%
                                 </span>
                             </div>
@@ -802,7 +802,7 @@ export const ClaimsList: React.FC = () => {
                     {/* Team HIK Card */}
                     <button
                         onClick={() => { setTeamFilter(Team.HIKVISION); setIsTeamCExpanded(false); }}
-                        className={`rounded-2xl md:rounded-[20px] p-3.5 md:p-4 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
+                        className={`apple-card rounded-[26px] md:rounded-[30px] p-3.5 md:p-4 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             teamFilter === Team.HIKVISION
                                 ? 'bg-gradient-to-br from-[#e53e3e] to-[#c53030] text-white shadow-md shadow-red-500/20 border border-red-400/40'
                                 : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-red-300 dark:hover:border-red-500/30 active:scale-[0.98]'
@@ -813,7 +813,7 @@ export const ClaimsList: React.FC = () => {
                                 <span className={`text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 ${teamFilter === Team.HIKVISION ? 'text-red-100' : 'text-red-500'}`}>
                                     <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span> ทีม A (HIK)
                                 </span>
-                                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${teamFilter === Team.HIKVISION ? 'bg-white/20 text-white' : 'bg-red-500/10 text-red-600 dark:text-red-400'}`}>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 apple-card-sm rounded-[10px] ${teamFilter === Team.HIKVISION ? 'bg-white/20 text-white' : 'bg-red-500/10 text-red-600 dark:text-red-400'}`}>
                                     เสร็จ {dashboardStats.hik.rate}%
                                 </span>
                             </div>
@@ -840,7 +840,7 @@ export const ClaimsList: React.FC = () => {
                     {/* Team DAHUA Card */}
                     <button
                         onClick={() => { setTeamFilter(Team.DAHUA); setIsTeamCExpanded(false); }}
-                        className={`rounded-2xl md:rounded-[20px] p-3.5 md:p-4 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
+                        className={`apple-card rounded-[26px] md:rounded-[30px] p-3.5 md:p-4 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             teamFilter === Team.DAHUA
                                 ? 'bg-gradient-to-br from-[#dd6b20] to-[#c05621] text-white shadow-md shadow-orange-500/20 border border-orange-400/40'
                                 : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-orange-300 dark:hover:border-orange-500/30 active:scale-[0.98]'
@@ -851,7 +851,7 @@ export const ClaimsList: React.FC = () => {
                                 <span className={`text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 ${teamFilter === Team.DAHUA ? 'text-orange-100' : 'text-orange-500'}`}>
                                     <span className="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block"></span> ทีม B (DAHUA)
                                 </span>
-                                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${teamFilter === Team.DAHUA ? 'bg-white/20 text-white' : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'}`}>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 apple-card-sm rounded-[10px] ${teamFilter === Team.DAHUA ? 'bg-white/20 text-white' : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'}`}>
                                     เสร็จ {dashboardStats.dahua.rate}%
                                 </span>
                             </div>
@@ -878,7 +878,7 @@ export const ClaimsList: React.FC = () => {
                     {/* Team C Group Card */}
                     <button
                         onClick={handleGroupCClick}
-                        className={`rounded-2xl md:rounded-[20px] p-3.5 md:p-4 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
+                        className={`apple-card rounded-[26px] md:rounded-[30px] p-3.5 md:p-4 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             isTeamCExpanded || teamFilter === 'GROUP_C'
                                 ? 'bg-gradient-to-br from-[#805ad5] to-[#6b46c1] text-white shadow-md shadow-violet-500/20 border border-violet-400/40'
                                 : 'bg-white dark:bg-[#16161a] border border-gray-200/60 dark:border-white/[0.08] shadow-sm hover:border-violet-300 dark:hover:border-violet-500/30 active:scale-[0.98]'
@@ -889,7 +889,7 @@ export const ClaimsList: React.FC = () => {
                                 <span className={`text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'text-violet-100' : 'text-violet-500'}`}>
                                     <span className="w-1.5 h-1.5 rounded-full bg-violet-500 inline-block"></span> ทีม C (รวม)
                                 </span>
-                                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'bg-white/20 text-white' : 'bg-violet-500/10 text-violet-600 dark:text-violet-400'}`}>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 apple-card-sm rounded-[10px] ${isTeamCExpanded || teamFilter === 'GROUP_C' ? 'bg-white/20 text-white' : 'bg-violet-500/10 text-violet-600 dark:text-violet-400'}`}>
                                     เสร็จ {dashboardStats.groupC.rate}%
                                 </span>
                             </div>
@@ -919,7 +919,7 @@ export const ClaimsList: React.FC = () => {
                     <div className="flex gap-2 overflow-x-auto scrollbar-hide animate-fade-in pl-2 border-l-2 border-violet-500/30">
                         <button 
                             onClick={() => setTeamFilter(Team.TEAM_C)} 
-                            className={`rounded-xl px-3.5 py-2 border whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
+                            className={`apple-card-sm rounded-[16px] md:rounded-[18px] px-3.5 py-2 border whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
                                 teamFilter === Team.TEAM_C 
                                     ? 'border-cyan-400 text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10 font-bold' 
                                     : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] shadow-sm text-gray-700 dark:text-gray-300'
@@ -932,7 +932,7 @@ export const ClaimsList: React.FC = () => {
                         </button>
                         <button 
                             onClick={() => setTeamFilter(Team.TEAM_E)} 
-                            className={`rounded-xl px-3.5 py-2 border whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
+                            className={`apple-card-sm rounded-[16px] md:rounded-[18px] px-3.5 py-2 border whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
                                 teamFilter === Team.TEAM_E 
                                     ? 'border-amber-400 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 font-bold' 
                                     : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] shadow-sm text-gray-700 dark:text-gray-300'
@@ -945,7 +945,7 @@ export const ClaimsList: React.FC = () => {
                         </button>
                         <button 
                             onClick={() => setTeamFilter(Team.TEAM_G)} 
-                            className={`rounded-xl px-3.5 py-2 border whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
+                            className={`apple-card-sm rounded-[16px] md:rounded-[18px] px-3.5 py-2 border whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
                                 teamFilter === Team.TEAM_G 
                                     ? 'border-fuchsia-400 text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-500/10 font-bold' 
                                     : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] shadow-sm text-gray-700 dark:text-gray-300'
@@ -960,21 +960,21 @@ export const ClaimsList: React.FC = () => {
                 )}
             </div>
 
-            <div className="bg-white dark:bg-[#16161a] rounded-2xl md:rounded-[24px] border border-gray-200/60 dark:border-white/[0.08] p-2 md:p-3 shadow-sm mb-4 md:mb-6 space-y-2">
+            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[32px] border border-gray-200/60 dark:border-white/[0.08] p-2.5 md:p-3.5 shadow-sm mb-4 md:mb-6 space-y-2.5">
                 <div className="flex flex-col xl:flex-row items-center justify-between gap-2.5">
                     <div className="relative w-full xl:flex-1">
-                        <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
+                        <Search className="absolute left-3.5 md:left-4.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                         <input 
                             type="text" 
                             placeholder={t('claimsList.searchPlaceholder')} 
                             value={search} 
                             onChange={(e) => handleSearchChange(e.target.value)} 
-                            className="w-full bg-transparent border-none rounded-xl py-2.5 pl-10 pr-10 text-sm dark:text-white focus:ring-0" 
+                            className="w-full bg-gray-50/70 dark:bg-white/[0.03] border border-gray-150/60 dark:border-white/5 apple-card-inner rounded-[18px] py-2.5 pl-10 pr-10 text-sm dark:text-white focus:ring-2 focus:ring-[#0071e3]/30 transition-all" 
                         />
                         {search && (
                             <button 
                                 onClick={handleClearSearch}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                                className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
                                 title="ล้างการค้นหา"
                             >
                                 <X className="w-3.5 h-3.5" />
@@ -982,7 +982,7 @@ export const ClaimsList: React.FC = () => {
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        <button onClick={handleExpandAll} className="p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06]" title="ขยาย/หุบทั้งหมด"><ChevronsUpDown className="w-4 h-4" /></button>
+                        <button onClick={handleExpandAll} className="p-2.5 apple-card-sm rounded-[14px] text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06] border border-transparent hover:border-gray-200/50" title="ขยาย/หุบทั้งหมด"><ChevronsUpDown className="w-4 h-4" /></button>
                         <div className="bg-gray-100 dark:bg-[#2c2c2e]/60 border border-gray-200/50 p-1 rounded-full grid grid-cols-4 relative w-[310px]">
                             <div 
                                 className={`absolute top-1 bottom-1 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition-all duration-300 ${getStatusColorClass(statusFilter)}`} 
@@ -1008,7 +1008,7 @@ export const ClaimsList: React.FC = () => {
                         </span>
 
                         {/* Standard Quick Presets (Modern Segmented Bar) */}
-                        <div className="inline-flex bg-gray-100/90 dark:bg-white/[0.04] p-0.5 rounded-xl border border-gray-200/60 dark:border-white/[0.06] shadow-sm">
+                        <div className="inline-flex bg-gray-100/90 dark:bg-white/[0.04] p-0.5 apple-card-sm rounded-[16px] border border-gray-200/60 dark:border-white/[0.06] shadow-sm">
                             {[
                                 { id: 'ALL', label: 'ทั้งหมด' },
                                 { id: 'THIS_MONTH', label: 'เดือนนี้' },
@@ -1025,7 +1025,7 @@ export const ClaimsList: React.FC = () => {
                                             setCustomStartDate('');
                                             setCustomEndDate('');
                                         }}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                        className={`px-3 py-1.5 apple-card-sm rounded-[12px] text-xs font-semibold transition-all ${
                                             isActive
                                                 ? 'bg-white dark:bg-[#252528] text-[#0071e3] dark:text-white shadow-sm font-bold'
                                                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/[0.02]'
@@ -1041,7 +1041,7 @@ export const ClaimsList: React.FC = () => {
                         <button
                             type="button"
                             onClick={() => setShowDatePickerModal(true)}
-                            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 apple-card-sm rounded-[14px] text-xs font-semibold border transition-all ${
                                 (dateFilter !== 'ALL' && dateFilter !== 'THIS_MONTH' && dateFilter !== 'LAST_MONTH' && dateFilter !== '3_MONTHS') || (customStartDate && customEndDate)
                                     ? 'bg-[#0071e3]/10 text-[#0071e3] dark:text-blue-400 border-[#0071e3]/40 font-bold shadow-sm'
                                     : 'bg-white dark:bg-[#1c1c1e] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 shadow-sm hover:bg-gray-50 dark:hover:bg-white/5'
@@ -1061,7 +1061,7 @@ export const ClaimsList: React.FC = () => {
                                     setCustomStartDate('');
                                     setCustomEndDate('');
                                 }}
-                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-dashed border-gray-300 dark:border-white/10"
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 apple-card-sm rounded-[12px] text-xs font-semibold text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-dashed border-gray-300 dark:border-white/10"
                                 title="ล้างตัวกรองช่วงเวลา"
                             >
                                 <X className="w-3 h-3" />
@@ -1082,7 +1082,7 @@ export const ClaimsList: React.FC = () => {
                         {isAnyFilterActive && (
                             <button
                                 onClick={handleClearFilters}
-                                className="px-3 py-1 text-xs font-bold rounded-xl bg-red-500/10 text-red-600 hover:bg-red-500/20 flex items-center gap-1.5 transition-colors shrink-0"
+                                className="px-3 py-1 text-xs font-bold apple-card-sm rounded-[12px] bg-red-500/10 text-red-600 hover:bg-red-500/20 flex items-center gap-1.5 transition-colors shrink-0"
                                 title="ล้างตัวกรองทั้งหมด"
                             >
                                 <X className="w-3.5 h-3.5" /> ล้างตัวกรอง
