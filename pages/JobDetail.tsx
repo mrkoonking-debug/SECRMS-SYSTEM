@@ -404,49 +404,56 @@ export const JobDetail: React.FC = () => {
 
     return (
         <div className="max-w-[1600px] w-full mx-auto px-3 sm:px-6 md:px-8 py-4 md:py-6 pb-6">
-            <div className="flex items-center justify-between mb-4 md:mb-8">
-                <Link to="/admin/rmas" className="flex items-center text-xs md:text-sm font-medium text-gray-500 hover:text-[#0071e3] transition-colors"><ArrowLeft className="h-4 w-4 mr-1" /> {t('track.backToList')}</Link>
+            <div className="flex items-center justify-between mb-4 md:mb-6">
+                <Link 
+                    to="/admin/rmas" 
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-white/[0.04] apple-card-sm border border-gray-200/70 dark:border-white/[0.08] text-xs md:text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-[#0071e3] dark:hover:text-blue-400 hover:border-[#0071e3]/30 transition-all shadow-xs active:scale-95"
+                >
+                    <ArrowLeft className="h-4 w-4" /> <span>{t('track.backToList')}</span>
+                </Link>
             </div>
 
             {/* Unified Job Header & Customer Info Card */}
-            <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl md:rounded-[24px] p-4 md:p-8 mb-4 md:mb-8 border border-gray-100 dark:border-[#333] shadow-sm">
+            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[36px] p-5 sm:p-7 md:p-8 mb-5 md:mb-8 border border-gray-200/70 dark:border-white/[0.08] shadow-sm relative overflow-hidden">
 
                 {/* --- TOP HEADER SECTION --- */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 mb-4 md:mb-6">
-                    <div className="flex items-center gap-3 md:gap-5">
-                        <div className="w-11 h-11 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center shadow-inner"><Package className="w-5 h-5 md:w-6 md:h-6" /></div>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 mb-5 md:mb-7">
+                    <div className="flex items-center gap-3.5 md:gap-5">
+                        <div className="w-12 h-12 md:w-16 md:h-16 rounded-[20px] md:rounded-[24px] bg-[#0071e3]/10 dark:bg-blue-500/15 text-[#0071e3] dark:text-blue-400 apple-card-sm flex items-center justify-center shadow-xs border border-blue-500/20 shrink-0">
+                            <Package className="w-6 h-6 md:w-7 md:h-7" />
+                        </div>
                         <div className="min-w-0 flex-1">
-                            <div className="flex items-center flex-wrap gap-2 md:gap-3 mb-1 md:mb-2">
-                                <h1 className="text-sm sm:text-base md:text-2xl font-bold text-[#1d1d1f] dark:text-white leading-tight whitespace-nowrap">
+                            <div className="flex items-center flex-wrap gap-2 md:gap-3 mb-1.5 md:mb-2">
+                                <h1 className="text-base sm:text-lg md:text-2xl font-black text-[#1d1d1f] dark:text-white tracking-tight leading-tight whitespace-nowrap">
                                     {jobInfo.id}
                                 </h1>
-                                <span className={`text-[10px] md:text-xs px-1.5 md:px-2.5 py-0.5 md:py-1 rounded border flex items-center gap-1 font-medium ${jobInfo.quotationNumber ? 'bg-gray-50 dark:bg-[#2c2c2e] text-gray-500 dark:text-gray-400 border-gray-200 dark:border-[#424245]' : 'bg-gray-50/50 dark:bg-[#2c2c2e]/50 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-[#424245]/50 italic'}`}>
+                                <span className={`text-[10px] md:text-xs px-2.5 py-0.5 md:py-1 rounded-full border flex items-center gap-1 font-bold apple-card-sm ${jobInfo.quotationNumber ? 'bg-gray-100/80 dark:bg-white/[0.06] text-gray-600 dark:text-gray-300 border-gray-200/70 dark:border-white/[0.08]' : 'bg-gray-50/50 dark:bg-white/[0.02] text-gray-400 dark:text-gray-500 border-gray-100 dark:border-white/[0.04] italic'}`}>
                                     <span className="uppercase text-[9px] md:text-[10px] font-bold opacity-60">Ref:</span>
                                     {jobInfo.quotationNumber || 'ไม่มี Ref'}
                                 </span>
                             </div>
-                            <div className="flex flex-wrap items-center gap-1.5 md:gap-4 text-[11px] md:text-sm text-gray-500">
-                                <span className="flex items-center gap-1 font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-lg border border-gray-200/50 dark:border-white/10" title="เวลาลงทะเบียน">
+                            <div className="flex flex-wrap items-center gap-2 md:gap-3.5 text-[11px] md:text-xs text-gray-500">
+                                <span className="flex items-center gap-1.5 font-bold text-gray-700 dark:text-gray-300 bg-gray-100/80 dark:bg-white/[0.04] px-2.5 py-1 rounded-full border border-gray-200/60 dark:border-white/10 apple-card-sm" title="เวลาลงทะเบียน">
                                     <Clock className="w-3.5 h-3.5 text-blue-500" />
                                     <span>{formatDetailedDateTime(jobInfo.date)}</span>
                                 </span>
-                                <span className="bg-gray-100 dark:bg-white/10 px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs text-[#1d1d1f] dark:text-gray-300 font-medium">{jobInfo.count} {t('claimsList.items')}</span>
-                                    <div className="flex gap-1.5 md:gap-2">
-                                        <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium border border-green-100 dark:border-green-900/30">
-                                            <CheckCircle2 className="w-2.5 h-2.5 md:w-3 md:h-3" />
-                                            {rmas.filter(c => [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REPLACED_FROM_STOCK, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.REJECTED, RMAStatus.CANCELLED].includes(c.status)).length} {t('track.doneBadge')}
-                                        </div>
-                                        <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium border border-blue-100 dark:border-blue-900/30">
-                                            <Clock className="w-2.5 h-2.5 md:w-3 md:h-3" />
-                                            {rmas.filter(c => ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REPLACED_FROM_STOCK, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.REJECTED, RMAStatus.CANCELLED].includes(c.status)).length} {t('track.activeBadge')}
-                                        </div>
+                                <span className="bg-gray-100/80 dark:bg-white/[0.04] px-2.5 py-1 rounded-full border border-gray-200/60 dark:border-white/10 apple-card-sm text-[#1d1d1f] dark:text-gray-300 font-bold">{jobInfo.count} {t('claimsList.items')}</span>
+                                <div className="flex gap-1.5 md:gap-2">
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] md:text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20 apple-card-sm">
+                                        <CheckCircle2 className="w-3 h-3" />
+                                        {rmas.filter(c => [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REPLACED_FROM_STOCK, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.REJECTED, RMAStatus.CANCELLED].includes(c.status)).length} {t('track.doneBadge')}
                                     </div>
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] md:text-xs bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold border border-blue-500/20 apple-card-sm">
+                                        <Clock className="w-3 h-3" />
+                                        {rmas.filter(c => ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REPLACED_FROM_STOCK, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.REJECTED, RMAStatus.CANCELLED].includes(c.status)).length} {t('track.activeBadge')}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     {/* PRINT ACTION GROUPS — Clean 2x2 Symmetrical Grid */}
-                    <div className="grid grid-cols-2 gap-1.5 md:gap-2 w-full md:w-auto md:min-w-[340px] md:max-w-[400px]">
+                    <div className="grid grid-cols-2 gap-2 md:gap-2.5 w-full md:w-auto md:min-w-[340px] md:max-w-[420px]">
                         {/* Top-Left: ใบส่งเคลม */}
                         <button
                             onClick={() => {
@@ -456,9 +463,9 @@ export const JobDetail: React.FC = () => {
                                 setIsDocPreviewOpen(true);
                             }}
                             disabled={!allHaveDistributor}
-                            className={`h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${allHaveDistributor
-                                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-95'
-                                : 'bg-gray-100 dark:bg-[#2c2c2e] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
+                            className={`h-10 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-[18px] md:rounded-[20px] text-[11px] md:text-xs font-bold transition-all active:scale-95 apple-card-inner ${allHaveDistributor
+                                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 hover:scale-[1.01]'
+                                : 'bg-gray-100 dark:bg-white/[0.04] text-gray-400 dark:text-gray-600 border border-gray-200/50 dark:border-white/5 cursor-not-allowed'}`}
                             title={!allHaveDistributor ? `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)` : ''}
                         >
                             <Printer className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -469,9 +476,9 @@ export const JobDetail: React.FC = () => {
                         <button
                             onClick={handleReturnToCustomerClick}
                             disabled={!hasReadyRMAs}
-                            className={`h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${hasReadyRMAs
-                                ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-95 cursor-pointer'
-                                : 'bg-gray-100 dark:bg-[#2c2c2e] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
+                            className={`h-10 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-[18px] md:rounded-[20px] text-[11px] md:text-xs font-bold transition-all active:scale-95 apple-card-inner ${hasReadyRMAs
+                                ? 'bg-gradient-to-r from-[#0071e3] to-[#005bb5] text-white shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/35 hover:scale-[1.01] cursor-pointer'
+                                : 'bg-gray-100 dark:bg-white/[0.04] text-gray-400 dark:text-gray-600 border border-gray-200/50 dark:border-white/5 cursor-not-allowed'}`}
                             title={!hasReadyRMAs ? 'ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะส่งคืนได้' : ''}
                         >
                             <User className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -483,20 +490,18 @@ export const JobDetail: React.FC = () => {
                             onClick={() => {
                                 const distributorGroups = new Set(rmas.map(r => r.distributor || '').filter(Boolean));
                                 if (distributorGroups.size > 1) {
-                                    // Multiple distributors — show picker
                                     setSelectedDistRmas(new Set(rmas.map(r => r.id)));
                                     setShowDistributorPicker(true);
                                 } else {
-                                    // Single distributor — go straight to label
                                     setShipmentTagRmas(rmas);
                                     setShipmentTagTarget('DISTRIBUTOR');
                                     setIsShipmentTagModalOpen(true);
                                 }
                             }}
                             disabled={!allHaveDistributor}
-                            className={`h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${allHaveDistributor
-                                ? 'border border-orange-300 dark:border-orange-500/30 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:scale-[1.02] active:scale-95'
-                                : 'border border-gray-200 dark:border-[#333] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
+                            className={`h-10 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-[18px] md:rounded-[20px] text-[11px] md:text-xs font-bold transition-all active:scale-95 apple-card-inner ${allHaveDistributor
+                                ? 'border border-orange-400/40 dark:border-orange-500/30 text-orange-600 dark:text-orange-400 bg-orange-50/50 dark:bg-orange-500/10 hover:bg-orange-100/60 dark:hover:bg-orange-500/20 hover:scale-[1.01]'
+                                : 'border border-gray-200/60 dark:border-white/[0.06] bg-gray-50/50 dark:bg-white/[0.02] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
                             title={!allHaveDistributor ? `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)` : ''}
                         >
                             <Truck className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -511,9 +516,9 @@ export const JobDetail: React.FC = () => {
                                 setIsShipmentTagModalOpen(true);
                             }}
                             disabled={!hasReadyRMAs}
-                            className={`h-9 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl text-[11px] md:text-xs font-semibold transition-all ${hasReadyRMAs
-                                ? 'border border-blue-300 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:scale-[1.02] active:scale-95 cursor-pointer'
-                                : 'border border-gray-200 dark:border-[#333] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
+                            className={`h-10 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-[18px] md:rounded-[20px] text-[11px] md:text-xs font-bold transition-all active:scale-95 apple-card-inner ${hasReadyRMAs
+                                ? 'border border-blue-400/40 dark:border-blue-500/30 text-[#0071e3] dark:text-blue-400 bg-blue-50/50 dark:bg-blue-500/10 hover:bg-blue-100/60 dark:hover:bg-blue-500/20 hover:scale-[1.01] cursor-pointer'
+                                : 'border border-gray-200/60 dark:border-white/[0.06] bg-gray-50/50 dark:bg-white/[0.02] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
                             title={!hasReadyRMAs ? 'ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะพิมพ์ใบปะหน้าได้' : ''}
                         >
                             <Truck className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -523,36 +528,38 @@ export const JobDetail: React.FC = () => {
                 </div>
 
                 {/* SEC DIVIDER */}
-                <div className="w-full h-px bg-gray-200 dark:bg-[#333] mb-4 md:mb-6"></div>
+                <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-200/80 dark:via-white/[0.08] to-transparent mb-5 md:mb-7"></div>
 
                 {/* --- CUSTOMER INFO SECTION --- */}
                 <div>
-                    <div className="flex justify-between items-center mb-3 md:mb-6">
-                        <h2 className="font-semibold text-sm md:text-base flex items-center gap-2 md:gap-3 text-[#1d1d1f] dark:text-white">
-                            <User className="w-5 h-5 text-gray-400" />
+                    <div className="flex justify-between items-center mb-4 md:mb-6">
+                        <h2 className="font-bold text-sm md:text-base flex items-center gap-2.5 text-[#1d1d1f] dark:text-white">
+                            <div className="w-8 h-8 rounded-[12px] bg-blue-500/10 text-blue-600 dark:text-blue-400 apple-card-sm flex items-center justify-center">
+                                <User className="w-4 h-4" />
+                            </div>
                             {t('submit.customerDetails')}
                         </h2>
                         {!isEditingCustomer ? (
-                            <div className="flex items-center gap-2.5">
-                                {/* Customer Inbound Shipping Label Button inside Customer Info Header */}
+                            <div className="flex items-center gap-2">
+                                {/* Customer Inbound Shipping Label Button */}
                                 <button
                                     onClick={() => {
                                         setShipmentTagRmas(rmas);
                                         setShipmentTagTarget('CUSTOMER_INBOUND');
                                         setIsShipmentTagModalOpen(true);
                                     }}
-                                    className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700/60 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                                    className="px-3.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300/80 dark:border-emerald-700/60 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-full text-xs font-bold transition-all shadow-xs active:scale-95 flex items-center gap-1.5 cursor-pointer apple-card-sm"
                                     title="ดู / พิมพ์ / ดาวน์โหลด PDF ใบปะหน้ากล่องที่ลูกค้าจ่าหน้าส่งมายังบริษัทฯ"
                                 >
                                     <Truck className="w-3.5 h-3.5" strokeWidth={2.5} />
                                     <span>ใบปะหน้าส่งบริษัท (ลูกค้าส่งของ)</span>
                                 </button>
-                                <button onClick={() => setIsEditingCustomer(true)} className="text-xs text-blue-500 font-medium hover:text-blue-600 transition-colors flex items-center gap-1"><Edit3 className="w-3 h-3" /> {t('track.changeBtn')}</button>
+                                <button onClick={() => setIsEditingCustomer(true)} className="px-3.5 py-1.5 text-xs text-[#0071e3] dark:text-blue-400 bg-blue-50 dark:bg-blue-500/15 border border-blue-200/60 dark:border-blue-500/30 rounded-full font-bold hover:bg-blue-100 transition-all flex items-center gap-1 apple-card-sm active:scale-95"><Edit3 className="w-3 h-3" /> {t('track.changeBtn')}</button>
                             </div>
                         ) : (
                             <div className="flex items-center gap-2">
-                                <button onClick={handleCancelCustomerEdit} className="px-4 py-1.5 text-xs text-gray-500 hover:text-red-500 font-medium transition-colors">{t('track.cancelBtn')}</button>
-                                <button onClick={handleSaveCustomer} disabled={isSavingCustomer} className="px-5 py-1.5 text-xs font-bold text-white bg-blue-500 hover:bg-blue-600 rounded-full shadow-sm transition-all flex items-center gap-1.5 disabled:opacity-50">
+                                <button onClick={handleCancelCustomerEdit} className="px-4 py-1.5 text-xs text-gray-500 hover:text-red-500 rounded-full font-bold transition-colors">{t('track.cancelBtn')}</button>
+                                <button onClick={handleSaveCustomer} disabled={isSavingCustomer} className="px-5 py-1.5 text-xs font-bold text-white bg-[#0071e3] hover:bg-[#0077ed] rounded-full shadow-md shadow-blue-500/25 transition-all flex items-center gap-1.5 disabled:opacity-50 active:scale-95 apple-card-sm">
                                     {isSavingCustomer ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
                                     {isSavingCustomer ? 'กำลังบันทึก...' : 'บันทึก'}
                                 </button>
@@ -561,67 +568,67 @@ export const JobDetail: React.FC = () => {
                     </div>
 
                     {isEditingCustomer ? (
-                        <div className="space-y-4 animate-fade-in bg-gray-50 dark:bg-black/20 p-5 rounded-2xl border border-gray-100 dark:border-[#333]">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="space-y-4 animate-fade-in bg-gray-50/70 dark:bg-white/[0.02] p-5 sm:p-6 rounded-[22px] md:rounded-[26px] border border-gray-200/70 dark:border-white/[0.08] apple-card-inner">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                                 <div>
-                                    <label className="block text-xs font-semibold text-[#0071e3] uppercase mb-2 ml-1">เลขที่ใบเสนอราคา/บิล</label>
-                                    <input type="text" value={customerForm.quotationNumber} onChange={e => setCustomerForm(p => ({ ...p, quotationNumber: e.target.value }))} className="w-full rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border border-blue-200 dark:border-blue-800/50 outline-none ring-1 ring-blue-100 dark:ring-blue-900/30" placeholder="SECXXXXXX" />
+                                    <label className="block text-xs font-bold text-[#0071e3] dark:text-blue-400 uppercase mb-1.5 ml-1">เลขที่ใบเสนอราคา/บิล</label>
+                                    <input type="text" value={customerForm.quotationNumber} onChange={e => setCustomerForm(p => ({ ...p, quotationNumber: e.target.value }))} className="w-full bg-white dark:bg-[#1a1a1c] border border-blue-200 dark:border-blue-800/50 apple-card-inner rounded-[18px] md:rounded-[20px] px-4 py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 outline-none ring-1 ring-blue-100 dark:ring-blue-900/30 transition-all focus:ring-2 focus:ring-[#0071e3]/30" placeholder="SECXXXXXX" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-1">{t('publicSubmit.companyName')}</label>
-                                    <input type="text" value={customerForm.customerName} onChange={e => setCustomerForm(p => ({ ...p, customerName: e.target.value }))} className="w-full rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none" placeholder="ชื่อลูกค้า / บริษัท" />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div>
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-1">{t('publicSubmit.contactName')}</label>
-                                    <input type="text" value={customerForm.contactPerson} onChange={e => setCustomerForm(p => ({ ...p, contactPerson: e.target.value }))} className="w-full rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none" placeholder="ชื่อผู้ติดต่อ" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-1">{t('publicSubmit.phone')}</label>
-                                    <input type="text" value={customerForm.customerPhone} onChange={e => setCustomerForm(p => ({ ...p, customerPhone: e.target.value }))} className="w-full rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none" placeholder="เบอร์โทรศัพท์" />
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">{t('publicSubmit.companyName')}</label>
+                                    <input type="text" value={customerForm.customerName} onChange={e => setCustomerForm(p => ({ ...p, customerName: e.target.value }))} className="w-full bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/[0.08] apple-card-inner rounded-[18px] md:rounded-[20px] px-4 py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]" placeholder="ชื่อลูกค้า / บริษัท" />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-1">{t('submit.lineId')}</label>
-                                    <input type="text" value={customerForm.customerLineId} onChange={e => setCustomerForm(p => ({ ...p, customerLineId: e.target.value }))} className="w-full rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none" placeholder="LINE ID" />
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">{t('publicSubmit.contactName')}</label>
+                                    <input type="text" value={customerForm.contactPerson} onChange={e => setCustomerForm(p => ({ ...p, contactPerson: e.target.value }))} className="w-full bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/[0.08] apple-card-inner rounded-[18px] md:rounded-[20px] px-4 py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]" placeholder="ชื่อผู้ติดต่อ" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-1">Email</label>
-                                    <input type="text" value={customerForm.customerEmail} onChange={e => setCustomerForm(p => ({ ...p, customerEmail: e.target.value }))} className="w-full rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none" placeholder="อีเมล (ถ้ามี)" />
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">{t('publicSubmit.phone')}</label>
+                                    <input type="text" value={customerForm.customerPhone} onChange={e => setCustomerForm(p => ({ ...p, customerPhone: e.target.value }))} className="w-full bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/[0.08] apple-card-inner rounded-[18px] md:rounded-[20px] px-4 py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]" placeholder="เบอร์โทรศัพท์" />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">{t('submit.lineId')}</label>
+                                    <input type="text" value={customerForm.customerLineId} onChange={e => setCustomerForm(p => ({ ...p, customerLineId: e.target.value }))} className="w-full bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/[0.08] apple-card-inner rounded-[18px] md:rounded-[20px] px-4 py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]" placeholder="LINE ID" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Email</label>
+                                    <input type="text" value={customerForm.customerEmail} onChange={e => setCustomerForm(p => ({ ...p, customerEmail: e.target.value }))} className="w-full bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/[0.08] apple-card-inner rounded-[18px] md:rounded-[20px] px-4 py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]" placeholder="อีเมล (ถ้ามี)" />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-1">{t('submit.returnAddress')}</label>
-                                <textarea value={customerForm.customerReturnAddress} onChange={e => setCustomerForm(p => ({ ...p, customerReturnAddress: e.target.value }))} rows={2} className="w-full rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none" placeholder="ที่อยู่สำหรับจัดส่งคืน" />
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">{t('submit.returnAddress')}</label>
+                                <textarea value={customerForm.customerReturnAddress} onChange={e => setCustomerForm(p => ({ ...p, customerReturnAddress: e.target.value }))} rows={2} className="w-full bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/[0.08] apple-card-inner rounded-[18px] md:rounded-[20px] px-4 py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]" placeholder="ที่อยู่สำหรับจัดส่งคืน" />
                             </div>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-3 md:gap-y-6 text-sm">
                             <div className="flex flex-col gap-1">
-                                <span className="text-gray-400 font-semibold text-[11px] tracking-wider uppercase">{t('publicSubmit.companyName')}</span>
-                                <span className="text-[#1d1d1f] dark:text-gray-200 font-medium">{customerForm.customerName || '-'}</span>
+                                <span className="text-gray-400 font-bold text-[11px] tracking-wider uppercase">{t('publicSubmit.companyName')}</span>
+                                <span className="text-[#1d1d1f] dark:text-gray-200 font-semibold">{customerForm.customerName || '-'}</span>
                             </div>
                             <div className="flex flex-col gap-1">
-                                <span className="text-gray-400 font-semibold text-[11px] tracking-wider uppercase">{t('publicSubmit.contactName')}</span>
-                                <span className="text-[#1d1d1f] dark:text-gray-200 font-medium">{customerForm.contactPerson || '-'}</span>
+                                <span className="text-gray-400 font-bold text-[11px] tracking-wider uppercase">{t('publicSubmit.contactName')}</span>
+                                <span className="text-[#1d1d1f] dark:text-gray-200 font-semibold">{customerForm.contactPerson || '-'}</span>
                             </div>
                             <div className="flex flex-col gap-1">
-                                <span className="text-gray-400 font-semibold text-[11px] tracking-wider uppercase">{t('publicSubmit.phone')}</span>
-                                <span className="text-[#1d1d1f] dark:text-gray-200 font-medium">{customerForm.customerPhone || '-'}</span>
+                                <span className="text-gray-400 font-bold text-[11px] tracking-wider uppercase">{t('publicSubmit.phone')}</span>
+                                <span className="text-[#1d1d1f] dark:text-gray-200 font-semibold">{customerForm.customerPhone || '-'}</span>
                             </div>
                             <div className="flex flex-col gap-1">
-                                <span className="text-gray-400 font-semibold text-[11px] tracking-wider uppercase">{t('submit.lineId')}</span>
-                                <span className="text-[#1d1d1f] dark:text-gray-200 font-medium">{customerForm.customerLineId || '-'}</span>
+                                <span className="text-gray-400 font-bold text-[11px] tracking-wider uppercase">{t('submit.lineId')}</span>
+                                <span className="text-[#1d1d1f] dark:text-gray-200 font-semibold">{customerForm.customerLineId || '-'}</span>
                             </div>
                             <div className="flex flex-col gap-1 col-span-1 md:col-span-2">
-                                <span className="text-gray-400 font-semibold text-[11px] tracking-wider uppercase">Email</span>
-                                <span className="text-[#1d1d1f] dark:text-gray-200 font-medium">{customerForm.customerEmail || '-'}</span>
+                                <span className="text-gray-400 font-bold text-[11px] tracking-wider uppercase">Email</span>
+                                <span className="text-[#1d1d1f] dark:text-gray-200 font-semibold">{customerForm.customerEmail || '-'}</span>
                             </div>
                             <div className="flex flex-col gap-1 col-span-1 md:col-span-2">
-                                <span className="text-gray-400 font-semibold text-[11px] tracking-wider uppercase">{t('submit.returnAddress')}</span>
-                                <div className="text-[#1d1d1f] dark:text-gray-200 font-medium text-xs md:text-sm leading-relaxed bg-gray-50 dark:bg-black/10 p-2.5 md:p-3 rounded-lg md:rounded-xl border border-gray-100 dark:border-white/5 whitespace-pre-line mt-1">
+                                <span className="text-gray-400 font-bold text-[11px] tracking-wider uppercase">{t('submit.returnAddress')}</span>
+                                <div className="text-[#1d1d1f] dark:text-gray-200 font-medium text-xs md:text-sm leading-relaxed bg-gray-50/80 dark:bg-white/[0.03] p-3 md:p-3.5 rounded-[18px] md:rounded-[20px] border border-gray-200/60 dark:border-white/[0.06] whitespace-pre-line mt-1 apple-card-inner">
                                     {customerForm.customerReturnAddress || '-'}
                                 </div>
                             </div>
@@ -652,7 +659,7 @@ export const JobDetail: React.FC = () => {
                     </div>
                     <button
                         onClick={() => setShowAddItemModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold rounded-full shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-95 transition-all"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs md:text-sm font-bold rounded-full shadow-md shadow-blue-500/25 hover:scale-[1.02] active:scale-95 transition-all apple-card-sm"
                     >
                         <Plus className="w-4 h-4" />
                         เพิ่มสินค้า
@@ -670,12 +677,13 @@ export const JobDetail: React.FC = () => {
                     return (
                         <div 
                             key={item.id} 
-                            className={`rounded-2xl md:rounded-[20px] p-3.5 md:p-6 transition-all border-2 
-                                ${isCancelled 
-                                    ? 'bg-gray-100/40 dark:bg-[#161617]/50 border-gray-200/50 dark:border-white/[0.04] opacity-50 grayscale hover:bg-gray-100/50 dark:hover:bg-[#161617]/60'
+                            className={`rounded-[26px] md:rounded-[30px] p-4.5 sm:p-6 md:p-7 transition-all duration-200 border relative overflow-hidden ${
+                                isCancelled 
+                                    ? 'bg-gray-100/40 dark:bg-[#161617]/50 border-gray-200/50 dark:border-white/[0.04] opacity-50 grayscale hover:bg-gray-100/50 dark:hover:bg-[#161617]/60 apple-card-inner'
                                     : isSelected 
-                                        ? 'bg-white dark:bg-[#1e1e1f] border-[#0071e3] ring-2 ring-[#0071e3]/20 hover:bg-gray-50 dark:hover:bg-[#282a2c]' 
-                                        : 'bg-white dark:bg-[#1e1e1f] border-gray-100 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-[#282a2c]'}`}
+                                        ? 'bg-white dark:bg-[#16161a] apple-liquid-glass border-[#0071e3] ring-2 ring-[#0071e3]/25 shadow-lg shadow-blue-500/10' 
+                                        : 'bg-white dark:bg-[#16161a] apple-liquid-glass border-gray-200/70 dark:border-white/[0.08] hover:border-[#0071e3]/30'
+                            }`}
                         >
                             <div className="flex flex-col md:flex-row items-center gap-3 md:gap-6">
                                 <div className="flex-shrink-0 flex items-center gap-3">
@@ -685,11 +693,11 @@ export const JobDetail: React.FC = () => {
                                         </button>
                                     )}
                                     {isCancelled ? (
-                                        <div className="w-10 h-10 rounded-full bg-gray-200/50 dark:bg-white/5 text-gray-400 dark:text-gray-600 flex items-center justify-center font-bold">{index + 1}</div>
+                                        <div className="w-10 h-10 rounded-[14px] bg-gray-200/60 dark:bg-white/5 text-gray-400 dark:text-gray-600 flex items-center justify-center font-black apple-card-sm">{index + 1}</div>
                                     ) : isClosed ? (
-                                        <div className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center"><CheckCircle2 className="w-5 h-5" /></div>
+                                        <div className="w-10 h-10 rounded-[14px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20 apple-card-sm"><CheckCircle2 className="w-5 h-5" /></div>
                                     ) : (
-                                        <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold">{index + 1}</div>
+                                        <div className="w-10 h-10 rounded-[14px] bg-blue-500/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center font-black border border-blue-500/20 apple-card-sm">{index + 1}</div>
                                     )}
                                 </div>
                                 <div className="flex-grow grid grid-cols-1 md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] gap-4 md:gap-8 w-full">
@@ -697,7 +705,7 @@ export const JobDetail: React.FC = () => {
                                         <div>
                                             <div className="font-bold text-base md:text-lg text-[#1d1d1f] dark:text-white leading-tight">{item.productModel}</div>
                                             <div className="text-xs md:text-sm text-gray-500 font-medium">{item.brand}</div>
-                                            <div className="mt-1 inline-block text-[10px] md:text-xs font-mono bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">S/N: {item.serialNumber}</div>
+                                            <div className="mt-1 inline-block text-[10px] md:text-xs font-mono bg-black/[0.04] dark:bg-white/[0.06] border border-black/5 dark:border-white/10 px-2.5 py-0.5 rounded-full text-gray-600 dark:text-gray-300 apple-card-sm font-bold">S/N: {item.serialNumber}</div>
                                         </div>
                                         
                                         <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-1 text-xs text-gray-400">
@@ -718,16 +726,16 @@ export const JobDetail: React.FC = () => {
                                     <div className="space-y-3 min-w-0">
                                         <div>
                                             <div className="text-xs font-bold text-gray-400 uppercase mb-1 flex items-center gap-1">{t('track.issueReported')}</div>
-                                            <div className="text-sm text-gray-800 dark:text-gray-200 flex items-start gap-2 bg-red-500/5 dark:bg-red-500/10 p-2.5 rounded-xl border border-red-500/10"><AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" /><span className="whitespace-pre-wrap leading-relaxed">{item.issueDescription}</span></div>
+                                            <div className="text-sm text-gray-800 dark:text-gray-200 flex items-start gap-2 bg-rose-50/70 dark:bg-rose-500/10 p-3 rounded-[16px] border border-rose-200/60 dark:border-rose-500/20 apple-card-inner"><AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" /><span className="whitespace-pre-wrap leading-relaxed">{item.issueDescription}</span></div>
                                         </div>
                                         {item.resolution?.rootCause && (
                                             <div>
                                                 <div className="text-xs font-bold text-gray-400 uppercase mb-1 flex items-center gap-1">{t('track.rootCause')}</div>
-                                                <div className="text-sm text-gray-800 dark:text-gray-200 flex items-start gap-2 bg-blue-500/5 dark:bg-blue-500/10 p-2.5 rounded-xl border border-blue-500/10"><CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" /><span className="whitespace-pre-wrap leading-relaxed">{item.resolution.rootCause}</span></div>
+                                                <div className="text-sm text-gray-800 dark:text-gray-200 flex items-start gap-2 bg-blue-50/70 dark:bg-blue-500/10 p-3 rounded-[16px] border border-blue-200/60 dark:border-blue-500/20 apple-card-inner"><CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" /><span className="whitespace-pre-wrap leading-relaxed">{item.resolution.rootCause}</span></div>
                                             </div>
                                         )}
                                         {item.resolution?.actionTaken && (
-                                            <div className="bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-100 dark:border-white/10 space-y-1.5">
+                                            <div className="bg-gray-50/80 dark:bg-white/[0.03] p-3.5 rounded-[18px] border border-gray-200/60 dark:border-white/[0.06] space-y-1.5 apple-card-inner">
                                                 <div className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                                                     <ClipboardCheck className="w-3.5 h-3.5 text-blue-500" /> ผลการดำเนินการที่ศูนย์ส่งกลับมา
                                                 </div>
@@ -779,7 +787,7 @@ export const JobDetail: React.FC = () => {
                                                         <button
                                                             key={att.id || attIdx}
                                                             onClick={() => setActiveImageUrl(att.previewUrl)}
-                                                            className="w-12 h-12 rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-transform"
+                                                            className="w-13 h-13 rounded-[14px] overflow-hidden border border-gray-200/80 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-transform apple-card-sm shadow-xs"
                                                             title="คลิกเพื่อขยายรูป"
                                                         >
                                                             <img src={att.previewUrl} className="w-full h-full object-cover" alt={att.fileName || 'Product'} />
@@ -797,7 +805,7 @@ export const JobDetail: React.FC = () => {
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => toggleHistory(item.id)}
-                                            className={`p-2 rounded-xl transition-colors ${isExpanded ? 'bg-gray-200 dark:bg-white/20 text-gray-800 dark:text-white' : 'hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500'}`}
+                                            className={`p-2.5 rounded-[14px] apple-card-sm transition-all active:scale-95 ${isExpanded ? 'bg-gray-200 dark:bg-white/20 text-gray-800 dark:text-white' : 'hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500'}`}
                                             title="View Timeline"
                                         >
                                             <History className="w-4 h-4" />
@@ -829,7 +837,7 @@ export const JobDetail: React.FC = () => {
                                                     setLoading(false);
                                                 }
                                             }}
-                                            className="p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-colors"
+                                            className="p-2.5 rounded-[14px] apple-card-sm hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-all active:scale-95"
                                             title="Delete RMA"
                                         >
                                             <Trash2 className="w-4 h-4" />
@@ -839,7 +847,7 @@ export const JobDetail: React.FC = () => {
 {item.status !== RMAStatus.CANCELLED && (
                                         <button
                                             onClick={() => handleEditClick(item)}
-                                            className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg text-gray-400 hover:text-[#0071e3] transition-colors"
+                                            className="p-2.5 rounded-[14px] apple-card-sm hover:bg-blue-50 dark:hover:bg-blue-500/15 text-gray-400 hover:text-[#0071e3] transition-all active:scale-95"
                                             title="Edit Details"
                                         >
                                             <Edit3 className="w-4 h-4" />

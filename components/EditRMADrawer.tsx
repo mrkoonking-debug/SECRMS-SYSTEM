@@ -449,25 +449,25 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             {/* PAGE HEADER */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-8 px-2">
                 <div>
-                    <h1 className="text-3xl font-bold text-[#1d1d1f] dark:text-white mb-2">{t('track.edit')}</h1>
+                    <h1 className="text-3xl font-bold text-[#1d1d1f] dark:text-white mb-2 tracking-tight">{t('track.edit')}</h1>
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-gray-500">
-                        <span className="font-mono bg-gray-200 dark:bg-gray-600 px-2.5 py-0.5 rounded-lg text-gray-700 dark:text-gray-300 font-bold whitespace-nowrap">{rma.id}</span>
+                        <span className="font-mono bg-black/[0.05] dark:bg-white/[0.08] border border-black/5 dark:border-white/10 px-3 py-1 rounded-full text-[#1d1d1f] dark:text-white font-bold whitespace-nowrap apple-card-sm">{rma.id}</span>
                         {rma.groupRequestId && (
-                            <span className="font-mono bg-[#0071e3]/10 text-[#0071e3] px-2.5 py-0.5 rounded-lg font-bold border border-[#0071e3]/20 whitespace-nowrap">Job: {rma.groupRequestId}</span>
+                            <span className="font-mono bg-blue-500/10 text-[#0071e3] dark:text-blue-400 px-3 py-1 rounded-full font-bold border border-blue-500/20 whitespace-nowrap apple-card-sm">Job: {rma.groupRequestId}</span>
                         )}
                         <span className="whitespace-nowrap">{rma.brand} {rma.productModel}</span>
                         <span className="hidden sm:inline">•</span>
                         <span className="font-mono whitespace-nowrap">{rma.serialNumber}</span>
                     </div>
                 </div>
-                <button onClick={handleSafeClose} className="w-fit px-6 py-2.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 transition-colors flex items-center gap-2">
+                <button onClick={handleSafeClose} className="w-fit px-5 py-2.5 rounded-full text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10 border border-gray-200/80 dark:border-white/10 apple-card-sm transition-all flex items-center gap-2">
                     <ArrowRight className="w-4 h-4 rotate-180" /> กลับ
                 </button>
             </div>
 
             {/* SOFT LOCK BANNER */}
             {isLocked && (
-                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-600/40 rounded-2xl px-6 py-4">
+                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-300/60 dark:border-amber-500/30 rounded-[22px] md:rounded-[26px] px-6 py-4.5 apple-card-inner">
                     <div className="flex items-center gap-3">
                         <span className="text-2xl">⚠️</span>
                         <div>
@@ -475,7 +475,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                             <p className="text-amber-600 dark:text-amber-400 text-xs mt-0.5">กดปลดล็อคเพื่อแก้ไขข้อมูล</p>
                         </div>
                     </div>
-                    <button onClick={() => setIsLocked(false)} className="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-sm flex items-center gap-2 transition-colors whitespace-nowrap">
+                    <button onClick={() => setIsLocked(false)} className="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-full font-medium text-sm flex items-center gap-2 transition-colors whitespace-nowrap shadow-sm">
                         🔓 ปลดล็อคเพื่อแก้ไข
                     </button>
                 </div>
@@ -485,7 +485,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
                     {/* Left Column: Form Sections */}
                     <div className="space-y-6">
-            <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] p-8 mb-6 border border-gray-100 dark:border-[#333]">
+            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 mb-6 border border-gray-200/70 dark:border-white/[0.08]">
                 <h2 className="font-semibold text-lg flex items-center gap-3 mb-6 text-[#1d1d1f] dark:text-white">
                     <span className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-sm font-bold">1</span>
                     ข้อมูลสินค้า
@@ -504,7 +504,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                             <input
                                 value={customBrand}
                                 onChange={e => setCustomBrand(e.target.value)}
-                                className="mt-2 w-full px-4 py-3.5 text-sm rounded-2xl outline-none bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] text-[#1d1d1f] dark:text-white"
+                                className="mt-2 w-full px-4 py-3.5 text-sm rounded-[18px] md:rounded-[20px] apple-card-inner border border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                 placeholder="ระบุยี่ห้อ..."
                             />
                         )}
@@ -513,14 +513,14 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                         <div>
                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">รุ่น (Model)</label>
                             <div className="relative">
-                                <input type="text" value={formData.productModel || ''} onChange={e => handleFormChange('productModel', e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase())} className="w-full rounded-2xl px-4 py-3.5 pr-11 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none uppercase" placeholder="e.g. DH-IPC-HFW2439S" style={{ textTransform: 'uppercase' }} />
+                                <input type="text" value={formData.productModel || ''} onChange={e => handleFormChange('productModel', e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase())} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 pr-11 text-sm text-[#1d1d1f] dark:text-white apple-card-inner border border-gray-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-2 focus:ring-blue-500/20 uppercase" placeholder="e.g. DH-IPC-HFW2439S" style={{ textTransform: 'uppercase' }} />
                                 <button type="button" onClick={() => { setScanTarget('productModel'); setShowScanner(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 transition-colors"><ScanBarcode className="w-5 h-5" /></button>
                             </div>
                         </div>
                         <div>
                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">S/N (Serial Number)</label>
                             <div className="relative">
-                                <input type="text" value={formData.serialNumber || ''} onChange={e => handleFormChange('serialNumber', e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase())} className="w-full rounded-2xl px-4 py-3.5 pr-11 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none font-mono uppercase" placeholder="Serial Number" style={{ textTransform: 'uppercase' }} />
+                                <input type="text" value={formData.serialNumber || ''} onChange={e => handleFormChange('serialNumber', e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase())} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 pr-11 text-sm text-[#1d1d1f] dark:text-white apple-card-inner border border-gray-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono uppercase" placeholder="Serial Number" style={{ textTransform: 'uppercase' }} />
                                 <button type="button" onClick={() => { setScanTarget('serialNumber'); setShowScanner(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 transition-colors"><ScanBarcode className="w-5 h-5" /></button>
                             </div>
                         </div>
@@ -604,20 +604,20 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                 onChange={e => setCustomAccessory(e.target.value)}
                                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (customAccessory.trim()) { handleFormChange('accessories', [...(formData.accessories || []), customAccessory.trim()]); setCustomAccessory(''); } } }}
                                 placeholder="รายการอื่นๆ..."
-                                className="flex-1 px-4 py-2.5 text-sm rounded-2xl outline-none bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] text-[#1d1d1f] dark:text-white"
+                                className="flex-1 px-4 py-2.5 text-sm rounded-[16px] outline-none apple-card-inner border border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                             />
                             <button
                                 type="button"
                                 onClick={() => { if (customAccessory.trim()) { handleFormChange('accessories', [...(formData.accessories || []), customAccessory.trim()]); setCustomAccessory(''); } }}
-                                className="px-4 py-2.5 bg-gray-100 dark:bg-[#3a3a3c] text-[#1d1d1f] dark:text-white rounded-2xl hover:bg-gray-200 dark:hover:bg-[#48484a] transition-colors"
+                                className="px-4 py-2.5 bg-gray-100 dark:bg-[#2c2c2e] border border-gray-200/80 dark:border-white/10 text-[#1d1d1f] dark:text-white rounded-[16px] hover:bg-gray-200 dark:hover:bg-[#3a3a3c] transition-colors"
                             >
                                 <Plus className="w-4 h-4" />
                             </button>
                         </div>
                         {(formData.accessories || []).length > 0 && (
-                            <div className={`flex flex-wrap gap-2 p-3 bg-gray-50 dark:bg-[#2c2c2e] rounded-2xl border border-gray-200 dark:border-[#424245] ${isAccessoriesLocked ? 'pointer-events-none' : ''}`}>
+                            <div className={`flex flex-wrap gap-2 p-3.5 apple-card-inner rounded-[20px] border border-gray-200/80 dark:border-white/[0.08] ${isAccessoriesLocked ? 'pointer-events-none' : ''}`}>
                                 {(formData.accessories || []).map((acc, idx) => (
-                                    <span key={`${acc}-${idx}`} className="flex items-center gap-1 px-3 py-1.5 bg-white dark:bg-[#3a3a3c] text-xs font-medium rounded-xl shadow-sm border border-gray-200 dark:border-[#48484a] text-[#1d1d1f] dark:text-white">
+                                    <span key={`${acc}-${idx}`} className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#2a2a2c] text-xs font-medium rounded-full shadow-xs border border-gray-200/80 dark:border-white/10 text-[#1d1d1f] dark:text-white">
                                         {acc.startsWith('acc_hdd::') ? `HDD (${acc.split('::')[1]})` : (acc.startsWith('acc_') || acc === 'unit_only' ? t(`accessories_list.${acc}`) : acc)}
                                         <button type="button" onClick={() => handleFormChange('accessories', (formData.accessories || []).filter(a => a !== acc))} className="text-gray-400 hover:text-red-500 ml-1"><X className="w-3 h-3" /></button>
                                     </span>
@@ -629,7 +629,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             </div>
 
             {/* SECTION 2: ข้อมูลการรับเข้า */}
-            <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] p-8 mb-6 border border-gray-100 dark:border-[#333]">
+            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 mb-6 border border-gray-200/70 dark:border-white/[0.08]">
                 <h2 className="font-semibold text-lg flex items-center gap-3 mb-6 text-[#1d1d1f] dark:text-white">
                     <span className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-sm font-bold">2</span>
                     {t('track.intakeInfo')}
@@ -637,23 +637,23 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                 <div className="space-y-5">
                     <div>
                         <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('track.issueReported')}</label>
-                        <textarea value={formData.issueDescription} onChange={e => handleFormChange('issueDescription', e.target.value)} rows={3} className="w-full rounded-2xl px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none" />
+                        <textarea value={formData.issueDescription} onChange={e => handleFormChange('issueDescription', e.target.value)} rows={3} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner border border-gray-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">Device Username (ยูสเซอร์)</label>
-                            <input type="text" value={formData.deviceUsername || ''} onChange={e => handleFormChange('deviceUsername', e.target.value)} className="w-full rounded-2xl px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none" placeholder="N/A" />
+                            <input type="text" value={formData.deviceUsername || ''} onChange={e => handleFormChange('deviceUsername', e.target.value)} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner border border-gray-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder="N/A" />
                         </div>
                         <div>
                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">Device Password (รหัสผ่าน)</label>
-                            <input type="text" value={formData.devicePassword || ''} onChange={e => handleFormChange('devicePassword', e.target.value)} className="w-full rounded-2xl px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none" placeholder="N/A" />
+                            <input type="text" value={formData.devicePassword || ''} onChange={e => handleFormChange('devicePassword', e.target.value)} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner border border-gray-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder="N/A" />
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5 relative z-30">
                         <div className="relative z-20">
                             <GlassSelect label={t('submit.distributor')} value={formData.distributor || ''} onChange={val => handleFormChange('distributor', val)} options={distOptions} searchable recentKey="distributor" />
                             {formData.distributor === 'Other' && (
-                                <input value={customDist} onChange={e => setCustomDist(e.target.value)} className="mt-2 w-full px-4 py-3 text-sm rounded-2xl outline-none bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] text-[#1d1d1f] dark:text-white" placeholder={t('submit.distributor')} />
+                                <input value={customDist} onChange={e => setCustomDist(e.target.value)} className="mt-2 w-full px-4 py-3 text-sm rounded-[18px] md:rounded-[20px] apple-card-inner border border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20" placeholder={t('submit.distributor')} />
                             )}
                         </div>
                         <div className="relative z-10">
@@ -668,7 +668,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                         </label>
                         <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
                             {(formData.attachments || []).map((att: any, attIdx: number) => (
-                                <div key={att.id || attIdx} className="relative aspect-square w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 group bg-gray-50 dark:bg-[#1e1e1f] flex items-center justify-center cursor-pointer">
+                                <div key={att.id || attIdx} className="relative aspect-square w-full rounded-[20px] md:rounded-[22px] overflow-hidden border border-gray-200/80 dark:border-white/10 group apple-card-inner flex items-center justify-center cursor-pointer shadow-sm">
                                     <img 
                                         src={att.previewUrl} 
                                         alt="Product Attachment" 
@@ -683,7 +683,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                             const current = formData.attachments || [];
                                             handleFormChange('attachments', current.filter((_: any, idx: number) => idx !== attIdx));
                                         }}
-                                        className="absolute top-1.5 right-1.5 p-1 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow z-10"
+                                        className="absolute top-1.5 right-1.5 p-1.5 bg-red-500/90 backdrop-blur-md text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow z-10"
                                         title="ลบรูปภาพ"
                                     >
                                         <Trash2 className="w-3.5 h-3.5" />
@@ -692,7 +692,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                             ))}
                             
                             {(!formData.attachments || formData.attachments.length < 5) && (
-                                <div className="relative aspect-square w-full border-2 border-dashed border-gray-200 dark:border-[#424245] hover:border-blue-500 transition-colors rounded-2xl bg-white dark:bg-[#2c2c2e] flex flex-col items-center justify-center cursor-pointer p-2">
+                                <div className="relative aspect-square w-full border-2 border-dashed border-gray-300/80 dark:border-white/15 hover:border-blue-500 dark:hover:border-blue-400 transition-colors rounded-[20px] md:rounded-[22px] apple-card-inner flex flex-col items-center justify-center cursor-pointer p-2">
                                     {isCompressingImage ? (
                                         <div className="flex flex-col items-center gap-1 text-[10px] text-gray-400 text-center">
                                             <Loader2 className="w-4 h-4 text-[#0071e3] animate-spin" />
@@ -722,9 +722,9 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             {/* FULLSCREEN FLOW VIEWER */}
             {showFlowFullscreen && createPortal(
                 <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowFlowFullscreen(false)}>
-                    <div className="bg-white dark:bg-[#1c1c1e] rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] border border-gray-200/70 dark:border-white/[0.08] w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
                         {/* Header */}
-                        <div className="sticky top-0 bg-white dark:bg-[#1c1c1e] px-6 py-4 border-b border-gray-100 dark:border-gray-800 rounded-t-3xl flex items-center justify-between z-10">
+                        <div className="sticky top-0 bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-md px-6 py-4 border-b border-gray-100 dark:border-white/10 rounded-t-[28px] md:rounded-t-[34px] flex items-center justify-between z-10">
                             <h2 className="text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
                                     <ArrowRight className="w-4 h-4 text-white" />
@@ -870,7 +870,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             document.body)}
 
             {/* SECTION 3: สถานะและการดำเนินการ */}
-            <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] p-8 mb-6 border border-gray-100 dark:border-[#333]">
+            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 mb-6 border border-gray-200/70 dark:border-white/[0.08]">
                 <h2 className="font-semibold text-lg flex items-center gap-3 mb-6 text-[#1d1d1f] dark:text-white">
                     <span className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-sm font-bold">3</span>
                     {t('track.statusResolution')}
@@ -881,7 +881,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                         {/* Status Badge + Transition Buttons */}
                         <div>
                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('track.statusLabel')}</label>
-                            <div className={`px-4 py-3.5 rounded-2xl text-sm font-bold border flex items-center gap-2 ${
+                            <div className={`px-4 py-3.5 rounded-[18px] md:rounded-[20px] text-sm font-bold border flex items-center gap-2 ${
                                 formData.status === RMAStatus.PENDING ? 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300' :
                                 formData.status === RMAStatus.DIAGNOSING ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600/40 text-blue-700 dark:text-blue-300' :
                                 formData.status === RMAStatus.WAITING_PARTS ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-600/40 text-orange-700 dark:text-orange-300' :
@@ -910,7 +910,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                     <>
                                         <p className="text-[11px] text-gray-400 ml-2 mb-1">กดเพื่อเริ่มตรวจสอบอาการสินค้า</p>
                                         <button type="button" onClick={() => handleFormChange('status', RMAStatus.DIAGNOSING)}
-                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50/50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium transition-colors">
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-[18px] md:rounded-[20px] border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50/50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium transition-colors">
                                             <Search className="w-4 h-4" /> 🔍 เริ่มตรวจสอบ
                                         </button>
                                     </>
@@ -930,7 +930,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                             handleFormChange('status', RMAStatus.WAITING_PARTS);
                                             handleFormChange('serviceType', 'EXTERNAL');
                                         }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-orange-300 dark:border-orange-600/40 bg-orange-50/50 dark:bg-orange-900/10 hover:bg-orange-100 dark:hover:bg-orange-900/20 text-orange-700 dark:text-orange-300 text-sm font-medium transition-colors">
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-[18px] md:rounded-[20px] border-2 border-dashed border-orange-300 dark:border-orange-600/40 bg-orange-50/50 dark:bg-orange-900/10 hover:bg-orange-100 dark:hover:bg-orange-900/20 text-orange-700 dark:text-orange-300 text-sm font-medium transition-colors">
                                             <Package className="w-4 h-4" /> 📦 ส่งเคลมศูนย์
                                         </button>
                                         <button type="button" onClick={() => {
@@ -944,7 +944,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                             handleFormChange('serviceType', 'INTERNAL');
                                             handleResolutionChange('actionTaken', 'Software Update');
                                         }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-green-300 dark:border-green-600/40 bg-green-50/50 dark:bg-green-900/10 hover:bg-green-100 dark:hover:bg-green-900/20 text-green-700 dark:text-green-300 text-sm font-medium transition-colors">
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-[18px] md:rounded-[20px] border-2 border-dashed border-green-300 dark:border-green-600/40 bg-green-50/50 dark:bg-green-900/10 hover:bg-green-100 dark:hover:bg-green-900/20 text-green-700 dark:text-green-300 text-sm font-medium transition-colors">
                                             <Wrench className="w-4 h-4" /> 🔧 แก้ไข Config/Firmware (จบที่ร้าน)
                                         </button>
                                         <button type="button" onClick={() => {
@@ -952,7 +952,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                             handleFormChange('serviceType', 'INTERNAL');
                                             handleResolutionChange('actionTaken', 'No Fault Found');
                                         }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600/40 bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-700/30 text-gray-600 dark:text-gray-400 text-sm font-medium transition-colors">
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-[18px] md:rounded-[20px] border-2 border-dashed border-gray-300 dark:border-gray-600/40 bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-700/30 text-gray-600 dark:text-gray-400 text-sm font-medium transition-colors">
                                             <Undo2 className="w-4 h-4" /> ↩️ ไม่พบอาการเสีย (ส่งคืน)
                                         </button>
                                     </div>
@@ -966,7 +966,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                             setAdvanceSerialNumber('');
                                             setShowAdvanceReplacementPopup(true);
                                         }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-purple-300 dark:border-purple-600/40 bg-purple-50/50 dark:bg-purple-900/10 hover:bg-purple-100 dark:hover:bg-purple-900/20 text-purple-700 dark:text-purple-300 text-sm font-medium transition-colors mb-2">
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-[18px] md:rounded-[20px] border-2 border-dashed border-purple-300 dark:border-purple-600/40 bg-purple-50/50 dark:bg-purple-900/10 hover:bg-purple-100 dark:hover:bg-purple-900/20 text-purple-700 dark:text-purple-300 text-sm font-medium transition-colors mb-2">
                                             <RefreshCw className="w-4 h-4" /> 🔄 สลับของสต๊อกให้ลูกค้าเลย (Advance Replacement)
                                         </button>
 
@@ -975,7 +975,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                             setVendorForm({ actionTaken: '', actionDetails: '', replacedSerialNumber: '', vendorTicketRef: formData.resolution?.vendorTicketRef || '', restockCondition: '' });
                                             setShowVendorResultPopup(true);
                                         }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50/50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium transition-colors">
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-[18px] md:rounded-[20px] border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50/50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium transition-colors">
                                             <PackageCheck className="w-4 h-4" /> 📥 รับของคืนจากศูนย์
                                         </button>
                                     </>
@@ -988,7 +988,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                             setVendorForm({ actionTaken: '', actionDetails: '', replacedSerialNumber: '', vendorTicketRef: formData.resolution?.vendorTicketRef || '', restockCondition: '' });
                                             setShowVendorResultPopup(true);
                                         }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50/50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium transition-colors">
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-[18px] md:rounded-[20px] border-2 border-dashed border-blue-300 dark:border-blue-600/40 bg-blue-50/50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium transition-colors">
                                             <PackageCheck className="w-4 h-4" /> 📥 รับของคืนจากศูนย์ (เข้าคลัง)
                                         </button>
                                     </>
@@ -998,7 +998,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                     <>
                                         <p className="text-[11px] text-gray-400 ml-2 mb-1">ตรวจสอบข้อมูลทั้งหมดก่อนปิดงาน กดเพื่อดูสรุปและยืนยัน</p>
                                         <button type="button" onClick={() => setShowCloseSummary(true)}
-                                            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm font-bold shadow-lg shadow-green-500/20 transition-all transform active:scale-[0.98]">
+                                            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-[18px] md:rounded-[20px] bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm font-bold shadow-lg shadow-green-500/20 transition-all transform active:scale-[0.98]">
                                             <ClipboardCheck className="w-4 h-4" /> ✅ ตรวจสอบและปิดงาน
                                         </button>
                                     </>
@@ -1028,7 +1028,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                 )}
                             </div>
                             {isChangingTeam ? (
-                                <div className="space-y-2 p-3 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 relative z-20">
+                                <div className="space-y-2 p-3.5 bg-gray-50/80 dark:bg-white/5 rounded-[20px] md:rounded-[22px] border border-gray-200/80 dark:border-white/10 relative z-20 apple-card-inner">
                                     <div className="grid grid-cols-1 gap-1.5">
                                         <button onClick={() => handleGroupSelect('A')} className={`p-2.5 rounded-xl border text-left text-xs flex items-center gap-2 transition-all ${mainGroup === 'A' ? 'bg-white dark:bg-[#2c2c2e] border-red-500 text-red-700 dark:text-red-400 shadow-sm' : 'bg-white dark:bg-[#1c1c1e] border-transparent text-gray-700 dark:text-gray-300'}`}><Box className="w-3.5 h-3.5 text-red-500" /> Team A: Hikvision</button>
                                         <button onClick={() => handleGroupSelect('B')} className={`p-2.5 rounded-xl border text-left text-xs flex items-center gap-2 transition-all ${mainGroup === 'B' ? 'bg-white dark:bg-[#2c2c2e] border-orange-500 text-orange-700 dark:text-orange-400 shadow-sm' : 'bg-white dark:bg-[#1c1c1e] border-transparent text-gray-700 dark:text-gray-300'}`}><Layers className="w-3.5 h-3.5 text-orange-500" /> Team B: Dahua</button>
@@ -1048,7 +1048,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                     <button onClick={() => { setIsChangingTeam(false); setTempTeam(rma.team); }} className="w-full py-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors">{t('track.cancelBtn')}</button>
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-2 px-4 py-3.5 bg-gray-50 dark:bg-[#2c2c2e] rounded-2xl text-sm font-bold text-[#1d1d1f] dark:text-white border border-gray-200 dark:border-[#424245]">
+                                <div className="flex items-center gap-2 px-4 py-3.5 apple-card-inner rounded-[18px] md:rounded-[20px] text-sm font-bold text-[#1d1d1f] dark:text-white border border-gray-200/80 dark:border-white/[0.08]">
                                     <ShieldCheck className="w-4 h-4 text-blue-500" /> {t(`teams.${teamKey(tempTeam)}`)}
                                 </div>
                             )}
@@ -1059,18 +1059,18 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className={`block text-xs font-semibold uppercase mb-2 ml-2 ${rootCauseError ? 'text-red-500' : 'text-gray-500'}`}>{t('track.rootCause')} {rootCauseError && <span className="normal-case">* ต้องกรอก</span>}</label>
-                            <input id="rootCauseInput" type="text" value={formData.resolution?.rootCause || ''} onChange={(e) => { handleResolutionChange('rootCause', e.target.value); if (e.target.value.trim()) setRootCauseError(false); }} className={`w-full rounded-2xl px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border outline-none transition-colors ${rootCauseError ? 'border-red-500 ring-2 ring-red-500/20' : 'border-gray-200 dark:border-[#424245]'}`} placeholder="e.g. Power Surge (ถ้ายังไม่รู้ให้ใส่ N/A)" />
+                            <input id="rootCauseInput" type="text" value={formData.resolution?.rootCause || ''} onChange={(e) => { handleResolutionChange('rootCause', e.target.value); if (e.target.value.trim()) setRootCauseError(false); }} className={`w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner border outline-none transition-colors ${rootCauseError ? 'border-red-500 ring-2 ring-red-500/20' : 'border-gray-200/80 dark:border-white/[0.08]'}`} placeholder="e.g. Power Surge (ถ้ายังไม่รู้ให้ใส่ N/A)" />
                             {rootCauseError && <p className="text-xs text-red-500 mt-1.5 ml-2 animate-fade-in">❌ กรุณากรอกอาการที่พบก่อนดำเนินการขั้นต่อไป (ถ้ายังไม่รู้ให้ใส่ N/A)</p>}
                         </div>
                         <div>
                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('track.vendorRef')}</label>
-                            <input type="text" value={formData.resolution?.vendorTicketRef || ''} onChange={(e) => handleResolutionChange('vendorTicketRef', e.target.value)} className="w-full rounded-2xl px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none" placeholder="e.g. RMA-SYN-9988" />
+                            <input type="text" value={formData.resolution?.vendorTicketRef || ''} onChange={(e) => handleResolutionChange('vendorTicketRef', e.target.value)} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner border border-gray-200/80 dark:border-white/[0.08] outline-none" placeholder="e.g. RMA-SYN-9988" />
                         </div>
                     </div>
 
                     {/* actionTaken summary - shown read-only when set */}
                     {formData.resolution?.actionTaken && (
-                        <div className="bg-gray-50 dark:bg-white/5 rounded-2xl p-4 border border-gray-100 dark:border-white/10">
+                        <div className="apple-card-inner rounded-[20px] md:rounded-[24px] p-4.5 border border-gray-200/80 dark:border-white/[0.08]">
                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-1">ผลการดำเนินการ</label>
                             <div className="space-y-1.5 text-sm text-[#1d1d1f] dark:text-white">
                                 <p><span className="text-gray-500 text-xs">วิธีดำเนินการ:</span> <strong>{actionOptions.find(o => o.value === formData.resolution?.actionTaken)?.label || formData.resolution?.actionTaken}</strong></p>
@@ -1088,7 +1088,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
 
             {/* SECTION 3.5: อุปกรณ์ที่ส่งให้ผู้นำเข้า */}
             {(formData.accessories || []).length > 0 && (
-                <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] p-8 mb-6 border border-gray-100 dark:border-[#333]">
+                <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 mb-6 border border-gray-200/70 dark:border-white/[0.08]">
                     <h2 className="font-semibold text-lg flex items-center gap-3 mb-2 text-[#1d1d1f] dark:text-white">
                         <span className="w-8 h-8 rounded-full bg-orange-500/10 text-orange-600 flex items-center justify-center text-sm font-bold"><Truck className="w-4 h-4" /></span>
                         อุปกรณ์ที่ส่งเคลม
@@ -1170,7 +1170,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                     steps.push({ icon: CheckCircle2, label: 'ปิดงาน', done: level >= 4, active: level === 4 });
 
                     return (
-                        <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] p-6 border border-gray-100 dark:border-[#333] shadow-sm">
+                        <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[32px] p-6 border border-gray-200/70 dark:border-white/[0.08] shadow-sm">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
                                     <div className="w-5 h-5 rounded-md bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
@@ -1178,7 +1178,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                     </div>
                                     ความคืบหน้า
                                 </h3>
-                                <button onClick={() => setShowFlowFullscreen(true)} className="flex items-center gap-1.5 text-[10px] font-semibold text-blue-500 hover:text-blue-600 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 px-2.5 py-1.5 rounded-lg transition-all">
+                                <button onClick={() => setShowFlowFullscreen(true)} className="flex items-center gap-1.5 text-[10px] font-semibold text-blue-500 hover:text-blue-600 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 px-3 py-1.5 rounded-full apple-card-sm transition-all">
                                     <Maximize2 className="w-3 h-3" />
                                     ดูเต็มจอ
                                 </button>
@@ -1240,7 +1240,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                 })()}
 
                 {/* SECTION: บันทึกภายใน (Internal Company Notes Card) */}
-                <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] p-6 border border-gray-100 dark:border-[#333] shadow-sm space-y-3">
+                <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[32px] p-6 border border-gray-200/70 dark:border-white/[0.08] shadow-sm space-y-3">
                     <div className="flex items-center justify-between">
                         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
                             <div className="w-5 h-5 rounded-md bg-amber-500/10 text-amber-500 flex items-center justify-center">
@@ -1258,17 +1258,17 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                         value={formData.notes || ''}
                         onChange={e => handleFormChange('notes', e.target.value)}
                         rows={4}
-                        className="w-full rounded-2xl p-3.5 text-xs text-[#1d1d1f] dark:text-white bg-gray-50/50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] outline-none focus:ring-2 focus:ring-amber-500/30 transition-all resize-none"
+                        className="w-full rounded-[18px] md:rounded-[20px] p-3.5 text-xs text-[#1d1d1f] dark:text-white apple-card-inner border border-gray-200/80 dark:border-white/[0.08] outline-none focus:ring-2 focus:ring-amber-500/30 transition-all resize-none"
                         placeholder={t('track.addNotesPlaceholder')}
                     />
                 </div>
 
                 {/* ACTION BUTTONS in Sticky Sidebar */}
                 <div className="flex flex-col gap-3 pt-1">
-                    <button onClick={handlePreSave} className="w-full py-3.5 px-4 rounded-2xl text-sm font-bold text-white bg-[#0071e3] hover:bg-[#0077ed] shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all flex items-center justify-center gap-2 transform hover:scale-[1.01] active:scale-[0.98]">
+                    <button onClick={handlePreSave} className="w-full py-3.5 px-4 rounded-[18px] md:rounded-[20px] text-sm font-bold text-white bg-[#0071e3] hover:bg-[#0077ed] shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all flex items-center justify-center gap-2 transform hover:scale-[1.01] active:scale-[0.98]">
                         ตรวจสอบและบันทึก <ChevronRight className="w-4 h-4" />
                     </button>
-                    <button onClick={handleSafeClose} className="w-full py-3 rounded-2xl text-xs font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 border border-gray-200 dark:border-white/10 transition-all text-center">
+                    <button onClick={handleSafeClose} className="w-full py-3 rounded-[18px] md:rounded-[20px] text-xs font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 border border-gray-200 dark:border-white/10 apple-card-sm transition-all text-center">
                         {t('track.cancelBtn')}
                     </button>
                 </div>
@@ -1279,7 +1279,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             {/* UNSAVED CHANGES MODAL */}
             {showUnsavedModal && createPortal(
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 animate-fade-in font-sans">
-                    <div className="bg-white dark:bg-[#1e1e20] w-full max-w-sm rounded-[2rem] shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div className="bg-white dark:bg-[#16161a] w-full max-w-sm rounded-[28px] md:rounded-[34px] apple-card-lg shadow-2xl border border-gray-200/70 dark:border-white/[0.08] overflow-hidden">
                         <div className="p-8 text-center">
                             <div className="w-14 h-14 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-4">
                                 <AlertCircle className="w-7 h-7 text-amber-500" />
@@ -1303,7 +1303,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             {/* ACCESSORIES REVIEW MODAL */}
             {showAccReview && createPortal(
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 animate-fade-in font-sans">
-                    <div className="bg-white dark:bg-[#1e1e20] w-full max-w-md rounded-[2rem] shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div className="bg-white dark:bg-[#16161a] w-full max-w-md rounded-[28px] md:rounded-[34px] apple-card-lg shadow-2xl border border-gray-200/70 dark:border-white/[0.08] overflow-hidden">
                         <div className="p-6 pb-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center">
@@ -1355,7 +1355,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             {/* VENDOR RESULT POPUP */}
             {showVendorResultPopup && createPortal(
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 animate-fade-in font-sans">
-                    <div className="bg-white dark:bg-[#1e1e20] w-full max-w-lg rounded-[2rem] shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col max-h-[90vh] overflow-hidden">
+                    <div className="bg-white dark:bg-[#16161a] w-full max-w-lg rounded-[28px] md:rounded-[34px] apple-card-lg shadow-2xl border border-gray-200/70 dark:border-white/[0.08] flex flex-col max-h-[90vh] overflow-hidden">
                         <div className="px-8 py-6 border-b border-gray-100 dark:border-gray-800 bg-blue-50/50 dark:bg-blue-900/10">
                             <h3 className="text-xl font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2">
                                 <PackageCheck className="w-6 h-6 text-blue-500" /> 📥 ลงผลจากศูนย์
@@ -1434,7 +1434,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             {/* ADVANCE REPLACEMENT POPUP */}
             {showAdvanceReplacementPopup && createPortal(
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 animate-fade-in font-sans">
-                    <div className="bg-white dark:bg-[#1e1e20] w-full max-w-lg rounded-[2rem] shadow-2xl border border-purple-200 dark:border-purple-800/30 flex flex-col overflow-hidden">
+                    <div className="bg-white dark:bg-[#16161a] w-full max-w-lg rounded-[28px] md:rounded-[34px] apple-card-lg shadow-2xl border border-purple-200/70 dark:border-purple-500/20 flex flex-col overflow-hidden">
                         <div className="px-8 py-6 border-b border-purple-100 dark:border-purple-900/30 bg-purple-50/50 dark:bg-purple-900/10">
                             <h3 className="text-xl font-bold text-purple-800 dark:text-purple-300 flex items-center gap-2">
                                 <RefreshCw className="w-6 h-6 text-purple-500" /> 🔄 สลับของสต๊อก (Advance Replacement)
@@ -1521,7 +1521,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             {/* REVIEW MODAL OVERLAY */}
             {isReviewing && createPortal(
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 animate-fade-in font-sans">
-                    <div className="bg-white dark:bg-[#1e1e20] w-full max-w-3xl rounded-[2rem] shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col max-h-[90vh] overflow-hidden">
+                    <div className="bg-white dark:bg-[#16161a] w-full max-w-3xl rounded-[28px] md:rounded-[34px] apple-card-lg shadow-2xl border border-gray-200/70 dark:border-white/[0.08] flex flex-col max-h-[90vh] overflow-hidden">
                         <div className="px-8 py-6 border-b border-gray-100 dark:border-gray-800 flex items-start justify-between bg-gray-50/50 dark:bg-white/5">
                             <div>
                                 <h3 className="text-xl font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2">
