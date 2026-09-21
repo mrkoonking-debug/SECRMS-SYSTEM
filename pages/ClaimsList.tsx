@@ -77,7 +77,7 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
     return (
         <div 
             onClick={() => onJobClick(jobKey)} 
-            className={`p-4 md:p-5 flex flex-col gap-3.5 cursor-pointer bg-white dark:bg-[#16161a] apple-card rounded-[26px] md:rounded-[32px] shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.01)] dark:shadow-none hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-[0_12px_28px_-8px_rgba(0,0,0,0.6)] active:scale-[0.99] transition-all duration-150 ease-out group ${isJobCancelled ? 'opacity-50 grayscale bg-gray-50/20 dark:bg-black/10' : ''}`}
+            className={`p-4 md:p-5 flex flex-col gap-3.5 cursor-pointer bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[26px] md:rounded-[30px] group ${isJobCancelled ? 'opacity-50 grayscale bg-gray-50/20 dark:bg-black/10' : ''}`}
         >
             {/* Top Row: Icon, Key, Badges, and Chevron */}
             <div className="flex items-center justify-between gap-3 w-full">
@@ -121,9 +121,9 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
 
             {/* Bottom Row: Detailed Items Preview */}
             <div className="w-full pl-0 sm:pl-10">
-                <div className="mt-1 bg-gray-50/80 dark:bg-[#212127] rounded-[18px] px-3.5 py-2 max-w-full overflow-hidden">
+                <div className="mt-1 bg-black/[0.03] dark:bg-black/35 rounded-[18px] px-3.5 py-2 max-w-full overflow-hidden">
                     {jobItems.slice(0, 3).map((item, idx) => (
-                        <div key={item.id} className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3.5 py-2.5 ${idx < Math.min(jobItems.length, 3) - 1 ? 'border-b border-black/[0.06] dark:border-white/[0.06]' : ''}` }>
+                        <div key={item.id} className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3.5 py-2.5 ${idx < Math.min(jobItems.length, 3) - 1 ? 'border-b border-black/[0.04] dark:border-white/[0.03]' : ''}` }>
                             {/* Left: Product Icon + Info */}
                             <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                 <div className={`w-7 h-7 rounded-[10px] flex items-center justify-center shrink-0 text-white ${
@@ -657,35 +657,45 @@ export const ClaimsList: React.FC = () => {
                 <Link to="/admin/submit" className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-4 md:px-5 py-2 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-1.5 shadow-sm transition-all whitespace-nowrap hover:shadow-md active:scale-[0.97]"><Plus className="h-4 w-4" /> <span className="hidden md:inline">{t('nav.newRequest')}</span><span className="md:hidden">เพิ่ม</span></Link>
             </div>
 
-            {/* Top Workflow Status & Progress Pipeline (Unified Cupertino Container) */}
-            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[34px] md:rounded-[42px] border border-gray-200/70 dark:border-white/[0.08] p-4 md:p-5 shadow-sm mb-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6 lg:gap-8 mb-4">
+            {/* Top Workflow Status & Progress Pipeline (Apple Liquid Glass Container) */}
+            <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[32px] md:rounded-[40px] p-4 md:p-5 shadow-sm mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 lg:gap-5 mb-4">
                     {/* All items */}
-                    <div className="flex items-center gap-3.5 p-3 md:px-4">
-                        <div className="w-10 h-10 md:w-11 md:h-11 apple-card-sm rounded-[16px] bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                    <button 
+                        type="button"
+                        onClick={() => setStatusFilter('ALL')}
+                        className={`flex items-center gap-3.5 p-3 md:px-4 text-left apple-liquid-pill rounded-[22px] transition-all duration-200 active:scale-[0.98] ${
+                            statusFilter === 'ALL'
+                                ? 'bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/40 dark:border-white/[0.18] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_6px_20px_-2px_rgba(0,113,227,0.3)] -translate-y-0.5 font-bold'
+                                : 'hover:bg-gray-100/70 dark:hover:bg-white/[0.04]'
+                        }`}
+                    >
+                        <div className={`w-10 h-10 md:w-11 md:h-11 apple-card-sm rounded-[16px] flex items-center justify-center shrink-0 transition-all ${
+                            statusFilter === 'ALL' ? 'bg-[#0071e3] text-white shadow-md' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                        }`}>
                             <Package className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
-                            <div className="text-[10px] md:text-[11px] font-bold uppercase text-gray-400 dark:text-gray-500 tracking-wider">งานทั้งหมด</div>
+                            <div className={`text-[10px] md:text-[11px] font-bold uppercase tracking-wider ${statusFilter === 'ALL' ? 'text-[#0071e3] dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}>งานทั้งหมด</div>
                             <div className="text-base md:text-xl font-extrabold text-[#1d1d1f] dark:text-white truncate">
                                 {dashboardStats.totalJobs} <span className="text-xs font-semibold text-gray-400 font-sans">ใบงาน</span>
-                                <span className="text-[10px] text-gray-400 font-normal ml-1">({dashboardStats.total} ชิ้น)</span>
+                                <span className="text-[10px] text-gray-400 font-normal ml-1">({dashboardStats.total})</span>
                             </div>
                         </div>
-                    </div>
+                    </button>
 
                     {/* Pending */}
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'PENDING' ? 'ALL' : 'PENDING')}
-                        className={`flex items-center gap-3.5 p-3 md:px-4 text-left transition-all apple-card-inner rounded-[22px] active:scale-[0.98] ${
+                        className={`flex items-center gap-3.5 p-3 md:px-4 text-left apple-liquid-pill rounded-[22px] transition-all duration-200 active:scale-[0.98] ${
                             statusFilter === 'PENDING'
-                                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold ring-1 ring-amber-500/30'
+                                ? 'bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/40 dark:border-white/[0.18] text-amber-600 dark:text-amber-400 font-bold shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_6px_20px_-2px_rgba(245,158,11,0.3)] -translate-y-0.5'
                                 : 'hover:bg-gray-100/70 dark:hover:bg-white/[0.04]'
                         }`}
                     >
                         <div className={`w-10 h-10 md:w-11 md:h-11 apple-card-sm rounded-[16px] flex items-center justify-center shrink-0 transition-colors ${
-                            statusFilter === 'PENDING' ? 'bg-amber-500 text-white shadow-sm' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                            statusFilter === 'PENDING' ? 'bg-amber-500 text-white shadow-md' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
                         }`}>
                             <Clock className="w-5 h-5" />
                         </div>
@@ -701,14 +711,14 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'IN_PROGRESS' ? 'ALL' : 'IN_PROGRESS')}
-                        className={`flex items-center gap-3.5 p-3 md:px-4 text-left transition-all apple-card-inner rounded-[22px] active:scale-[0.98] ${
+                        className={`flex items-center gap-3.5 p-3 md:px-4 text-left apple-liquid-pill rounded-[22px] transition-all duration-200 active:scale-[0.98] ${
                             statusFilter === 'IN_PROGRESS'
-                                ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold ring-1 ring-blue-500/30'
+                                ? 'bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/40 dark:border-white/[0.18] text-blue-600 dark:text-blue-400 font-bold shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_6px_20px_-2px_rgba(59,130,246,0.3)] -translate-y-0.5'
                                 : 'hover:bg-gray-100/70 dark:hover:bg-white/[0.04]'
                         }`}
                     >
                         <div className={`w-10 h-10 md:w-11 md:h-11 apple-card-sm rounded-[16px] flex items-center justify-center shrink-0 transition-colors ${
-                            statusFilter === 'IN_PROGRESS' ? 'bg-[#0071e3] text-white shadow-sm' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                            statusFilter === 'IN_PROGRESS' ? 'bg-[#0071e3] text-white shadow-md' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
                         }`}>
                             <Wrench className="w-5 h-5" />
                         </div>
@@ -724,14 +734,14 @@ export const ClaimsList: React.FC = () => {
                     <button 
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'DONE' ? 'ALL' : 'DONE')}
-                        className={`flex items-center gap-3.5 p-3 md:px-4 text-left transition-all apple-card-inner rounded-[22px] active:scale-[0.98] ${
+                        className={`flex items-center gap-3.5 p-3 md:px-4 text-left apple-liquid-pill rounded-[22px] transition-all duration-200 active:scale-[0.98] ${
                             statusFilter === 'DONE'
-                                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold ring-1 ring-emerald-500/30'
+                                ? 'bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/40 dark:border-white/[0.18] text-emerald-600 dark:text-emerald-400 font-bold shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_6px_20px_-2px_rgba(16,185,129,0.3)] -translate-y-0.5'
                                 : 'hover:bg-gray-100/70 dark:hover:bg-white/[0.04]'
                         }`}
                     >
                         <div className={`w-10 h-10 md:w-11 md:h-11 apple-card-sm rounded-[16px] flex items-center justify-center shrink-0 transition-colors ${
-                            statusFilter === 'DONE' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                            statusFilter === 'DONE' ? 'bg-emerald-500 text-white shadow-md' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                         }`}>
                             <CheckCircle2 className="w-5 h-5" />
                         </div>
@@ -777,8 +787,8 @@ export const ClaimsList: React.FC = () => {
                         onClick={() => { setTeamFilter('ALL'); setIsTeamCExpanded(false); }}
                         className={`apple-card rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             teamFilter === 'ALL'
-                                ? 'bg-gradient-to-br from-[#0071e3] to-[#005bb5] text-white shadow-lg shadow-blue-500/20 border border-blue-400/40'
-                                : 'bg-white dark:bg-[#16161a] border border-gray-200/70 dark:border-white/[0.08] shadow-sm hover:border-blue-300 dark:hover:border-blue-500/30 active:scale-[0.98]'
+                                ? 'bg-gradient-to-br from-[#0071e3] to-[#005bb5] text-white shadow-lg shadow-blue-500/20'
+                                : 'bg-white dark:bg-[#16161a] shadow-sm active:scale-[0.98]'
                         }`}
                     >
                         <div>
@@ -815,8 +825,8 @@ export const ClaimsList: React.FC = () => {
                         onClick={() => { setTeamFilter(Team.HIKVISION); setIsTeamCExpanded(false); }}
                         className={`apple-card rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             teamFilter === Team.HIKVISION
-                                ? 'bg-gradient-to-br from-[#e53e3e] to-[#c53030] text-white shadow-lg shadow-red-500/20 border border-red-400/40'
-                                : 'bg-white dark:bg-[#16161a] border border-gray-200/70 dark:border-white/[0.08] shadow-sm hover:border-red-300 dark:hover:border-red-500/30 active:scale-[0.98]'
+                                ? 'bg-gradient-to-br from-[#e53e3e] to-[#c53030] text-white shadow-lg shadow-red-500/20'
+                                : 'bg-white dark:bg-[#16161a] shadow-sm active:scale-[0.98]'
                         }`}
                     >
                         <div>
@@ -853,8 +863,8 @@ export const ClaimsList: React.FC = () => {
                         onClick={() => { setTeamFilter(Team.DAHUA); setIsTeamCExpanded(false); }}
                         className={`apple-card rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             teamFilter === Team.DAHUA
-                                ? 'bg-gradient-to-br from-[#dd6b20] to-[#c05621] text-white shadow-lg shadow-orange-500/20 border border-orange-400/40'
-                                : 'bg-white dark:bg-[#16161a] border border-gray-200/70 dark:border-white/[0.08] shadow-sm hover:border-orange-300 dark:hover:border-orange-500/30 active:scale-[0.98]'
+                                ? 'bg-gradient-to-br from-[#dd6b20] to-[#c05621] text-white shadow-lg shadow-orange-500/20'
+                                : 'bg-white dark:bg-[#16161a] shadow-sm active:scale-[0.98]'
                         }`}
                     >
                         <div>
@@ -891,8 +901,8 @@ export const ClaimsList: React.FC = () => {
                         onClick={handleGroupCClick}
                         className={`apple-card rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             isTeamCExpanded || teamFilter === 'GROUP_C'
-                                ? 'bg-gradient-to-br from-[#805ad5] to-[#6b46c1] text-white shadow-lg shadow-violet-500/20 border border-violet-400/40'
-                                : 'bg-white dark:bg-[#16161a] border border-gray-200/70 dark:border-white/[0.08] shadow-sm hover:border-violet-300 dark:hover:border-violet-500/30 active:scale-[0.98]'
+                                ? 'bg-gradient-to-br from-[#805ad5] to-[#6b46c1] text-white shadow-lg shadow-violet-500/20'
+                                : 'bg-white dark:bg-[#16161a] shadow-sm active:scale-[0.98]'
                         }`}
                     >
                         <div>
@@ -930,10 +940,10 @@ export const ClaimsList: React.FC = () => {
                     <div className="flex gap-2.5 overflow-x-auto scrollbar-hide animate-fade-in pl-2 border-l-2 border-violet-500/30">
                         <button 
                             onClick={() => setTeamFilter(Team.TEAM_C)} 
-                            className={`apple-card-sm rounded-[18px] md:rounded-[22px] px-4 py-2.5 border whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
+                            className={`apple-card-sm rounded-[18px] md:rounded-[22px] px-4 py-2.5 whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
                                 teamFilter === Team.TEAM_C 
-                                    ? 'border-cyan-400 text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10 font-bold' 
-                                    : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] shadow-sm text-gray-700 dark:text-gray-300'
+                                    ? 'text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10 font-bold shadow-sm' 
+                                    : 'bg-white dark:bg-[#16161a] shadow-sm text-gray-700 dark:text-gray-300'
                             }`}
                         >
                             <span>🌐 Network</span>
@@ -943,10 +953,10 @@ export const ClaimsList: React.FC = () => {
                         </button>
                         <button 
                             onClick={() => setTeamFilter(Team.TEAM_E)} 
-                            className={`apple-card-sm rounded-[18px] md:rounded-[22px] px-4 py-2.5 border whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
+                            className={`apple-card-sm rounded-[18px] md:rounded-[22px] px-4 py-2.5 whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
                                 teamFilter === Team.TEAM_E 
-                                    ? 'border-amber-400 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 font-bold' 
-                                    : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] shadow-sm text-gray-700 dark:text-gray-300'
+                                    ? 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 font-bold shadow-sm' 
+                                    : 'bg-white dark:bg-[#16161a] shadow-sm text-gray-700 dark:text-gray-300'
                             }`}
                         >
                             <span>🔋 UPS</span>
@@ -956,10 +966,10 @@ export const ClaimsList: React.FC = () => {
                         </button>
                         <button 
                             onClick={() => setTeamFilter(Team.TEAM_G)} 
-                            className={`apple-card-sm rounded-[18px] md:rounded-[22px] px-4 py-2.5 border whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
+                            className={`apple-card-sm rounded-[18px] md:rounded-[22px] px-4 py-2.5 whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
                                 teamFilter === Team.TEAM_G 
-                                    ? 'border-fuchsia-400 text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-500/10 font-bold' 
-                                    : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] shadow-sm text-gray-700 dark:text-gray-300'
+                                    ? 'text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-500/10 font-bold shadow-sm' 
+                                    : 'bg-white dark:bg-[#16161a] shadow-sm text-gray-700 dark:text-gray-300'
                             }`}
                         >
                             <span>🛒 Online</span>
@@ -971,7 +981,7 @@ export const ClaimsList: React.FC = () => {
                 )}
             </div>
 
-            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[30px] md:rounded-[36px] border border-gray-200/70 dark:border-white/[0.08] p-3 md:p-4.5 shadow-sm mb-4 md:mb-6 space-y-2.5">
+            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[30px] md:rounded-[36px] p-3 md:p-4.5 shadow-sm mb-4 md:mb-6 space-y-2.5">
                 <div className="flex flex-col xl:flex-row items-center justify-between gap-2.5">
                     <div className="relative w-full xl:flex-1">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
