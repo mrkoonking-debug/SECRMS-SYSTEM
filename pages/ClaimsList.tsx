@@ -946,7 +946,7 @@ export const ClaimsList: React.FC = () => {
                                     : 'bg-white dark:bg-white/[0.06] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_2px_8px_rgba(0,0,0,0.4)] text-gray-700 dark:text-gray-300'
                             }`}
                         >
-                            <span>🌐 Network</span>
+                            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-cyan-500 shrink-0"></span>Network</span>
                             <span className="font-mono text-[10px] bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 px-2 py-0.5 rounded-full font-bold">
                                 ค้าง {dashboardStats.teamC.active} / รวม {dashboardStats.teamC.total}
                             </span>
@@ -959,7 +959,7 @@ export const ClaimsList: React.FC = () => {
                                     : 'bg-white dark:bg-white/[0.06] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_2px_8px_rgba(0,0,0,0.4)] text-gray-700 dark:text-gray-300'
                             }`}
                         >
-                            <span>🔋 UPS</span>
+                            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>UPS</span>
                             <span className="font-mono text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-bold">
                                 ค้าง {dashboardStats.teamE.active} / รวม {dashboardStats.teamE.total}
                             </span>
@@ -972,7 +972,7 @@ export const ClaimsList: React.FC = () => {
                                     : 'bg-white dark:bg-white/[0.06] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_2px_8px_rgba(0,0,0,0.4)] text-gray-700 dark:text-gray-300'
                             }`}
                         >
-                            <span>🛒 Online</span>
+                            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-fuchsia-500 shrink-0"></span>Online</span>
                             <span className="font-mono text-[10px] bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 px-2 py-0.5 rounded-full font-bold">
                                 ค้าง {dashboardStats.teamG.active} / รวม {dashboardStats.teamG.total}
                             </span>
@@ -1127,7 +1127,7 @@ export const ClaimsList: React.FC = () => {
                             onClick={() => setStatusFilter('ALL')}
                             className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 font-bold transition-all text-[11px] cursor-pointer"
                         >
-                            💡 พบงานที่เสร็จแล้วอีก {closedMatchJobsCount} ใบงาน (กดเพื่อดูทั้งหมด)
+                            พบงานที่เสร็จแล้วอีก {closedMatchJobsCount} ใบงาน (กดเพื่อดูทั้งหมด)
                         </button>
                     )}
                 </div>
