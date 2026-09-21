@@ -5,7 +5,10 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
-import { Calendar, Loader2, TrendingUp, CheckCircle2, Clock, AlertTriangle, ChevronDown, ChevronRight, Package, Wrench, X } from 'lucide-react';
+import {
+  Calendar, Loader2, TrendingUp, CheckCircle2, Clock, AlertTriangle, ChevronDown,
+  ChevronRight, Package, Wrench, X, Layers, Award, BarChart3, PieChart as PieChartIcon, Sparkles
+} from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { RMA, RMAStatus } from '../types';
 import { ModernDateRangePickerModal, DateRangeSelection } from '../components/ModernDateRangePickerModal';
@@ -342,10 +345,10 @@ export const ReportsPage: React.FC = () => {
   const CustomTooltipContent = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;
     return (
-      <div className="bg-white dark:bg-[#1c1c1e] px-4 py-3 rounded-2xl shadow-xl border border-gray-100 dark:border-[#333]">
-        <p className="text-xs font-bold text-gray-500 mb-1">{label}</p>
+      <div className="bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-xl px-4 py-3 rounded-[20px] apple-card-lg shadow-xl border border-gray-200/80 dark:border-white/10">
+        <p className="text-xs font-bold text-gray-400 mb-1">{label}</p>
         {payload.map((p: any, i: number) => (
-          <p key={i} className="text-sm font-bold" style={{ color: p.color || p.fill }}>
+          <p key={i} className="text-sm font-extrabold" style={{ color: p.color || p.fill }}>
             {p.value} {p.name || 'งาน'}
           </p>
         ))}
@@ -356,14 +359,19 @@ export const ReportsPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 py-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 md:mb-10">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white mb-1">{t('nav.reports')}</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">วิเคราะห์ข้อมูลเชิงลึก เพื่อการตัดสินใจที่แม่นยำ</p>
+          <div className="flex items-center gap-2.5 mb-1.5">
+            <div className="w-9 h-9 rounded-[13px] bg-[#0071e3]/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center apple-card-sm border border-blue-500/20">
+              <BarChart3 className="w-5 h-5" />
+            </div>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-[#1d1d1f] dark:text-white tracking-tight">{t('nav.reports')}</h1>
+          </div>
+          <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm">วิเคราะห์ข้อมูลเชิงลึกและสถิติภาพรวมของระบบงานเคลม</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
           {/* Quick Segmented Presets */}
-          <div className="inline-flex bg-gray-100/90 dark:bg-white/[0.04] p-0.5 rounded-xl border border-gray-200/60 dark:border-white/[0.06] shadow-sm">
+          <div className="inline-flex bg-black/[0.04] dark:bg-white/[0.05] p-1 rounded-full border border-black/5 dark:border-white/10 apple-card-inner backdrop-blur-md">
             {[
               { id: 'all', label: 'ทั้งหมด' },
               { id: 'THIS_MONTH', label: 'เดือนนี้' },
@@ -380,10 +388,10 @@ export const ReportsPage: React.FC = () => {
                     setCustomStartDate('');
                     setCustomEndDate('');
                   }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     isActive
-                      ? 'bg-white dark:bg-[#252528] text-[#0071e3] dark:text-white shadow-sm font-bold'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/[0.02]'
+                      ? 'bg-white dark:bg-[#252528] text-[#0071e3] dark:text-white shadow-xs font-bold'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 >
                   {preset.label}
@@ -396,15 +404,15 @@ export const ReportsPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowDatePickerModal(true)}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-[#1c1c1e] border rounded-xl text-xs font-semibold transition-all shadow-sm ${
+            className={`inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#16161a] border rounded-full text-xs font-semibold transition-all apple-card-sm shadow-xs active:scale-95 ${
               (dateFilter !== 'all' && dateFilter !== 'ALL' && dateFilter !== 'THIS_MONTH' && dateFilter !== 'LAST_MONTH' && dateFilter !== '3_MONTHS') || (customStartDate && customEndDate)
                 ? 'bg-[#0071e3]/10 text-[#0071e3] dark:text-blue-400 border-[#0071e3]/40 font-bold'
-                : 'border-gray-200 dark:border-[#333] text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20'
+                : 'border-gray-200/80 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-[#0071e3]/30'
             }`}
           >
             <Calendar className="w-3.5 h-3.5 text-[#0071e3]" />
             <span>{activePeriodLabel}</span>
-            <ChevronDown className="w-3 h-3 text-gray-400 ml-0.5" />
+            <ChevronDown className="w-3.5 h-3.5 text-gray-400 ml-0.5" />
           </button>
 
           {/* Clear Filter Button if not all */}
@@ -416,10 +424,10 @@ export const ReportsPage: React.FC = () => {
                 setCustomStartDate('');
                 setCustomEndDate('');
               }}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-dashed border-gray-300 dark:border-white/10"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold text-gray-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all apple-card-sm border border-gray-200/80 dark:border-white/10 active:scale-95"
               title="ล้างตัวกรองช่วงเวลา"
             >
-              <X className="w-3 h-3" />
+              <X className="w-3.5 h-3.5" />
               <span>รีเซ็ต</span>
             </button>
           )}
@@ -427,62 +435,74 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mb-8">
-        <div className="glass-panel p-5 md:p-6 relative overflow-hidden group">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center">
-              <Package className="w-4 h-4 text-blue-500" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+        <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[32px] p-5 sm:p-6 border border-gray-200/70 dark:border-white/[0.08] shadow-sm relative overflow-hidden group hover:scale-[1.02] transition-all">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-11 h-11 rounded-[16px] bg-blue-500/10 text-blue-500 flex items-center justify-center apple-card-sm border border-blue-500/15">
+              <Package className="w-5 h-5 text-blue-500" />
             </div>
+            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">ทั้งหมด</span>
           </div>
-          <div className="text-2xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white tracking-tight">{kpis.total}</div>
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">งานทั้งหมด</div>
+          <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#1d1d1f] dark:text-white tracking-tight">{kpis.total}</div>
+          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">งานเคลมที่รับเข้า</div>
         </div>
 
-        <div className="glass-panel p-5 md:p-6 relative overflow-hidden group">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-xl bg-green-500/10 flex items-center justify-center">
-              <CheckCircle2 className="w-4 h-4 text-green-500" />
+        <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[32px] p-5 sm:p-6 border border-gray-200/70 dark:border-white/[0.08] shadow-sm relative overflow-hidden group hover:scale-[1.02] transition-all">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-11 h-11 rounded-[16px] bg-emerald-500/10 text-emerald-500 flex items-center justify-center apple-card-sm border border-emerald-500/15">
+              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
             </div>
+            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">สำเร็จ</span>
           </div>
-          <div className="text-2xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white tracking-tight flex items-baseline gap-1">
-            {kpis.completionRate}<span className="text-lg text-gray-400">%</span>
+          <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#1d1d1f] dark:text-white tracking-tight flex items-baseline gap-1">
+            {kpis.completionRate}<span className="text-lg text-gray-400 font-bold">%</span>
           </div>
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">อัตราปิดงาน</div>
+          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">อัตราปิดงานสำเร็จ</div>
         </div>
 
-        <div className="glass-panel p-5 md:p-6 relative overflow-hidden group">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center">
-              <Clock className="w-4 h-4 text-purple-500" />
+        <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[32px] p-5 sm:p-6 border border-gray-200/70 dark:border-white/[0.08] shadow-sm relative overflow-hidden group hover:scale-[1.02] transition-all">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-11 h-11 rounded-[16px] bg-purple-500/10 text-purple-500 flex items-center justify-center apple-card-sm border border-purple-500/15">
+              <Clock className="w-5 h-5 text-purple-500" />
             </div>
+            <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">ระยะเวลา</span>
           </div>
-          <div className="text-2xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white tracking-tight flex items-baseline gap-1">
-            {kpis.avgDays}<span className="text-lg text-gray-400">วัน</span>
+          <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#1d1d1f] dark:text-white tracking-tight flex items-baseline gap-1">
+            {kpis.avgDays}<span className="text-lg text-gray-400 font-bold">วัน</span>
           </div>
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">เวลาเฉลี่ย</div>
+          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">เวลาเฉลี่ยในการดำเนินงาน</div>
         </div>
 
-        <div className="glass-panel p-5 md:p-6 relative overflow-hidden group">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-xl bg-red-500/10 flex items-center justify-center">
-              <AlertTriangle className="w-4 h-4 text-red-500" />
+        <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[32px] p-5 sm:p-6 border border-gray-200/70 dark:border-white/[0.08] shadow-sm relative overflow-hidden group hover:scale-[1.02] transition-all">
+          <div className="flex items-center gap-3 mb-3">
+            <div className={`w-11 h-11 rounded-[16px] flex items-center justify-center apple-card-sm border ${kpis.urgentCount > 0 ? 'bg-rose-500/10 text-rose-500 border-rose-500/15' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/15'}`}>
+              <AlertTriangle className={`w-5 h-5 ${kpis.urgentCount > 0 ? 'text-rose-500' : 'text-emerald-500'}`} />
             </div>
+            <span className={`text-[11px] font-bold uppercase tracking-wider ${kpis.urgentCount > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+              {kpis.urgentCount > 0 ? 'ต้องติดตาม' : 'ปกติ'}
+            </span>
           </div>
-          <div className={`text-2xl md:text-3xl font-bold tracking-tight ${kpis.urgentCount > 0 ? 'text-red-500' : 'text-green-500'}`}>{kpis.urgentCount}</div>
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">งานเกิน 15 วัน</div>
+          <div className={`text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight ${kpis.urgentCount > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+            {kpis.urgentCount}
+          </div>
+          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">งานค้างเกิน 15 วัน</div>
         </div>
       </div>
 
       {/* Row 2: Trend + Status Pipeline */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 md:gap-8 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 md:gap-8 mb-8">
         {/* Weekly Trend - wider */}
-        <div className="lg:col-span-3 glass-panel p-6 md:p-8">
-          <div className="mb-6">
-            <h3 className="text-base font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-500" />
-              แนวโน้มงานเข้ารายสัปดาห์
-            </h3>
-            <p className="text-xs text-gray-400 mt-1">จำนวนงานเคลมที่เข้ามาในแต่ละสัปดาห์</p>
+        <div className="lg:col-span-3 bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 border border-gray-200/70 dark:border-white/[0.08] shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-[12px] bg-blue-500/10 text-blue-500 flex items-center justify-center apple-card-sm">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
+                แนวโน้มงานเข้ารายสัปดาห์
+              </h3>
+              <p className="text-xs text-gray-400 mt-1">จำนวนงานเคลมที่เข้ามาในแต่ละสัปดาห์</p>
+            </div>
           </div>
           <div className="h-64 w-full">
             {weeklyTrend.length > 0 ? (
@@ -490,7 +510,7 @@ export const ReportsPage: React.FC = () => {
                 <AreaChart data={weeklyTrend}>
                   <defs>
                     <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#0071e3" stopOpacity={0.3} />
+                      <stop offset="0%" stopColor="#0071e3" stopOpacity={0.35} />
                       <stop offset="100%" stopColor="#0071e3" stopOpacity={0} />
                     </linearGradient>
                   </defs>
@@ -498,7 +518,7 @@ export const ReportsPage: React.FC = () => {
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#86868b' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#86868b' }} allowDecimals={false} />
                   <Tooltip content={<CustomTooltipContent />} />
-                  <Area type="monotone" dataKey="งาน" stroke="#0071e3" strokeWidth={2.5} fill="url(#areaGrad)" />
+                  <Area type="monotone" dataKey="งาน" stroke="#0071e3" strokeWidth={3} fill="url(#areaGrad)" />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
@@ -508,10 +528,12 @@ export const ReportsPage: React.FC = () => {
         </div>
 
         {/* Status Pipeline */}
-        <div className="lg:col-span-2 glass-panel p-6 md:p-8">
+        <div className="lg:col-span-2 bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 border border-gray-200/70 dark:border-white/[0.08] shadow-sm">
           <div className="mb-6">
-            <h3 className="text-base font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2">
-              <Wrench className="w-5 h-5 text-green-500" />
+            <h3 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-[12px] bg-emerald-500/10 text-emerald-500 flex items-center justify-center apple-card-sm">
+                <Wrench className="w-4 h-4" />
+              </div>
               สถานะงาน
             </h3>
             <p className="text-xs text-gray-400 mt-1">จำนวนงานในแต่ละสถานะ</p>
@@ -522,10 +544,10 @@ export const ReportsPage: React.FC = () => {
               const pct = (item.value / maxVal) * 100;
               return (
                 <div key={i} className="flex items-center gap-3">
-                  <div className="w-24 text-xs font-medium text-gray-500 dark:text-gray-400 text-right flex-shrink-0 truncate">{item.name}</div>
-                  <div className="flex-1 h-7 bg-gray-100 dark:bg-white/5 rounded-lg overflow-hidden relative">
+                  <div className="w-24 text-xs font-semibold text-gray-500 dark:text-gray-400 text-right flex-shrink-0 truncate">{item.name}</div>
+                  <div className="flex-1 h-7 bg-black/[0.03] dark:bg-white/[0.04] rounded-full overflow-hidden relative border border-black/5 dark:border-white/[0.04] p-0.5">
                     <div
-                      className="h-full rounded-lg transition-all duration-500"
+                      className="h-full rounded-full transition-all duration-500 shadow-xs"
                       style={{ width: `${pct}%`, backgroundColor: item.fill }}
                     />
                   </div>
@@ -541,38 +563,43 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* Disclaimer */}
-      <div className="flex items-start gap-2.5 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/30 rounded-2xl px-5 py-3.5 mb-5">
-        <span className="text-amber-500 text-base mt-0.5">⚠️</span>
-        <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
-          <span className="font-bold">หมายเหตุ:</span> ข้อมูลด้านล่างสะท้อน<span className="font-semibold">ปริมาณงานเคลม</span> ไม่ใช่อัตราการเสียของสินค้า เพราะจำนวนเคลมขึ้นอยู่กับปริมาณการขายและการสั่งซื้อ ยี่ห้อหรือรุ่นที่ขายดีย่อมมีโอกาสเข้าเคลมมากกว่า
+      <div className="flex items-start gap-3 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-300/50 dark:border-amber-500/30 rounded-[22px] md:rounded-[26px] p-4.5 sm:p-5 mb-8 apple-card-inner">
+        <span className="text-amber-500 text-xl flex-shrink-0 mt-0.5">⚠️</span>
+        <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
+          <span className="font-bold">หมายเหตุ:</span> ข้อมูลด้านล่างสะท้อน<span className="font-bold underline decoration-amber-500/40">ปริมาณงานเคลม</span> ไม่ใช่อัตราการเสียของสินค้า เพราะจำนวนเคลมขึ้นอยู่กับปริมาณการขายและการสั่งซื้อ ยี่ห้อหรือรุ่นที่ขายดีย่อมมีโอกาสเข้าเคลมมากกว่า
         </p>
       </div>
 
       {/* Row 3: Brand → Distributor Breakdown */}
-      <div className="glass-panel p-6 md:p-8">
-        <div className="mb-2">
-          <h3 className="text-base font-bold text-[#1d1d1f] dark:text-white">สินค้าแต่ละยี่ห้อมาจากผู้นำเข้าเจ้าไหน</h3>
+      <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 border border-gray-200/70 dark:border-white/[0.08] shadow-sm mb-8">
+        <div className="mb-6">
+          <h3 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-[12px] bg-orange-500/10 text-orange-500 flex items-center justify-center apple-card-sm">
+              <Layers className="w-4 h-4" />
+            </div>
+            สินค้าแต่ละยี่ห้อมาจากผู้นำเข้าเจ้าไหน
+          </h3>
           <p className="text-xs text-gray-400 mt-1">คลิกยี่ห้อเพื่อดูรายละเอียดผู้นำเข้า</p>
         </div>
 
         {brandDistributorData.length > 0 ? (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {brandDistributorData.map((brand, i) => {
               const isExpanded = expandedBrand === brand.name;
               const brandColor = getBrandColor(brand.name, i);
               return (
-                <div key={brand.name} className="border border-gray-100 dark:border-[#333] rounded-2xl overflow-hidden">
+                <div key={brand.name} className="border border-gray-200/70 dark:border-white/[0.08] rounded-[22px] md:rounded-[24px] overflow-hidden apple-card-inner transition-all">
                   <button
                     onClick={() => setExpandedBrand(isExpanded ? null : brand.name)}
-                    className="w-full flex items-center gap-3 px-5 py-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-left"
+                    className="w-full flex items-center gap-3.5 px-5 py-4 hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors text-left"
                   >
-                    <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                    <div className="w-9 h-9 rounded-[14px] flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-xs apple-card-sm"
                       style={{ backgroundColor: brandColor }}>
                       {brand.total}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-bold text-[#1d1d1f] dark:text-white">{brand.name}</div>
-                      <div className="text-xs text-gray-400 truncate">
+                      <div className="text-xs text-gray-400 truncate mt-0.5">
                         ผู้นำเข้าหลัก: {brand.distributors[0]?.name || '-'} ({brand.distributors[0]?.count || 0} งาน)
                       </div>
                     </div>
@@ -580,16 +607,16 @@ export const ReportsPage: React.FC = () => {
                   </button>
 
                   {isExpanded && (
-                    <div className="px-5 pb-5 border-t border-gray-100 dark:border-[#333] bg-gray-50/50 dark:bg-white/[0.02]">
-                      <div className="pt-4 space-y-2">
+                    <div className="px-5 pb-5 pt-2 border-t border-gray-200/60 dark:border-white/[0.06] bg-gray-50/50 dark:bg-white/[0.02]">
+                      <div className="pt-2 space-y-2.5">
                         {brand.distributors.map((d, di) => {
                           const maxC = brand.distributors[0]?.count || 1;
                           const pct = (d.count / maxC) * 100;
                           return (
                             <div key={d.name} className="flex items-center gap-3">
-                              <div className="w-32 text-xs font-medium text-gray-500 dark:text-gray-400 text-right flex-shrink-0 truncate">{d.name}</div>
-                              <div className="flex-1 h-6 bg-gray-100 dark:bg-white/5 rounded-lg overflow-hidden">
-                                <div className="h-full rounded-lg transition-all" style={{ width: `${pct}%`, backgroundColor: brandColor, opacity: 1 - (di * 0.15) }} />
+                              <div className="w-32 text-xs font-medium text-gray-600 dark:text-gray-400 text-right flex-shrink-0 truncate">{d.name}</div>
+                              <div className="flex-1 h-6 bg-black/[0.03] dark:bg-white/[0.04] rounded-full overflow-hidden p-0.5 border border-black/5 dark:border-white/[0.04]">
+                                <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: brandColor, opacity: 1 - (di * 0.15) }} />
                               </div>
                               <div className="w-16 text-xs font-bold text-[#1d1d1f] dark:text-white text-right">{d.count} งาน</div>
                             </div>
@@ -608,33 +635,38 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* Row 4: Top 10 Models + Brand Proportion */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 md:gap-8 mt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 md:gap-8 mt-8">
 
         {/* Top 10 Models */}
-        <div className="lg:col-span-3 glass-panel p-6 md:p-8">
-          <div className="mb-2">
-            <h3 className="text-base font-bold text-[#1d1d1f] dark:text-white">Top 10 รุ่นที่เคลมบ่อย</h3>
+        <div className="lg:col-span-3 bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 border border-gray-200/70 dark:border-white/[0.08] shadow-sm">
+          <div className="mb-6">
+            <h3 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-[12px] bg-amber-500/10 text-amber-500 flex items-center justify-center apple-card-sm">
+                <Award className="w-4 h-4" />
+              </div>
+              Top 10 รุ่นที่เคลมบ่อย
+            </h3>
             <p className="text-xs text-gray-400 mt-1">รุ่นสินค้าที่มีงานเคลมเข้ามามากที่สุด</p>
           </div>
           {topModels.length > 0 ? (
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {topModels.map((item, i) => {
                 const maxVal = topModels[0]?.count || 1;
                 const pct = (item.count / maxVal) * 100;
                 const brandColor = getBrandColor(item.brand, i);
                 return (
                   <div key={item.model} className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black flex-shrink-0"
-                      style={{ backgroundColor: i < 3 ? brandColor : 'transparent', color: i < 3 ? '#fff' : '#86868b' }}>
+                    <div className="w-7 h-7 rounded-[10px] flex items-center justify-center text-[11px] font-black flex-shrink-0 apple-card-sm shadow-xs"
+                      style={{ backgroundColor: i < 3 ? brandColor : 'rgba(0,0,0,0.05)', color: i < 3 ? '#fff' : '#86868b' }}>
                       {i + 1}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
+                      <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-bold text-[#1d1d1f] dark:text-white truncate">{item.model}</span>
-                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md flex-shrink-0" style={{ backgroundColor: `${brandColor}15`, color: brandColor }}>{item.brand}</span>
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border border-black/5 dark:border-white/10 flex-shrink-0" style={{ backgroundColor: `${brandColor}15`, color: brandColor }}>{item.brand}</span>
                       </div>
-                      <div className="w-full h-4 bg-gray-100 dark:bg-white/5 rounded-md overflow-hidden">
-                        <div className="h-full rounded-md transition-all" style={{ width: `${pct}%`, backgroundColor: brandColor, opacity: 0.7 }} />
+                      <div className="w-full h-4 bg-black/[0.03] dark:bg-white/[0.04] rounded-full overflow-hidden p-0.5 border border-black/5 dark:border-white/[0.04]">
+                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: brandColor, opacity: 0.75 }} />
                       </div>
                     </div>
                     <div className="w-10 text-sm font-bold text-[#1d1d1f] dark:text-white text-right">{item.count}</div>
@@ -648,9 +680,14 @@ export const ReportsPage: React.FC = () => {
         </div>
 
         {/* Brand Proportion */}
-        <div className="lg:col-span-2 glass-panel p-6 md:p-8">
-          <div className="mb-2">
-            <h3 className="text-base font-bold text-[#1d1d1f] dark:text-white">สัดส่วนยี่ห้อ</h3>
+        <div className="lg:col-span-2 bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 border border-gray-200/70 dark:border-white/[0.08] shadow-sm">
+          <div className="mb-6">
+            <h3 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-[12px] bg-purple-500/10 text-purple-500 flex items-center justify-center apple-card-sm">
+                <PieChartIcon className="w-4 h-4" />
+              </div>
+              สัดส่วนยี่ห้อ
+            </h3>
             <p className="text-xs text-gray-400 mt-1">สัดส่วนงานเคลมแยกตามยี่ห้อสินค้า</p>
           </div>
           {brandProportion.length > 0 ? (
@@ -658,23 +695,23 @@ export const ReportsPage: React.FC = () => {
               <div className="h-48 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={brandProportion} cx="50%" cy="50%" innerRadius={45} outerRadius={75} paddingAngle={3} dataKey="value">
+                    <Pie data={brandProportion} cx="50%" cy="50%" innerRadius={48} outerRadius={78} paddingAngle={4} dataKey="value">
                       {brandProportion.map((entry, i) => <Cell key={i} fill={getBrandColor(entry.name, i)} />)}
                     </Pie>
                     <Tooltip content={<CustomTooltipContent />} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="space-y-1.5 mt-4">
+              <div className="space-y-2 mt-5">
                 {brandProportion.map((entry, i) => {
                   const total = brandProportion.reduce((s, e) => s + e.value, 0);
                   const pct = total > 0 ? Math.round((entry.value / total) * 100) : 0;
                   return (
-                    <div key={entry.name} className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: getBrandColor(entry.name, i) }} />
-                      <span className="text-xs font-medium text-gray-600 dark:text-gray-300 flex-1 truncate">{entry.name}</span>
-                      <span className="text-[10px] text-gray-400">{pct}%</span>
-                      <span className="text-xs font-bold text-[#1d1d1f] dark:text-white w-6 text-right">{entry.value}</span>
+                    <div key={entry.name} className="flex items-center gap-2.5 px-3 py-2 rounded-[14px] bg-black/[0.02] dark:bg-white/[0.03] border border-black/5 dark:border-white/[0.05] apple-card-inner">
+                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-xs" style={{ backgroundColor: getBrandColor(entry.name, i) }} />
+                      <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex-1 truncate">{entry.name}</span>
+                      <span className="text-[11px] font-mono text-gray-400">{pct}%</span>
+                      <span className="text-xs font-bold text-[#1d1d1f] dark:text-white w-7 text-right">{entry.value}</span>
                     </div>
                   );
                 })}
