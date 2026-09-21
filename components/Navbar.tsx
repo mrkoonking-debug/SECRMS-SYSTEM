@@ -222,14 +222,14 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
           to={to} 
           className={`group relative flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all duration-200 active:scale-[0.98] ${
             isActive 
-              ? 'bg-black/[0.06] dark:bg-black/70 backdrop-blur-xl text-[#0071e3] dark:text-white font-bold shadow-sm' 
-              : 'text-[#1d1d1f] dark:text-gray-200 hover:bg-black/[0.04] dark:hover:bg-white/[0.05]'
+              ? 'bg-black/[0.05] dark:bg-white/[0.08] backdrop-blur-md text-[#0071e3] dark:text-white font-bold' 
+              : 'text-[#1d1d1f] dark:text-gray-200 hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
           }`}
         >
           <div className={`rounded-full flex items-center justify-center flex-shrink-0 text-white ${getIconStyle()} ${
-            isActive ? 'w-8.5 h-8.5 shadow-sm' : 'w-8 h-8 shadow-sm'
+            isActive ? 'w-9 h-9 shadow-md' : 'w-8 h-8 shadow-sm'
           }`}>
-            <Icon className="w-4 h-4 text-white" strokeWidth={2.2} />
+            <Icon className="w-4.5 h-4.5 text-white" strokeWidth={2.2} />
           </div>
           <span className="text-xs font-semibold tracking-tight flex-1 truncate">{label}</span>
           {badgeCount > 0 && (
@@ -244,26 +244,28 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
     return (
       <Link 
         to={to} 
-        className={`group relative flex items-center gap-3 px-3.5 py-2.5 rounded-[20px] transition-all duration-200 active:scale-[0.98] min-h-[58px] ${
+        className={`group relative flex items-center gap-3 px-3.5 py-2.5 rounded-[18px] transition-all duration-200 active:scale-[0.98] min-h-[58px] ${
           isActive 
-            ? 'bg-black/[0.06] dark:bg-black/75 backdrop-blur-xl text-[#0071e3] dark:text-white shadow-sm' 
-            : 'hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
+            ? 'bg-black/[0.04] dark:bg-white/[0.08] backdrop-blur-md text-[#0071e3] dark:text-white' 
+            : 'text-[#1d1d1f] dark:text-gray-200 hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
         }`}
       >
-        {/* Circular Icon (Slightly larger when active, smooth and balanced) */}
-        <div className={`rounded-full flex items-center justify-center flex-shrink-0 text-white transition-all duration-200 ${getIconStyle()} ${
-          isActive 
-            ? 'w-10.5 h-10.5 shadow-md' 
-            : 'w-10 h-10 shadow-sm group-hover:scale-105'
-        }`}>
-          <Icon className={`${isActive ? 'w-5.5 h-5.5' : 'w-5 h-5'} text-white transition-all duration-200`} strokeWidth={2.2} />
+        {/* Circular Icon with fixed-size alignment wrapper so text column never jumps */}
+        <div className="w-11 h-11 flex items-center justify-center shrink-0">
+          <div className={`rounded-full flex items-center justify-center text-white transition-all duration-200 ${getIconStyle()} ${
+            isActive 
+              ? 'w-11 h-11 shadow-lg shadow-indigo-500/25 ring-1 ring-white/10' 
+              : 'w-10 h-10 shadow-sm group-hover:scale-105'
+          }`}>
+            <Icon className={`${isActive ? 'w-5.5 h-5.5' : 'w-5 h-5'} text-white transition-all duration-200`} strokeWidth={2.2} />
+          </div>
         </div>
 
         {/* 2-line Text Column (Title + Subtitle) */}
         <div className="flex flex-col min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <span className={`text-[13.5px] md:text-[14px] font-bold tracking-tight truncate transition-colors ${
-              isActive ? 'text-[#0071e3] dark:text-white font-bold' : 'text-[#1d1d1f] dark:text-gray-300 group-hover:text-[#0071e3] dark:group-hover:text-white'
+            <span className={`text-[13.5px] md:text-[14px] tracking-tight truncate transition-colors ${
+              isActive ? 'font-extrabold text-[#0071e3] dark:text-white' : 'font-semibold text-[#1d1d1f] dark:text-gray-200 group-hover:text-[#0071e3] dark:group-hover:text-white'
             }`}>
               {label}
             </span>
@@ -275,20 +277,20 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
           </div>
           {subLabel && (
             <span className={`text-[11px] truncate leading-tight mt-0.5 transition-colors ${
-              isActive ? 'text-gray-500 dark:text-gray-400 font-medium' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400'
+              isActive ? 'text-gray-500 dark:text-gray-300 font-medium' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400'
             }`}>
               {subLabel}
             </span>
           )}
         </div>
 
-        {/* Right Indicator: Active Dot vs Subtle Chevron */}
+        {/* Right Indicator: Clean subtle Chevron matching Apple HIG */}
         <div className="shrink-0 flex items-center pl-1">
-          {isActive ? (
-            <span className="w-2.5 h-2.5 rounded-full bg-[#0071e3] dark:bg-[#38bdf8] shadow-[0_0_8px_rgba(56,189,248,0.7)]" />
-          ) : (
-            <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 transition-transform group-hover:translate-x-0.5 group-hover:text-gray-400" />
-          )}
+          <ChevronRight className={`w-4 h-4 transition-all duration-200 ${
+            isActive 
+              ? 'text-[#0071e3] dark:text-white/80 translate-x-0.5' 
+              : 'text-gray-300 dark:text-gray-600 group-hover:translate-x-0.5 group-hover:text-gray-400'
+          }`} />
         </div>
       </Link>
     );
