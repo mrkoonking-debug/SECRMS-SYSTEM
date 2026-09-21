@@ -99,7 +99,7 @@ export const CustomerSubmit: React.FC = () => {
             const missingFields: string[] = [];
             if (newErrors.lineAccount) missingFields.push('LINE Account');
             if (newErrors.companyName) missingFields.push('ชื่อบริษัท / ร้านค้าของท่าน');
-            if (newErrors.contactName) missingFields.push('ชื่อผู้ติดต่อ');
+            if (newErrors.contactName) missingFields.push('ชื่อลูกค้า');
             if (newErrors.phone) missingFields.push('เบอร์โทรศัพท์');
             if (newErrors.returnAddress) missingFields.push('ที่อยู่จัดส่งคืน');
             showValidationError(missingFields);
@@ -745,7 +745,7 @@ export const CustomerSubmit: React.FC = () => {
                                         value={customer.quotationNumber}
                                         onChange={e => setCustomer({ ...customer, quotationNumber: e.target.value })}
                                         className={INPUT_CLASS}
-                                        placeholder="SECXXXXXX"
+                                        placeholder="SECXXXXXX หรือ INVXXXXXX"
                                     />
                                     {errors.quotationNumber && <p className="text-red-500 text-xs ml-2 mt-1">{errors.quotationNumber}</p>}
                                 </div>

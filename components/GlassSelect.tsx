@@ -224,9 +224,9 @@ export const GlassSelect: React.FC<GlassSelectProps> = ({
         disabled={disabled}
         className={`
           w-full text-left flex items-center justify-between
-          bg-white dark:bg-[#1e1e1f] 
-          border ${hasError ? 'border-red-500' : isOpen ? 'border-[#0071e3] ring-2 ring-[#0071e3]/20' : 'border-gray-200 dark:border-white/10'}
-          rounded-xl px-3 py-1.5 md:px-4 md:py-2.5 text-xs md:text-sm 
+          bg-white dark:bg-[#1a1a1c] 
+          border ${hasError ? 'border-red-500' : isOpen ? 'border-[#0071e3] ring-2 ring-[#0071e3]/20' : 'border-gray-200/90 dark:border-white/[0.08]'}
+          apple-card-inner rounded-[18px] md:rounded-[22px] px-3.5 py-2 md:px-4 md:py-2.5 text-xs md:text-sm 
           text-[#1d1d1f] dark:text-white 
           transition-all duration-200
           hover:border-[#0071e3]

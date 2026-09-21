@@ -179,7 +179,7 @@ export const SubmitClaim: React.FC = () => {
                   onBlur={() => handleBlur('quotationNumber', customer.quotationNumber)}
                   type="text"
                   className={getInputClass(!!errors.quotationNumber)}
-                  placeholder="SECXXXXXX"
+                  placeholder="SECXXXXXX หรือ INVXXXXXX"
                 />
                 {errors.quotationNumber && touched.quotationNumber && <p className="text-red-500 text-xs mt-1 ml-2">{errors.quotationNumber}</p>}
               </div>
