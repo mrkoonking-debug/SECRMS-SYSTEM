@@ -333,7 +333,7 @@ export const ModernDateRangePickerModal: React.FC<ModernDateRangePickerModalProp
                     key={preset.id}
                     type="button"
                     onClick={() => applyPreset(preset.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-left transition-all ${
+                    className={`w-full flex items-center justify-between px-3.5 py-2 rounded-full text-xs text-left transition-all ${
                       isActive
                         ? 'bg-[#0071e3] text-white font-bold shadow-md shadow-blue-500/20'
                         : 'text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-white/5 font-medium'
@@ -365,14 +365,14 @@ export const ModernDateRangePickerModal: React.FC<ModernDateRangePickerModalProp
                           key={ymKey}
                           type="button"
                           onClick={() => applyPreset(ymKey)}
-                          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs transition-all ${
+                          className={`w-full flex items-center justify-between px-3.5 py-1.5 rounded-full text-xs transition-all ${
                             isActive
                               ? 'bg-[#0071e3] text-white font-bold'
                               : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-white/5'
                           }`}
                         >
                           <span>{monthLabel}</span>
-                          <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
                             isActive ? 'bg-white/20 text-white' : 'bg-gray-200/60 dark:bg-white/10 text-gray-500'
                           }`}>
                             {count}
@@ -537,21 +537,21 @@ export const ModernDateRangePickerModal: React.FC<ModernDateRangePickerModalProp
             <button
               type="button"
               onClick={handleReset}
-              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"
+              className="flex-1 sm:flex-none px-4 py-2 rounded-full text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"
             >
               แสดงทั้งหมด
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"
+              className="flex-1 sm:flex-none px-4 py-2 rounded-full text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"
             >
               ยกเลิก
             </button>
             <button
               type="button"
               onClick={handleConfirm}
-              className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-[#0071e3] hover:bg-[#0077ed] shadow-md shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+              className="flex-1 sm:flex-none px-6 py-2 rounded-full text-xs font-bold text-white bg-[#0071e3] hover:bg-[#0077ed] shadow-md shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5"
             >
               <Check className="w-4 h-4" /> นำไปใช้
             </button>
