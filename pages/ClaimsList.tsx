@@ -785,10 +785,10 @@ export const ClaimsList: React.FC = () => {
                     {/* All Teams Card */}
                     <button
                         onClick={() => { setTeamFilter('ALL'); setIsTeamCExpanded(false); }}
-                        className={`apple-card rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
+                        className={`rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             teamFilter === 'ALL'
-                                ? 'bg-gradient-to-br from-[#0071e3] to-[#005bb5] text-white shadow-lg shadow-blue-500/20'
-                                : 'bg-white dark:bg-black/[0.35] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_6px_20px_-2px_rgba(0,0,0,0.6)] hover:dark:bg-black/[0.25] active:scale-[0.98]'
+                                ? 'apple-card bg-gradient-to-br from-[#0071e3] to-[#005bb5] text-white shadow-lg shadow-blue-500/20'
+                                : 'bg-white dark:bg-[#16161a] apple-liquid-glass hover:dark:bg-[#1c1c22] active:scale-[0.98]'
                         }`}
                     >
                         <div>
@@ -823,10 +823,10 @@ export const ClaimsList: React.FC = () => {
                     {/* Team HIK Card */}
                     <button
                         onClick={() => { setTeamFilter(Team.HIKVISION); setIsTeamCExpanded(false); }}
-                        className={`apple-card rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
+                        className={`rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             teamFilter === Team.HIKVISION
-                                ? 'bg-gradient-to-br from-[#e53e3e] to-[#c53030] text-white shadow-lg shadow-red-500/20'
-                                : 'bg-white dark:bg-black/[0.35] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_6px_20px_-2px_rgba(0,0,0,0.6)] hover:dark:bg-black/[0.25] active:scale-[0.98]'
+                                ? 'apple-card bg-gradient-to-br from-[#e53e3e] to-[#c53030] text-white shadow-lg shadow-red-500/20'
+                                : 'bg-white dark:bg-[#16161a] apple-liquid-glass hover:dark:bg-[#1c1c22] active:scale-[0.98]'
                         }`}
                     >
                         <div>
@@ -861,10 +861,10 @@ export const ClaimsList: React.FC = () => {
                     {/* Team DAHUA Card */}
                     <button
                         onClick={() => { setTeamFilter(Team.DAHUA); setIsTeamCExpanded(false); }}
-                        className={`apple-card rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
+                        className={`rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             teamFilter === Team.DAHUA
-                                ? 'bg-gradient-to-br from-[#dd6b20] to-[#c05621] text-white shadow-lg shadow-orange-500/20'
-                                : 'bg-white dark:bg-black/[0.35] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_6px_20px_-2px_rgba(0,0,0,0.6)] hover:dark:bg-black/[0.25] active:scale-[0.98]'
+                                ? 'apple-card bg-gradient-to-br from-[#dd6b20] to-[#c05621] text-white shadow-lg shadow-orange-500/20'
+                                : 'bg-white dark:bg-[#16161a] apple-liquid-glass hover:dark:bg-[#1c1c22] active:scale-[0.98]'
                         }`}
                     >
                         <div>
@@ -899,10 +899,10 @@ export const ClaimsList: React.FC = () => {
                     {/* Team C Group Card */}
                     <button
                         onClick={handleGroupCClick}
-                        className={`apple-card rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
+                        className={`rounded-[30px] md:rounded-[36px] p-4 md:p-4.5 text-left transition-all duration-200 md:flex-1 relative overflow-hidden flex flex-col justify-between ${
                             isTeamCExpanded || teamFilter === 'GROUP_C'
-                                ? 'bg-gradient-to-br from-[#805ad5] to-[#6b46c1] text-white shadow-lg shadow-violet-500/20'
-                                : 'bg-white dark:bg-black/[0.35] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_6px_20px_-2px_rgba(0,0,0,0.6)] hover:dark:bg-black/[0.25] active:scale-[0.98]'
+                                ? 'apple-card bg-gradient-to-br from-[#805ad5] to-[#6b46c1] text-white shadow-lg shadow-violet-500/20'
+                                : 'bg-white dark:bg-[#16161a] apple-liquid-glass hover:dark:bg-[#1c1c22] active:scale-[0.98]'
                         }`}
                     >
                         <div>
@@ -940,10 +940,10 @@ export const ClaimsList: React.FC = () => {
                     <div className="flex gap-2.5 overflow-x-auto scrollbar-hide animate-fade-in pl-2 border-l-2 border-violet-500/30">
                         <button 
                             onClick={() => setTeamFilter(Team.TEAM_C)} 
-                            className={`apple-card-sm rounded-[18px] md:rounded-[22px] px-4 py-2.5 whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
+                            className={`apple-card-sm rounded-[18px] md:rounded-[22px] px-4 py-2.5 whitespace-nowrap text-xs transition-all flex items-center gap-2 border ${
                                 teamFilter === Team.TEAM_C 
-                                    ? 'text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/15 font-bold dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_2px_10px_rgba(0,0,0,0.4)]' 
-                                    : 'bg-white dark:bg-black/[0.35] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_2px_8px_rgba(0,0,0,0.5)] text-gray-700 dark:text-gray-300'
+                                    ? 'text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/15 font-bold border-cyan-500/30 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_2px_10px_rgba(0,0,0,0.4)]' 
+                                    : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] hover:border-gray-300 dark:hover:border-white/20 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_2px_8px_rgba(0,0,0,0.4)] text-gray-700 dark:text-gray-300 hover:dark:bg-[#1c1c22]'
                             }`}
                         >
                             <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-cyan-500 shrink-0"></span>Network</span>
@@ -953,10 +953,10 @@ export const ClaimsList: React.FC = () => {
                         </button>
                         <button 
                             onClick={() => setTeamFilter(Team.TEAM_E)} 
-                            className={`apple-card-sm rounded-[18px] md:rounded-[22px] px-4 py-2.5 whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
+                            className={`apple-card-sm rounded-[18px] md:rounded-[22px] px-4 py-2.5 whitespace-nowrap text-xs transition-all flex items-center gap-2 border ${
                                 teamFilter === Team.TEAM_E 
-                                    ? 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/15 font-bold dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_2px_10px_rgba(0,0,0,0.4)]' 
-                                    : 'bg-white dark:bg-black/[0.35] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_2px_8px_rgba(0,0,0,0.5)] text-gray-700 dark:text-gray-300'
+                                    ? 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/15 font-bold border-amber-500/30 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_2px_10px_rgba(0,0,0,0.4)]' 
+                                    : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] hover:border-gray-300 dark:hover:border-white/20 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_2px_8px_rgba(0,0,0,0.4)] text-gray-700 dark:text-gray-300 hover:dark:bg-[#1c1c22]'
                             }`}
                         >
                             <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>UPS</span>
@@ -966,10 +966,10 @@ export const ClaimsList: React.FC = () => {
                         </button>
                         <button 
                             onClick={() => setTeamFilter(Team.TEAM_G)} 
-                            className={`apple-card-sm rounded-[18px] md:rounded-[22px] px-4 py-2.5 whitespace-nowrap text-xs transition-all flex items-center gap-2 ${
+                            className={`apple-card-sm rounded-[18px] md:rounded-[22px] px-4 py-2.5 whitespace-nowrap text-xs transition-all flex items-center gap-2 border ${
                                 teamFilter === Team.TEAM_G 
-                                    ? 'text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-500/15 font-bold dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_2px_10px_rgba(0,0,0,0.4)]' 
-                                    : 'bg-white dark:bg-white/[0.06] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_2px_8px_rgba(0,0,0,0.4)] text-gray-700 dark:text-gray-300'
+                                    ? 'text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-500/15 font-bold border-fuchsia-500/30 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_2px_10px_rgba(0,0,0,0.4)]' 
+                                    : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] hover:border-gray-300 dark:hover:border-white/20 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_2px_8px_rgba(0,0,0,0.4)] text-gray-700 dark:text-gray-300 hover:dark:bg-[#1c1c22]'
                             }`}
                         >
                             <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-fuchsia-500 shrink-0"></span>Online</span>
