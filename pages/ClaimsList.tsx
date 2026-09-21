@@ -77,7 +77,7 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
     return (
         <div 
             onClick={() => onJobClick(jobKey)} 
-            className={`p-4 md:p-5 flex flex-col gap-3.5 cursor-pointer bg-white dark:bg-[#1e1e1f] apple-card rounded-[26px] md:rounded-[32px] shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.01)] dark:shadow-none hover:shadow-md hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-all duration-200 group ${isJobCancelled ? 'opacity-50 grayscale bg-gray-50/20 dark:bg-black/10' : ''}`}
+            className={`p-4 md:p-5 flex flex-col gap-3.5 cursor-pointer bg-white dark:bg-[#121214] apple-card rounded-[26px] md:rounded-[32px] shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.01)] dark:shadow-none hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-[0_12px_28px_-8px_rgba(0,0,0,0.6)] active:scale-[0.99] transition-all duration-150 ease-out group ${isJobCancelled ? 'opacity-50 grayscale bg-gray-50/20 dark:bg-black/10' : ''}`}
         >
             {/* Top Row: Icon, Key, Badges, and Chevron */}
             <div className="flex items-center justify-between gap-3 w-full">
@@ -98,9 +98,9 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
                 <div className="flex items-center gap-2 flex-shrink-0">
                     <div className="hidden sm:flex -space-x-1.5 mr-1">
                         {jobItems.slice(0, 3).map((item) => (
-                            <div key={item.id} className={`w-6 h-6 apple-card-sm rounded-[8px] border border-white dark:border-[#1c1c1e] flex items-center justify-center text-[9px] font-bold text-white shadow-sm ${item.team === Team.HIKVISION ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>{item.brand.substring(0, 1)}</div>
+                            <div key={item.id} className={`w-6 h-6 apple-card-sm rounded-[8px] border border-white dark:border-[#121214] flex items-center justify-center text-[9px] font-bold text-white shadow-sm ${item.team === Team.HIKVISION ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>{item.brand.substring(0, 1)}</div>
                         ))}
-                        {jobItems.length > 3 && <div className="w-6 h-6 apple-card-sm rounded-[8px] border border-white dark:border-[#1c1c1e] bg-gray-100 dark:bg-white/[0.06] text-gray-400 text-[9px] flex items-center justify-center shadow-sm">+{jobItems.length - 3}</div>}
+                        {jobItems.length > 3 && <div className="w-6 h-6 apple-card-sm rounded-[8px] border border-white dark:border-[#121214] bg-gray-100 dark:bg-white/[0.06] text-gray-400 text-[9px] flex items-center justify-center shadow-sm">+{jobItems.length - 3}</div>}
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 transition-transform group-hover:translate-x-0.5" />
                 </div>
@@ -121,9 +121,9 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
 
             {/* Bottom Row: Detailed Items Preview */}
             <div className="w-full pl-0 sm:pl-10">
-                <div className="mt-1 bg-black/[0.03] dark:bg-black/20 rounded-[18px] px-3 py-1 max-w-full overflow-hidden">
+                <div className="mt-1 bg-gray-50/70 dark:bg-[#1d1d21] rounded-[18px] px-3.5 py-1.5 max-w-full overflow-hidden">
                     {jobItems.slice(0, 3).map((item, idx) => (
-                        <div key={item.id} className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 py-2.5 ${idx < Math.min(jobItems.length, 3) - 1 ? 'border-b border-black/[0.05] dark:border-white/[0.04]' : ''}` }>
+                        <div key={item.id} className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 py-2.5 ${idx < Math.min(jobItems.length, 3) - 1 ? 'border-b border-black/[0.05] dark:border-white/[0.05]' : ''}` }>
                             {/* Left: Product Icon + Info */}
                             <div className="flex items-center gap-2 min-w-0 flex-1">
                                 <div className={`w-7 h-7 rounded-[10px] flex items-center justify-center shrink-0 text-white ${
@@ -133,14 +133,14 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
                                 </div>
                                 <div className="flex flex-col min-w-0">
                                     <div className="flex items-center gap-1.5 min-w-0">
-                                        <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">{item.brand}</span>
-                                        <span className="text-[10.5px] text-gray-500 dark:text-gray-400 truncate" title={item.productModel}>{item.productModel}</span>
+                                        <span className="text-[11px] font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap">{item.brand}</span>
+                                        <span className="text-[10.5px] text-gray-600 dark:text-gray-300 truncate font-medium" title={item.productModel}>{item.productModel}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-                                        <span className="text-[9.5px] text-gray-400 dark:text-gray-500 font-mono">{item.serialNumber}</span>
+                                        <span className="text-[9.5px] text-gray-400 dark:text-gray-400 font-mono">{item.serialNumber}</span>
                                         {item.distributor && item.distributor.trim() !== '' && item.distributor !== 'Pending Staff Input' && (
                                             <span
-                                                className="inline-flex items-center gap-1 text-[9px] px-1.5 py-px rounded-full bg-slate-200/60 dark:bg-white/[0.06] text-slate-500 dark:text-slate-400 font-medium shrink-0"
+                                                className="inline-flex items-center gap-1 text-[9px] px-1.5 py-px rounded-full bg-black/5 dark:bg-white/[0.08] text-slate-600 dark:text-slate-300 font-medium shrink-0"
                                                 title={`ศูนย์เคลม / ผู้นำเข้า: ${item.distributor}`}
                                             >
                                                 <Building2 className="w-2.5 h-2.5 text-[#0071e3] shrink-0" />
@@ -154,12 +154,12 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
                             {/* Middle: Issue/Resolution (compact single line) */}
                             <div className="flex-1 min-w-0 hidden sm:block">
                                 {item.issueDescription && (
-                                    <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate" title={item.issueDescription}>
+                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate" title={item.issueDescription}>
                                         {item.issueDescription}
                                     </p>
                                 )}
                                 {item.resolution?.actionTaken && (
-                                    <p className="text-[10px] text-emerald-600/80 dark:text-emerald-400/80 truncate font-medium">
+                                    <p className="text-[10px] text-emerald-600/90 dark:text-emerald-400/90 truncate font-medium">
                                         {(() => {
                                             const key = `actions.${item.resolution.actionTaken.toLowerCase().replace(/ /g, '_')}`;
                                             const trans = t(key);
@@ -176,7 +176,7 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
                         </div>
                     ))}
                     {jobItems.length > 3 && (
-                        <div className="text-[9.5px] text-gray-400 dark:text-gray-500 py-2 text-center">
+                        <div className="text-[9.5px] text-gray-400 dark:text-gray-400 py-2 text-center">
                             + อีก {jobItems.length - 3} รายการ
                         </div>
                     )}
