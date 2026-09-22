@@ -154,7 +154,7 @@ export const CashAuditModal: React.FC<CashAuditModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/75" onClick={onClose} />
 
       {/* Modal Container */}
       <div className="relative w-full max-w-lg bg-white dark:bg-[#1c1c1e] border border-gray-200/80 dark:border-white/[0.08] rounded-3xl p-6 shadow-2xl animate-fade-in text-[#1d1d1f] dark:text-white max-h-[90vh] overflow-y-auto custom-scrollbar">

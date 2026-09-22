@@ -122,7 +122,7 @@ ${calcMaid > 0 ? `-ค่าป้าแม่บ้าน ${calcMaid}\n` : ''}$
   };
 
   return (
-    <div className="bg-white/40 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.06] rounded-3xl p-5 md:p-6 backdrop-blur-xl space-y-6">
+    <div className="bg-white dark:bg-[#16161a] border border-gray-200/70 dark:border-white/[0.08] rounded-3xl p-5 md:p-6 apple-card-lg space-y-6 shadow-sm">
       
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
