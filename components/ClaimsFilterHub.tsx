@@ -1,6 +1,6 @@
 import React from 'react';
 import { Team } from '../types';
-import { Layers, Package, Clock, Wrench, CheckCircle2, ChevronDown, Filter, X } from 'lucide-react';
+import { Layers, Package, ChevronDown } from 'lucide-react';
 
 interface ClaimsFilterHubProps {
     teamFilter: 'ALL' | 'GROUP_C' | Team;
@@ -11,17 +11,17 @@ interface ClaimsFilterHubProps {
     setIsTeamCExpanded: React.Dispatch<React.SetStateAction<boolean>>;
     filterLayoutOrder?: 'TEAM_FIRST' | 'STATUS_FIRST';
     toggleFilterLayoutOrder?: () => void;
-    handleClearFilters: () => void;
-    activeTeamLabel: string;
+    handleClearFilters?: () => void;
+    activeTeamLabel?: string;
     dashboardStats: any;
-    isAnyFilterActive: boolean;
-    totalJobsCount: number;
-    filteredCount: number;
-    dateFilter: string;
-    activePeriodLabel: string;
-    setDateFilter: (date: string) => void;
-    setCustomStartDate: (d: string) => void;
-    setCustomEndDate: (d: string) => void;
+    isAnyFilterActive?: boolean;
+    totalJobsCount?: number;
+    filteredCount?: number;
+    dateFilter?: string;
+    activePeriodLabel?: string;
+    setDateFilter?: (date: string) => void;
+    setCustomStartDate?: (d: string) => void;
+    setCustomEndDate?: (d: string) => void;
 }
 
 export const ClaimsFilterHub: React.FC<ClaimsFilterHubProps> = ({
@@ -31,17 +31,7 @@ export const ClaimsFilterHub: React.FC<ClaimsFilterHubProps> = ({
     setStatusFilter,
     isTeamCExpanded,
     setIsTeamCExpanded,
-    handleClearFilters,
-    activeTeamLabel,
     dashboardStats,
-    isAnyFilterActive,
-    totalJobsCount,
-    filteredCount,
-    dateFilter,
-    activePeriodLabel,
-    setDateFilter,
-    setCustomStartDate,
-    setCustomEndDate,
 }) => {
     const handleGroupCClick = () => {
         setIsTeamCExpanded(!isTeamCExpanded);
@@ -49,9 +39,9 @@ export const ClaimsFilterHub: React.FC<ClaimsFilterHubProps> = ({
     };
 
     return (
-        <div className="mb-5 space-y-3.5">
+        <div className="mb-4 md:mb-5 space-y-3">
             {/* ==========================================================================
-                1. PRIMARY: THE BIG TEAM COCKPIT CARDS (เน้นทีม ชัดเจน ตัวเลขใหญ่ ดูง่าย)
+                1. PRIMARY: THE BIG TEAM COCKPIT CARDS (การ์ดทีมขนาดใหญ่ ชัดเจน เป็นพระเอก)
                ========================================================================== */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {/* 1.1 All Teams Card */}
@@ -357,181 +347,105 @@ export const ClaimsFilterHub: React.FC<ClaimsFilterHubProps> = ({
             )}
 
             {/* ==========================================================================
-                2. SECONDARY: SLEEK WORKFLOW STATUS PIPELINE (ไม่ใหญ่เทอะทะ เรียบหรู สะอาดตา)
+                2. CLEAN UNDERLINE TABS FOR STATUS (เรียบ หรู สไตล์ Apple / Linear, ไม่เทอะทะ)
                ========================================================================== */}
-            <div className="bg-white dark:bg-[#16161a] border border-gray-200/80 dark:border-white/[0.08] rounded-[24px] sm:rounded-full p-1.5 shadow-sm">
-                <div className="flex flex-wrap sm:flex-nowrap items-center gap-1 sm:gap-1.5">
-                    {/* Status: All */}
-                    <button
-                        type="button"
-                        onClick={() => setStatusFilter('ALL')}
-                        className={`flex-1 min-w-[130px] sm:min-w-0 px-3.5 py-2 rounded-full flex items-center justify-between gap-2 transition-all duration-200 cursor-pointer text-left ${
-                            statusFilter === 'ALL'
-                                ? 'bg-[#0071e3] text-white shadow-sm shadow-blue-500/20'
-                                : 'bg-transparent hover:bg-gray-100/90 dark:hover:bg-white/[0.06] text-gray-700 dark:text-gray-300'
-                        }`}
-                    >
-                        <div className="flex items-center gap-2 min-w-0">
-                            <Package className="w-4 h-4 shrink-0" />
-                            <span className="text-xs font-bold truncate">งานทั้งหมด</span>
-                        </div>
-                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0 ${
-                            statusFilter === 'ALL' ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                        }`}>
-                            {dashboardStats.scoped?.totalJobs ?? 0}
-                        </span>
-                    </button>
-
-                    {/* Status: Pending */}
-                    <button
-                        type="button"
-                        onClick={() => setStatusFilter(statusFilter === 'PENDING' ? 'ALL' : 'PENDING')}
-                        className={`flex-1 min-w-[130px] sm:min-w-0 px-3.5 py-2 rounded-full flex items-center justify-between gap-2 transition-all duration-200 cursor-pointer text-left ${
-                            statusFilter === 'PENDING'
-                                ? 'bg-amber-500 text-white shadow-sm shadow-amber-500/20'
-                                : 'bg-transparent hover:bg-gray-100/90 dark:hover:bg-white/[0.06] text-gray-700 dark:text-gray-300'
-                        }`}
-                    >
-                        <div className="flex items-center gap-2 min-w-0">
-                            <Clock className={`w-4 h-4 shrink-0 ${statusFilter === 'PENDING' ? 'text-white' : 'text-amber-500'}`} />
-                            <span className="text-xs font-bold truncate">รอรับเรื่อง</span>
-                        </div>
-                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0 ${
-                            statusFilter === 'PENDING' ? 'bg-white/20 text-white' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                        }`}>
-                            {dashboardStats.scoped?.pendingCount ?? 0}
-                        </span>
-                    </button>
-
-                    {/* Status: In Progress */}
-                    <button
-                        type="button"
-                        onClick={() => setStatusFilter(statusFilter === 'IN_PROGRESS' ? 'ALL' : 'IN_PROGRESS')}
-                        className={`flex-1 min-w-[130px] sm:min-w-0 px-3.5 py-2 rounded-full flex items-center justify-between gap-2 transition-all duration-200 cursor-pointer text-left ${
-                            statusFilter === 'IN_PROGRESS'
-                                ? 'bg-sky-500 text-white shadow-sm shadow-sky-500/20'
-                                : 'bg-transparent hover:bg-gray-100/90 dark:hover:bg-white/[0.06] text-gray-700 dark:text-gray-300'
-                        }`}
-                    >
-                        <div className="flex items-center gap-2 min-w-0">
-                            <Wrench className={`w-4 h-4 shrink-0 ${statusFilter === 'IN_PROGRESS' ? 'text-white' : 'text-sky-500'}`} />
-                            <span className="text-xs font-bold truncate">กำลังดำเนินการ</span>
-                        </div>
-                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0 ${
-                            statusFilter === 'IN_PROGRESS' ? 'bg-white/20 text-white' : 'bg-sky-500/10 text-sky-600 dark:text-sky-400'
-                        }`}>
-                            {dashboardStats.scoped?.inProgressCount ?? 0}
-                        </span>
-                    </button>
-
-                    {/* Status: Done */}
-                    <button
-                        type="button"
-                        onClick={() => setStatusFilter(statusFilter === 'DONE' ? 'ALL' : 'DONE')}
-                        className={`flex-1 min-w-[130px] sm:min-w-0 px-3.5 py-2 rounded-full flex items-center justify-between gap-2 transition-all duration-200 cursor-pointer text-left ${
-                            statusFilter === 'DONE'
-                                ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/20'
-                                : 'bg-transparent hover:bg-gray-100/90 dark:hover:bg-white/[0.06] text-gray-700 dark:text-gray-300'
-                        }`}
-                    >
-                        <div className="flex items-center gap-2 min-w-0">
-                            <CheckCircle2 className={`w-4 h-4 shrink-0 ${statusFilter === 'DONE' ? 'text-white' : 'text-emerald-500'}`} />
-                            <span className="text-xs font-bold truncate">เสร็จสิ้นแล้ว</span>
-                        </div>
-                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0 ${
-                            statusFilter === 'DONE' ? 'bg-white/20 text-white' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                        }`}>
-                            {dashboardStats.scoped?.doneCount ?? 0}
-                        </span>
-                    </button>
-                </div>
-
-                {/* Subtle Workflow Distribution Track */}
-                <div className="mt-1.5 pt-1.5 px-3 border-t border-black/5 dark:border-white/5 flex items-center justify-between gap-3 text-[10.5px]">
-                    <div className="flex items-center gap-3 text-gray-400 dark:text-gray-500 truncate">
-                        <span className="truncate">ขอบเขต: <strong className="text-gray-700 dark:text-gray-300">{activeTeamLabel}</strong></span>
-                        <span className="hidden sm:inline">·</span>
-                        <span className="hidden sm:inline">({dashboardStats.scoped?.total ?? 0} ชิ้น ทั้งหมด)</span>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-gray-400 dark:text-gray-500">อัตราปิดงาน:</span>
-                        <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                            {dashboardStats.scoped?.completionRate ?? 0}%
-                        </span>
-                        <div className="w-16 h-1.5 bg-gray-100 dark:bg-white/[0.08] rounded-full overflow-hidden shrink-0 hidden sm:block">
-                            <div 
-                                className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-                                style={{ width: `${dashboardStats.scoped?.completionRate ?? 0}%` }}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* ==========================================================================
-                3. ACTIVE FILTER BREADCRUMB (แสดงเมื่อมีการกรอง พร้อมปุ่มเคลียร์เร็ว)
-               ========================================================================== */}
-            {isAnyFilterActive && (
-                <div className="flex items-center flex-wrap gap-2 px-4 py-2 rounded-2xl bg-blue-50/70 dark:bg-blue-950/25 border border-blue-200/70 dark:border-blue-500/20 text-xs animate-fade-in shadow-xs">
-                    <Filter className="w-3.5 h-3.5 text-[#0071e3] dark:text-blue-400 shrink-0" />
-                    <span className="text-gray-500 dark:text-gray-400 font-medium">กำลังกรอง:</span>
-                    
-                    {teamFilter !== 'ALL' && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white dark:bg-white/10 font-bold text-[#1d1d1f] dark:text-white border border-black/5 dark:border-white/10 shadow-xs">
-                            ทีม: {activeTeamLabel}
-                            <button 
-                                type="button" 
-                                onClick={() => { setTeamFilter('ALL'); setIsTeamCExpanded(false); }} 
-                                className="hover:text-red-500 text-gray-400 dark:text-gray-400 transition-colors cursor-pointer"
-                                title="ล้างตัวกรองทีม"
-                            >
-                                <X className="w-3 h-3" />
-                            </button>
-                        </span>
-                    )}
-
-                    {statusFilter !== 'ALL' && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white dark:bg-white/10 font-bold text-[#1d1d1f] dark:text-white border border-black/5 dark:border-white/10 shadow-xs">
-                            สถานะ: {statusFilter === 'PENDING' ? 'รอรับเรื่อง' : statusFilter === 'IN_PROGRESS' ? 'กำลังดำเนินการ' : 'เสร็จสิ้นแล้ว'}
-                            <button 
-                                type="button" 
-                                onClick={() => setStatusFilter('ALL')} 
-                                className="hover:text-red-500 text-gray-400 dark:text-gray-400 transition-colors cursor-pointer"
-                                title="ล้างตัวกรองสถานะ"
-                            >
-                                <X className="w-3 h-3" />
-                            </button>
-                        </span>
-                    )}
-
-                    {dateFilter !== 'ALL' && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white dark:bg-white/10 font-bold text-[#1d1d1f] dark:text-white border border-black/5 dark:border-white/10 shadow-xs">
-                            ช่วงเวลา: {activePeriodLabel}
-                            <button 
-                                type="button" 
-                                onClick={() => { setDateFilter('ALL'); setCustomStartDate(''); setCustomEndDate(''); }} 
-                                className="hover:text-red-500 text-gray-400 dark:text-gray-400 transition-colors cursor-pointer"
-                                title="ล้างตัวกรองเวลา"
-                            >
-                                <X className="w-3 h-3" />
-                            </button>
-                        </span>
-                    )}
-
-                    <span className="text-gray-400 dark:text-gray-500 ml-auto text-[11px]">
-                        พบ {totalJobsCount} ใบงาน ({filteredCount} รายการ)
+            <div className="flex items-center gap-1 sm:gap-6 border-b border-gray-200/80 dark:border-white/[0.08] px-1 sm:px-3 pt-1 overflow-x-auto scrollbar-hide">
+                {/* 2.1 งานทั้งหมด */}
+                <button
+                    type="button"
+                    onClick={() => setStatusFilter('ALL')}
+                    className={`pb-2.5 pt-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 relative whitespace-nowrap cursor-pointer ${
+                        statusFilter === 'ALL'
+                            ? 'text-[#0071e3] dark:text-blue-400'
+                            : 'text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                    }`}
+                >
+                    <Package className="w-4 h-4 shrink-0" />
+                    <span>งานทั้งหมด</span>
+                    <span className={`text-[10.5px] font-extrabold px-2 py-0.5 rounded-full transition-colors ${
+                        statusFilter === 'ALL'
+                            ? 'bg-blue-500/15 text-[#0071e3] dark:text-blue-400'
+                            : 'bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400'
+                    }`}>
+                        {dashboardStats.scoped?.totalJobs ?? 0}
                     </span>
+                    {statusFilter === 'ALL' && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0071e3] dark:bg-blue-400 rounded-full" />
+                    )}
+                </button>
 
-                    <button
-                        type="button"
-                        onClick={handleClearFilters}
-                        className="text-[11px] font-bold text-red-500 hover:text-red-600 dark:text-red-400 hover:underline shrink-0 ml-1.5 cursor-pointer"
-                    >
-                        ล้างทั้งหมด
-                    </button>
-                </div>
-            )}
+                {/* 2.2 รอรับเรื่อง */}
+                <button
+                    type="button"
+                    onClick={() => setStatusFilter(statusFilter === 'PENDING' ? 'ALL' : 'PENDING')}
+                    className={`pb-2.5 pt-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 relative whitespace-nowrap cursor-pointer ${
+                        statusFilter === 'PENDING'
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                    }`}
+                >
+                    <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                    <span>รอรับเรื่อง</span>
+                    <span className={`text-[10.5px] font-extrabold px-2 py-0.5 rounded-full transition-colors ${
+                        statusFilter === 'PENDING'
+                            ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                            : 'bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400'
+                    }`}>
+                        {dashboardStats.scoped?.pendingCount ?? 0}
+                    </span>
+                    {statusFilter === 'PENDING' && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-500 rounded-full" />
+                    )}
+                </button>
+
+                {/* 2.3 กำลังดำเนินการ */}
+                <button
+                    type="button"
+                    onClick={() => setStatusFilter(statusFilter === 'IN_PROGRESS' ? 'ALL' : 'IN_PROGRESS')}
+                    className={`pb-2.5 pt-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 relative whitespace-nowrap cursor-pointer ${
+                        statusFilter === 'IN_PROGRESS'
+                            ? 'text-sky-600 dark:text-sky-400'
+                            : 'text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                    }`}
+                >
+                    <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0" />
+                    <span>กำลังดำเนินการ</span>
+                    <span className={`text-[10.5px] font-extrabold px-2 py-0.5 rounded-full transition-colors ${
+                        statusFilter === 'IN_PROGRESS'
+                            ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400'
+                            : 'bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400'
+                    }`}>
+                        {dashboardStats.scoped?.inProgressCount ?? 0}
+                    </span>
+                    {statusFilter === 'IN_PROGRESS' && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-500 rounded-full" />
+                    )}
+                </button>
+
+                {/* 2.4 เสร็จสิ้นแล้ว */}
+                <button
+                    type="button"
+                    onClick={() => setStatusFilter(statusFilter === 'DONE' ? 'ALL' : 'DONE')}
+                    className={`pb-2.5 pt-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 relative whitespace-nowrap cursor-pointer ${
+                        statusFilter === 'DONE'
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                    }`}
+                >
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                    <span>เสร็จสิ้นแล้ว</span>
+                    <span className={`text-[10.5px] font-extrabold px-2 py-0.5 rounded-full transition-colors ${
+                        statusFilter === 'DONE'
+                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400'
+                    }`}>
+                        {dashboardStats.scoped?.doneCount ?? 0}
+                    </span>
+                    {statusFilter === 'DONE' && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500 rounded-full" />
+                    )}
+                </button>
+            </div>
         </div>
     );
 };

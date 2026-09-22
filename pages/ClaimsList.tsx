@@ -768,23 +768,7 @@ export const ClaimsList: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Active status filter chip — appears only when a status is selected */}
-                    {statusFilter !== 'ALL' && (
-                        <button
-                            onClick={() => setStatusFilter('ALL')}
-                            className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-bold transition-all ${
-                                statusFilter === 'PENDING'
-                                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                                    : statusFilter === 'IN_PROGRESS'
-                                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                            }`}
-                            title="ล้างตัวกรองสถานะ"
-                        >
-                            {statusFilter === 'PENDING' ? 'รอรับเรื่อง' : statusFilter === 'IN_PROGRESS' ? 'กำลังดำเนินการ' : 'เสร็จสิ้น'}
-                            <X className="w-3 h-3 opacity-60" />
-                        </button>
-                    )}
+
 
                     {/* Expand/Collapse all month groups */}
                     <button onClick={handleExpandAll} className="shrink-0 p-2.5 apple-card-sm rounded-[16px] text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06]" title="ขยาย/หุบทั้งหมด"><ChevronsUpDown className="w-4 h-4" /></button>
