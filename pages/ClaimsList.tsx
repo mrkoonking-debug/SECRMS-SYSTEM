@@ -745,17 +745,17 @@ export const ClaimsList: React.FC = () => {
                 setCustomEndDate={setCustomEndDate}
             />
 
-            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[30px] md:rounded-[36px] p-3 md:p-4.5 shadow-sm mb-4 md:mb-6 space-y-2.5">
+            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[22px] sm:rounded-[28px] md:rounded-[36px] p-2.5 sm:p-3.5 md:p-4.5 shadow-sm mb-3 sm:mb-4 md:mb-6 space-y-2 sm:space-y-2.5">
                 <div className="flex items-center gap-2">
                     {/* Search Input */}
                     <div className="relative flex-1">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
+                        <Search className="absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 dark:text-gray-500" />
                         <input 
                             type="text" 
                             placeholder={t('claimsList.searchPlaceholder')} 
                             value={search} 
                             onChange={(e) => handleSearchChange(e.target.value)} 
-                            className="w-full bg-gray-50/70 dark:bg-white/[0.03] border border-gray-150/60 dark:border-white/5 apple-card-inner rounded-[22px] py-2.5 pl-11 pr-10 text-sm dark:text-white focus:ring-2 focus:ring-[#0071e3]/30 transition-all" 
+                            className="w-full bg-gray-50/70 dark:bg-white/[0.03] border border-gray-150/60 dark:border-white/5 apple-card-inner rounded-[18px] sm:rounded-[22px] py-2 sm:py-2.5 pl-9 sm:pl-11 pr-9 sm:pr-10 text-xs sm:text-sm dark:text-white focus:ring-2 focus:ring-[#0071e3]/30 transition-all" 
                         />
                         {search && (
                             <button 
@@ -771,18 +771,18 @@ export const ClaimsList: React.FC = () => {
 
 
                     {/* Expand/Collapse all month groups */}
-                    <button onClick={handleExpandAll} className="shrink-0 p-2.5 apple-card-sm rounded-[16px] text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06]" title="ขยาย/หุบทั้งหมด"><ChevronsUpDown className="w-4 h-4" /></button>
+                    <button onClick={handleExpandAll} className="shrink-0 p-2 sm:p-2.5 apple-card-sm rounded-[14px] sm:rounded-[16px] text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06]" title="ขยาย/หุบทั้งหมด"><ChevronsUpDown className="w-4 h-4" /></button>
                 </div>
 
                 {/* Modern Standard Period / Date Filter Control */}
-                <div className="flex flex-wrap items-center justify-between gap-2.5 border-t border-gray-150/50 dark:border-white/5 pt-2.5">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-gray-400 dark:text-gray-500 font-bold text-[11px] uppercase tracking-wider shrink-0 flex items-center gap-1.5 mr-0.5">
-                            <Calendar className="w-3.5 h-3.5 text-[#0071e3]" /> ช่วงเวลา:
+                <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-2.5 border-t border-gray-150/50 dark:border-white/5 pt-2 sm:pt-2.5">
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                        <span className="text-gray-400 dark:text-gray-500 font-bold text-[10.5px] sm:text-[11px] uppercase tracking-wider shrink-0 flex items-center gap-1 sm:gap-1.5 mr-0.5">
+                            <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#0071e3]" /> ช่วงเวลา:
                         </span>
 
                         {/* Standard Quick Presets (Modern Capsule Segmented Bar) */}
-                        <div className="inline-flex bg-gray-100/90 dark:bg-white/[0.05] p-1 rounded-full border border-gray-200/70 dark:border-white/[0.08] shadow-inner">
+                        <div className="inline-flex bg-gray-100/90 dark:bg-white/[0.05] p-0.5 sm:p-1 rounded-full border border-gray-200/70 dark:border-white/[0.08] shadow-inner max-w-full overflow-x-auto no-scrollbar">
                             {[
                                 { id: 'ALL', label: 'ทั้งหมด' },
                                 { id: 'THIS_MONTH', label: 'เดือนนี้' },
@@ -799,7 +799,7 @@ export const ClaimsList: React.FC = () => {
                                             setCustomStartDate('');
                                             setCustomEndDate('');
                                         }}
-                                        className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                                        className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold transition-all whitespace-nowrap ${
                                             isActive
                                                 ? 'bg-white dark:bg-[#252528] text-[#0071e3] dark:text-white shadow-sm font-bold'
                                                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/[0.04]'
@@ -815,13 +815,13 @@ export const ClaimsList: React.FC = () => {
                         <button
                             type="button"
                             onClick={() => setShowDatePickerModal(true)}
-                            className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                            className={`inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold border transition-all ${
                                 (dateFilter !== 'ALL' && dateFilter !== 'THIS_MONTH' && dateFilter !== 'LAST_MONTH' && dateFilter !== '3_MONTHS') || (customStartDate && customEndDate)
                                     ? 'bg-[#0071e3]/10 text-[#0071e3] dark:text-blue-400 border-[#0071e3]/40 font-bold shadow-sm'
                                     : 'bg-white dark:bg-[#1c1c1e] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 shadow-sm hover:bg-gray-50 dark:hover:bg-white/5'
                             }`}
                         >
-                            <Calendar className="w-3.5 h-3.5 text-[#0071e3]" />
+                            <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#0071e3]" />
                             <span>{activePeriodLabel}</span>
                             <ChevronDown className="w-3 h-3 text-gray-400 ml-0.5" />
                         </button>
