@@ -504,7 +504,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                             <input
                                 value={customBrand}
                                 onChange={e => setCustomBrand(e.target.value)}
-                                className="mt-2 w-full px-4 py-3.5 text-sm rounded-[18px] md:rounded-[20px] apple-card-inner border border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                className="mt-2 w-full px-4 py-3.5 text-sm rounded-[18px] md:rounded-[20px] apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                                 placeholder="ระบุยี่ห้อ..."
                             />
                         )}
@@ -513,14 +513,14 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                         <div>
                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">รุ่น (Model)</label>
                             <div className="relative">
-                                <input type="text" value={formData.productModel || ''} onChange={e => handleFormChange('productModel', e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase())} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 pr-11 text-sm text-[#1d1d1f] dark:text-white apple-card-inner border border-gray-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-2 focus:ring-blue-500/20 uppercase" placeholder="e.g. DH-IPC-HFW2439S" style={{ textTransform: 'uppercase' }} />
+                                <input type="text" value={formData.productModel || ''} onChange={e => handleFormChange('productModel', e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase())} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 pr-11 text-sm text-[#1d1d1f] dark:text-white apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 uppercase transition-all" placeholder="e.g. DH-IPC-HFW2439S" style={{ textTransform: 'uppercase' }} />
                                 <button type="button" onClick={() => { setScanTarget('productModel'); setShowScanner(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 transition-colors"><ScanBarcode className="w-5 h-5" /></button>
                             </div>
                         </div>
                         <div>
                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">S/N (Serial Number)</label>
                             <div className="relative">
-                                <input type="text" value={formData.serialNumber || ''} onChange={e => handleFormChange('serialNumber', e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase())} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 pr-11 text-sm text-[#1d1d1f] dark:text-white apple-card-inner border border-gray-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono uppercase" placeholder="Serial Number" style={{ textTransform: 'uppercase' }} />
+                                <input type="text" value={formData.serialNumber || ''} onChange={e => handleFormChange('serialNumber', e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase())} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 pr-11 text-sm text-[#1d1d1f] dark:text-white apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono uppercase transition-all" placeholder="Serial Number" style={{ textTransform: 'uppercase' }} />
                                 <button type="button" onClick={() => { setScanTarget('serialNumber'); setShowScanner(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 transition-colors"><ScanBarcode className="w-5 h-5" /></button>
                             </div>
                         </div>
@@ -604,7 +604,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                 onChange={e => setCustomAccessory(e.target.value)}
                                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (customAccessory.trim()) { handleFormChange('accessories', [...(formData.accessories || []), customAccessory.trim()]); setCustomAccessory(''); } } }}
                                 placeholder="รายการอื่นๆ..."
-                                className="flex-1 px-4 py-2.5 text-sm rounded-[16px] outline-none apple-card-inner border border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                className="flex-1 px-4 py-2.5 text-sm rounded-[16px] outline-none apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                             />
                             <button
                                 type="button"
@@ -637,23 +637,23 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                 <div className="space-y-5">
                     <div>
                         <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('track.issueReported')}</label>
-                        <textarea value={formData.issueDescription} onChange={e => handleFormChange('issueDescription', e.target.value)} rows={3} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner border border-gray-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" />
+                        <textarea value={formData.issueDescription} onChange={e => handleFormChange('issueDescription', e.target.value)} rows={3} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">Device Username (ยูสเซอร์)</label>
-                            <input type="text" value={formData.deviceUsername || ''} onChange={e => handleFormChange('deviceUsername', e.target.value)} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner border border-gray-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder="N/A" />
+                            <input type="text" value={formData.deviceUsername || ''} onChange={e => handleFormChange('deviceUsername', e.target.value)} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder="N/A" />
                         </div>
                         <div>
                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">Device Password (รหัสผ่าน)</label>
-                            <input type="text" value={formData.devicePassword || ''} onChange={e => handleFormChange('devicePassword', e.target.value)} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner border border-gray-200/80 dark:border-white/[0.08] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder="N/A" />
+                            <input type="text" value={formData.devicePassword || ''} onChange={e => handleFormChange('devicePassword', e.target.value)} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder="N/A" />
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5 relative z-30">
                         <div className="relative z-20">
                             <GlassSelect label={t('submit.distributor')} value={formData.distributor || ''} onChange={val => handleFormChange('distributor', val)} options={distOptions} searchable recentKey="distributor" />
                             {formData.distributor === 'Other' && (
-                                <input value={customDist} onChange={e => setCustomDist(e.target.value)} className="mt-2 w-full px-4 py-3 text-sm rounded-[18px] md:rounded-[20px] apple-card-inner border border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20" placeholder={t('submit.distributor')} />
+                                <input value={customDist} onChange={e => setCustomDist(e.target.value)} className="mt-2 w-full px-4 py-3 text-sm rounded-[18px] md:rounded-[20px] apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder={t('submit.distributor')} />
                             )}
                         </div>
                         <div className="relative z-10">
@@ -1059,12 +1059,12 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className={`block text-xs font-semibold uppercase mb-2 ml-2 ${rootCauseError ? 'text-red-500' : 'text-gray-500'}`}>{t('track.rootCause')} {rootCauseError && <span className="normal-case">* ต้องกรอก</span>}</label>
-                            <input id="rootCauseInput" type="text" value={formData.resolution?.rootCause || ''} onChange={(e) => { handleResolutionChange('rootCause', e.target.value); if (e.target.value.trim()) setRootCauseError(false); }} className={`w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner border outline-none transition-colors ${rootCauseError ? 'border-red-500 ring-2 ring-red-500/20' : 'border-gray-200/80 dark:border-white/[0.08]'}`} placeholder="e.g. Power Surge (ถ้ายังไม่รู้ให้ใส่ N/A)" />
+                            <input id="rootCauseInput" type="text" value={formData.resolution?.rootCause || ''} onChange={(e) => { handleResolutionChange('rootCause', e.target.value); if (e.target.value.trim()) setRootCauseError(false); }} className={`w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none transition-colors ${rootCauseError ? 'border-red-500 ring-2 ring-red-500/20' : 'border-gray-200/80 dark:border-white/[0.08] focus:ring-2 focus:ring-blue-500/20'}`} placeholder="e.g. Power Surge (ถ้ายังไม่รู้ให้ใส่ N/A)" />
                             {rootCauseError && <p className="text-xs text-red-500 mt-1.5 ml-2 animate-fade-in">❌ กรุณากรอกอาการที่พบก่อนดำเนินการขั้นต่อไป (ถ้ายังไม่รู้ให้ใส่ N/A)</p>}
                         </div>
                         <div>
                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('track.vendorRef')}</label>
-                            <input type="text" value={formData.resolution?.vendorTicketRef || ''} onChange={(e) => handleResolutionChange('vendorTicketRef', e.target.value)} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner border border-gray-200/80 dark:border-white/[0.08] outline-none" placeholder="e.g. RMA-SYN-9988" />
+                            <input type="text" value={formData.resolution?.vendorTicketRef || ''} onChange={(e) => handleResolutionChange('vendorTicketRef', e.target.value)} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder="e.g. RMA-SYN-9988" />
                         </div>
                     </div>
 
@@ -1258,7 +1258,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                         value={formData.notes || ''}
                         onChange={e => handleFormChange('notes', e.target.value)}
                         rows={4}
-                        className="w-full rounded-[18px] md:rounded-[20px] p-3.5 text-xs text-[#1d1d1f] dark:text-white apple-card-inner border border-gray-200/80 dark:border-white/[0.08] outline-none focus:ring-2 focus:ring-amber-500/30 transition-all resize-none"
+                        className="w-full rounded-[18px] md:rounded-[20px] p-3.5 text-xs text-[#1d1d1f] dark:text-white apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] outline-none focus:ring-2 focus:ring-amber-500/30 transition-all resize-none"
                         placeholder={t('track.addNotesPlaceholder')}
                     />
                 </div>

@@ -141,7 +141,7 @@ export const UserManagement: React.FC = () => {
                 required
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-[#0071e3]/30"
                 placeholder="กรอกชื่อ-นามสกุลจริง"
               />
             </div>
@@ -150,7 +150,7 @@ export const UserManagement: React.FC = () => {
               <input
                 value={formData.nickname}
                 onChange={e => setFormData({ ...formData, nickname: e.target.value })}
-                className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-[#0071e3]/30"
                 placeholder="กรอกชื่อเล่น"
               />
             </div>
@@ -161,7 +161,7 @@ export const UserManagement: React.FC = () => {
                 type="email"
                 value={formData.email}
                 onChange={e => setFormData({ ...formData, email: e.target.value })}
-                className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-[#0071e3]/30"
                 placeholder="กรอกอีเมลสำหรับเข้าระบบ"
               />
             </div>
@@ -173,7 +173,7 @@ export const UserManagement: React.FC = () => {
                 minLength={6}
                 value={formData.password}
                 onChange={e => setFormData({ ...formData, password: e.target.value })}
-                className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-[#0071e3]/30"
                 placeholder="อย่างน้อย 6 ตัวอักษร"
               />
             </div>

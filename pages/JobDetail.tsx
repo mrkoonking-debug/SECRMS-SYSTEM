@@ -1862,7 +1862,7 @@ export const JobDetail: React.FC = () => {
                                         type="text"
                                         value={bulkCustomBrand}
                                         onChange={e => { setBulkCustomBrand(e.target.value); setBulkDirtyFields(p => ({ ...p, brand: true })); }}
-                                        className="mt-2 w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                        className="mt-2 w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                                         placeholder="ระบุยี่ห้ออื่น ๆ..."
                                     />
                                 )}
@@ -1873,7 +1873,7 @@ export const JobDetail: React.FC = () => {
                                     type="text"
                                     value={bulkEditForm.productModel}
                                     onChange={e => { setBulkEditForm(p => ({ ...p, productModel: e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase() })); setBulkDirtyFields(p => ({ ...p, productModel: true })); }}
-                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm uppercase"
+                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm uppercase text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                                     placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน"
                                 />
                             </div>
@@ -1883,7 +1883,7 @@ export const JobDetail: React.FC = () => {
                                 <select
                                     value={bulkEditForm.distributor}
                                     onChange={e => { setBulkEditForm(p => ({ ...p, distributor: e.target.value })); setBulkDirtyFields(p => ({ ...p, distributor: true })); }}
-                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white outline-none"
                                 >
                                     <option value="">— ไม่เปลี่ยน —</option>
                                     {bulkDistOptions.map((d: any) => (
@@ -1896,7 +1896,7 @@ export const JobDetail: React.FC = () => {
                                 <textarea
                                     value={bulkEditForm.issueDescription}
                                     onChange={e => { setBulkEditForm(p => ({ ...p, issueDescription: e.target.value })); setBulkDirtyFields(p => ({ ...p, issueDescription: true })); }}
-                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                                     rows={2}
                                     placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน"
                                 />
@@ -1906,7 +1906,7 @@ export const JobDetail: React.FC = () => {
                                 <textarea
                                     value={bulkEditForm.rootCause}
                                     onChange={e => { setBulkEditForm(p => ({ ...p, rootCause: e.target.value })); setBulkDirtyFields(p => ({ ...p, rootCause: true })); }}
-                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                                     rows={2}
                                     placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน"
                                 />
@@ -1936,7 +1936,7 @@ export const JobDetail: React.FC = () => {
                                                 type="text"
                                                 value={bulkEditForm.actionDetails}
                                                 onChange={e => { setBulkEditForm(p => ({ ...p, actionDetails: e.target.value })); setBulkDirtyFields(p => ({ ...p, actionDetails: true })); }}
-                                                className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                                className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                                                 placeholder="เช่น เปลี่ยน Mainboard"
                                             />
                                         </div>
@@ -1948,7 +1948,7 @@ export const JobDetail: React.FC = () => {
                                             type="text"
                                             value={bulkEditForm.vendorTicketRef}
                                             onChange={e => { setBulkEditForm(p => ({ ...p, vendorTicketRef: e.target.value })); setBulkDirtyFields(p => ({ ...p, vendorTicketRef: true })); }}
-                                            className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                            className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                                             placeholder="ระบุเลข RMA ของศูนย์ เช่น Synnex"
                                         />
                                     </div>
@@ -1959,7 +1959,7 @@ export const JobDetail: React.FC = () => {
                                 <select
                                     value={bulkEditForm.warrantyStatus}
                                     onChange={e => { setBulkEditForm(p => ({ ...p, warrantyStatus: e.target.value })); setBulkDirtyFields(p => ({ ...p, warrantyStatus: true })); }}
-                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm"
+                                    className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-3 text-sm text-[#1d1d1f] dark:text-white outline-none"
                                 >
                                     <option value="">— ไม่เปลี่ยน —</option>
                                     <option value="IN_WARRANTY">อยู่ในประกัน (In Warranty)</option>
@@ -1992,7 +1992,7 @@ export const JobDetail: React.FC = () => {
                                                                 [r.id]: { ...(p[r.id] || { serialNumber: '', replacedSerialNumber: '' }), serialNumber: val }
                                                             }));
                                                         }}
-                                                        className="w-full bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-3 py-2 text-xs font-mono uppercase"
+                                                        className="w-full bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-3 py-2 text-xs font-mono uppercase text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                                                         placeholder="S/N ของเครื่อง"
                                                     />
                                                 </div>
@@ -2009,7 +2009,7 @@ export const JobDetail: React.FC = () => {
                                                                   [r.id]: { ...(p[r.id] || { serialNumber: '', replacedSerialNumber: '' }), replacedSerialNumber: val }
                                                                 }));
                                                             }}
-                                                            className="w-full bg-white dark:bg-[#2c2c2e] border border-amber-200 dark:border-amber-500/20 rounded-xl px-3 py-2 text-xs font-mono uppercase"
+                                                            className="w-full bg-white dark:bg-[#2c2c2e] border border-amber-200 dark:border-amber-500/20 rounded-xl px-3 py-2 text-xs font-mono uppercase text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                                                             placeholder="S/N เครื่องใหม่ที่เปลี่ยน"
                                                         />
                                                     </div>

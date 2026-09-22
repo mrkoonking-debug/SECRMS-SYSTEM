@@ -390,31 +390,31 @@ export const SettingsPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Company Name (TH)</label>
-              <input value={settings.nameTh} onChange={e => setSettings({ ...settings, nameTh: e.target.value })} className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-2.5 text-sm" />
+              <input value={settings.nameTh} onChange={e => setSettings({ ...settings, nameTh: e.target.value })} className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-2.5 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-[#0071e3]/30 transition-all" />
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Company Name (EN)</label>
-              <input value={settings.nameEn} onChange={e => setSettings({ ...settings, nameEn: e.target.value })} className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-2.5 text-sm" />
+              <input value={settings.nameEn} onChange={e => setSettings({ ...settings, nameEn: e.target.value })} className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-2.5 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-[#0071e3]/30 transition-all" />
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Address</label>
-            <textarea value={settings.address} onChange={e => setSettings({ ...settings, address: e.target.value })} className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-2.5 text-sm" rows={3} />
+            <textarea value={settings.address} onChange={e => setSettings({ ...settings, address: e.target.value })} className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-2.5 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-[#0071e3]/30 transition-all" rows={3} />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Tax ID</label>
-              <input value={settings.taxId} onChange={e => setSettings({ ...settings, taxId: e.target.value })} className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-2.5 text-sm" />
+              <input value={settings.taxId} onChange={e => setSettings({ ...settings, taxId: e.target.value })} className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-2.5 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-[#0071e3]/30 transition-all" />
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Tel</label>
-              <input value={settings.tel} onChange={e => setSettings({ ...settings, tel: e.target.value })} className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-2.5 text-sm" />
+              <input value={settings.tel} onChange={e => setSettings({ ...settings, tel: e.target.value })} className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-2.5 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-[#0071e3]/30 transition-all" />
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Website</label>
-              <input value={settings.website} onChange={e => setSettings({ ...settings, website: e.target.value })} className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-2.5 text-sm" />
+              <input value={settings.website} onChange={e => setSettings({ ...settings, website: e.target.value })} className="w-full bg-gray-50 dark:bg-[#2c2c2e] border border-gray-200 dark:border-[#424245] rounded-xl px-4 py-2.5 text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-[#0071e3]/30 transition-all" />
             </div>
           </div>
         </div>

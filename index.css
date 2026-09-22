@@ -2,6 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Global baseline for inputs, textareas, and selects to prevent white-on-white text in Dark Mode */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]),
+  textarea {
+    color: #1d1d1f;
+  }
+
+  .dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]),
+  .dark textarea {
+    background-color: #1a1a1e;
+    color: #f3f4f6;
+  }
+
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: #86868b;
+  }
+
+  .dark select {
+    background-color: #1a1a1e;
+    color: #f3f4f6;
+  }
+
+  .dark select option {
+    background-color: #1a1a1e;
+    color: #f3f4f6;
+  }
+}
+
 :root {
   --bg-primary: #f2f4f8;
   --bg-secondary: #e7eaf0;
@@ -529,6 +558,13 @@ select:-webkit-autofill:active {
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
   transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
+
+.dark input.apple-card-inner,
+.dark textarea.apple-card-inner {
+  background-color: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+}
+
 
 .apple-card-sm {
   border-radius: 16px;
