@@ -228,7 +228,7 @@ export const GlassSelect: React.FC<GlassSelectProps> = ({
           w-full text-left flex items-center justify-between
           bg-white dark:bg-[#1a1a1c] 
           border ${hasError ? 'border-red-500' : isOpen ? 'border-[#0071e3] ring-2 ring-[#0071e3]/20' : 'border-gray-200/90 dark:border-white/[0.08]'}
-          apple-card-inner rounded-[22px] md:rounded-[26px] px-4 py-2.5 md:px-5 md:py-3 text-xs md:text-sm 
+          apple-card-inner rounded-[18px] sm:rounded-[22px] md:rounded-[26px] px-3.5 py-2 sm:px-4 sm:py-2.5 md:px-5 md:py-3 text-xs md:text-sm 
           text-[#1d1d1f] dark:text-white 
           transition-all duration-200
           hover:border-[#0071e3]

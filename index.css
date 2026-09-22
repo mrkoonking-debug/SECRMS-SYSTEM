@@ -291,8 +291,9 @@ html.performance-mode span {
 
 /* ===== Mobile UX Enhancements ===== */
 @media (max-width: 768px) {
-  button, a, input, select, textarea {
-    min-height: 44px;
+  /* Prevent destructive global button/a min-height which bloats pills and tag icons into huge bricks */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]):not(.compact-input) {
+    min-height: 38px;
   }
 
   .rounded-\[2rem\] { border-radius: 1.25rem !important; }

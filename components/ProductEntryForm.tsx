@@ -16,7 +16,7 @@ import { compressImage } from '../services/imageCompressor';
 const DEFAULT_ACCESSORIES = COMMON_ACCESSORIES.filter(a => a !== 'acc_hdd');
 
 const getInputClass = (hasError: boolean) => `
-  w-full px-4 py-2.5 md:px-5 md:py-3.5 text-xs md:text-sm apple-card-inner rounded-[22px] md:rounded-[26px] outline-none transition-all
+  w-full px-3.5 py-2 sm:px-4 sm:py-2.5 md:px-5 md:py-3 text-xs md:text-sm apple-card-inner rounded-[16px] sm:rounded-[20px] md:rounded-[24px] outline-none transition-all
   bg-gray-50/70 dark:bg-white/[0.03] 
   border border-gray-200/90 dark:border-white/[0.08]
   text-[#1d1d1f] dark:text-white
@@ -273,11 +273,11 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                 <div className={mode === 'customer' ? 'col-span-2' : ''} data-tour="tour-accessories">
                     <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-2">{t('submit.accessories')} <span className="text-red-500 font-bold">*</span></label>
                     {mode === 'customer' && <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mb-2 ml-3 flex items-center gap-1"><Info className="w-3 h-3 text-blue-500 flex-shrink-0" /> เลือกสิ่งที่ส่งมาพร้อมเครื่อง (ไม่จำเป็นต้องเลือก ข้ามได้)</p>}
-                    <div className="flex flex-wrap gap-2 mb-2.5">
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2">
                         <button
                             type="button"
                             onClick={(e) => { e.preventDefault(); setCurrentItem(prev => ({ ...prev, accessories: prev.accessories.includes('unit_only') ? prev.accessories.filter(a => a !== 'unit_only') : ['unit_only'] })); setErrors(p => ({ ...p, accessories: '' })); }}
-                            className={`px-3.5 py-1.5 text-xs font-semibold rounded-full border transition-all flex items-center gap-1.5 outline-none cursor-pointer apple-card-sm ${currentItem.accessories.includes('unit_only') ? 'bg-amber-500 text-white border-amber-500 shadow-md' : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-gray-300 hover:border-amber-500/50 hover:text-amber-500'}`}
+                            className={`h-7 sm:h-8 px-2.5 sm:px-3 text-[11px] sm:text-xs font-semibold rounded-full border transition-all flex items-center gap-1 outline-none cursor-pointer apple-card-sm ${currentItem.accessories.includes('unit_only') ? 'bg-amber-500 text-white border-amber-500 shadow-xs' : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-gray-300 hover:border-amber-500/50 hover:text-amber-500'}`}
                         >
                             {t('accessories_list.unit_only')}
                         </button>
@@ -289,7 +289,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                                     type="button"
                                     key={acc}
                                     onClick={(e) => { e.preventDefault(); toggleAccessory(acc); }}
-                                    className={`px-3.5 py-1.5 text-xs font-semibold rounded-full border transition-all flex items-center gap-1.5 outline-none cursor-pointer apple-card-sm ${isActive ? 'bg-[#0071e3] text-white border-[#0071e3] shadow-md' : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-gray-300 hover:border-blue-500/50 hover:text-blue-500'}`}
+                                    className={`h-7 sm:h-8 px-2.5 sm:px-3 text-[11px] sm:text-xs font-semibold rounded-full border transition-all flex items-center gap-1 outline-none cursor-pointer apple-card-sm ${isActive ? 'bg-[#0071e3] text-white border-[#0071e3] shadow-xs' : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-gray-300 hover:border-blue-500/50 hover:text-blue-500'}`}
                                 >
                                     {t(`accessories_list.${acc}`)}
                                     {acc === 'acc_hdd' && <span className={`flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold ${hddCount > 0 ? 'bg-white text-[#0071e3]' : 'bg-black/10 dark:bg-white/10 text-gray-400'}`}>{hddCount > 0 ? hddCount : <Plus className="w-2.5 h-2.5" />}</span>}
@@ -297,16 +297,16 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                             );
                         })}
                     </div>
-                    <div className="flex gap-2 mb-3">
-                        <input type="text" value={customAccessory} onChange={e => setCustomAccessory(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), setCustomAccessory(''), toggleAccessory(customAccessory))} placeholder={t('publicSubmit.otherAccPlaceholder')} className={`flex-1 ${getInputClass(false)} !py-2.5`} />
-                        <button type="button" onClick={() => { if (customAccessory) { toggleAccessory(customAccessory); setCustomAccessory(''); } }} className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-[#1d1d1f] dark:text-white rounded-full transition-all cursor-pointer"><Plus className="w-4 h-4" /></button>
+                    <div className="flex gap-1.5 sm:gap-2 mb-2.5">
+                        <input type="text" value={customAccessory} onChange={e => setCustomAccessory(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), setCustomAccessory(''), toggleAccessory(customAccessory))} placeholder={t('publicSubmit.otherAccPlaceholder')} className={`flex-1 ${getInputClass(false)} !py-1.5 !px-3 text-xs`} />
+                        <button type="button" onClick={() => { if (customAccessory) { toggleAccessory(customAccessory); setCustomAccessory(''); } }} className="h-8 sm:h-9 px-3.5 bg-gray-150 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-[#1d1d1f] dark:text-white rounded-full transition-all cursor-pointer flex items-center justify-center"><Plus className="w-3.5 h-3.5" /></button>
                     </div>
                     {currentItem.accessories.length > 0 && (
-                        <div className="flex flex-wrap gap-2 p-3.5 bg-black/[0.02] dark:bg-black/40 rounded-[24px] border border-black/5 dark:border-white/10 apple-card-inner">
+                        <div className="flex flex-wrap gap-1.5 p-2 sm:p-2.5 bg-black/[0.02] dark:bg-black/30 rounded-[18px] border border-black/5 dark:border-white/[0.08] apple-card-inner">
                             {currentItem.accessories.map((acc, idx) => (
-                                <span key={`${acc}-${idx}`} className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white dark:bg-[#1a1a1e] text-xs font-semibold rounded-full shadow-sm border border-gray-200/80 dark:border-white/10 text-[#1d1d1f] dark:text-white apple-card-sm">
-                                    {acc.startsWith('acc_hdd::') ? `HDD (${acc.split('::')[1]})` : (acc.startsWith('acc_') || acc === 'unit_only' ? t(`accessories_list.${acc}`) : acc)}
-                                    <button type="button" onClick={() => setCurrentItem(p => ({ ...p, accessories: p.accessories.filter(a => a !== acc) }))} className="text-gray-400 hover:text-red-500 ml-1 rounded-full cursor-pointer"><X className="w-3 h-3" /></button>
+                                <span key={`${acc}-${idx}`} className="inline-flex items-center gap-1.5 h-7 px-2.5 bg-white dark:bg-[#1f1f24] text-[11px] sm:text-xs font-semibold rounded-full shadow-xs border border-gray-200/80 dark:border-white/10 text-[#1d1d1f] dark:text-white apple-card-sm">
+                                    <span>{acc.startsWith('acc_hdd::') ? `HDD (${acc.split('::')[1]})` : (acc.startsWith('acc_') || acc === 'unit_only' ? t(`accessories_list.${acc}`) : acc)}</span>
+                                    <button type="button" onClick={() => setCurrentItem(p => ({ ...p, accessories: p.accessories.filter(a => a !== acc) }))} className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer p-0 ml-0.5"><X className="w-2.5 h-2.5" /></button>
                                 </span>
                             ))}
                         </div>
@@ -317,7 +317,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
 
             <div data-tour="tour-issue">
                 <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-2">{t('submit.issueDesc')} <span className="text-red-500 font-bold">*</span></label>
-                <textarea value={currentItem.issue} onChange={e => setCurrentItem({ ...currentItem, issue: e.target.value })} rows={3} className={`w-full px-4 py-3 md:px-5 md:py-3.5 text-xs md:text-sm apple-card-inner rounded-[24px] md:rounded-[28px] outline-none transition-all bg-gray-50/70 dark:bg-white/[0.03] border border-gray-200/90 dark:border-white/[0.08] text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c20] focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3] ${errors.issue ? 'border-red-500 focus:ring-red-500 ring-2 ring-red-500/20' : ''}`} placeholder={mode === 'customer' ? t('placeholders.issueCustomer') : t('placeholders.issueAdmin')} />
+                <textarea value={currentItem.issue} onChange={e => setCurrentItem({ ...currentItem, issue: e.target.value })} rows={3} className={`w-full px-3.5 py-2.5 md:px-5 md:py-3.5 text-xs md:text-sm apple-card-inner rounded-[18px] md:rounded-[24px] outline-none transition-all bg-gray-50/70 dark:bg-white/[0.03] border border-gray-200/90 dark:border-white/[0.08] text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c20] focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3] ${errors.issue ? 'border-red-500 focus:ring-red-500 ring-2 ring-red-500/20' : ''}`} placeholder={mode === 'customer' ? t('placeholders.issueCustomer') : t('placeholders.issueAdmin')} />
                 {mode === 'customer'
                     ? <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mt-1.5 ml-3 flex items-center gap-1"><Info className="w-3 h-3 text-blue-500 flex-shrink-0" /> เช่น &quot;ภาพมืด&quot;, &quot;เชื่อมต่อไม่ได้&quot;, &quot;มีเสียงดัง&quot;</p>
                     : <p className="text-[11px] text-gray-400 mt-1.5 ml-3">{t('submit.issueHint')}</p>
@@ -432,11 +432,11 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
 
 const TeamSelector = ({ selectedMain, onSelectMain, currentTeam, onSelectSub, t, error }: any) => {
     return (
-        <div className="bg-black/[0.02] dark:bg-black/40 rounded-[28px] md:rounded-[34px] p-4 sm:p-6 md:p-7 border border-gray-200/70 dark:border-white/[0.08] apple-card-inner">
-            <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-3.5 ml-2">
+        <div className="bg-black/[0.02] dark:bg-black/40 rounded-[20px] sm:rounded-[26px] md:rounded-[32px] p-3 sm:p-5 md:p-6 border border-gray-200/70 dark:border-white/[0.08] apple-card-inner">
+            <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-2.5 ml-1">
                 {t('submit.assignTeam')} <span className="text-red-500 font-bold">*</span>
             </label>
-            <div className="grid grid-cols-3 gap-2.5 sm:gap-4 mb-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3.5 mb-3">
                 {[
                     { id: 'A', label: 'HIKVISION', sub: 'Team A', icon: Box, color: 'red', val: Team.HIKVISION },
                     { id: 'B', label: 'DAHUA', sub: 'Team B', icon: Layers, color: 'orange', val: Team.DAHUA },
@@ -448,35 +448,35 @@ const TeamSelector = ({ selectedMain, onSelectMain, currentTeam, onSelectSub, t,
                             type="button"
                             key={item.id}
                             onClick={() => onSelectMain(item.id)}
-                            className={`relative p-3.5 sm:p-5 rounded-[24px] md:rounded-[28px] border text-center transition-all flex flex-col items-center justify-center gap-2.5 cursor-pointer outline-none apple-card-sm ${
+                            className={`relative p-2.5 sm:p-4 rounded-[16px] sm:rounded-[22px] md:rounded-[26px] border text-center transition-all flex flex-col items-center justify-center gap-1.5 sm:gap-2.5 cursor-pointer outline-none apple-card-sm ${
                                 isSelected 
                                     ? (item.color === 'red' 
-                                        ? 'bg-red-500/10 dark:bg-red-500/15 border-red-500 ring-2 ring-red-500/30 shadow-md shadow-red-500/20' 
+                                        ? 'bg-red-500/10 dark:bg-red-500/15 border-red-500 ring-1.5 ring-red-500/30 shadow-xs' 
                                         : item.color === 'orange' 
-                                            ? 'bg-orange-500/10 dark:bg-orange-500/15 border-orange-500 ring-2 ring-orange-500/30 shadow-md shadow-orange-500/20' 
-                                            : 'bg-blue-500/10 dark:bg-blue-500/15 border-blue-500 ring-2 ring-blue-500/30 shadow-md shadow-blue-500/20')
+                                            ? 'bg-orange-500/10 dark:bg-orange-500/15 border-orange-500 ring-1.5 ring-orange-500/30 shadow-xs' 
+                                            : 'bg-blue-500/10 dark:bg-blue-500/15 border-blue-500 ring-1.5 ring-blue-500/30 shadow-xs')
                                     : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] hover:border-gray-300 dark:hover:border-white/20 hover:scale-[1.01]'
                             }`}
                         >
-                            <div className={`p-2.5 rounded-[16px] ${
+                            <div className={`p-1.5 sm:p-2.5 rounded-[12px] sm:rounded-[16px] ${
                                 isSelected 
-                                    ? (item.color === 'red' ? 'bg-red-500 text-white shadow-md' : item.color === 'orange' ? 'bg-orange-500 text-white shadow-md' : 'bg-blue-500 text-white shadow-md') 
+                                    ? (item.color === 'red' ? 'bg-red-500 text-white shadow-xs' : item.color === 'orange' ? 'bg-orange-500 text-white shadow-xs' : 'bg-blue-500 text-white shadow-xs') 
                                     : (item.color === 'red' ? 'bg-red-500/10 text-red-500' : item.color === 'orange' ? 'bg-orange-500/10 text-orange-500' : 'bg-blue-500/10 text-blue-500')
                             }`}>
-                                <item.icon className="w-4 h-4 md:w-5 md:h-5" />
+                                <item.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                             </div>
                             <div>
-                                <div className="font-extrabold text-xs sm:text-sm text-[#1d1d1f] dark:text-white leading-tight">{item.label}</div>
-                                <div className="text-[9.5px] sm:text-[10px] text-gray-400 font-medium mt-0.5">{item.sub}</div>
+                                <div className="font-extrabold text-[11px] sm:text-xs md:text-sm text-[#1d1d1f] dark:text-white leading-tight">{item.label}</div>
+                                <div className="text-[9px] sm:text-[10px] text-gray-400 font-medium mt-0.5">{item.sub}</div>
                             </div>
                         </button>
                     );
                 })}
             </div>
             {selectedMain === 'C' && (
-                <div className="animate-fade-in pl-3 sm:pl-4 border-l-2 border-[#0071e3]/40 ml-2 my-2">
-                    <div className="text-[10.5px] md:text-xs font-black text-[#0071e3] dark:text-blue-400 uppercase tracking-wider mb-2.5">{t('modals.selectSubUnit')}</div>
-                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="animate-fade-in pl-2.5 sm:pl-4 border-l-2 border-[#0071e3]/40 ml-1.5 my-2">
+                    <div className="text-[10px] sm:text-[10.5px] md:text-xs font-black text-[#0071e3] dark:text-blue-400 uppercase tracking-wider mb-2">{t('modals.selectSubUnit')}</div>
+                    <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
                         {[
                             { val: Team.TEAM_C, label: 'Team C (Net)', icon: Wifi, color: 'cyan' },
                             { val: Team.TEAM_E, label: 'Team E (UPS)', icon: Zap, color: 'amber' },
@@ -488,14 +488,14 @@ const TeamSelector = ({ selectedMain, onSelectMain, currentTeam, onSelectSub, t,
                                     type="button"
                                     key={sub.val}
                                     onClick={() => onSelectSub(sub.val)}
-                                    className={`p-2.5 sm:p-3 rounded-full sm:rounded-[20px] border text-center transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer outline-none apple-card-sm ${
+                                    className={`p-2 sm:p-2.5 rounded-full sm:rounded-[18px] border text-center transition-all flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 cursor-pointer outline-none apple-card-sm ${
                                         isSubActive 
-                                            ? 'bg-blue-500/10 dark:bg-blue-500/15 border-[#0071e3] ring-1 ring-[#0071e3] shadow-sm text-[#0071e3] dark:text-blue-400 font-bold' 
+                                            ? 'bg-blue-500/10 dark:bg-blue-500/15 border-[#0071e3] ring-1 ring-[#0071e3] shadow-xs text-[#0071e3] dark:text-blue-400 font-bold' 
                                             : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] hover:bg-gray-50 dark:hover:bg-white/[0.05] text-gray-600 dark:text-gray-400'
                                     }`}
                                 >
-                                    <sub.icon className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isSubActive ? 'text-[#0071e3] dark:text-blue-400' : 'text-gray-400'}`} />
-                                    <span className="text-[10px] sm:text-xs font-semibold">{sub.label}</span>
+                                    <sub.icon className={`w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 ${isSubActive ? 'text-[#0071e3] dark:text-blue-400' : 'text-gray-400'}`} />
+                                    <span className="text-[9.5px] sm:text-xs font-semibold">{sub.label}</span>
                                 </button>
                             );
                         })}
