@@ -1,6 +1,6 @@
 import React from 'react';
 import { Team } from '../types';
-import { Layers, Package, ChevronDown } from 'lucide-react';
+import { Layers, Package, ChevronDown, Clock, Wrench, CheckCircle2 } from 'lucide-react';
 
 interface ClaimsFilterHubProps {
     teamFilter: 'ALL' | 'GROUP_C' | Team;
@@ -347,103 +347,99 @@ export const ClaimsFilterHub: React.FC<ClaimsFilterHubProps> = ({
             )}
 
             {/* ==========================================================================
-                2. CLEAN UNDERLINE TABS FOR STATUS (เรียบ หรู สไตล์ Apple / Linear, ไม่เทอะทะ)
+                2. STATUS PIPELINE: HIGH-HIT-AREA 4-BUTTON GRID (กดง่าย ชัดเจน ไม่เด้ง ทัชสะดวก 100%)
                ========================================================================== */}
-            <div className="flex items-center gap-1 sm:gap-6 border-b border-gray-200/80 dark:border-white/[0.08] px-1 sm:px-3 pt-1 overflow-x-auto scrollbar-hide">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
                 {/* 2.1 งานทั้งหมด */}
                 <button
                     type="button"
                     onClick={() => setStatusFilter('ALL')}
-                    className={`pb-2.5 pt-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 relative whitespace-nowrap cursor-pointer ${
+                    className={`h-12 sm:h-13 px-3.5 sm:px-4 rounded-2xl flex items-center justify-between border cursor-pointer select-none transition-all duration-150 active:scale-[0.98] ${
                         statusFilter === 'ALL'
-                            ? 'text-[#0071e3] dark:text-blue-400'
-                            : 'text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                            ? 'bg-[#0071e3] text-white border-[#0071e3] shadow-md shadow-blue-500/25'
+                            : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] text-gray-700 dark:text-gray-300 hover:border-blue-400/50 hover:bg-blue-50/20 dark:hover:bg-blue-500/10'
                     }`}
                 >
-                    <Package className="w-4 h-4 shrink-0" />
-                    <span>งานทั้งหมด</span>
-                    <span className={`text-[10.5px] font-extrabold px-2 py-0.5 rounded-full transition-colors ${
+                    <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                        <Package className={`w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 ${statusFilter === 'ALL' ? 'text-white' : 'text-[#0071e3] dark:text-blue-400'}`} />
+                        <span className="font-bold text-xs sm:text-sm truncate">งานทั้งหมด</span>
+                    </div>
+                    <span className={`text-[11px] sm:text-xs font-black px-2.5 py-0.5 rounded-full shrink-0 ${
                         statusFilter === 'ALL'
-                            ? 'bg-blue-500/15 text-[#0071e3] dark:text-blue-400'
-                            : 'bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400'
+                            ? 'bg-white/25 text-white'
+                            : 'bg-blue-500/10 text-[#0071e3] dark:text-blue-400'
                     }`}>
                         {dashboardStats.scoped?.totalJobs ?? 0}
                     </span>
-                    {statusFilter === 'ALL' && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0071e3] dark:bg-blue-400 rounded-full" />
-                    )}
                 </button>
 
                 {/* 2.2 รอรับเรื่อง */}
                 <button
                     type="button"
                     onClick={() => setStatusFilter(statusFilter === 'PENDING' ? 'ALL' : 'PENDING')}
-                    className={`pb-2.5 pt-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 relative whitespace-nowrap cursor-pointer ${
+                    className={`h-12 sm:h-13 px-3.5 sm:px-4 rounded-2xl flex items-center justify-between border cursor-pointer select-none transition-all duration-150 active:scale-[0.98] ${
                         statusFilter === 'PENDING'
-                            ? 'text-amber-600 dark:text-amber-400'
-                            : 'text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                            ? 'bg-amber-500 text-white border-amber-500 shadow-md shadow-amber-500/25'
+                            : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] text-gray-700 dark:text-gray-300 hover:border-amber-400/50 hover:bg-amber-50/20 dark:hover:bg-amber-500/10'
                     }`}
                 >
-                    <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
-                    <span>รอรับเรื่อง</span>
-                    <span className={`text-[10.5px] font-extrabold px-2 py-0.5 rounded-full transition-colors ${
+                    <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                        <Clock className={`w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 ${statusFilter === 'PENDING' ? 'text-white' : 'text-amber-500'}`} />
+                        <span className="font-bold text-xs sm:text-sm truncate">รอรับเรื่อง</span>
+                    </div>
+                    <span className={`text-[11px] sm:text-xs font-black px-2.5 py-0.5 rounded-full shrink-0 ${
                         statusFilter === 'PENDING'
-                            ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-                            : 'bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400'
+                            ? 'bg-white/25 text-white'
+                            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
                     }`}>
                         {dashboardStats.scoped?.pendingCount ?? 0}
                     </span>
-                    {statusFilter === 'PENDING' && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-500 rounded-full" />
-                    )}
                 </button>
 
                 {/* 2.3 กำลังดำเนินการ */}
                 <button
                     type="button"
                     onClick={() => setStatusFilter(statusFilter === 'IN_PROGRESS' ? 'ALL' : 'IN_PROGRESS')}
-                    className={`pb-2.5 pt-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 relative whitespace-nowrap cursor-pointer ${
+                    className={`h-12 sm:h-13 px-3.5 sm:px-4 rounded-2xl flex items-center justify-between border cursor-pointer select-none transition-all duration-150 active:scale-[0.98] ${
                         statusFilter === 'IN_PROGRESS'
-                            ? 'text-sky-600 dark:text-sky-400'
-                            : 'text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                            ? 'bg-sky-500 text-white border-sky-500 shadow-md shadow-sky-500/25'
+                            : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] text-gray-700 dark:text-gray-300 hover:border-sky-400/50 hover:bg-sky-50/20 dark:hover:bg-sky-500/10'
                     }`}
                 >
-                    <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0" />
-                    <span>กำลังดำเนินการ</span>
-                    <span className={`text-[10.5px] font-extrabold px-2 py-0.5 rounded-full transition-colors ${
+                    <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                        <Wrench className={`w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 ${statusFilter === 'IN_PROGRESS' ? 'text-white' : 'text-sky-500'}`} />
+                        <span className="font-bold text-xs sm:text-sm truncate">กำลังดำเนินการ</span>
+                    </div>
+                    <span className={`text-[11px] sm:text-xs font-black px-2.5 py-0.5 rounded-full shrink-0 ${
                         statusFilter === 'IN_PROGRESS'
-                            ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400'
-                            : 'bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400'
+                            ? 'bg-white/25 text-white'
+                            : 'bg-sky-500/10 text-sky-600 dark:text-sky-400'
                     }`}>
                         {dashboardStats.scoped?.inProgressCount ?? 0}
                     </span>
-                    {statusFilter === 'IN_PROGRESS' && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-500 rounded-full" />
-                    )}
                 </button>
 
                 {/* 2.4 เสร็จสิ้นแล้ว */}
                 <button
                     type="button"
                     onClick={() => setStatusFilter(statusFilter === 'DONE' ? 'ALL' : 'DONE')}
-                    className={`pb-2.5 pt-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 relative whitespace-nowrap cursor-pointer ${
+                    className={`h-12 sm:h-13 px-3.5 sm:px-4 rounded-2xl flex items-center justify-between border cursor-pointer select-none transition-all duration-150 active:scale-[0.98] ${
                         statusFilter === 'DONE'
-                            ? 'text-emerald-600 dark:text-emerald-400'
-                            : 'text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-600/25'
+                            : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] text-gray-700 dark:text-gray-300 hover:border-emerald-400/50 hover:bg-emerald-50/20 dark:hover:bg-emerald-500/10'
                     }`}
                 >
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                    <span>เสร็จสิ้นแล้ว</span>
-                    <span className={`text-[10.5px] font-extrabold px-2 py-0.5 rounded-full transition-colors ${
+                    <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                        <CheckCircle2 className={`w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 ${statusFilter === 'DONE' ? 'text-white' : 'text-emerald-500'}`} />
+                        <span className="font-bold text-xs sm:text-sm truncate">เสร็จสิ้นแล้ว</span>
+                    </div>
+                    <span className={`text-[11px] sm:text-xs font-black px-2.5 py-0.5 rounded-full shrink-0 ${
                         statusFilter === 'DONE'
-                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                            : 'bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400'
+                            ? 'bg-white/25 text-white'
+                            : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                     }`}>
                         {dashboardStats.scoped?.doneCount ?? 0}
                     </span>
-                    {statusFilter === 'DONE' && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500 rounded-full" />
-                    )}
                 </button>
             </div>
         </div>
