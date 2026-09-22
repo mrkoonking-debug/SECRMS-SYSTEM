@@ -605,7 +605,7 @@ select:-webkit-autofill:active {
     inset 0 1px 0 0 rgba(255, 255, 255, 0.6),
     inset 0 -1px 0 0 rgba(0, 0, 0, 0.03),
     0 4px 16px -2px rgba(0, 0, 0, 0.04);
-  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.2s ease;
+  transition: box-shadow 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.2s ease;
 }
 
 .dark .apple-liquid-glass {
@@ -618,7 +618,6 @@ select:-webkit-autofill:active {
 }
 
 .apple-liquid-glass:hover {
-  transform: translateY(-2px);
   box-shadow: 
     inset 0 1px 0 0 rgba(255, 255, 255, 0.8),
     inset 0 -1px 0 0 rgba(0, 0, 0, 0.05),
@@ -650,7 +649,6 @@ select:-webkit-autofill:active {
 .dark .apple-liquid-pill:hover {
   border-color: rgba(255, 255, 255, 0.12);
   background-color: #222228;
-  transform: translateY(-1px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14), 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
