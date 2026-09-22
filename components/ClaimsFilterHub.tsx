@@ -39,7 +39,7 @@ export const ClaimsFilterHub: React.FC<ClaimsFilterHubProps> = ({
     };
 
     return (
-        <div className="mb-4 md:mb-5 space-y-3">
+        <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[32px] md:rounded-[36px] p-3.5 sm:p-5 md:p-6 mb-4 md:mb-6 space-y-3 sm:space-y-4">
             {/* ==========================================================================
                 1. PRIMARY: THE BIG TEAM COCKPIT CARDS (การ์ดทีมขนาดใหญ่ ชัดเจน เป็นพระเอก)
                ========================================================================== */}
@@ -48,10 +48,10 @@ export const ClaimsFilterHub: React.FC<ClaimsFilterHubProps> = ({
                 <button
                     type="button"
                     onClick={() => { setTeamFilter('ALL'); setIsTeamCExpanded(false); }}
-                    className={`relative p-4 sm:p-5 md:p-6 rounded-[28px] md:rounded-[32px] text-left transition-all duration-200 flex flex-col justify-between overflow-hidden border cursor-pointer ${
+                    className={`relative p-4 sm:p-5 md:p-6 rounded-[22px] md:rounded-[26px] text-left transition-all duration-200 flex flex-col justify-between overflow-hidden border cursor-pointer ${
                         teamFilter === 'ALL'
                             ? 'bg-gradient-to-br from-[#0071e3]/15 via-blue-500/10 to-transparent dark:from-[#0071e3]/25 dark:via-blue-600/15 dark:to-transparent border-[#0071e3] ring-2 ring-[#0071e3]/30 shadow-lg shadow-blue-500/15'
-                            : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] hover:border-blue-400/50 dark:hover:border-blue-500/40 hover:bg-gray-50/60 dark:hover:bg-[#1a1a20]'
+                            : 'bg-gray-50/70 dark:bg-white/[0.03] apple-card-inner border-gray-200/60 dark:border-white/[0.06] hover:border-blue-400/50 dark:hover:border-blue-500/40 hover:bg-gray-100/60 dark:hover:bg-white/[0.06]'
                     }`}
                 >
                     <div className="flex items-center justify-between gap-2 mb-3">
@@ -108,10 +108,10 @@ export const ClaimsFilterHub: React.FC<ClaimsFilterHubProps> = ({
                 <button
                     type="button"
                     onClick={() => { setTeamFilter(Team.HIKVISION); setIsTeamCExpanded(false); }}
-                    className={`relative p-4 sm:p-5 md:p-6 rounded-[28px] md:rounded-[32px] text-left transition-all duration-200 flex flex-col justify-between overflow-hidden border cursor-pointer ${
+                    className={`relative p-4 sm:p-5 md:p-6 rounded-[22px] md:rounded-[26px] text-left transition-all duration-200 flex flex-col justify-between overflow-hidden border cursor-pointer ${
                         teamFilter === Team.HIKVISION
                             ? 'bg-gradient-to-br from-red-500/15 via-red-500/10 to-transparent dark:from-red-600/25 dark:via-red-700/15 dark:to-transparent border-red-500 ring-2 ring-red-500/30 shadow-lg shadow-red-500/15'
-                            : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] hover:border-red-400/50 dark:hover:border-red-500/40 hover:bg-gray-50/60 dark:hover:bg-[#1a1a20]'
+                            : 'bg-gray-50/70 dark:bg-white/[0.03] apple-card-inner border-gray-200/60 dark:border-white/[0.06] hover:border-red-400/50 dark:hover:border-red-500/40 hover:bg-gray-100/60 dark:hover:bg-white/[0.06]'
                     }`}
                 >
                     <div className="flex items-center justify-between gap-2 mb-3">
@@ -168,10 +168,10 @@ export const ClaimsFilterHub: React.FC<ClaimsFilterHubProps> = ({
                 <button
                     type="button"
                     onClick={() => { setTeamFilter(Team.DAHUA); setIsTeamCExpanded(false); }}
-                    className={`relative p-4 sm:p-5 md:p-6 rounded-[28px] md:rounded-[32px] text-left transition-all duration-200 flex flex-col justify-between overflow-hidden border cursor-pointer ${
+                    className={`relative p-4 sm:p-5 md:p-6 rounded-[22px] md:rounded-[26px] text-left transition-all duration-200 flex flex-col justify-between overflow-hidden border cursor-pointer ${
                         teamFilter === Team.DAHUA
                             ? 'bg-gradient-to-br from-orange-500/15 via-orange-500/10 to-transparent dark:from-orange-600/25 dark:via-orange-700/15 dark:to-transparent border-orange-500 ring-2 ring-orange-500/30 shadow-lg shadow-orange-500/15'
-                            : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] hover:border-orange-400/50 dark:hover:border-orange-500/40 hover:bg-gray-50/60 dark:hover:bg-[#1a1a20]'
+                            : 'bg-gray-50/70 dark:bg-white/[0.03] apple-card-inner border-gray-200/60 dark:border-white/[0.06] hover:border-orange-400/50 dark:hover:border-orange-500/40 hover:bg-gray-100/60 dark:hover:bg-white/[0.06]'
                     }`}
                 >
                     <div className="flex items-center justify-between gap-2 mb-3">
@@ -228,10 +228,10 @@ export const ClaimsFilterHub: React.FC<ClaimsFilterHubProps> = ({
                 <button
                     type="button"
                     onClick={handleGroupCClick}
-                    className={`relative p-4 sm:p-5 md:p-6 rounded-[28px] md:rounded-[32px] text-left transition-all duration-200 flex flex-col justify-between overflow-hidden border cursor-pointer ${
+                    className={`relative p-4 sm:p-5 md:p-6 rounded-[22px] md:rounded-[26px] text-left transition-all duration-200 flex flex-col justify-between overflow-hidden border cursor-pointer ${
                         isTeamCExpanded || teamFilter === 'GROUP_C' || teamFilter === Team.TEAM_C || teamFilter === Team.TEAM_E || teamFilter === Team.TEAM_G
                             ? 'bg-gradient-to-br from-violet-500/15 via-violet-500/10 to-transparent dark:from-violet-600/25 dark:via-violet-700/15 dark:to-transparent border-violet-500 ring-2 ring-violet-500/30 shadow-lg shadow-violet-500/15'
-                            : 'bg-white dark:bg-[#16161a] border-gray-200/80 dark:border-white/[0.08] hover:border-violet-400/50 dark:hover:border-violet-500/40 hover:bg-gray-50/60 dark:hover:bg-[#1a1a20]'
+                            : 'bg-gray-50/70 dark:bg-white/[0.03] apple-card-inner border-gray-200/60 dark:border-white/[0.06] hover:border-violet-400/50 dark:hover:border-violet-500/40 hover:bg-gray-100/60 dark:hover:bg-white/[0.06]'
                     }`}
                 >
                     <div className="flex items-center justify-between gap-2 mb-3">
@@ -349,7 +349,7 @@ export const ClaimsFilterHub: React.FC<ClaimsFilterHubProps> = ({
             {/* ==========================================================================
                 2. STATUS PIPELINE: APPLE STUDIO SEGMENTED BAR (หรูหรา นุ่มนวล สีตรงกับตารางระบบ)
                ========================================================================== */}
-            <div className="bg-gray-100/90 dark:bg-white/[0.04] p-1.5 rounded-[22px] border border-gray-200/75 dark:border-white/[0.07] shadow-xs backdrop-blur-md">
+            <div className="bg-gray-150/70 dark:bg-black/35 p-1.5 rounded-[22px] border border-gray-200/75 dark:border-white/[0.06] shadow-xs backdrop-blur-md">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5">
                     {/* 2.1 งานทั้งหมด */}
                     <button
