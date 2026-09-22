@@ -1,6 +1,6 @@
 
 import React, { Suspense, lazy, useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -76,6 +76,7 @@ const AppContent: React.FC = () => {
             <div className="min-h-full flex flex-col justify-between px-1.5 sm:px-4 pt-16 md:pt-6 pb-6">
               <Suspense fallback={<PageLoader />}>
                 <Routes>
+                  <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
                   <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                   <Route path="/admin/rmas" element={<ProtectedRoute><ClaimsList /></ProtectedRoute>} />
                   <Route path="/admin/incoming" element={<ProtectedRoute><IncomingClaims /></ProtectedRoute>} />

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { Tag, Plus, Trash2, Edit2, Check, X, Loader2, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { TransactionListSkeleton } from '../components/AdminPageSkeleton';
 
 export const BrandManagement: React.FC = () => {
   const [brands, setBrands] = useState<any[]>([]);
@@ -89,7 +90,7 @@ export const BrandManagement: React.FC = () => {
           <h3 className="text-sm md:text-base font-bold dark:text-white">รายชื่อยี่ห้อทั้งหมด ({brands.length})</h3>
           <Tag className="w-4 h-4 md:w-5 md:h-5 text-gray-400" />
         </div>
-        {loading ? <div className="p-20 text-center"><Loader2 className="animate-spin mx-auto" /></div> : (
+        {loading ? <div className="p-3"><TransactionListSkeleton count={4} /></div> : (
           <div className="divide-y divide-gray-100 dark:divide-[#333]">
             {brands.map((b) => (
               <div key={b.id} className="p-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">

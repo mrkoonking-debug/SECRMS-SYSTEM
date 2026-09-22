@@ -53,8 +53,18 @@ export const CustomerStatus: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f7] dark:bg-black">
-        <div className="w-8 h-8 border-2 border-[#0071e3] border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f7] dark:bg-[#131314] px-4">
+        <div className="w-full max-w-md bg-white dark:bg-[#16161a] border border-gray-200/80 dark:border-white/[0.08] p-6 rounded-3xl apple-card shadow-xl space-y-4 animate-fade-in">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full skeleton-shimmer shrink-0" />
+            <div className="space-y-2 flex-1">
+              <div className="w-32 h-4 rounded skeleton-shimmer" />
+              <div className="w-20 h-3 rounded skeleton-shimmer" />
+            </div>
+          </div>
+          <div className="h-16 rounded-2xl skeleton-shimmer w-full" />
+          <div className="h-10 rounded-xl skeleton-shimmer w-full" />
+        </div>
       </div>
     );
   }
@@ -63,7 +73,7 @@ export const CustomerStatus: React.FC = () => {
 
   if (!query || (searched && validRmas.length === 0)) {
     return (
-      <div className="min-h-screen bg-[#f5f5f7] dark:bg-black pt-20 px-4 flex flex-col items-center">
+      <div className="min-h-screen bg-[#f5f5f7] dark:bg-[#131314] pt-20 px-4 flex flex-col items-center">
         <h2 className="text-4xl font-bold mb-4">{t('public.notFound')}</h2>
         <p className="text-[#86868b] mb-8">{t('public.notFoundDesc')}</p>
         <Link to="/" className="px-8 py-3 bg-[#0071e3] text-white rounded-full font-bold shadow-lg shadow-blue-500/20">
@@ -74,7 +84,7 @@ export const CustomerStatus: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7] dark:bg-black pb-20 px-4 md:px-6">
+    <div className="min-h-screen bg-[#f5f5f7] dark:bg-[#131314] pb-20 px-4 md:px-6">
       <div className="max-w-2xl mx-auto py-8 flex items-center justify-between">
         <Link to="/" className="flex items-center text-sm font-semibold text-[#0071e3]">
           <ArrowLeft className="h-4 w-4 mr-2" /> {t('public.searchBtn')}

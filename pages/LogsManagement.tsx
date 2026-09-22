@@ -4,6 +4,7 @@ import { MockDb, matchesSmartRef } from '../services/mockDb';
 import { Clock, Search, ExternalLink, User, History, Filter, AlertCircle, RefreshCw, Loader2, ArrowRight, Box, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import { AdminPageSkeleton } from '../components/AdminPageSkeleton';
 
 export const LogsManagement: React.FC = () => {
   const [logs, setLogs] = useState<any[]>([]);
@@ -76,12 +77,7 @@ export const LogsManagement: React.FC = () => {
     }
   };
 
-  if (loading) return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
-      <Loader2 className="w-10 h-10 text-[#0071e3] animate-spin" />
-      <p className="text-gray-500 font-medium tracking-tight">กำลังรวบรวมประวัติกิจกรรมทั้งหมด...</p>
-    </div>
-  );
+  if (loading) return <AdminPageSkeleton title="กำลังโหลดประวัติการทำงาน..." />;
 
   return (
     <div className="max-w-[1600px] w-full mx-auto px-4 py-8">

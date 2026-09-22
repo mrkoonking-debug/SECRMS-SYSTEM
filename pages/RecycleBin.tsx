@@ -4,6 +4,7 @@ import { MockDb } from '../services/mockDb';
 import { Trash2, RotateCcw, AlertTriangle, Search, Loader2, ArrowLeft, ShieldAlert } from 'lucide-react';
 import { RMA } from '../types';
 import { showToast } from '../services/toast';
+import { AdminPageSkeleton } from '../components/AdminPageSkeleton';
 
 export const RecycleBin: React.FC = () => {
   const [deletedRmas, setDeletedRmas] = useState<RMA[]>([]);
@@ -75,12 +76,7 @@ export const RecycleBin: React.FC = () => {
   });
 
   if (loading) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
-        <Loader2 className="w-10 h-10 text-[#0071e3] animate-spin" />
-        <p className="text-gray-500 font-medium tracking-tight">กำลังโหลดรายการขยะที่ลบแล้ว...</p>
-      </div>
-    );
+    return <AdminPageSkeleton title="กำลังโหลดรายการถังขยะ..." />;
   }
 
   return (

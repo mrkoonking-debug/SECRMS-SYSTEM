@@ -6,6 +6,7 @@ import { Settings, Save, Check, Loader2, Globe, Building, Zap, Trash2, AlertTria
 import { useLanguage } from '../contexts/LanguageContext';
 import { showToast } from '../services/toast';
 import { RMAStatus } from '../types';
+import { AdminPageSkeleton } from '../components/AdminPageSkeleton';
 
 interface OldRmaItem {
   id: string; brand: string; model: string; serial: string;
@@ -355,7 +356,7 @@ export const SettingsPage: React.FC = () => {
     reader.readAsText(file);
   };
 
-  if (loading) return <div className="p-20 text-center"><Loader2 className="animate-spin mx-auto" /></div>;
+  if (loading) return <AdminPageSkeleton title="กำลังโหลดการตั้งค่า..." />;
 
   return (
     <div className="max-w-[1600px] w-full mx-auto px-4 py-6 md:py-8">

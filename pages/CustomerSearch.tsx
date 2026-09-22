@@ -30,7 +30,7 @@ export const CustomerSearch: React.FC = () => {
 
 
     return (
-        <div className="min-h-screen bg-[#f5f5f7] dark:bg-black font-sans transition-colors duration-500 flex flex-col overflow-hidden relative">
+        <div className="min-h-screen bg-[#f5f5f7] dark:bg-[#131314] font-sans transition-colors duration-500 flex flex-col overflow-hidden relative">
 
             {/* Background Ambient Elements - Kept for subtle depth */}
             <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none"></div>

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useMemo } from 'react';
 import { MockDb } from '../services/mockDb';
 import {
@@ -12,6 +11,7 @@ import {
 import { useLanguage } from '../contexts/LanguageContext';
 import { RMA, RMAStatus } from '../types';
 import { ModernDateRangePickerModal, DateRangeSelection } from '../components/ModernDateRangePickerModal';
+import { AdminPageSkeleton } from '../components/AdminPageSkeleton';
 
 export const ReportsPage: React.FC = () => {
   const [allRMAs, setAllRMAs] = useState<RMA[]>([]);
@@ -335,12 +335,7 @@ export const ReportsPage: React.FC = () => {
 
   // ==================== RENDER ====================
 
-  if (loading) return (
-    <div className="p-20 text-center">
-      <Loader2 className="animate-spin mx-auto w-8 h-8 text-gray-400" />
-      <p className="text-sm text-gray-400 mt-4">กำลังโหลดข้อมูล...</p>
-    </div>
-  );
+  if (loading) return <AdminPageSkeleton title="กำลังวิเคราะห์และออกรายงาน..." />;
 
   const CustomTooltipContent = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;

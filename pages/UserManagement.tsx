@@ -6,6 +6,7 @@ import { UserPlus, Trash2, Shield, User, Loader2, AlertCircle, Check, Edit2, X, 
 import { Team } from '../types';
 import { GlassSelect } from '../components/GlassSelect';
 import { showToast } from '../services/toast';
+import { TransactionListSkeleton } from '../components/AdminPageSkeleton';
 
 export const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -225,7 +226,7 @@ export const UserManagement: React.FC = () => {
         <div className="lg:col-span-2 space-y-4">
           <h3 className="text-lg font-bold mb-4 ml-2">รายชื่อทีมงาน ({users.length})</h3>
           {loading ? (
-            <div className="p-20 text-center"><Loader2 className="w-10 h-10 animate-spin mx-auto text-gray-300" /></div>
+            <TransactionListSkeleton count={4} />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {users.map((user) => {

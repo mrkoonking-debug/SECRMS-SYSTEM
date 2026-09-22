@@ -18,6 +18,7 @@ import { showToast } from '../services/toast';
 const ProductEntryForm = lazy(() => import('../components/ProductEntryForm').then(m => ({ default: m.ProductEntryForm })));
 import { EditRMADrawer } from '../components/EditRMADrawer';
 import { ImageZoomModal } from '../components/ImageZoomModal';
+import { AdminPageSkeleton } from '../components/AdminPageSkeleton';
 
 
 export const JobDetail: React.FC = () => {
@@ -401,6 +402,10 @@ export const JobDetail: React.FC = () => {
             return '-';
         }
     };
+
+    if (loading || !jobInfo) {
+        return <AdminPageSkeleton title="กำลังโหลดข้อมูลใบงาน..." />;
+    }
 
     return (
         <div className="max-w-[1600px] w-full mx-auto px-3 sm:px-6 md:px-8 py-4 md:py-6 pb-6">

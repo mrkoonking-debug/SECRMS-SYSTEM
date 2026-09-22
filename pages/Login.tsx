@@ -58,7 +58,7 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative bg-[#f5f5f7] dark:bg-black px-4 transition-colors">
+    <div className="min-h-screen flex items-center justify-center relative bg-[#f5f5f7] dark:bg-[#131314] px-4 transition-colors">
 
       {/* ปุ่มย้อนกลับไปหน้าแรก */}
       <Link

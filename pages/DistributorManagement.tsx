@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { Building2, Plus, Trash2, Edit2, Check, X, Loader2, ChevronDown, ChevronUp, MapPin, Phone, User, Mail, Printer } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { TransactionListSkeleton } from '../components/AdminPageSkeleton';
 
 export const DistributorManagement: React.FC = () => {
   const [distributors, setDistributors] = useState<any[]>([]);
@@ -167,7 +168,7 @@ export const DistributorManagement: React.FC = () => {
           <h3 className="text-sm md:text-base font-bold dark:text-white">รายชื่อดิสทิบิวเตอร์ ({distributors.length})</h3>
           <Building2 className="w-4 h-4 md:w-5 md:h-5 text-gray-400" />
         </div>
-        {loading ? <div className="p-20 text-center"><Loader2 className="animate-spin mx-auto" /></div> : (
+        {loading ? <div className="p-3"><TransactionListSkeleton count={4} /></div> : (
           <div className="divide-y divide-gray-100 dark:divide-[#333]">
             {distributors.map((d) => (
               <div key={d.id} className="p-3 md:p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
