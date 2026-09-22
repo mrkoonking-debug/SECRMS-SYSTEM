@@ -34,7 +34,17 @@ export const matchesSmartRef = (target: string | undefined, queryStr: string): b
   return false;
 };
 
-let currentUser: any = null;
+const CACHED_USER_KEY = 'sec_cached_current_user';
+const getCachedUser = (): any => {
+  try {
+    const raw = localStorage.getItem(CACHED_USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+let currentUser: any = getCachedUser();
 let OFFLINE_STORAGE: RMA[] = SEED_CLAIMS as any;
 // In-memory stats cache (30 second TTL)
 let _statsCache: { key: string; data: any; ts: number } | null = null;
@@ -97,8 +107,14 @@ if (isConfigured && auth) {
         role: resolveUserRole(user.email, userData),
         team: userData.team || 'ALL'
       };
+      try {
+        localStorage.setItem(CACHED_USER_KEY, JSON.stringify(currentUser));
+      } catch (e) {}
     } else {
       currentUser = null;
+      try {
+        localStorage.removeItem(CACHED_USER_KEY);
+      } catch (e) {}
     }
     _authReadyResolve();
   });
@@ -149,6 +165,9 @@ export const MockDb = {
         role: role,
         team: userData?.team || 'ALL'
       };
+      try {
+        localStorage.setItem(CACHED_USER_KEY, JSON.stringify(currentUser));
+      } catch (e) {}
       _loginAttempts = 0; // Reset on success
       return { success: true };
     } catch (e: unknown) {
@@ -167,6 +186,9 @@ export const MockDb = {
   logout: async () => {
     if (isConfigured && auth) await signOut(auth);
     currentUser = null;
+    try {
+      localStorage.removeItem(CACHED_USER_KEY);
+    } catch (e) {}
   },
 
   isAuthenticated: () => !!currentUser,

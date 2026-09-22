@@ -13,6 +13,7 @@ import { TransactionModal } from '../components/TransactionModal';
 import { CashAuditModal } from '../components/CashAuditModal';
 import { ReplenishmentPlanner } from '../components/ReplenishmentPlanner';
 import { GlassSelect } from '../components/GlassSelect';
+import { TransactionListSkeleton } from '../components/AdminPageSkeleton';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   PieChart, Pie, Cell, BarChart, Bar
@@ -2441,10 +2442,7 @@ export const FinanceLedger: React.FC = () => {
 
         {/* Transactions list */}
         {loading ? (
-          <div className="py-12 flex flex-col items-center justify-center text-gray-400 gap-3">
-            <RefreshCw className="w-8 h-8 animate-spin text-[#0071e3]" />
-            <p className="text-sm font-medium">กำลังประมวลผลข้อมูลการเงิน...</p>
-          </div>
+          <TransactionListSkeleton count={6} />
         ) : (() => {
           const { prevMonth, nextMonth } = getPrevAndNextMonths();
           return selectedMonth === 'CUSTOM' ? (

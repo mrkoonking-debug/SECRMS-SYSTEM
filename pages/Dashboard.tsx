@@ -6,6 +6,7 @@ import { Clock, CheckCircle2, AlertTriangle, Truck, TrendingUp, AlertOctagon, Ti
 import { useLanguage } from '../contexts/LanguageContext';
 import { Link } from 'react-router-dom';
 import { StatusBadge } from '../components/StatusBadge';
+import { AdminPageSkeleton } from '../components/AdminPageSkeleton';
 
 const getTeamColorClass = (team: string) => {
     switch (team) {
@@ -129,10 +130,7 @@ export const Dashboard: React.FC = () => {
     );
 
     if (!stats) return (
-        <div className="max-w-7xl mx-auto px-4 py-20 text-center text-gray-400">
-            <div className="w-10 h-10 border-2 border-[#0071e3] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-            <span className="text-sm font-bold">กำลังประมวลผลข้อมูลแดชบอร์ด...</span>
-        </div>
+        <AdminPageSkeleton title="กำลังประมวลผลข้อมูลแดชบอร์ด..." />
     );
 
     return (

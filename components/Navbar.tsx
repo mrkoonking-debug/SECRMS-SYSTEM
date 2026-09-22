@@ -64,7 +64,7 @@ const clearAllCachesAndReload = async () => {
 };
 
 export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(() => MockDb.getCurrentUser());
   const [unassignedCount, setUnassignedCount] = useState(0);
   const [overdueCount, setOverdueCount] = useState(0);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -410,6 +410,23 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
               </div>
             </div>
           )}
+        </div>
+      ) : location.pathname.startsWith('/admin') ? (
+        <div className="space-y-4 animate-fade-in">
+          <div>
+            <div className="w-20 h-3 rounded-md skeleton-shimmer mb-3 ml-3" />
+            <div className="space-y-1.5">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-black/[0.02] dark:bg-white/[0.03]">
+                  <div className="w-8 h-8 rounded-xl skeleton-shimmer shrink-0" />
+                  <div className="space-y-1.5 flex-1 min-w-0">
+                    <div className="w-24 h-3 rounded skeleton-shimmer" />
+                    <div className="w-32 h-2.5 rounded skeleton-shimmer" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       ) : (
         <div className="p-6 rounded-3xl bg-white dark:bg-[#1c1c1e] text-center mt-4 shadow-sm border border-gray-100 dark:border-[#333]">

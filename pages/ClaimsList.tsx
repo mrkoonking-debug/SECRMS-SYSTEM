@@ -6,6 +6,7 @@ import { Search, Plus, ChevronRight, ChevronDown, Package, ChevronsUpDown, Alert
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ModernDateRangePickerModal, DateRangeSelection } from '../components/ModernDateRangePickerModal';
+import { AdminPageSkeleton } from '../components/AdminPageSkeleton';
 
 const PAGE_SIZE = 50;
 
@@ -649,6 +650,8 @@ export const ClaimsList: React.FC = () => {
             <button onClick={() => window.location.reload()} className="px-6 py-3 bg-[#0071e3] text-white rounded-xl font-bold flex items-center gap-2 mx-auto"><RefreshCw className="w-4 h-4" /> ลองใหม่</button>
         </div>
     );
+
+    if (loading) return <AdminPageSkeleton title="กำลังโหลดรายการเคลม..." />;
 
     return (
         <div className="max-w-[1600px] w-full mx-auto px-2 sm:px-4 md:px-6 pb-6">

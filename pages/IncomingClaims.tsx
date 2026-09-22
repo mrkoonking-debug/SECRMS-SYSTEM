@@ -5,6 +5,7 @@ import { Package, User, Clock, ArrowRight, CheckCircle2, Loader2, Info, ChevronR
 import { useLanguage } from '../contexts/LanguageContext';
 import { GlassSelect } from '../components/GlassSelect';
 import { showToast } from '../services/toast';
+import { AdminPageSkeleton } from '../components/AdminPageSkeleton';
 
 interface GroupedJob {
     groupId: string;
@@ -308,7 +309,7 @@ export const IncomingClaims: React.FC = () => {
         }
     };
 
-    if (loading) return <div className="p-20 text-center"><Loader2 className="w-10 h-10 animate-spin mx-auto text-[#0071e3]" /></div>;
+    if (loading) return <AdminPageSkeleton title="กำลังโหลดรายการเคลมเข้า..." />;
 
     return (
         <div className="max-w-[1600px] w-full mx-auto px-2 sm:px-4 md:px-6 py-4 sm:py-8 pb-6">
