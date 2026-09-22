@@ -20,6 +20,9 @@ export default {
           blue: '#0071e3',
           dark: '#1d1d1f',
         }
+      },
+      spacing: {
+        '4.5': '1.125rem',
       }
     },
   },

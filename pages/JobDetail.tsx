@@ -419,7 +419,7 @@ export const JobDetail: React.FC = () => {
             </div>
 
             {/* Unified Job Header & Customer Info Card */}
-            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[36px] p-5 sm:p-7 md:p-8 mb-5 md:mb-8 border border-gray-200/70 dark:border-white/[0.08] shadow-sm relative overflow-hidden">
+            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[36px] p-4 sm:p-6 md:p-8 mb-4 sm:mb-5 md:mb-8 border border-gray-200/70 dark:border-white/[0.08] shadow-sm relative overflow-hidden">
 
                 {/* --- TOP HEADER SECTION --- */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 mb-5 md:mb-7">
@@ -643,7 +643,7 @@ export const JobDetail: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-                <div className="flex items-center justify-between ml-1 md:ml-2 mr-1 md:mr-2 mb-3 md:mb-4">
+                <div className="flex items-center justify-between px-0.5 sm:px-1.5 mb-3 md:mb-4">
                     <div className="flex items-center gap-3">
                         {rmas.length > 1 && (
                             <button
@@ -682,7 +682,7 @@ export const JobDetail: React.FC = () => {
                     return (
                         <div 
                             key={item.id} 
-                            className={`rounded-[26px] md:rounded-[30px] p-4.5 sm:p-6 md:p-7 transition-all duration-200 border relative overflow-hidden ${
+                            className={`rounded-[22px] sm:rounded-[26px] md:rounded-[30px] p-4 sm:p-5 md:p-6 lg:p-7 transition-all duration-200 border relative overflow-hidden ${
                                 isCancelled 
                                     ? 'bg-gray-100/40 dark:bg-[#161617]/50 border-gray-200/50 dark:border-white/[0.04] opacity-50 grayscale hover:bg-gray-100/50 dark:hover:bg-[#161617]/60 apple-card-inner'
                                     : isSelected 
@@ -690,20 +690,27 @@ export const JobDetail: React.FC = () => {
                                         : 'bg-white dark:bg-[#16161a] apple-liquid-glass border-gray-200/70 dark:border-white/[0.08] hover:border-[#0071e3]/30'
                             }`}
                         >
-                            <div className="flex flex-col md:flex-row items-center gap-3 md:gap-6">
-                                <div className="flex-shrink-0 flex items-center gap-3">
-                                    {rmas.length > 1 && (
-                                        <button onClick={() => { const n = new Set(selectedIds); isSelected ? n.delete(item.id) : n.add(item.id); setSelectedIds(n); }} className="transition-transform hover:scale-110">
-                                            {isSelected ? <CheckSquare className="w-5 h-5 text-[#0071e3]" /> : <Square className="w-5 h-5 text-gray-300 dark:text-gray-600" />}
-                                        </button>
-                                    )}
-                                    {isCancelled ? (
-                                        <div className="w-10 h-10 rounded-[14px] bg-gray-200/60 dark:bg-white/5 text-gray-400 dark:text-gray-600 flex items-center justify-center font-black apple-card-sm">{index + 1}</div>
-                                    ) : isClosed ? (
-                                        <div className="w-10 h-10 rounded-[14px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20 apple-card-sm"><CheckCircle2 className="w-5 h-5" /></div>
-                                    ) : (
-                                        <div className="w-10 h-10 rounded-[14px] bg-blue-500/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center font-black border border-blue-500/20 apple-card-sm">{index + 1}</div>
-                                    )}
+                            <div className="flex flex-col md:flex-row items-start md:items-center gap-3.5 md:gap-6">
+                                {/* Header / Index Row */}
+                                <div className="flex-shrink-0 flex items-center justify-between w-full md:w-auto gap-3">
+                                    <div className="flex items-center gap-2.5 sm:gap-3">
+                                        {rmas.length > 1 && (
+                                            <button onClick={() => { const n = new Set(selectedIds); isSelected ? n.delete(item.id) : n.add(item.id); setSelectedIds(n); }} className="transition-transform hover:scale-110">
+                                                {isSelected ? <CheckSquare className="w-5 h-5 text-[#0071e3]" /> : <Square className="w-5 h-5 text-gray-300 dark:text-gray-600" />}
+                                            </button>
+                                        )}
+                                        {isCancelled ? (
+                                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] sm:rounded-[14px] bg-gray-200/60 dark:bg-white/5 text-gray-400 dark:text-gray-600 flex items-center justify-center font-black apple-card-sm text-sm">{index + 1}</div>
+                                        ) : isClosed ? (
+                                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] sm:rounded-[14px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20 apple-card-sm"><CheckCircle2 className="w-4.5 h-4.5 sm:w-5 sm:h-5" /></div>
+                                        ) : (
+                                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] sm:rounded-[14px] bg-blue-500/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center font-black border border-blue-500/20 apple-card-sm text-sm">{index + 1}</div>
+                                        )}
+                                    </div>
+                                    {/* Mobile: Status Badge right aligned in card header */}
+                                    <div className="md:hidden">
+                                        <StatusBadge status={item.status} />
+                                    </div>
                                 </div>
                                 <div className="flex-grow grid grid-cols-1 md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] gap-4 md:gap-8 w-full">
                                     <div className="space-y-2">
@@ -740,7 +747,7 @@ export const JobDetail: React.FC = () => {
                                             </div>
                                         )}
                                         {item.resolution?.actionTaken && (
-                                            <div className="bg-gray-50/80 dark:bg-white/[0.03] p-3.5 rounded-[18px] border border-gray-200/60 dark:border-white/[0.06] space-y-1.5 apple-card-inner">
+                                            <div className="bg-gray-50/80 dark:bg-white/[0.03] p-3 sm:p-3.5 rounded-[16px] sm:rounded-[18px] border border-gray-200/60 dark:border-white/[0.06] space-y-1.5 apple-card-inner">
                                                 <div className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                                                     <ClipboardCheck className="w-3.5 h-3.5 text-blue-500" /> ผลการดำเนินการที่ศูนย์ส่งกลับมา
                                                 </div>
@@ -774,11 +781,11 @@ export const JobDetail: React.FC = () => {
                                                 )}
                                             </div>
                                         )}
-                                        <div className="text-xs text-gray-400 flex items-start gap-1 w-full">
-                                            <FileText className="w-3 h-3 mt-1 flex-shrink-0" />
-                                            <span className="font-bold uppercase mt-1 w-24 flex-shrink-0 truncate" title={t('track.internalNote') || 'Notes'}>{t('track.internalNote') || 'Notes'}:</span>
-                                            <div className="flex-grow py-1 text-sm text-[#1d1d1f] dark:text-white whitespace-pre-line" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
-                                                {item.notes ? item.notes : <span className="text-gray-300 italic">ไม่มีบันทึก</span>}
+                                        <div className="text-xs text-gray-400 flex items-start gap-1.5 w-full">
+                                            <FileText className="w-3.5 h-3.5 mt-1 flex-shrink-0 text-gray-400" />
+                                            <span className="font-bold uppercase mt-1 w-20 sm:w-24 flex-shrink-0 truncate" title={t('track.internalNote') || 'Notes'}>{t('track.internalNote') || 'Notes'}:</span>
+                                            <div className="flex-grow py-0.5 text-sm text-[#1d1d1f] dark:text-white whitespace-pre-line" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
+                                                {item.notes ? item.notes : <span className="text-gray-400 italic">ไม่มีบันทึก</span>}
                                             </div>
                                         </div>
 
@@ -792,7 +799,7 @@ export const JobDetail: React.FC = () => {
                                                         <button
                                                             key={att.id || attIdx}
                                                             onClick={() => setActiveImageUrl(att.previewUrl)}
-                                                            className="w-13 h-13 rounded-[14px] overflow-hidden border border-gray-200/80 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-transform apple-card-sm shadow-xs"
+                                                            className="w-14 h-14 sm:w-16 sm:h-16 rounded-[14px] overflow-hidden border border-gray-200/80 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-transform apple-card-sm shadow-xs"
                                                             title="คลิกเพื่อขยายรูป"
                                                         >
                                                             <img src={att.previewUrl} className="w-full h-full object-cover" alt={att.fileName || 'Product'} />
@@ -803,14 +810,14 @@ export const JobDetail: React.FC = () => {
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex-shrink-0 flex flex-wrap items-center md:flex-col md:items-end gap-3 md:min-w-[140px]">
-                                    <div className="group relative inline-block">
+                                <div className="flex-shrink-0 flex items-center justify-end w-full md:w-auto md:flex-col md:items-end gap-2.5 md:gap-3 md:min-w-[140px] pt-3 md:pt-0 border-t border-gray-100 dark:border-white/5 md:border-0">
+                                    <div className="hidden md:block group relative inline-block">
                                         <StatusBadge status={item.status} />
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => toggleHistory(item.id)}
-                                            className={`p-2.5 rounded-[14px] apple-card-sm transition-all active:scale-95 ${isExpanded ? 'bg-gray-200 dark:bg-white/20 text-gray-800 dark:text-white' : 'hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500'}`}
+                                            className={`p-2 sm:p-2.5 rounded-[12px] sm:rounded-[14px] apple-card-sm transition-all active:scale-95 ${isExpanded ? 'bg-gray-200 dark:bg-white/20 text-gray-800 dark:text-white' : 'hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500'}`}
                                             title="View Timeline"
                                         >
                                             <History className="w-4 h-4" />
@@ -842,7 +849,7 @@ export const JobDetail: React.FC = () => {
                                                     setLoading(false);
                                                 }
                                             }}
-                                            className="p-2.5 rounded-[14px] apple-card-sm hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-all active:scale-95"
+                                            className="p-2 sm:p-2.5 rounded-[12px] sm:rounded-[14px] apple-card-sm hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-all active:scale-95"
                                             title="Delete RMA"
                                         >
                                             <Trash2 className="w-4 h-4" />
@@ -852,7 +859,7 @@ export const JobDetail: React.FC = () => {
 {item.status !== RMAStatus.CANCELLED && (
                                         <button
                                             onClick={() => handleEditClick(item)}
-                                            className="p-2.5 rounded-[14px] apple-card-sm hover:bg-blue-50 dark:hover:bg-blue-500/15 text-gray-400 hover:text-[#0071e3] transition-all active:scale-95"
+                                            className="p-2 sm:p-2.5 rounded-[12px] sm:rounded-[14px] apple-card-sm hover:bg-blue-50 dark:hover:bg-blue-500/15 text-gray-400 hover:text-[#0071e3] transition-all active:scale-95"
                                             title="Edit Details"
                                         >
                                             <Edit3 className="w-4 h-4" />
