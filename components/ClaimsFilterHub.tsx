@@ -347,27 +347,27 @@ export const ClaimsFilterHub: React.FC<ClaimsFilterHubProps> = ({
             )}
 
             {/* ==========================================================================
-                2. STATUS PIPELINE: APPLE STUDIO SEGMENTED BAR (หรูหรา นุ่มนวล สีตรงกับตารางระบบ)
+                2. STATUS PIPELINE: APPLE CAPSULE SEGMENTED TRACK (ทรงแคปซูลมนสมบูรณ์แบบ)
                ========================================================================== */}
-            <div className="bg-gray-150/70 dark:bg-black/35 p-1.5 rounded-[22px] border border-gray-200/75 dark:border-white/[0.06] shadow-xs backdrop-blur-md">
+            <div className="bg-gray-150/70 dark:bg-black/40 p-1.5 rounded-full border border-gray-200/75 dark:border-white/[0.06] shadow-inner backdrop-blur-md">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5">
-                    {/* 2.1 งานทั้งหมด */}
+                    {/* 2.1 ทั้งหมด */}
                     <button
                         type="button"
                         onClick={() => setStatusFilter('ALL')}
-                        className={`h-11 sm:h-12 px-3 sm:px-4 rounded-[16px] flex items-center justify-between transition-all duration-150 cursor-pointer select-none border ${
+                        className={`h-10 sm:h-11 px-3 sm:px-4 rounded-full flex items-center justify-between sm:justify-center sm:gap-2.5 transition-all duration-150 cursor-pointer select-none border ${
                             statusFilter === 'ALL'
-                                ? 'bg-white dark:bg-[#222226] text-[#1d1d1f] dark:text-white border-gray-200/90 dark:border-white/10 shadow-sm'
+                                ? 'bg-white dark:bg-[#222226] text-[#1d1d1f] dark:text-white border-gray-200/90 dark:border-white/10 shadow-sm ring-1 ring-black/[0.04]'
                                 : 'bg-transparent border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/[0.04]'
                         }`}
                     >
                         <div className="flex items-center gap-2 min-w-0">
-                            <Package className={`w-4 h-4 shrink-0 transition-colors ${
+                            <Package className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-colors ${
                                 statusFilter === 'ALL' ? 'text-[#0071e3] dark:text-blue-400' : 'text-gray-400'
                             }`} />
-                            <span className="font-bold text-xs sm:text-sm truncate">งานทั้งหมด</span>
+                            <span className="font-bold text-xs sm:text-sm truncate">ทั้งหมด</span>
                         </div>
-                        <span className={`text-[11px] font-black px-2 py-0.5 rounded-full shrink-0 transition-colors ${
+                        <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-full shrink-0 transition-colors ${
                             statusFilter === 'ALL'
                                 ? 'bg-blue-500/15 text-[#0071e3] dark:text-blue-400'
                                 : 'bg-black/5 dark:bg-white/10 text-gray-500 dark:text-gray-400'
@@ -380,19 +380,19 @@ export const ClaimsFilterHub: React.FC<ClaimsFilterHubProps> = ({
                     <button
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'PENDING' ? 'ALL' : 'PENDING')}
-                        className={`h-11 sm:h-12 px-3 sm:px-4 rounded-[16px] flex items-center justify-between transition-all duration-150 cursor-pointer select-none border ${
+                        className={`h-10 sm:h-11 px-3 sm:px-4 rounded-full flex items-center justify-between sm:justify-center sm:gap-2.5 transition-all duration-150 cursor-pointer select-none border ${
                             statusFilter === 'PENDING'
                                 ? 'bg-white dark:bg-[#222226] text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/30 shadow-sm ring-1 ring-blue-500/20'
                                 : 'bg-transparent border-transparent text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-blue-50/50 dark:hover:bg-blue-900/10'
                         }`}
                     >
                         <div className="flex items-center gap-2 min-w-0">
-                            <Clock className={`w-4 h-4 shrink-0 transition-colors ${
+                            <Clock className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-colors ${
                                 statusFilter === 'PENDING' ? 'text-blue-500' : 'text-blue-400/60'
                             }`} />
                             <span className="font-bold text-xs sm:text-sm truncate">รอรับเรื่อง</span>
                         </div>
-                        <span className={`text-[11px] font-black px-2 py-0.5 rounded-full shrink-0 transition-colors ${
+                        <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-full shrink-0 transition-colors ${
                             statusFilter === 'PENDING'
                                 ? 'bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-500/30'
                                 : 'bg-black/5 dark:bg-white/10 text-gray-500 dark:text-gray-400'
@@ -405,19 +405,19 @@ export const ClaimsFilterHub: React.FC<ClaimsFilterHubProps> = ({
                     <button
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'IN_PROGRESS' ? 'ALL' : 'IN_PROGRESS')}
-                        className={`h-11 sm:h-12 px-3 sm:px-4 rounded-[16px] flex items-center justify-between transition-all duration-150 cursor-pointer select-none border ${
+                        className={`h-10 sm:h-11 px-3 sm:px-4 rounded-full flex items-center justify-between sm:justify-center sm:gap-2.5 transition-all duration-150 cursor-pointer select-none border ${
                             statusFilter === 'IN_PROGRESS'
                                 ? 'bg-white dark:bg-[#222226] text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/30 shadow-sm ring-1 ring-amber-500/20'
                                 : 'bg-transparent border-transparent text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-50/50 dark:hover:bg-amber-900/10'
                         }`}
                     >
                         <div className="flex items-center gap-2 min-w-0">
-                            <Wrench className={`w-4 h-4 shrink-0 transition-colors ${
+                            <Wrench className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-colors ${
                                 statusFilter === 'IN_PROGRESS' ? 'text-amber-500' : 'text-amber-400/60'
                             }`} />
                             <span className="font-bold text-xs sm:text-sm truncate">กำลังดำเนินการ</span>
                         </div>
-                        <span className={`text-[11px] font-black px-2 py-0.5 rounded-full shrink-0 transition-colors ${
+                        <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-full shrink-0 transition-colors ${
                             statusFilter === 'IN_PROGRESS'
                                 ? 'bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-500/30'
                                 : 'bg-black/5 dark:bg-white/10 text-gray-500 dark:text-gray-400'
@@ -430,19 +430,19 @@ export const ClaimsFilterHub: React.FC<ClaimsFilterHubProps> = ({
                     <button
                         type="button"
                         onClick={() => setStatusFilter(statusFilter === 'DONE' ? 'ALL' : 'DONE')}
-                        className={`h-11 sm:h-12 px-3 sm:px-4 rounded-[16px] flex items-center justify-between transition-all duration-150 cursor-pointer select-none border ${
+                        className={`h-10 sm:h-11 px-3 sm:px-4 rounded-full flex items-center justify-between sm:justify-center sm:gap-2.5 transition-all duration-150 cursor-pointer select-none border ${
                             statusFilter === 'DONE'
                                 ? 'bg-white dark:bg-[#222226] text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30 shadow-sm ring-1 ring-emerald-500/20'
                                 : 'bg-transparent border-transparent text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-300 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10'
                         }`}
                     >
                         <div className="flex items-center gap-2 min-w-0">
-                            <CheckCircle2 className={`w-4 h-4 shrink-0 transition-colors ${
+                            <CheckCircle2 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-colors ${
                                 statusFilter === 'DONE' ? 'text-emerald-500' : 'text-emerald-400/60'
                             }`} />
                             <span className="font-bold text-xs sm:text-sm truncate">เสร็จสิ้นแล้ว</span>
                         </div>
-                        <span className={`text-[11px] font-black px-2 py-0.5 rounded-full shrink-0 transition-colors ${
+                        <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-full shrink-0 transition-colors ${
                             statusFilter === 'DONE'
                                 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-500/30'
                                 : 'bg-black/5 dark:bg-white/10 text-gray-500 dark:text-gray-400'
