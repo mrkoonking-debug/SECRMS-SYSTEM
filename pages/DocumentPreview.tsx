@@ -9,6 +9,14 @@ import html2canvas from 'html2canvas';
 import { renderHtmlToBlob, downloadHtmlAsPdf } from '../services/renderToImage';
 import { showToast } from '../services/toast';
 
+const actionMap: Record<string, string> = {
+    'Replaced Component': 'ศูนย์เปลี่ยนอะไหล่',
+    'Swapped Unit': 'เปลี่ยนเครื่อง (Swap)',
+    'Software Update': 'อัพเดทซอฟต์แวร์',
+    'No Fault Found': 'ไม่พบอาการเสีย(ส่งคืน)'
+};
+const formatAction = (action?: string) => action ? (actionMap[action] || action) : '-';
+
 export const DocumentPreview: React.FC = () => {
     const { type, id } = useParams<{ type: string; id: string }>();
     const navigate = useNavigate();
@@ -155,6 +163,11 @@ export const DocumentPreview: React.FC = () => {
                             textLines.push(`S/N: ${rma.serialNumber}`);
                             textLines.push(`อาการที่ลูกค้าแจ้ง: ${rma.issueDescription || '-'}`);
                             if (rma.resolution?.rootCause) textLines.push(`อาการที่พบ: ${rma.resolution.rootCause}`);
+                            if (rma.resolution?.actionTaken) {
+                                textLines.push(`การดำเนินการ: ${formatAction(rma.resolution.actionTaken)}`);
+                                if (rma.resolution.actionDetails) textLines.push(`รายละเอียด: ${rma.resolution.actionDetails}`);
+                                if (rma.resolution.replacedSerialNumber) textLines.push(`S/N ใหม่: ${rma.resolution.replacedSerialNumber}`);
+                            }
                             navigator.clipboard.writeText(textLines.join('\n')).then(() => {
                                 alert('✅ คัดลอกข้อความแล้ว!');
                             }).catch(() => alert('ไม่สามารถคัดลอกได้'));
@@ -211,6 +224,11 @@ export const DocumentPreview: React.FC = () => {
                                 textLines.push(`S/N: ${rma.serialNumber}`);
                                 textLines.push(`อาการที่ลูกค้าแจ้ง: ${rma.issueDescription || '-'}`);
                                 if (rma.resolution?.rootCause) textLines.push(`อาการที่พบ: ${rma.resolution.rootCause}`);
+                                if (rma.resolution?.actionTaken) {
+                                    textLines.push(`การดำเนินการ: ${formatAction(rma.resolution.actionTaken)}`);
+                                    if (rma.resolution.actionDetails) textLines.push(`รายละเอียด: ${rma.resolution.actionDetails}`);
+                                    if (rma.resolution.replacedSerialNumber) textLines.push(`S/N ใหม่: ${rma.resolution.replacedSerialNumber}`);
+                                }
                                 try {
                                     await navigator.clipboard.write([
                                         new ClipboardItem({

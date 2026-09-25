@@ -25,6 +25,14 @@ interface ShipmentTagModalProps {
     distributorGroups?: Record<string, RMA[]>;
 }
 
+const actionMap: Record<string, string> = {
+    'Replaced Component': 'ศูนย์เปลี่ยนอะไหล่',
+    'Swapped Unit': 'เปลี่ยนเครื่อง (Swap)',
+    'Software Update': 'อัพเดทซอฟต์แวร์',
+    'No Fault Found': 'ไม่พบอาการเสีย(ส่งคืน)'
+};
+const formatAction = (action?: string) => action ? (actionMap[action] || action) : '-';
+
 export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
     isOpen,
     onClose,
@@ -335,6 +343,23 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
             text += `${i + 1}. ${item.brand} ${item.productModel} | S/N: ${item.serialNumber || '-'}\n`;
             text += `   อาการที่ลูกค้าแจ้ง: ${item.issueDescription || '-'}\n`;
             text += `   อาการที่พบ: ${item.resolution?.rootCause || '-'}\n`;
+
+            const isAdvanceReplacement = (item.status === 'REPLACED_FROM_STOCK' || item.status === 'RETURNED_FROM_VENDOR');
+            const actionText = item.resolution?.actionTaken 
+                ? formatAction(item.resolution.actionTaken) 
+                : (isAdvanceReplacement ? 'เปลี่ยนเครื่อง (Swap)' : (targetType === 'CUSTOMER' && item.status === 'REPAIRED' ? 'ซ่อมเสร็จสิ้น' : ''));
+
+            if (actionText) {
+                text += `   การดำเนินการ: ${actionText}\n`;
+            } else if (targetType === 'CUSTOMER') {
+                text += `   การดำเนินการ: -\n`;
+            }
+            if (item.resolution?.actionDetails) {
+                text += `   รายละเอียด: ${item.resolution.actionDetails}\n`;
+            }
+            if (item.resolution?.replacedSerialNumber) {
+                text += `   S/N ใหม่: ${item.resolution.replacedSerialNumber}\n`;
+            }
         });
 
         text += `\nนำส่ง...${effectiveReceiverName}\n`;
@@ -626,6 +651,25 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                                     text += `รายการสินค้า (${items.length} ชิ้น):\n`;
                                     items.forEach((item, i) => {
                                         text += `${i + 1}. ${item.brand} ${item.productModel} | S/N: ${item.serialNumber || '-'}\n`;
+                                        text += `   อาการที่ลูกค้าแจ้ง: ${item.issueDescription || '-'}\n`;
+                                        text += `   อาการที่พบ: ${item.resolution?.rootCause || '-'}\n`;
+
+                                        const isAdvanceReplacement = (item.status === 'REPLACED_FROM_STOCK' || item.status === 'RETURNED_FROM_VENDOR');
+                                        const actionText = item.resolution?.actionTaken 
+                                            ? formatAction(item.resolution.actionTaken) 
+                                            : (isAdvanceReplacement ? 'เปลี่ยนเครื่อง (Swap)' : (targetType === 'CUSTOMER' && item.status === 'REPAIRED' ? 'ซ่อมเสร็จสิ้น' : ''));
+
+                                        if (actionText) {
+                                            text += `   การดำเนินการ: ${actionText}\n`;
+                                        } else if (targetType === 'CUSTOMER') {
+                                            text += `   การดำเนินการ: -\n`;
+                                        }
+                                        if (item.resolution?.actionDetails) {
+                                            text += `   รายละเอียด: ${item.resolution.actionDetails}\n`;
+                                        }
+                                        if (item.resolution?.replacedSerialNumber) {
+                                            text += `   S/N ใหม่: ${item.resolution.replacedSerialNumber}\n`;
+                                        }
                                     });
                                     text += `\nนำส่ง...${effectiveReceiverName}\n`;
                                     if (effectiveContactPerson) text += `ผู้ติดต่อ: ${effectiveContactPerson}\n`;
