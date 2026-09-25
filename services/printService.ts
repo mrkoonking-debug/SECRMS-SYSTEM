@@ -1265,8 +1265,9 @@ export const printCustomerShippingLabel = async (payloads: ShippingLabelPayload[
     if (trackingIds.length > 0) {
       copyText += `\n`;
       trackingIds.forEach(tid => {
-        copyText += `Tracking ID: ${tid}\nhttps://track.thailandpost.co.th/?trackNumber=${tid}\n`;
+        copyText += `หมายเลขพัสดุ: ${tid}\n`;
       });
+      copyText += `https://track.thailandpost.co.th/?trackNumber=${trackingIds.join(',')}\n`;
     }
 
     executePreview(html, rma.id + '_Shipping_Label', copyText.trim());

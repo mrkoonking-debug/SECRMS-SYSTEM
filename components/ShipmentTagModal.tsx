@@ -347,8 +347,8 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
             text += `\n`;
             cleanTrackingIds.forEach(tid => {
                 text += `หมายเลขพัสดุ: ${tid}\n`;
-                text += `https://track.thailandpost.co.th/?trackNumber=${tid}\n`;
             });
+            text += `https://track.thailandpost.co.th/?trackNumber=${cleanTrackingIds.join(',')}\n`;
         }
 
         navigator.clipboard.writeText(text.trim()).then(() => {
@@ -631,12 +631,13 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                                     if (effectiveContactPerson) text += `ผู้ติดต่อ: ${effectiveContactPerson}\n`;
                                     if (effectiveReceiverAddress) text += `${effectiveReceiverAddress}\n`;
                                     if (effectiveReceiverPhone) text += `โทร. ${effectiveReceiverPhone}\n`;
+                                    text += `\nพัสดุจะปรากฏในระบบภายใน 1-3 วันทำการ\nหากยังไม่ปรากฏ กรุณาตรวจสอบอีกครั้งในวันถัดไป\n`;
                                     if (cleanTrackingIds.length > 0) {
                                         text += `\n`;
                                         cleanTrackingIds.forEach(tid => {
                                             text += `หมายเลขพัสดุ: ${tid}\n`;
-                                            text += `https://track.thailandpost.co.th/?trackNumber=${tid}\n`;
                                         });
+                                        text += `https://track.thailandpost.co.th/?trackNumber=${cleanTrackingIds.join(',')}\n`;
                                     }
                                     await navigator.clipboard.write([
                                         new ClipboardItem({
