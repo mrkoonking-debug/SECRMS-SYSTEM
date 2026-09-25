@@ -65,6 +65,17 @@ export const LINE_ACCOUNTS: LineAccountConfig[] = [
             { name: 'คุณชยพล', phone: '092-689-7111' },
         ],
     },
+    {
+        id: 'cctvhub',
+        lineId: '@CCTVHUB',
+        label: '@CCTVHUB',
+        teams: [Team.HIKVISION, Team.TEAM_G],
+        recipients: [
+            { name: 'คุณบลู', phone: '092-389-3000' },
+            { name: 'คุณตั้ม', phone: '063-076-0700' },
+            { name: 'คุณต๋อง', phone: '062-217-5766' },
+        ],
+    },
 ];
 
 // Helper to find a LINE account config by its id

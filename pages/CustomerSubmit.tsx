@@ -10,6 +10,7 @@ import { LINE_ACCOUNTS, SEC_ADDRESS, getLineAccountById } from '../lineConfig';
 import { getCustomerInboundLabelHTML } from '../services/printService';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ProductEntryForm } from '../components/ProductEntryForm';
+import { GlassSelect } from '../components/GlassSelect';
 import { showToast, showValidationError } from '../services/toast';
 
 
@@ -792,11 +793,26 @@ export const CustomerSubmit: React.FC = () => {
                             {/* Row 3: LINE Account (Where they bought) & LINE ID */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 md:gap-6">
                                 <div>
-                                    <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5">{t('publicSubmit.lineAccountLabel')} <span className="text-red-500">*</span></label>
-                                    <select value={customer.lineAccount} onChange={e => setCustomer({ ...customer, lineAccount: e.target.value })} className={INPUT_CLASS + ' cursor-pointer'}>
-                                        <option value="">{t('publicSubmit.lineAccountPlaceholder')}</option>
-                                        {LINE_ACCOUNTS.map(la => <option key={la.id} value={la.id}>{la.label}</option>)}
-                                    </select>
+                                    <GlassSelect
+                                        label={t('publicSubmit.lineAccountLabel')}
+                                        required
+                                        placeholder={t('publicSubmit.lineAccountPlaceholder')}
+                                        value={customer.lineAccount}
+                                        onChange={val => {
+                                            setCustomer(p => ({ ...p, lineAccount: val }));
+                                            setErrors(prev => ({ ...prev, lineAccount: '' }));
+                                        }}
+                                        hasError={!!errors.lineAccount}
+                                        options={LINE_ACCOUNTS.map(la => ({
+                                            value: la.id,
+                                            label: la.label,
+                                            icon: (
+                                                <span className="w-5 h-5 rounded-full bg-[#06C755]/15 border border-[#06C755]/30 text-[#06C755] flex items-center justify-center text-[10px] font-black shrink-0">
+                                                    @
+                                                </span>
+                                            )
+                                        }))}
+                                    />
                                     {errors.lineAccount && <p className="text-red-500 text-xs ml-2 mt-1">{errors.lineAccount}</p>}
                                 </div>
                                 <div>

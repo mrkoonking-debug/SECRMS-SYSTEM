@@ -6,6 +6,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { GlassSelect } from '../components/GlassSelect';
 import { showToast } from '../services/toast';
 import { AdminPageSkeleton } from '../components/AdminPageSkeleton';
+import { LINE_ACCOUNTS, getLineAccountById } from '../lineConfig';
 
 interface GroupedJob {
     groupId: string;
@@ -14,6 +15,7 @@ interface GroupedJob {
     customerEmail: string;
     createdAt: string;
     quotationNumber: string;
+    lineAccount?: string;
 }
 
 export const IncomingClaims: React.FC = () => {
@@ -36,7 +38,7 @@ export const IncomingClaims: React.FC = () => {
     // Edit Modal States
     const [editingJob, setEditingJob] = useState<GroupedJob | null>(null);
     const [editingRMA, setEditingRMA] = useState<RMA | null>(null);
-    const [jobForm, setJobForm] = useState({ customerName: '', contactPerson: '', phone: '', email: '', returnAddress: '', quotationNumber: '' });
+    const [jobForm, setJobForm] = useState({ customerName: '', contactPerson: '', phone: '', email: '', returnAddress: '', quotationNumber: '', lineAccount: '' });
     const [rmaForm, setRmaForm] = useState({ brand: '', productModel: '', serialNumber: '', issueDescription: '' });
     const [isSaving, setIsSaving] = useState(false);
 
@@ -120,7 +122,8 @@ export const IncomingClaims: React.FC = () => {
                     (rma.customerEmail && rma.customerEmail.toLowerCase().includes(term)) ||
                     (rma.productModel && rma.productModel.toLowerCase().includes(term)) ||
                     (rma.brand && rma.brand.toLowerCase().includes(term)) ||
-                    (rma.issueDescription && rma.issueDescription.toLowerCase().includes(term));
+                    (rma.issueDescription && rma.issueDescription.toLowerCase().includes(term)) ||
+                    (rma.lineAccount && rma.lineAccount.toLowerCase().includes(term));
                 if (!match) return false;
             }
             return true;
@@ -142,6 +145,7 @@ export const IncomingClaims: React.FC = () => {
             customerEmail: rmas[0].customerEmail,
             createdAt: rmas[0].createdAt,
             quotationNumber: rmas[0].quotationNumber || 'N/A',
+            lineAccount: rmas[0].lineAccount || '',
         }));
     }, [filteredIncoming]);
 
@@ -245,7 +249,8 @@ export const IncomingClaims: React.FC = () => {
             phone: firstRMA.customerPhone || '',
             email: firstRMA.customerEmail || '',
             returnAddress: firstRMA.customerReturnAddress || firstRMA.customerAddress || '',
-            quotationNumber: firstRMA.quotationNumber || ''
+            quotationNumber: firstRMA.quotationNumber || '',
+            lineAccount: firstRMA.lineAccount || ''
         });
         setEditingJob(job);
     };
@@ -262,6 +267,7 @@ export const IncomingClaims: React.FC = () => {
                     customerEmail: jobForm.email,
                     customerReturnAddress: jobForm.returnAddress,
                     quotationNumber: jobForm.quotationNumber,
+                    lineAccount: jobForm.lineAccount,
                     updatedAt: new Date().toISOString()
                 });
             }
@@ -400,6 +406,30 @@ export const IncomingClaims: React.FC = () => {
                                                 <Package className="w-3.5 h-3.5" />
                                                 {job.rmas.length} {job.rmas.length === 1 ? 'item' : 'items'}
                                             </span>
+                                            {/* LINE@ Badge */}
+                                            {(() => {
+                                                const config = job.lineAccount ? getLineAccountById(job.lineAccount) : null;
+                                                const label = config?.label || job.lineAccount;
+                                                if (label) {
+                                                    return (
+                                                        <span 
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black bg-[#06C755]/15 text-[#06C755] dark:text-[#2ddc76] border border-[#06C755]/30 apple-card-sm shadow-sm"
+                                                            title={`สั่งซื้อผ่านช่องทาง: ${label}`}
+                                                        >
+                                                            <span className="w-4 h-4 rounded-full bg-[#06C755] text-white flex items-center justify-center text-[9px] font-black shrink-0 leading-none">
+                                                                @
+                                                            </span>
+                                                            <span>{label}</span>
+                                                        </span>
+                                                    );
+                                                }
+                                                return (
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-gray-500/10 text-gray-400 border border-gray-500/20">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                                                        LINE@: ไม่ระบุ
+                                                    </span>
+                                                );
+                                            })()}
                                         </div>
 
                                         <div className="flex items-center gap-2 px-3 py-1 rounded-[14px] bg-black/[0.04] dark:bg-black/40 border border-black/5 dark:border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
@@ -689,6 +719,25 @@ export const IncomingClaims: React.FC = () => {
                                         className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-bold text-[#1d1d1f] dark:text-white focus:outline-none focus:border-[#0071e3]"
                                     />
                                 </div>
+                            </div>
+
+                            <div>
+                                <GlassSelect
+                                    label="LINE@ ที่สั่งซื้อ"
+                                    value={jobForm.lineAccount}
+                                    onChange={(val) => setJobForm({ ...jobForm, lineAccount: val })}
+                                    options={[
+                                        { value: '', label: '-- ไม่ระบุ --' },
+                                        ...LINE_ACCOUNTS.map(la => ({
+                                            value: la.id,
+                                            label: la.label,
+                                            icon: (
+                                                <span className="w-4 h-4 rounded-full bg-[#06C755]/15 text-[#06C755] flex items-center justify-center text-[9px] font-black shrink-0">@</span>
+                                            )
+                                        }))
+                                    ]}
+                                    placeholder="เลือก LINE@..."
+                                />
                             </div>
 
                             <div>
