@@ -174,12 +174,12 @@ export const GlassSelect: React.FC<GlassSelectProps> = ({
     <div
       ref={dropdownRef}
       style={dropdownStyle}
-      className="bg-white dark:bg-[#16181d] border border-slate-200 dark:border-white/[0.1] rounded-2xl shadow-2xl overflow-hidden animate-fade-in origin-top p-1.5 z-[9999]"
+      className="bg-white/95 dark:bg-[#16161a]/95 backdrop-blur-xl border border-gray-200/90 dark:border-white/[0.1] rounded-[28px] shadow-2xl overflow-hidden animate-fade-in origin-top p-2 z-[9999]"
     >
       {searchable && (
-        <div className="p-1.5 border-b border-slate-100 dark:border-white/[0.06] sticky top-0 bg-white dark:bg-[#16181d] z-10">
+        <div className="p-2 border-b border-gray-200/60 dark:border-white/[0.06] sticky top-0 bg-white/90 dark:bg-[#16161a]/90 backdrop-blur-md z-10">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <input
               ref={searchInputRef}
               type="text"
@@ -187,7 +187,7 @@ export const GlassSelect: React.FC<GlassSelectProps> = ({
               onChange={(e) => setSearchQuery(e.target.value)}
               onClick={(e) => e.stopPropagation()}
               placeholder={searchPlaceholder || 'ค้นหา...'}
-              className="w-full bg-slate-100/80 dark:bg-white/[0.05] border border-slate-200/60 dark:border-white/[0.08] rounded-xl py-2 pl-9 pr-3 text-xs md:text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0071e3]/30 placeholder-slate-400 dark:placeholder-slate-500 outline-none"
+              className="w-full bg-gray-100/80 dark:bg-white/[0.05] border border-gray-200/50 dark:border-white/[0.06] rounded-full py-2 pl-9 pr-3.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white focus:ring-2 focus:ring-[#0071e3]/40 placeholder-gray-400 dark:placeholder-gray-500 outline-none"
             />
           </div>
         </div>
@@ -195,16 +195,16 @@ export const GlassSelect: React.FC<GlassSelectProps> = ({
 
       <div className="max-h-60 overflow-y-auto p-1 custom-scrollbar">
         {filteredOptions.length === 0 ? (
-          <div className="p-4 text-center text-xs md:text-sm text-slate-400">ไม่พบข้อมูล</div>
+          <div className="p-4 text-center text-xs md:text-sm text-gray-400">ไม่พบข้อมูล</div>
         ) : (
           <>
             {frequentOptions.length > 0 && (
               <>
-                <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                   ใช้บ่อย / ล่าสุด
                 </div>
                 {frequentOptions.map(renderOption)}
-                <div className="h-px bg-slate-200/70 dark:bg-white/[0.06] my-1.5 mx-2" />
+                <div className="h-px bg-gray-200/60 dark:bg-white/[0.06] my-1.5 mx-2" />
               </>
             )}
             {normalOptions.map(renderOption)}
@@ -217,7 +217,7 @@ export const GlassSelect: React.FC<GlassSelectProps> = ({
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
-      {label && <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1.5 tracking-wide">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>}
+      {label && <label className="block text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1 ml-1.5 tracking-wide">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>}
 
       <button
         ref={buttonRef}
@@ -226,25 +226,25 @@ export const GlassSelect: React.FC<GlassSelectProps> = ({
         disabled={disabled}
         className={`
           w-full text-left flex items-center justify-between
-          bg-white dark:bg-[#1a1d24] 
-          border ${hasError ? 'border-red-500 ring-2 ring-red-500/15' : isOpen ? 'border-[#0071e3] ring-2 ring-[#0071e3]/20' : 'border-slate-200 dark:border-white/[0.1]'}
-          rounded-xl px-3.5 py-2.5 text-xs md:text-sm 
-          text-slate-900 dark:text-white 
-          transition-all duration-150
-          hover:border-[#0071e3]/60
+          bg-white dark:bg-[#1a1a1c] 
+          border ${hasError ? 'border-red-500' : isOpen ? 'border-[#0071e3] ring-2 ring-[#0071e3]/20' : 'border-gray-200/90 dark:border-white/[0.08]'}
+          apple-card-inner rounded-[18px] sm:rounded-[22px] md:rounded-[26px] px-3.5 py-2 sm:px-4 sm:py-2.5 md:px-5 md:py-3 text-xs md:text-sm 
+          text-[#1d1d1f] dark:text-white 
+          transition-all duration-200
+          hover:border-[#0071e3]
           disabled:opacity-50 disabled:cursor-not-allowed
           outline-none focus:outline-none cursor-pointer
         `}
       >
         <div className="flex items-center gap-2 truncate">
           {selectedOption?.icon}
-          <span className={!selectedOption ? "text-slate-400 dark:text-slate-500" : ""}>
+          <span className={!selectedOption ? "text-gray-500 dark:text-gray-400" : ""}>
             {selectedOption
               ? <>{selectedOption.label}</>
               : placeholder}
           </span>
         </div>
-        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {dropdownPanel}

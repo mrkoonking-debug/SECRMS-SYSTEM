@@ -80,7 +80,7 @@ export const StatusBadge: React.FC<Props> = React.memo(({ status, isOverdue, isP
   };
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${getStyles()}`}>
+    <span className={`px-2 md:px-3 py-0.5 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-wider ${getStyles()}`}>
       {getLabel()}
     </span>
   );

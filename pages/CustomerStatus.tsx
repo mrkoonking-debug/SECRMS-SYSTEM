@@ -65,16 +65,16 @@ export const CustomerStatus: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f6f7f9] dark:bg-[#0f1115] px-4">
-        <div className="w-full max-w-md bg-white dark:bg-[#16181d] border border-slate-200/80 dark:border-white/[0.08] p-6 rounded-2xl shadow-lg space-y-4 animate-fade-in">
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f7] dark:bg-[#131314] px-4">
+        <div className="w-full max-w-md bg-white dark:bg-[#16161a] border border-gray-200/80 dark:border-white/[0.08] p-6 rounded-3xl apple-card shadow-xl space-y-4 animate-fade-in">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl skeleton-shimmer shrink-0" />
+            <div className="w-10 h-10 rounded-full skeleton-shimmer shrink-0" />
             <div className="space-y-2 flex-1">
               <div className="w-32 h-4 rounded skeleton-shimmer" />
               <div className="w-20 h-3 rounded skeleton-shimmer" />
             </div>
           </div>
-          <div className="h-16 rounded-xl skeleton-shimmer w-full" />
+          <div className="h-16 rounded-2xl skeleton-shimmer w-full" />
           <div className="h-10 rounded-xl skeleton-shimmer w-full" />
         </div>
       </div>
@@ -85,13 +85,10 @@ export const CustomerStatus: React.FC = () => {
 
   if (!query || (searched && validRmas.length === 0)) {
     return (
-      <div className="min-h-screen bg-[#f6f7f9] dark:bg-[#0f1115] pt-20 px-4 flex flex-col items-center text-center">
-        <div className="w-16 h-16 rounded-2xl bg-slate-200/70 dark:bg-white/[0.06] flex items-center justify-center mb-5 text-slate-400">
-          <Search className="w-7 h-7" />
-        </div>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mb-2">{t('public.notFound')}</h2>
-        <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-md text-sm">{t('public.notFoundDesc')}</p>
-        <Link to="/" className="px-6 py-3 bg-[#0071e3] hover:bg-[#0062c4] text-white rounded-xl font-semibold shadow-sm transition-colors">
+      <div className="min-h-screen bg-[#f5f5f7] dark:bg-[#131314] pt-20 px-4 flex flex-col items-center text-center">
+        <h2 className="text-4xl font-bold mb-4 text-[#1d1d1f] dark:text-white">{t('public.notFound')}</h2>
+        <p className="text-[#86868b] mb-8 max-w-md">{t('public.notFoundDesc')}</p>
+        <Link to="/" className="px-8 py-3 bg-[#0071e3] text-white rounded-full font-bold shadow-lg shadow-blue-500/20">
           {t('public.tryAgain')}
         </Link>
       </div>
@@ -142,10 +139,10 @@ export const CustomerStatus: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f6f7f9] dark:bg-[#0f1115] pb-20 px-4 md:px-6">
-      <div className="max-w-3xl mx-auto py-6 flex items-center justify-between">
-        <Link to="/" className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-[#16181d] border border-slate-200/80 dark:border-white/[0.08] text-xs sm:text-sm font-semibold text-[#0071e3] hover:border-[#0071e3]/40 transition-all shadow-xs">
-          <ArrowLeft className="h-4 w-4" /> {t('public.searchBtn')}
+    <div className="min-h-screen bg-[#f5f5f7] dark:bg-[#131314] pb-20 px-4 md:px-6">
+      <div className="max-w-3xl mx-auto py-8 flex items-center justify-between">
+        <Link to="/" className="flex items-center text-sm font-semibold text-[#0071e3]">
+          <ArrowLeft className="h-4 w-4 mr-2" /> {t('public.searchBtn')}
         </Link>
         <div className="flex gap-2">
           <ThemeToggle />
@@ -154,19 +151,19 @@ export const CustomerStatus: React.FC = () => {
       </div>
 
       <div className="max-w-3xl mx-auto">
-        <div className="bg-white dark:bg-[#16181d] rounded-2xl border border-slate-200/80 dark:border-white/[0.08] p-5 sm:p-6 mb-5 shadow-xs">
+        <div className="glass-panel rounded-3xl p-5 sm:p-6 mb-6 animate-slide-up">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="text-[11px] font-bold text-[#0071e3] uppercase tracking-wider mb-1">{t('track.reference')}</div>
-              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex flex-wrap gap-2 items-center">
+              <h1 className="text-xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white tracking-tight flex flex-wrap gap-2 items-center">
                 {validRmas[0].groupRequestId || validRmas[0].id}
                 {validRmas[0].quotationNumber && (
-                  <span className="bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 text-xs px-2.5 py-0.5 rounded-lg border border-slate-200/80 dark:border-white/10 font-semibold">
+                  <span className="bg-gray-100 dark:bg-[#2c2c2e] text-gray-600 dark:text-gray-300 text-xs md:text-sm px-2.5 py-0.5 rounded-lg border border-gray-200 dark:border-[#424245]">
                     Ref: {validRmas[0].quotationNumber}
                   </span>
                 )}
               </h1>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 font-medium">{validRmas[0].customerName}</p>
+              <p className="text-[#86868b] text-sm md:text-base mt-1">{validRmas[0].customerName}</p>
             </div>
 
             {activeItems.length > 0 && (
@@ -175,7 +172,7 @@ export const CustomerStatus: React.FC = () => {
                   type="button"
                   onClick={handlePrintInboundLabel}
                   disabled={isPrintingLabel}
-                  className="px-3.5 py-2 rounded-xl bg-[#0071e3] hover:bg-[#0062c4] text-white text-xs font-semibold inline-flex items-center gap-1.5 shadow-xs transition-all disabled:opacity-60 cursor-pointer"
+                  className="px-4 py-2 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all disabled:opacity-60 cursor-pointer"
                 >
                   {isPrintingLabel ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Printer className="w-3.5 h-3.5" />}
                   <span>พิมพ์ใบปะหน้าส่งของ</span>
@@ -184,7 +181,7 @@ export const CustomerStatus: React.FC = () => {
                   type="button"
                   onClick={handleDownloadInboundPng}
                   disabled={isDownloadingPng}
-                  className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-white/10 text-xs font-semibold inline-flex items-center gap-1.5 transition-all disabled:opacity-60 cursor-pointer"
+                  className="px-4 py-2 rounded-full bg-gray-100 dark:bg-[#2c2c2e] hover:bg-gray-200 dark:hover:bg-[#3a3a3c] text-[#1d1d1f] dark:text-white border border-gray-200 dark:border-white/10 text-xs font-bold inline-flex items-center gap-1.5 transition-all disabled:opacity-60 cursor-pointer"
                 >
                   {isDownloadingPng ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
                   <span>บันทึก PNG</span>
@@ -208,7 +205,7 @@ export const CustomerStatus: React.FC = () => {
             const returnTrackingList = (rma.customerTrackingIds || []).filter(Boolean);
 
             return (
-              <div key={rma.id} className={`bg-white dark:bg-[#16181d] rounded-2xl border border-slate-200/80 dark:border-white/[0.08] p-5 sm:p-6 shadow-xs ${isCancelled ? 'opacity-60 grayscale' : ''}`}>
+              <div key={rma.id} className={`glass-panel rounded-3xl p-5 sm:p-6 md:p-8 ${isCancelled ? 'opacity-50 grayscale bg-gray-50/20' : ''}`}>
                 <div className="flex flex-wrap justify-between items-start gap-3 mb-6">
                   <div>
                     <div className="text-[11px] font-bold text-[#0071e3] uppercase">{rma.brand}</div>

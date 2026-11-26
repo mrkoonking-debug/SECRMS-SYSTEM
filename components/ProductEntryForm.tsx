@@ -16,14 +16,14 @@ import { compressImage } from '../services/imageCompressor';
 const DEFAULT_ACCESSORIES = COMMON_ACCESSORIES.filter(a => a !== 'acc_hdd');
 
 const getInputClass = (hasError: boolean) => `
-  w-full px-3.5 py-2.5 text-xs md:text-sm rounded-xl outline-none transition-all
-  bg-slate-50 dark:bg-[#1a1d24]
-  border border-slate-200 dark:border-white/[0.08]
-  text-slate-900 dark:text-white
-  placeholder-slate-400 dark:placeholder-slate-500
-  focus:bg-white dark:focus:bg-[#1f232b]
-  focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3]
-  ${hasError ? 'border-red-500 focus:ring-red-500/20 ring-2 ring-red-500/20' : ''}
+  w-full px-3.5 py-2 sm:px-4 sm:py-2.5 md:px-5 md:py-3 text-xs md:text-sm apple-card-inner rounded-[16px] sm:rounded-[20px] md:rounded-[24px] outline-none transition-all
+  bg-gray-50/70 dark:bg-white/[0.03] 
+  border border-gray-200/90 dark:border-white/[0.08]
+  text-[#1d1d1f] dark:text-white
+  placeholder-gray-400 dark:placeholder-gray-500
+  focus:bg-white dark:focus:bg-[#1c1c20]
+  focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]
+  ${hasError ? 'border-red-500 focus:ring-red-500 ring-2 ring-red-500/20' : ''}
 `;
 
 interface ProductEntryFormProps {
@@ -284,15 +284,15 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                 )}
 
                 <div className={mode === 'customer' ? 'col-span-2' : ''} data-tour="tour-accessories">
-                    <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                    <label className="block text-[10.5px] md:text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-2">
                         {t('submit.accessories')} {mode === 'admin' && <span className="text-red-500 font-bold">*</span>}
                     </label>
-                    {mode === 'customer' && <p className="text-[11px] text-blue-600/90 dark:text-blue-400/90 mb-2 flex items-center gap-1"><Info className="w-3 h-3 text-blue-500 flex-shrink-0" /> เลือกสิ่งที่ส่งมาพร้อมเครื่อง (ไม่จำเป็นต้องเลือก ข้ามได้ — ระบบจะบันทึกเป็นเฉพาะตัวเครื่อง)</p>}
+                    {mode === 'customer' && <p className="text-[11px] text-blue-600/80 dark:text-blue-400/85 mb-2 ml-3 flex items-center gap-1"><Info className="w-3 h-3 text-blue-500 flex-shrink-0" /> เลือกสิ่งที่ส่งมาพร้อมเครื่อง (ไม่จำเป็นต้องเลือก ข้ามได้ — ระบบจะบันทึกเป็นเฉพาะตัวเครื่อง)</p>}
                     <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2">
                         <button
                             type="button"
                             onClick={(e) => { e.preventDefault(); setCurrentItem(prev => ({ ...prev, accessories: prev.accessories.includes('unit_only') ? prev.accessories.filter(a => a !== 'unit_only') : ['unit_only'] })); setErrors(p => ({ ...p, accessories: '' })); }}
-                            className={`h-8 px-3 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1 outline-none cursor-pointer ${currentItem.accessories.includes('unit_only') ? 'bg-amber-500 text-white border-amber-500 shadow-xs' : 'bg-slate-50 dark:bg-[#1a1d24] border-slate-200 dark:border-white/[0.08] text-slate-700 dark:text-slate-300 hover:border-amber-500/50 hover:text-amber-600'}`}
+                            className={`h-7 sm:h-8 px-2.5 sm:px-3 text-[11px] sm:text-xs font-semibold rounded-full border transition-all flex items-center gap-1 outline-none cursor-pointer apple-card-sm ${currentItem.accessories.includes('unit_only') ? 'bg-amber-500 text-white border-amber-500 shadow-xs' : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-gray-300 hover:border-amber-500/50 hover:text-amber-500'}`}
                         >
                             {t('accessories_list.unit_only')}
                         </button>
@@ -304,15 +304,15 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                                     type="button"
                                     key={acc}
                                     onClick={(e) => { e.preventDefault(); toggleAccessory(acc); }}
-                                    className={`h-8 px-3 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1 outline-none cursor-pointer ${isActive ? 'bg-[#0071e3] text-white border-[#0071e3] shadow-xs' : 'bg-slate-50 dark:bg-[#1a1d24] border-slate-200 dark:border-white/[0.08] text-slate-700 dark:text-slate-300 hover:border-blue-500/50 hover:text-[#0071e3]'}`}
+                                    className={`h-7 sm:h-8 px-2.5 sm:px-3 text-[11px] sm:text-xs font-semibold rounded-full border transition-all flex items-center gap-1 outline-none cursor-pointer apple-card-sm ${isActive ? 'bg-[#0071e3] text-white border-[#0071e3] shadow-xs' : 'bg-black/[0.02] dark:bg-white/[0.03] border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-gray-300 hover:border-blue-500/50 hover:text-blue-500'}`}
                                 >
                                     {t(`accessories_list.${acc}`)}
-                                    {acc === 'acc_hdd' && <span className={`flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold ${hddCount > 0 ? 'bg-white text-[#0071e3]' : 'bg-slate-200 dark:bg-white/10 text-slate-500'}`}>{hddCount > 0 ? hddCount : <Plus className="w-2.5 h-2.5" />}</span>}
+                                    {acc === 'acc_hdd' && <span className={`flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold ${hddCount > 0 ? 'bg-white text-[#0071e3]' : 'bg-black/10 dark:bg-white/10 text-gray-400'}`}>{hddCount > 0 ? hddCount : <Plus className="w-2.5 h-2.5" />}</span>}
                                 </button>
                             );
                         })}
                     </div>
-                    <div className="flex gap-2 mb-2.5">
+                    <div className="flex gap-1.5 sm:gap-2 mb-2.5">
                         <input
                             type="text"
                             value={customAccessory}
@@ -330,19 +330,19 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                             placeholder={t('publicSubmit.otherAccPlaceholder')}
                             className={`flex-1 ${getInputClass(false)} !py-1.5 !px-3 text-xs`}
                         />
-                        <button type="button" onClick={() => { const val = customAccessory.trim(); if (val) { toggleAccessory(val); setCustomAccessory(''); } }} className="h-9 px-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 text-slate-800 dark:text-white rounded-xl transition-all cursor-pointer flex items-center justify-center"><Plus className="w-4 h-4" /></button>
+                        <button type="button" onClick={() => { const val = customAccessory.trim(); if (val) { toggleAccessory(val); setCustomAccessory(''); } }} className="h-8 sm:h-9 px-3.5 bg-gray-150 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-[#1d1d1f] dark:text-white rounded-full transition-all cursor-pointer flex items-center justify-center"><Plus className="w-3.5 h-3.5" /></button>
                     </div>
                     {currentItem.accessories.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 p-2.5 bg-slate-50 dark:bg-[#1a1d24] rounded-xl border border-slate-200/70 dark:border-white/[0.08]">
+                        <div className="flex flex-wrap gap-1.5 p-2 sm:p-2.5 bg-black/[0.02] dark:bg-black/30 rounded-[18px] border border-black/5 dark:border-white/[0.08] apple-card-inner">
                             {currentItem.accessories.map((acc, idx) => (
-                                <span key={`${acc}-${idx}`} className="inline-flex items-center gap-1.5 h-7 px-2.5 bg-white dark:bg-[#232730] text-xs font-medium rounded-lg shadow-xs border border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-white">
+                                <span key={`${acc}-${idx}`} className="inline-flex items-center gap-1.5 h-7 px-2.5 bg-white dark:bg-[#1f1f24] text-[11px] sm:text-xs font-semibold rounded-full shadow-xs border border-gray-200/80 dark:border-white/10 text-[#1d1d1f] dark:text-white apple-card-sm">
                                     <span>{acc.startsWith('acc_hdd::') ? `HDD (${acc.split('::')[1]})` : (acc.startsWith('acc_') || acc === 'unit_only' ? t(`accessories_list.${acc}`) : acc)}</span>
-                                    <button type="button" onClick={() => setCurrentItem(p => ({ ...p, accessories: p.accessories.filter(a => a !== acc) }))} className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors cursor-pointer p-0 ml-0.5"><X className="w-3 h-3" /></button>
+                                    <button type="button" onClick={() => setCurrentItem(p => ({ ...p, accessories: p.accessories.filter(a => a !== acc) }))} className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer p-0 ml-0.5"><X className="w-2.5 h-2.5" /></button>
                                 </span>
                             ))}
                         </div>
                     )}
-                    {errors.accessories && <p className="text-red-500 text-xs mt-2 font-medium">{errors.accessories}</p>}
+                    {errors.accessories && <p className="text-red-500 text-xs mt-2 font-medium ml-3">{errors.accessories}</p>}
                 </div>
             </div>
 
@@ -430,7 +430,7 @@ export const ProductEntryForm: React.FC<ProductEntryFormProps> = ({ mode, onAddI
                 </p>
             </div>
 
-            <button data-tour="tour-add-button" onClick={handleAddClick} className="w-full py-3.5 bg-[#0071e3] hover:bg-[#0062c4] text-white rounded-xl text-sm md:text-base font-bold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99] outline-none cursor-pointer">
+            <button data-tour="tour-add-button" onClick={handleAddClick} className="w-full py-4 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-full text-sm md:text-base font-extrabold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.01] active:scale-[0.98] outline-none cursor-pointer">
                 <Plus className="w-5 h-5" /> {noSerial && quantity > 1 ? `เพิ่ม ${quantity} รายการ` : t(mode === 'customer' ? 'publicSubmit.addAnother' : 'submit.addToJob')}
             </button>
 

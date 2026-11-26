@@ -185,12 +185,12 @@ export const SubmitClaim: React.FC = () => {
           </div>
 
           {/* Section 1: Customer Details */}
-          <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 sm:p-6 md:p-7 mb-5 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-8 h-8 rounded-lg bg-[#0071e3] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+          <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[28px] sm:rounded-[34px] p-5 sm:p-7 md:p-8 mb-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-8 rounded-full bg-[#0071e3] text-white flex items-center justify-center text-xs font-extrabold flex-shrink-0 shadow-md shadow-blue-500/30">
                 1
               </div>
-              <h2 className="font-bold text-base md:text-lg text-slate-900 dark:text-white tracking-tight">
+              <h2 className="font-extrabold text-base md:text-xl text-[#1d1d1f] dark:text-white tracking-tight">
                 {t('submit.customerDetails')}
               </h2>
             </div>
@@ -291,12 +291,12 @@ export const SubmitClaim: React.FC = () => {
           </div>
 
           {/* Section 2: Add Item */}
-          <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 sm:p-6 md:p-7 mb-5 border border-slate-200/80 dark:border-white/[0.08] shadow-xs relative overflow-hidden">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-8 h-8 rounded-lg bg-[#0071e3] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+          <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[28px] sm:rounded-[34px] p-5 sm:p-7 md:p-8 mb-6 relative overflow-hidden">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-8 rounded-full bg-[#0071e3] text-white flex items-center justify-center text-xs font-extrabold flex-shrink-0 shadow-md shadow-blue-500/30">
                 2
               </div>
-              <h2 className="font-bold text-base md:text-lg text-slate-900 dark:text-white tracking-tight">
+              <h2 className="font-extrabold text-base md:text-xl text-[#1d1d1f] dark:text-white tracking-tight">
                 {t('submit.addItem')}
               </h2>
             </div>
@@ -305,19 +305,19 @@ export const SubmitClaim: React.FC = () => {
 
           {/* Section 3: Items in Job Basket */}
           {basket.length > 0 && (
-            <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 sm:p-6 md:p-7 mb-5 border border-slate-200/80 dark:border-white/[0.08] shadow-xs animate-fade-in">
-              <div className="flex justify-between items-center mb-5">
+            <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[28px] sm:rounded-[34px] p-5 sm:p-7 md:p-8 mb-8 animate-fade-in">
+              <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-[#34c759] text-white flex items-center justify-center text-xs font-extrabold flex-shrink-0 shadow-md shadow-emerald-500/30">
                     3
                   </div>
-                  <h2 className="font-bold text-base md:text-lg text-slate-900 dark:text-white tracking-tight">
+                  <h2 className="font-extrabold text-base md:text-xl text-[#1d1d1f] dark:text-white tracking-tight">
                     {t('submit.itemsInJob')} ({basket.length})
                   </h2>
                 </div>
                 <button
                   onClick={() => setBasket([])}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-red-500 hover:text-white hover:bg-red-500 transition-all cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-full text-xs font-bold text-red-500 hover:text-white hover:bg-red-500 transition-all cursor-pointer"
                 >
                   ล้างรายการทั้งหมด
                 </button>
@@ -325,25 +325,25 @@ export const SubmitClaim: React.FC = () => {
 
               <div className="space-y-3">
                 {basket.map((item, idx) => (
-                  <div key={item.id} className="p-4 bg-slate-50 dark:bg-[#1a1d24] rounded-xl border border-slate-200/70 dark:border-white/[0.06] hover:border-[#0071e3]/35 transition-all flex items-start justify-between gap-3">
+                  <div key={item.id} className="p-4 bg-gray-50/70 dark:bg-white/[0.03] apple-card-inner rounded-[20px] md:rounded-[24px] border border-gray-200/60 dark:border-white/[0.06] hover:border-blue-500/30 transition-all flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 min-w-0 flex-1">
-                      <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-[#0071e3] flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-blue-500/10 text-[#0071e3] flex items-center justify-center text-xs font-extrabold flex-shrink-0">
                         {idx + 1}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="font-bold text-sm md:text-base text-slate-900 dark:text-white leading-snug">
+                        <div className="font-extrabold text-sm md:text-base text-[#1d1d1f] dark:text-white leading-snug">
                           {item.brand} {item.model}
                         </div>
-                        <div className="text-xs text-slate-500 font-mono my-0.5">
+                        <div className="text-xs text-gray-500 font-mono font-medium my-0.5">
                           S/N: {item.serial}
                         </div>
-                        <div className="text-xs md:text-sm text-slate-600 dark:text-slate-300 mb-2 leading-relaxed">
+                        <div className="text-xs md:text-sm text-gray-600 dark:text-gray-300 mb-2 leading-relaxed">
                           {item.issue}
                         </div>
                         {item.accessories.length > 0 && (
                           <div className="flex flex-wrap gap-1 mb-1.5">
                             {item.accessories.map((acc: string) => (
-                              <span key={acc} className="text-[10.5px] font-medium px-2 py-0.5 bg-white dark:bg-white/[0.06] rounded-md text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-white/5">
+                              <span key={acc} className="text-[10px] font-medium px-2.5 py-0.5 bg-black/5 dark:bg-white/[0.06] rounded-full text-gray-600 dark:text-gray-300 border border-black/5 dark:border-white/5">
                                 {formatAccessory(acc)}
                               </span>
                             ))}
@@ -352,19 +352,19 @@ export const SubmitClaim: React.FC = () => {
                         {item.attachments && item.attachments.length > 0 && (
                           <div className="flex flex-wrap items-center gap-1.5 my-1.5">
                             {item.attachments.map((att: any, aIdx: number) => (
-                              <img key={att.id || aIdx} src={att.previewUrl} alt={att.fileName || 'Photo'} className="w-10 h-10 rounded-lg object-cover border border-slate-200 dark:border-white/10" />
+                              <img key={att.id || aIdx} src={att.previewUrl} alt={att.fileName || 'Photo'} className="w-10 h-10 rounded-xl object-cover border border-gray-200/80 dark:border-white/10" />
                             ))}
-                            <span className="text-[11px] text-slate-500 font-medium">แนบรูป {item.attachments.length} รูป</span>
+                            <span className="text-[11px] text-gray-500 font-medium">แนบรูป {item.attachments.length} รูป</span>
                           </div>
                         )}
-                        <div className="text-[11px] text-slate-400 font-medium mt-1">
+                        <div className="text-[10.5px] text-gray-400 font-medium mt-1">
                           ศูนย์: {item.distributor || '-'} · ทีม: {item.team || '-'}
                         </div>
                       </div>
                     </div>
                     <button
                       onClick={() => handleRemoveItem(item.id)}
-                      className="p-2 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-all cursor-pointer"
+                      className="p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition-all cursor-pointer"
                       title="ลบรายการนี้"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -374,16 +374,16 @@ export const SubmitClaim: React.FC = () => {
               </div>
 
               {hasProductDraft && (
-                <div className="mt-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-xs text-amber-700 dark:text-amber-300 font-medium">
+                <div className="mt-4 p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-xs text-amber-700 dark:text-amber-300 font-medium">
                   💡 คุณกรอกข้อมูลสินค้าไว้ในส่วนที่ 2 ค้างอยู่ หากต้องการส่งชิ้นนั้นด้วย กรุณากดปุ่ม &quot;เพิ่มรายการเข้า Job&quot; ก่อนกดบันทึก
                 </div>
               )}
 
-              <div className="mt-6 pt-5 border-t border-slate-100 dark:border-white/5">
+              <div className="mt-8 pt-6 border-t border-black/5 dark:border-white/5">
                 <button
                   onClick={handleSubmitAll}
                   disabled={isSubmitting}
-                  className="w-full py-3.5 bg-[#0071e3] hover:bg-[#0062c4] disabled:bg-slate-400 text-white rounded-xl font-bold text-sm md:text-base shadow-sm transition-all active:scale-[0.99] flex items-center justify-center gap-2.5 cursor-pointer"
+                  className="w-full py-4 bg-[#0071e3] hover:bg-[#0077ed] disabled:bg-gray-400 text-white rounded-full font-extrabold text-base md:text-lg shadow-xl shadow-blue-500/25 transition-all hover:scale-[1.01] active:scale-[0.98] flex items-center justify-center gap-3 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>

@@ -77,69 +77,72 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
     const isJobDone = jobItems.every(i => DONE_STATUSES.includes(i.status));
 
     return (
-        <div
-            onClick={() => onJobClick(jobKey)}
-            className={`p-4 flex flex-col gap-3 cursor-pointer bg-white dark:bg-[#16181d] rounded-2xl border border-slate-200/80 dark:border-white/[0.08] hover:border-[#0071e3]/45 hover:shadow-md transition-all duration-150 group ${isJobCancelled ? 'opacity-55 grayscale bg-slate-50 dark:bg-black/20' : ''}`}
+        <div 
+            onClick={() => onJobClick(jobKey)} 
+            className={`p-4 md:p-5 flex flex-col gap-3.5 cursor-pointer bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[26px] md:rounded-[30px] group ${isJobCancelled ? 'opacity-50 grayscale bg-gray-50/20 dark:bg-black/10' : ''}`}
         >
-            {/* Top Row */}
+            {/* Top Row: Icon, Key, Badges, and Chevron */}
             <div className="flex items-center justify-between gap-3 w-full">
                 <div className="flex items-center gap-2.5 flex-wrap min-w-0 flex-1">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-white ${isJobCancelled ? 'bg-slate-400 dark:bg-slate-600' : isJobDone ? 'bg-emerald-500' : jobItems.some(i => isRMAOverdue(i)) ? 'bg-red-500' : 'bg-[#0071e3]'}`}>
-                        {isJobCancelled ? <X className="w-4 h-4 text-white" /> : isJobDone ? <CheckCircle2 className="w-4 h-4 text-white" /> : <Package className="w-4 h-4 text-white" />}
+                    <div className="flex items-center gap-2.5">
+                        {/* macOS-style Icon Badge */}
+                        <div className={`w-9 h-9 apple-card-sm rounded-[13px] flex items-center justify-center flex-shrink-0 text-white shadow-sm transition-transform group-hover:scale-105 ${isJobCancelled ? 'bg-gray-400 dark:bg-gray-600' : isJobDone ? 'bg-[#34c759]' : jobItems.some(i => isRMAOverdue(i)) ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>
+                            {isJobCancelled ? <X className="w-[18px] h-[18px] text-white" /> : isJobDone ? <CheckCircle2 className="w-[18px] h-[18px] text-white" /> : <Package className="w-[18px] h-[18px] text-white" />}
+                        </div>
+                        <span className="text-[13px] md:text-[15px] font-bold text-[#1d1d1f] dark:text-white whitespace-nowrap shrink-0">{jobKey}</span>
                     </div>
-                    <span className="text-sm font-bold text-slate-900 dark:text-white whitespace-nowrap">{jobKey}</span>
-                    <span className={`text-[11px] px-2 py-0.5 rounded-md border whitespace-nowrap ${quotationNumber ? 'bg-slate-100 dark:bg-white/[0.07] text-slate-600 dark:text-slate-300 border-slate-200/70 dark:border-white/[0.08] font-medium' : 'bg-slate-50 dark:bg-white/[0.02] text-slate-400 dark:text-slate-500 border-slate-100 dark:border-white/[0.04] italic'}`}>
-                        {quotationNumber ? `Ref: ${quotationNumber}` : 'ไม่มี Ref'}
-                    </span>
-                    {jobTeam && getTeamBadge(jobTeam)}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className={`text-[10px] px-2 py-0.5 apple-card-sm rounded-[10px] border whitespace-nowrap ${quotationNumber ? 'bg-gray-100/80 dark:bg-white/[0.08] text-gray-600 dark:text-gray-300 border-gray-200/60 dark:border-white/[0.08]' : 'bg-gray-50/80 dark:bg-white/[0.03] text-gray-400 dark:text-gray-500 border-gray-100 dark:border-white/[0.04] italic'}`}>{quotationNumber ? `Ref: ${quotationNumber}` : 'ไม่มี Ref'}</span>
+                        {jobTeam && getTeamBadge(jobTeam)}
+                    </div>
                 </div>
-
-                <div className="flex items-center gap-2 shrink-0">
+                
+                <div className="flex items-center gap-2 flex-shrink-0">
                     <div className="hidden sm:flex -space-x-1.5 mr-1">
                         {jobItems.slice(0, 3).map((item) => (
-                            <div key={item.id} className={`w-6 h-6 rounded-md border border-white dark:border-[#16181d] flex items-center justify-center text-[9px] font-bold text-white ${item.team === Team.HIKVISION ? 'bg-red-500' : 'bg-[#0071e3]'}`}>{item.brand.substring(0, 1)}</div>
+                            <div key={item.id} className={`w-6 h-6 apple-card-sm rounded-[8px] border border-white dark:border-[#16161a] flex items-center justify-center text-[9px] font-bold text-white shadow-sm ${item.team === Team.HIKVISION ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>{item.brand.substring(0, 1)}</div>
                         ))}
-                        {jobItems.length > 3 && <div className="w-6 h-6 rounded-md border border-white dark:border-[#16181d] bg-slate-100 dark:bg-white/[0.08] text-slate-500 dark:text-slate-300 text-[9px] font-bold flex items-center justify-center">+{jobItems.length - 3}</div>}
+                        {jobItems.length > 3 && <div className="w-6 h-6 apple-card-sm rounded-[8px] border border-white dark:border-[#16161a] bg-gray-100 dark:bg-white/[0.08] text-gray-300 text-[9px] flex items-center justify-center shadow-sm">+{jobItems.length - 3}</div>}
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-[#0071e3] group-hover:translate-x-0.5 transition-all" />
+                    <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-500 transition-transform group-hover:translate-x-0.5" />
                 </div>
             </div>
 
             {/* Mid Row: Customer Info */}
-            <div className="flex items-center gap-2 flex-wrap text-xs text-slate-500 dark:text-slate-400 pl-10">
-                <span className="font-semibold text-slate-800 dark:text-slate-200">{customerName}</span>
-                <span className="text-slate-300 dark:text-slate-600">•</span>
-                <span>{jobItems.length} {t('claimsList.items')}</span>
+            <div className="flex items-center gap-1.5 md:gap-2 flex-wrap text-[11px] md:text-[13px] text-gray-500 dark:text-gray-300 pl-10 sm:pl-10">
+                <span className="font-semibold text-gray-800 dark:text-gray-200">{customerName}</span>
+                <span className="text-gray-300 dark:text-gray-600">·</span>
+                <span className="text-gray-500 dark:text-gray-400">{jobItems.length} {t('claimsList.items')}</span>
                 {isJobCancelled ? (
-                    <span className="bg-slate-500/10 text-slate-500 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-md border border-slate-500/20 font-semibold">ยกเลิกแล้ว</span>
+                    <span className="bg-gray-500/10 text-gray-500 dark:text-gray-400 text-[9px] px-1.5 py-0.2 rounded-full border border-gray-500/20 font-bold ml-1">ยกเลิกแล้ว</span>
                 ) : isJobDone ? (
-                    <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] px-2 py-0.5 rounded-md border border-emerald-500/20 font-semibold inline-flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> เสร็จสิ้น</span>
+                    <span className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[9px] px-1.5 py-0.2 rounded-full border border-emerald-500/30 font-bold flex items-center gap-0.5 ml-1"><CheckCircle2 className="w-2.5 h-2.5" /> เสร็จสิ้น</span>
                 ) : null}
-                {!isJobDone && jobItems.some(i => isRMAOverdue(i)) && <span className="bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] px-2 py-0.5 rounded-md border border-red-500/20 font-semibold">เกินกำหนด</span>}
+                {!isJobDone && jobItems.some(i => isRMAOverdue(i)) && <span className="bg-[#ff3b30]/15 text-[#ff3b30] text-[9px] px-1.5 py-0.2 rounded-full border border-[#ff3b30]/20 font-bold ml-1">Overdue</span>}
             </div>
 
             {/* Bottom Row: Detailed Items Preview */}
-            <div className="w-full sm:pl-10">
-                <div className="bg-slate-50/90 dark:bg-[#1a1d24] rounded-xl border border-slate-200/60 dark:border-white/[0.06] px-3 py-1 divide-y divide-slate-200/60 dark:divide-white/[0.05]">
-                    {jobItems.slice(0, 3).map((item) => (
-                        <div key={item.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3.5 py-2.5">
-                            {/* Left: Product Info */}
+            <div className="w-full pl-0 sm:pl-10">
+                <div className="mt-1 bg-black/[0.03] dark:bg-black/35 rounded-[18px] px-3.5 py-2 max-w-full overflow-hidden">
+                    {jobItems.slice(0, 3).map((item, idx) => (
+                        <div key={item.id} className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3.5 py-2.5 ${idx < Math.min(jobItems.length, 3) - 1 ? 'border-b border-black/[0.04] dark:border-white/[0.03]' : ''}` }>
+                            {/* Left: Product Icon + Info */}
                             <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-white ${
-                                    item.status && ['CLOSED','CANCELLED','REPAIRED','REJECTED','RETURNED_FROM_VENDOR'].includes(item.status) ? 'bg-slate-400 dark:bg-slate-600' : 'bg-[#0071e3]'
+                                <div className={`w-7 h-7 rounded-[10px] flex items-center justify-center shrink-0 text-white ${
+                                    item.status && ['CLOSED','CANCELLED','REPAIRED','REJECTED','RETURNED_FROM_VENDOR'].includes(item.status) ? 'bg-gray-400/70 dark:bg-gray-600/70' : 'bg-[#007aff]'
                                 }`}>
                                     <Package className="w-3.5 h-3.5" />
                                 </div>
                                 <div className="flex flex-col min-w-0">
                                     <div className="flex items-center gap-1.5 min-w-0">
-                                        <span className="text-xs font-bold text-slate-900 dark:text-white whitespace-nowrap">{item.brand}</span>
-                                        <span className="text-xs text-slate-700 dark:text-slate-300 truncate font-medium" title={item.productModel}>{item.productModel}</span>
+                                        <span className="text-[11.5px] font-bold text-gray-900 dark:text-white whitespace-nowrap">{item.brand}</span>
+                                        <span className="text-[11px] text-gray-700 dark:text-gray-200 truncate font-medium" title={item.productModel}>{item.productModel}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-                                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">{item.serialNumber}</span>
+                                        <span className="text-[10px] text-gray-500 dark:text-gray-400 font-mono font-medium">{item.serialNumber}</span>
                                         {item.distributor && item.distributor.trim() !== '' && item.distributor !== 'Pending Staff Input' && (
                                             <span
-                                                className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md bg-white dark:bg-white/[0.06] border border-slate-200/70 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 font-medium shrink-0"
+                                                className="inline-flex items-center gap-1 text-[9.5px] px-1.5 py-px rounded-full bg-black/5 dark:bg-white/[0.08] text-slate-700 dark:text-slate-200 font-medium shrink-0"
                                                 title={`ศูนย์เคลม / ผู้นำเข้า: ${item.distributor}`}
                                             >
                                                 <Building2 className="w-2.5 h-2.5 text-[#0071e3] shrink-0" />
@@ -150,10 +153,10 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
                                 </div>
                             </div>
 
-                            {/* Middle: Issue/Resolution */}
+                            {/* Middle: Issue/Resolution (compact single line) */}
                             <div className="flex-1 min-w-0 hidden sm:block">
                                 {item.issueDescription && (
-                                    <p className="text-[11px] text-slate-600 dark:text-slate-300 truncate" title={item.issueDescription}>
+                                    <p className="text-[10.5px] text-gray-600 dark:text-gray-300 truncate font-normal" title={item.issueDescription}>
                                         {item.issueDescription}
                                     </p>
                                 )}
@@ -175,7 +178,7 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
                         </div>
                     ))}
                     {jobItems.length > 3 && (
-                        <div className="text-[11px] text-slate-400 py-2 text-center font-medium">
+                        <div className="text-[10px] text-gray-400 dark:text-gray-400 py-2 text-center font-medium">
                             + อีก {jobItems.length - 3} รายการ
                         </div>
                     )}
@@ -696,25 +699,25 @@ export const ClaimsList: React.FC = () => {
     };
     const isAnyFilterActive = search !== '' || statusFilter !== 'ALL' || teamFilter !== 'ALL' || dateFilter !== 'ALL' || customStartDate !== '' || customEndDate !== '';
 
-    if (loading) return <AdminPageSkeleton title="กำลังโหลดรายการเคลม..." />;
-
     if (error) return (
-        <div className="max-w-md mx-auto mt-20 text-center bg-white dark:bg-[#16181d] p-8 rounded-2xl border border-slate-200/80 dark:border-white/[0.08]">
-            <div className="w-14 h-14 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-4"><AlertTriangle className="w-7 h-7" /></div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">โหลดข้อมูลไม่สำเร็จ</h2>
-            <p className="text-sm text-slate-500 mb-4">{error}</p>
-            <button onClick={() => window.location.reload()} className="px-5 py-2.5 bg-[#0071e3] text-white rounded-xl font-semibold flex items-center gap-2 mx-auto"><RefreshCw className="w-4 h-4" /> ลองใหม่</button>
+        <div className="max-w-md mx-auto mt-20 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-4"><AlertTriangle className="w-8 h-8" /></div>
+            <h2 className="text-lg font-bold text-[#1d1d1f] dark:text-white mb-2">โหลดข้อมูลไม่สำเร็จ</h2>
+            <p className="text-sm text-gray-500 mb-4">{error}</p>
+            <button onClick={() => window.location.reload()} className="px-6 py-3 bg-[#0071e3] text-white rounded-xl font-bold flex items-center gap-2 mx-auto"><RefreshCw className="w-4 h-4" /> ลองใหม่</button>
         </div>
     );
 
+    if (loading) return <AdminPageSkeleton title="กำลังโหลดรายการเคลม..." />;
+
     return (
         <div className="max-w-[1600px] w-full mx-auto px-2 sm:px-4 md:px-6 pb-6">
-            <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex items-center justify-between gap-4 mb-4 md:mb-6">
                 <div>
-                    <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t('claimsList.title')}</h1>
-                    <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm mt-0.5 hidden md:block">{t('claimsList.subtitle')}</p>
+                    <h1 className="text-xl md:text-[28px] font-extrabold text-[#1d1d1f] dark:text-white tracking-tight">{t('claimsList.title')}</h1>
+                    <p className="text-gray-400 dark:text-gray-500 text-[11px] md:text-sm mt-0.5 hidden md:block">{t('claimsList.subtitle')}</p>
                 </div>
-                <Link to="/admin/submit" className="bg-[#0071e3] hover:bg-[#0062c4] text-white px-4 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-1.5 shadow-xs transition-all whitespace-nowrap active:scale-[0.98]"><Plus className="h-4 w-4" /> <span className="hidden md:inline">{t('nav.newRequest')}</span><span className="md:hidden">เพิ่ม</span></Link>
+                <Link to="/admin/submit" className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-4 md:px-5 py-2 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-1.5 shadow-sm transition-all whitespace-nowrap hover:shadow-md active:scale-[0.97]"><Plus className="h-4 w-4" /> <span className="hidden md:inline">{t('nav.newRequest')}</span><span className="md:hidden">เพิ่ม</span></Link>
             </div>
 
             {/* Unified Command & Analytics Hub (Team Scope + Status Pipeline) */}
@@ -740,22 +743,22 @@ export const ClaimsList: React.FC = () => {
                 setCustomEndDate={setCustomEndDate}
             />
 
-            <div className="bg-white dark:bg-[#16181d] border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-3 sm:p-4 shadow-xs mb-4 space-y-3">
+            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[22px] sm:rounded-[28px] md:rounded-[36px] p-2.5 sm:p-3.5 md:p-4.5 shadow-sm mb-3 sm:mb-4 md:mb-6 space-y-2 sm:space-y-2.5">
                 <div className="flex items-center gap-2">
                     {/* Search Input */}
                     <div className="relative flex-1">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
-                        <input
-                            type="text"
-                            placeholder={t('claimsList.searchPlaceholder')}
-                            value={search}
-                            onChange={(e) => handleSearchChange(e.target.value)}
-                            className="w-full bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/[0.08] rounded-xl py-2 pl-10 pr-9 text-xs sm:text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-[#1f232b] focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] outline-none transition-all"
+                        <Search className="absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 dark:text-gray-500" />
+                        <input 
+                            type="text" 
+                            placeholder={t('claimsList.searchPlaceholder')} 
+                            value={search} 
+                            onChange={(e) => handleSearchChange(e.target.value)} 
+                            className="w-full bg-gray-50/70 dark:bg-white/[0.03] border border-gray-150/60 dark:border-white/5 apple-card-inner rounded-[18px] sm:rounded-[22px] py-2 sm:py-2.5 pl-9 sm:pl-11 pr-9 sm:pr-10 text-xs sm:text-sm dark:text-white focus:ring-2 focus:ring-[#0071e3]/30 transition-all" 
                         />
                         {search && (
-                            <button
+                            <button 
                                 onClick={handleClearSearch}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-slate-400 hover:bg-slate-200/60 dark:hover:bg-white/10"
+                                className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
                                 title="ล้างการค้นหา"
                             >
                                 <X className="w-3.5 h-3.5" />
@@ -763,18 +766,21 @@ export const ClaimsList: React.FC = () => {
                         )}
                     </div>
 
+
+
                     {/* Expand/Collapse all month groups */}
-                    <button onClick={handleExpandAll} className="shrink-0 p-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-[#1a1d24] text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors" title="ขยาย/หุบทั้งหมด"><ChevronsUpDown className="w-4 h-4" /></button>
+                    <button onClick={handleExpandAll} className="shrink-0 p-2 sm:p-2.5 apple-card-sm rounded-[14px] sm:rounded-[16px] text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06]" title="ขยาย/หุบทั้งหมด"><ChevronsUpDown className="w-4 h-4" /></button>
                 </div>
 
-                {/* Period / Date Filter Control */}
-                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 dark:border-white/[0.06] pt-2.5">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-slate-400 dark:text-slate-500 font-semibold text-xs shrink-0 flex items-center gap-1.5">
-                            <Calendar className="w-3.5 h-3.5 text-[#0071e3]" /> ช่วงเวลา:
+                {/* Modern Standard Period / Date Filter Control */}
+                <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-2.5 border-t border-gray-150/50 dark:border-white/5 pt-2 sm:pt-2.5">
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                        <span className="text-gray-400 dark:text-gray-500 font-bold text-[10.5px] sm:text-[11px] uppercase tracking-wider shrink-0 flex items-center gap-1 sm:gap-1.5 mr-0.5">
+                            <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#0071e3]" /> ช่วงเวลา:
                         </span>
 
-                        <div className="inline-flex bg-slate-100 dark:bg-black/30 p-0.5 rounded-lg border border-slate-200/80 dark:border-white/[0.06] max-w-full overflow-x-auto no-scrollbar">
+                        {/* Standard Quick Presets (Modern Capsule Segmented Bar) */}
+                        <div className="inline-flex bg-gray-100/90 dark:bg-white/[0.05] p-0.5 sm:p-1 rounded-full border border-gray-200/70 dark:border-white/[0.08] shadow-inner max-w-full overflow-x-auto no-scrollbar">
                             {[
                                 { id: 'ALL', label: 'ทั้งหมด' },
                                 { id: 'THIS_MONTH', label: 'เดือนนี้' },
@@ -791,10 +797,10 @@ export const ClaimsList: React.FC = () => {
                                             setCustomStartDate('');
                                             setCustomEndDate('');
                                         }}
-                                        className={`px-2.5 sm:px-3 py-1 rounded-md text-[11px] sm:text-xs font-medium transition-all whitespace-nowrap ${
+                                        className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold transition-all whitespace-nowrap ${
                                             isActive
-                                                ? 'bg-white dark:bg-[#232730] text-[#0071e3] dark:text-white shadow-xs font-semibold'
-                                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                                ? 'bg-white dark:bg-[#252528] text-[#0071e3] dark:text-white shadow-sm font-bold'
+                                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/[0.04]'
                                         }`}
                                     >
                                         {preset.label}
@@ -803,20 +809,22 @@ export const ClaimsList: React.FC = () => {
                             })}
                         </div>
 
+                        {/* Interactive Custom Calendar / Extended Period Trigger Button (Capsule Style) */}
                         <button
                             type="button"
                             onClick={() => setShowDatePickerModal(true)}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] sm:text-xs font-medium border transition-all ${
+                            className={`inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold border transition-all ${
                                 (dateFilter !== 'ALL' && dateFilter !== 'THIS_MONTH' && dateFilter !== 'LAST_MONTH' && dateFilter !== '3_MONTHS') || (customStartDate && customEndDate)
-                                    ? 'bg-[#0071e3]/10 text-[#0071e3] dark:text-blue-400 border-[#0071e3]/40 font-semibold'
-                                    : 'bg-white dark:bg-[#1a1d24] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-slate-300'
+                                    ? 'bg-[#0071e3]/10 text-[#0071e3] dark:text-blue-400 border-[#0071e3]/40 font-bold shadow-sm'
+                                    : 'bg-white dark:bg-[#1c1c1e] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 shadow-sm hover:bg-gray-50 dark:hover:bg-white/5'
                             }`}
                         >
-                            <Calendar className="w-3.5 h-3.5 text-[#0071e3]" />
+                            <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#0071e3]" />
                             <span>{activePeriodLabel}</span>
-                            <ChevronDown className="w-3 h-3 text-slate-400" />
+                            <ChevronDown className="w-3 h-3 text-gray-400 ml-0.5" />
                         </button>
 
+                        {/* Clear Date Filter Button if active (Capsule Style) */}
                         {(dateFilter !== 'ALL' || customStartDate || customEndDate) && (
                             <button
                                 type="button"
@@ -825,27 +833,28 @@ export const ClaimsList: React.FC = () => {
                                     setCustomStartDate('');
                                     setCustomEndDate('');
                                 }}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-dashed border-slate-300 dark:border-white/10"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-dashed border-gray-300 dark:border-white/10"
                                 title="ล้างตัวกรองช่วงเวลา"
                             >
                                 <X className="w-3 h-3" />
-                                <span>รีเซ็ต</span>
+                                <span>รีเซ็ตช่วงเวลา</span>
                             </button>
                         )}
                     </div>
 
+                    {/* Summary count & Clear all filters */}
                     <div className="flex items-center gap-2.5">
-                        <div className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
-                            พบ <strong className="text-slate-900 dark:text-white font-bold">{filteredRMAs.length}</strong> ชิ้น
+                        <div className="text-[11px] text-gray-400 dark:text-gray-500 hidden sm:block font-medium">
+                            พบ <strong className="text-gray-700 dark:text-gray-300 font-bold">{filteredRMAs.length}</strong> รายการ
                             {filteredRMAs.length !== rmas.length && (
-                                <span> (จากทั้งหมด {rmas.length} ชิ้น)</span>
+                                <span> (จากทั้งหมด {rmas.length})</span>
                             )}
                         </div>
 
                         {isAnyFilterActive && (
                             <button
                                 onClick={handleClearFilters}
-                                className="px-3 py-1 text-xs font-semibold rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 flex items-center gap-1 transition-colors shrink-0"
+                                className="px-3.5 py-1.5 text-xs font-bold rounded-full bg-red-500/10 text-red-600 hover:bg-red-500/20 flex items-center gap-1.5 transition-colors shrink-0"
                                 title="ล้างตัวกรองทั้งหมด"
                             >
                                 <X className="w-3.5 h-3.5" /> ล้างตัวกรอง

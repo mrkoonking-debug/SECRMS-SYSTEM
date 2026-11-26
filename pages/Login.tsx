@@ -58,27 +58,27 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative bg-[#f6f7f9] dark:bg-[#0f1115] px-4 transition-colors">
+    <div className="min-h-screen flex items-center justify-center relative bg-[#f5f5f7] dark:bg-[#131314] px-4 transition-colors">
 
       {/* ปุ่มย้อนกลับไปหน้าแรก */}
       <Link
         to="/"
-        className="absolute top-6 left-6 md:top-8 md:left-8 z-20 p-2.5 rounded-xl bg-white dark:bg-[#16181d] border border-slate-200/80 dark:border-white/[0.08] text-slate-500 hover:text-[#0071e3] transition-colors shadow-xs"
+        className="absolute top-6 left-6 md:top-10 md:left-10 z-20 p-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors"
         title="Back to Home"
       >
-        <ArrowLeft className="w-5 h-5" />
+        <ArrowLeft className="w-6 h-6" />
       </Link>
 
       <div className="w-full max-w-[400px]">
-        <div className="bg-white dark:bg-[#16181d] rounded-2xl p-6 sm:p-8 shadow-lg border border-slate-200/80 dark:border-white/[0.08]">
+        <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl md:rounded-3xl p-6 sm:p-8 md:p-10 shadow-lg border border-gray-100 dark:border-[#333]">
 
           {/* ส่วนหัว Logo */}
-          <div className="flex flex-col items-center mb-7">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4">
+          <div className="flex flex-col items-center mb-6 md:mb-10">
+            <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center mb-4 md:mb-6">
               <img src="/logo.png" alt="SEC Claim Logo" className="w-full h-full object-contain" />
             </div>
-            <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-1">SEC RMS SYSTEM</h2>
-            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">{t('login.subtitle')}</p>
+            <h2 className="text-xl md:text-2xl font-bold text-[#1d1d1f] dark:text-white tracking-tight mb-1">SEC RMS SYSTEM</h2>
+            <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm">{t('login.subtitle')}</p>
           </div>
 
           {/* ฟอร์ม Login */}
@@ -90,7 +90,7 @@ export const Login: React.FC = () => {
                 placeholder={t('login.emailPlaceholder')}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/[0.08] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-[#1f232b] focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] outline-none transition-all"
+                className="w-full bg-[#f5f5f7] dark:bg-[#2c2c2e] border-none rounded-xl px-4 py-2.5 md:py-4 text-sm md:text-base text-[#1d1d1f] dark:text-white focus:ring-2 focus:ring-[#0071e3] transition-all"
               />
             </div>
 
@@ -101,20 +101,20 @@ export const Login: React.FC = () => {
                 placeholder={t('login.password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/[0.08] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-[#1f232b] focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] outline-none transition-all"
+                className="w-full bg-[#f5f5f7] dark:bg-[#2c2c2e] border-none rounded-xl px-4 py-2.5 md:py-4 text-sm md:text-base text-[#1d1d1f] dark:text-white focus:ring-2 focus:ring-[#0071e3] transition-all"
               />
             </div>
 
             {/* Remember Me Checkbox */}
-            <div className="flex items-center gap-2 px-0.5 py-0.5">
+            <div className="flex items-center gap-2 px-1 py-1">
               <input
                 type="checkbox"
                 id="rememberMe"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-300 dark:border-white/20 text-[#0071e3] focus:ring-[#0071e3] cursor-pointer"
+                className="w-4 h-4 rounded bg-[#f5f5f7] dark:bg-[#2c2c2e] border-none text-[#0071e3] focus:ring-0 focus:ring-offset-0 cursor-pointer"
               />
-              <label htmlFor="rememberMe" className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 cursor-pointer select-none">
+              <label htmlFor="rememberMe" className="text-xs md:text-sm text-gray-500 dark:text-gray-400 cursor-pointer select-none">
                 {language === 'th' ? 'จดจำบัญชีในเครื่องนี้' : 'Remember Login on this Device'}
               </label>
             </div>
@@ -125,7 +125,7 @@ export const Login: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 mt-1 bg-[#0071e3] hover:bg-[#0062c4] disabled:bg-slate-400 text-white rounded-xl font-bold shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm"
+              className="w-full py-2.5 md:py-4 mt-2 bg-[#0071e3] hover:bg-[#0077ed] disabled:bg-gray-400 text-white rounded-xl font-bold shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm md:text-base"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>{t('login.signIn')} <ArrowRight className="w-4 h-4" /></>}
             </button>

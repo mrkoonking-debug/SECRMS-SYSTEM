@@ -14,7 +14,7 @@ import { GlassSelect } from '../components/GlassSelect';
 import { showToast, showValidationError, showConfirmDialog, scrollAppToTop } from '../services/toast';
 
 
-const INPUT_CLASS = "w-full bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-[#1f232b] focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] transition-all outline-none";
+const INPUT_CLASS = "w-full bg-gray-50/70 dark:bg-white/[0.03] border border-gray-200/90 dark:border-white/[0.08] apple-card-inner rounded-[18px] md:rounded-[22px] px-3.5 py-2.5 md:px-5 md:py-3 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1c1c20] focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3] transition-all outline-none";
 
 export const CustomerSubmit: React.FC = () => {
     const navigate = useNavigate();
@@ -693,32 +693,32 @@ export const CustomerSubmit: React.FC = () => {
     return (
         <div className="min-h-screen py-5 md:py-10 px-3 sm:px-6 md:px-8">
             <div className="max-w-4xl mx-auto">
-                <div className="mb-5 md:mb-6 flex items-center gap-3"><button onClick={handleBack} className="p-2.5 rounded-xl bg-white dark:bg-[#16181d] border border-slate-200/80 dark:border-white/[0.08] hover:bg-slate-50 transition-colors"><ArrowLeft className="w-5 h-5 text-slate-900 dark:text-white" /></button><div><h1 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white">{t('publicSubmit.title')}</h1><p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm">{t('publicSubmit.subtitle')}</p></div></div>
-                <div className="bg-white dark:bg-[#16181d] rounded-2xl border border-slate-200/80 dark:border-white/[0.08] p-5 md:p-6 mb-5 relative overflow-hidden shadow-xs">
-                    <h2 className="text-base md:text-lg font-bold text-slate-900 dark:text-white mb-4 text-center">{t('publicSubmit.howToTitle')}</h2>
+                <div className="mb-5 md:mb-6 flex items-center gap-3"><button onClick={handleBack} className="p-2.5 rounded-full glass-panel hover:bg-white dark:hover:bg-white/10 transition-colors"><ArrowLeft className="w-5 h-5 text-[#1d1d1f] dark:text-white" /></button><div><h1 className="text-xl md:text-3xl font-black text-[#1d1d1f] dark:text-white tracking-tight">{t('publicSubmit.title')}</h1><p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm">{t('publicSubmit.subtitle')}</p></div></div>
+                <div className="glass-panel rounded-3xl p-5 md:p-8 mb-6 relative overflow-hidden">
+                    <h2 className="text-base md:text-xl font-bold text-[#1d1d1f] dark:text-white mb-5 text-center">{t('publicSubmit.howToTitle')}</h2>
                     <div className="flex flex-wrap justify-center gap-5 md:gap-12">
                         <div className="flex flex-col items-center text-center max-w-[120px]">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-[#0071e3] mb-2"><Box className="w-5 h-5" /></div>
-                            <div className="text-xs font-semibold text-slate-500">1. {t('publicSubmit.step1')}</div>
+                            <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-[#0071e3] mb-2"><Box className="w-5 h-5" /></div>
+                            <div className="text-xs font-bold text-gray-500">1. {t('publicSubmit.step1')}</div>
                         </div>
                         <div className="flex flex-col items-center text-center max-w-[120px]">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-[#0071e3] mb-2"><User className="w-5 h-5" /></div>
-                            <div className="text-xs font-semibold text-slate-500">2. {t('publicSubmit.step2')}</div>
+                            <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-[#0071e3] mb-2"><User className="w-5 h-5" /></div>
+                            <div className="text-xs font-bold text-gray-500">2. {t('publicSubmit.step2')}</div>
                         </div>
                         <div className="flex flex-col items-center text-center max-w-[120px]">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-[#0071e3] mb-2"><PenTool className="w-5 h-5" /></div>
-                            <div className="text-xs font-semibold text-slate-500">3. {t('publicSubmit.step3')}</div>
+                            <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-[#0071e3] mb-2"><PenTool className="w-5 h-5" /></div>
+                            <div className="text-xs font-bold text-gray-500">3. {t('publicSubmit.step3')}</div>
                         </div>
                     </div>
                 </div>
 
                 {/* Single Page Form Container */}
-                <div className="space-y-5">
+                <div className="space-y-6">
 
                     {/* Section 1: Customer Details */}
-                    <div className="bg-white dark:bg-[#16181d] rounded-2xl border border-slate-200/80 dark:border-white/[0.08] p-5 md:p-6 relative overflow-hidden shadow-xs">
-                        <h2 className="text-base md:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2.5 mb-5">
-                            <span className="w-7 h-7 rounded-lg bg-blue-500/10 text-[#0071e3] flex items-center justify-center text-xs font-bold">1</span>
+                    <div className="glass-panel rounded-3xl p-5 md:p-8 relative overflow-hidden">
+                        <h2 className="text-base md:text-xl font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2.5 mb-5">
+                            <span className="w-7 h-7 rounded-full bg-blue-500/10 text-[#0071e3] flex items-center justify-center text-xs font-extrabold">1</span>
                             {t('publicSubmit.contactInfo')}
                         </h2>
 
@@ -829,14 +829,14 @@ export const CustomerSubmit: React.FC = () => {
                     </div>
 
                     {/* Section 2: Product Info */}
-                    <div className="bg-white dark:bg-[#16181d] rounded-2xl border border-slate-200/80 dark:border-white/[0.08] p-5 md:p-6 relative overflow-hidden shadow-xs">
-                        <h2 className="text-base md:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2.5 mb-5">
-                            <span className="w-7 h-7 rounded-lg bg-blue-500/10 text-[#0071e3] flex items-center justify-center text-xs font-bold">2</span>
+                    <div className="glass-panel rounded-3xl p-5 md:p-8 relative overflow-hidden">
+                        <h2 className="text-base md:text-xl font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2.5 mb-5">
+                            <span className="w-7 h-7 rounded-full bg-blue-500/10 text-[#0071e3] flex items-center justify-center text-xs font-extrabold">2</span>
                             {t('publicSubmit.productInfo')}
                         </h2>
 
                         {/* Step-by-step guide for customers */}
-                        <div className="mb-5 p-4 bg-blue-50/70 dark:bg-blue-900/15 border border-blue-200/70 dark:border-blue-800/30 rounded-xl">
+                        <div className="mb-5 p-4 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-800/30 rounded-2xl">
                             <h3 className="text-xs md:text-sm font-bold text-blue-700 dark:text-blue-300 mb-2 flex items-center gap-2">
                                 📋 วิธีเพิ่มรายการเข้าระบบ
                             </h3>
@@ -865,32 +865,32 @@ export const CustomerSubmit: React.FC = () => {
                                     <Package className="w-4 h-4" /> {t('submit.itemsInJob')} ({basket.length})
                                 </h3>
                                 <div className="space-y-3">
-                                    {basket.map((item, idx) => (
-                                        <div key={item.id || idx} className="p-4 bg-slate-50 dark:bg-[#1a1d24] rounded-xl border border-slate-200/70 dark:border-white/[0.06] flex justify-between items-start gap-3">
+                                {basket.map((item, idx) => (
+                                        <div key={item.id || idx} className="p-4 bg-white/70 dark:bg-white/[0.04] rounded-2xl border border-gray-100 dark:border-white/5 flex justify-between items-start gap-3">
                                             <div>
-                                                <div className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                                                    <span className="w-5 h-5 rounded-md bg-blue-100 dark:bg-blue-900/30 text-[#0071e3] text-[10px] flex items-center justify-center font-bold">{idx + 1}</span>
+                                                <div className="font-bold text-sm text-[#1d1d1f] dark:text-white flex items-center gap-2">
+                                                    <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-[#0071e3] text-[10px] flex items-center justify-center font-bold">{idx + 1}</span>
                                                     {item.brand} {item.model}
                                                 </div>
-                                                <div className="text-xs text-slate-500 font-mono mt-1 ml-7">S/N: {item.serial}</div>
-                                                <div className="text-xs text-slate-600 dark:text-slate-300 mt-1 ml-7">{item.issue}</div>
+                                                <div className="text-xs text-gray-500 font-mono mt-1 ml-7">S/N: {item.serial}</div>
+                                                <div className="text-xs text-gray-600 dark:text-gray-300 mt-1 ml-7">{item.issue}</div>
                                                 {item.accessories.length > 0 && (
                                                     <div className="flex flex-wrap gap-1 mt-2 ml-7">
                                                         {item.accessories.map((acc: string) => (
-                                                            <span key={acc} className="text-[10px] px-2 py-0.5 bg-white dark:bg-white/10 border border-slate-200/70 dark:border-white/5 rounded-md text-slate-600 dark:text-slate-300">{formatAccessory(acc)}</span>
+                                                            <span key={acc} className="text-[10px] px-2.5 py-0.5 bg-gray-100 dark:bg-white/10 rounded-full text-gray-600 dark:text-gray-300">{formatAccessory(acc)}</span>
                                                         ))}
                                                     </div>
                                                 )}
                                                 {item.attachments && item.attachments.length > 0 && (
                                                     <div className="flex flex-wrap items-center gap-1.5 mt-2 ml-7">
                                                         {item.attachments.map((att: any, aIdx: number) => (
-                                                            <img key={att.id || aIdx} src={att.previewUrl} alt={att.fileName || 'Photo'} className="w-10 h-10 rounded-lg object-cover border border-slate-200 dark:border-white/10" />
+                                                            <img key={att.id || aIdx} src={att.previewUrl} alt={att.fileName || 'Photo'} className="w-10 h-10 rounded-xl object-cover border border-gray-200/80 dark:border-white/10" />
                                                         ))}
-                                                        <span className="text-[11px] text-slate-500">แนบรูป {item.attachments.length} รูป</span>
+                                                        <span className="text-[11px] text-gray-500">แนบรูป {item.attachments.length} รูป</span>
                                                     </div>
                                                 )}
                                             </div>
-                                            <button onClick={() => handleRemoveItem(item.id)} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
+                                            <button onClick={() => handleRemoveItem(item.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
                                         </div>
@@ -900,17 +900,17 @@ export const CustomerSubmit: React.FC = () => {
                         )}
                     </div>
                     {/* Submit Section */}
-                    <div className="bg-white dark:bg-[#16181d] rounded-2xl border border-slate-200/80 dark:border-white/[0.08] p-6 text-center shadow-xs">
+                    <div className="glass-panel rounded-3xl p-6 text-center">
                         <div className="max-w-md mx-auto">
                             {hasProductDraft && (
-                                <div className="mb-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-xs text-amber-700 dark:text-amber-300 font-medium text-left">
+                                <div className="mb-4 p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-xs text-amber-700 dark:text-amber-300 font-medium text-left">
                                     💡 ท่านกรอกข้อมูลสินค้าไว้ในส่วนที่ 2 แล้ว อย่าลืมกดปุ่ม &quot;เพิ่มรายการ&quot; ด้านบนก่อนกดส่งข้อมูลนะครับ
                                 </div>
                             )}
                             {!basket.length ? (
-                                <p className="text-sm text-slate-500 mb-4 italic">{t('validation.atLeastOneProduct')}</p>
+                                <p className="text-sm text-gray-500 mb-4 italic">{t('validation.atLeastOneProduct')}</p>
                             ) : (
-                                <p className="text-sm text-emerald-600 dark:text-emerald-400 mb-4 font-semibold flex items-center justify-center gap-2">
+                                <p className="text-sm text-emerald-600 dark:text-emerald-400 mb-4 font-bold flex items-center justify-center gap-2">
                                     <CheckCircle2 className="w-4 h-4" /> พร้อมส่งแจ้งเคลม {basket.length} รายการ
                                 </p>
                             )}
@@ -918,7 +918,7 @@ export const CustomerSubmit: React.FC = () => {
                             <button
                                 onClick={handleSubmit}
                                 disabled={isSubmitting || basket.length === 0}
-                                className="w-full py-3.5 bg-[#0071e3] hover:bg-[#0062c4] disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white rounded-xl font-bold shadow-sm transition-all active:scale-[0.99] flex items-center justify-center gap-2"
+                                className="w-full py-4 bg-[#0071e3] hover:bg-[#0077ed] disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-full font-bold shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.01] active:scale-[0.98] flex items-center justify-center gap-2"
                             >
                                 {isSubmitting ? (
                                     <>Loading...</>
