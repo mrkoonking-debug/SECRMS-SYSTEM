@@ -5,7 +5,7 @@ import { MockDb } from '../services/mockDb';
 import { UserPlus, Trash2, Shield, User, Loader2, AlertCircle, Check, Edit2, X, Save, Wallet } from 'lucide-react';
 import { Team } from '../types';
 import { GlassSelect } from '../components/GlassSelect';
-import { showToast } from '../services/toast';
+import { showToast, showConfirmDialog } from '../services/toast';
 import { TransactionListSkeleton } from '../components/AdminPageSkeleton';
 
 export const UserManagement: React.FC = () => {
@@ -63,8 +63,15 @@ export const UserManagement: React.FC = () => {
   };
 
   const handleDelete = async (uid: string) => {
-    if (confirm('ยืนยันการลบพนักงานรายนี้? (จะไม่สามารถกู้คืนได้)')) {
+    const confirmed = await showConfirmDialog({
+      title: 'ลบบัญชีพนักงาน',
+      message: 'ยืนยันการลบพนักงานรายนี้? (จะไม่สามารถกู้คืนได้)',
+      confirmText: 'ลบบัญชี',
+      variant: 'danger'
+    });
+    if (confirmed) {
       await MockDb.deleteStaffAccount(uid);
+      showToast('ลบบัญชีพนักงานเรียบร้อยแล้ว', 'success');
       fetchUsers();
     }
   };

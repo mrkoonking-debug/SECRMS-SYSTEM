@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { HardDrive, Minus, Plus, Check, X, ScanBarcode } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ScannerModal } from './ScannerModal';
+import { showConfirmDialog } from '../services/toast';
 
 interface HddBulkModalProps {
     initialSerials?: string[];
@@ -41,12 +42,20 @@ export const HddBulkModal: React.FC<HddBulkModalProps> = ({
         }
     };
 
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
         const valid = serials.map(s => s.trim()).filter(Boolean);
         if (valid.length) {
             onConfirm(valid);
-        } else if (confirm(t('modals.clearHddConfirm'))) {
-            onConfirm([]);
+        } else {
+            const confirmed = await showConfirmDialog({
+                title: 'ล้างรายการฮาร์ดดิสก์',
+                message: t('modals.clearHddConfirm'),
+                confirmText: 'ล้างรายการ',
+                variant: 'warning'
+            });
+            if (confirmed) {
+                onConfirm([]);
+            }
         }
     };
 

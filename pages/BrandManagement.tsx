@@ -5,6 +5,7 @@ import { MockDb } from '../services/mockDb';
 import { Tag, Plus, Trash2, Edit2, Check, X, Loader2, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { TransactionListSkeleton } from '../components/AdminPageSkeleton';
+import { showToast, showConfirmDialog } from '../services/toast';
 
 export const BrandManagement: React.FC = () => {
   const [brands, setBrands] = useState<any[]>([]);
@@ -52,12 +53,18 @@ export const BrandManagement: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm(t('management.deleteConfirm'))) {
+    const confirmed = await showConfirmDialog({
+      title: 'ลบยี่ห้อสินค้า',
+      message: t('management.deleteConfirm'),
+      confirmText: 'ลบรายการ',
+      variant: 'danger'
+    });
+    if (confirmed) {
       try {
         await MockDb.deleteBrand(id);
         await fetchBrands();
       } catch (e: any) {
-        alert('ลบไม่สำเร็จ: ' + (e?.message || e));
+        showToast('ลบไม่สำเร็จ: ' + (e?.message || e), 'error');
         console.error('Delete brand error:', e);
       }
     }

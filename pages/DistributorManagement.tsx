@@ -5,6 +5,7 @@ import { MockDb } from '../services/mockDb';
 import { Building2, Plus, Trash2, Edit2, Check, X, Loader2, ChevronDown, ChevronUp, MapPin, Phone, User, Mail, Printer } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { TransactionListSkeleton } from '../components/AdminPageSkeleton';
+import { showConfirmDialog } from '../services/toast';
 
 export const DistributorManagement: React.FC = () => {
   const [distributors, setDistributors] = useState<any[]>([]);
@@ -90,7 +91,13 @@ export const DistributorManagement: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm(t('management.deleteConfirm'))) {
+    const confirmed = await showConfirmDialog({
+      title: 'ลบข้อมูลผู้นำเข้า',
+      message: t('management.deleteConfirm'),
+      confirmText: 'ลบรายการ',
+      variant: 'danger'
+    });
+    if (confirmed) {
       await MockDb.deleteDistributor(id);
       fetchDistributors();
     }

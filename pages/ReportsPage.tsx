@@ -178,7 +178,11 @@ export const ReportsPage: React.FC = () => {
 
   const kpis = useMemo(() => {
     const total = filteredRMAs.length;
-    const closed = filteredRMAs.filter(r => r.status === RMAStatus.CLOSED || r.status === RMAStatus.REPAIRED).length;
+    const closed = filteredRMAs.filter(r =>
+      r.status === RMAStatus.CLOSED ||
+      r.status === RMAStatus.REPAIRED ||
+      r.status === RMAStatus.RETURNED_FROM_VENDOR
+    ).length;
     const completionRate = total > 0 ? Math.round((closed / total) * 100) : 0;
 
     // Average turnaround (days) for resolved items
@@ -213,7 +217,9 @@ export const ReportsPage: React.FC = () => {
       { key: RMAStatus.PENDING, label: 'รอดำเนินการ', color: '#f59e0b' },
       { key: RMAStatus.DIAGNOSING, label: 'กำลังตรวจสอบ', color: '#3b82f6' },
       { key: RMAStatus.WAITING_PARTS, label: 'รออะไหล่/ส่งศูนย์', color: '#f97316' },
+      { key: RMAStatus.REPLACED_FROM_STOCK, label: 'สลับของสต๊อก', color: '#8b5cf6' },
       { key: RMAStatus.REPAIRED, label: 'ซ่อมเสร็จ', color: '#10b981' },
+      { key: RMAStatus.RETURNED_FROM_VENDOR, label: 'เข้าคลังคืน', color: '#14b8a6' },
       { key: RMAStatus.REJECTED, label: 'ปฏิเสธ', color: '#ef4444' },
       { key: RMAStatus.CLOSED, label: 'ปิดงาน', color: '#6b7280' },
     ];
@@ -352,21 +358,20 @@ export const ReportsPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 py-5">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 md:mb-10">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2.5 mb-1.5">
-            <div className="w-9 h-9 rounded-[13px] bg-[#0071e3]/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center apple-card-sm border border-blue-500/20">
-              <BarChart3 className="w-5 h-5" />
+          <div className="flex items-center gap-2.5 mb-1">
+            <div className="w-8 h-8 rounded-lg bg-[#0071e3]/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center border border-blue-500/20">
+              <BarChart3 className="w-4 h-4" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-[#1d1d1f] dark:text-white tracking-tight">{t('nav.reports')}</h1>
+            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t('nav.reports')}</h1>
           </div>
-          <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm">วิเคราะห์ข้อมูลเชิงลึกและสถิติภาพรวมของระบบงานเคลม</p>
+          <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm">วิเคราะห์ข้อมูลเชิงลึกและสถิติภาพรวมของระบบงานเคลม</p>
         </div>
-        <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Quick Segmented Presets */}
-          <div className="inline-flex bg-black/[0.04] dark:bg-white/[0.05] p-1 rounded-full border border-black/5 dark:border-white/10 apple-card-inner backdrop-blur-md">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="inline-flex bg-slate-200/70 dark:bg-[#1a1d24] p-1 rounded-xl border border-slate-200 dark:border-white/10">
             {[
               { id: 'all', label: 'ทั้งหมด' },
               { id: 'THIS_MONTH', label: 'เดือนนี้' },
@@ -383,10 +388,10 @@ export const ReportsPage: React.FC = () => {
                     setCustomStartDate('');
                     setCustomEndDate('');
                   }}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
                     isActive
-                      ? 'bg-white dark:bg-[#252528] text-[#0071e3] dark:text-white shadow-xs font-bold'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      ? 'bg-white dark:bg-[#232730] text-[#0071e3] dark:text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   {preset.label}
@@ -395,22 +400,20 @@ export const ReportsPage: React.FC = () => {
             })}
           </div>
 
-          {/* Interactive Custom Calendar / Extended Period Trigger Button */}
           <button
             type="button"
             onClick={() => setShowDatePickerModal(true)}
-            className={`inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#16161a] border rounded-full text-xs font-semibold transition-all apple-card-sm shadow-xs active:scale-95 ${
+            className={`inline-flex items-center gap-2 px-3.5 py-2 bg-white dark:bg-[#16181d] border rounded-xl text-xs font-semibold transition-all shadow-xs active:scale-95 ${
               (dateFilter !== 'all' && dateFilter !== 'ALL' && dateFilter !== 'THIS_MONTH' && dateFilter !== 'LAST_MONTH' && dateFilter !== '3_MONTHS') || (customStartDate && customEndDate)
                 ? 'bg-[#0071e3]/10 text-[#0071e3] dark:text-blue-400 border-[#0071e3]/40 font-bold'
-                : 'border-gray-200/80 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-[#0071e3]/30'
+                : 'border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#0071e3]/40'
             }`}
           >
             <Calendar className="w-3.5 h-3.5 text-[#0071e3]" />
             <span>{activePeriodLabel}</span>
-            <ChevronDown className="w-3.5 h-3.5 text-gray-400 ml-0.5" />
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
           </button>
 
-          {/* Clear Filter Button if not all */}
           {((dateFilter !== 'all' && dateFilter !== 'ALL') || customStartDate || customEndDate) && (
             <button
               type="button"
@@ -419,7 +422,7 @@ export const ReportsPage: React.FC = () => {
                 setCustomStartDate('');
                 setCustomEndDate('');
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold text-gray-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all apple-card-sm border border-gray-200/80 dark:border-white/10 active:scale-95"
+              className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all border border-slate-200 dark:border-white/10"
               title="ล้างตัวกรองช่วงเวลา"
             >
               <X className="w-3.5 h-3.5" />
@@ -430,64 +433,64 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-        <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[32px] p-5 sm:p-6 border border-gray-200/70 dark:border-white/[0.08] shadow-sm relative overflow-hidden group hover:scale-[1.02] transition-all">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-11 h-11 rounded-[16px] bg-blue-500/10 text-blue-500 flex items-center justify-center apple-card-sm border border-blue-500/15">
-              <Package className="w-5 h-5 text-blue-500" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
+          <div className="flex items-center gap-2.5 mb-2.5">
+            <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center border border-blue-500/15">
+              <Package className="w-4 h-4 text-blue-500" />
             </div>
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">ทั้งหมด</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">ทั้งหมด</span>
           </div>
-          <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#1d1d1f] dark:text-white tracking-tight">{kpis.total}</div>
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">งานเคลมที่รับเข้า</div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight tabular-nums">{kpis.total}</div>
+          <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">งานเคลมที่รับเข้า</div>
         </div>
 
-        <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[32px] p-5 sm:p-6 border border-gray-200/70 dark:border-white/[0.08] shadow-sm relative overflow-hidden group hover:scale-[1.02] transition-all">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-11 h-11 rounded-[16px] bg-emerald-500/10 text-emerald-500 flex items-center justify-center apple-card-sm border border-emerald-500/15">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+        <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
+          <div className="flex items-center gap-2.5 mb-2.5">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/15">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
             </div>
             <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">สำเร็จ</span>
           </div>
-          <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#1d1d1f] dark:text-white tracking-tight flex items-baseline gap-1">
-            {kpis.completionRate}<span className="text-lg text-gray-400 font-bold">%</span>
+          <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-baseline gap-1 tabular-nums">
+            {kpis.completionRate}<span className="text-base text-slate-400 font-bold">%</span>
           </div>
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">อัตราปิดงานสำเร็จ</div>
+          <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">อัตราปิดงานสำเร็จ</div>
         </div>
 
-        <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[32px] p-5 sm:p-6 border border-gray-200/70 dark:border-white/[0.08] shadow-sm relative overflow-hidden group hover:scale-[1.02] transition-all">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-11 h-11 rounded-[16px] bg-purple-500/10 text-purple-500 flex items-center justify-center apple-card-sm border border-purple-500/15">
-              <Clock className="w-5 h-5 text-purple-500" />
+        <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
+          <div className="flex items-center gap-2.5 mb-2.5">
+            <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center border border-purple-500/15">
+              <Clock className="w-4 h-4 text-purple-500" />
             </div>
             <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">ระยะเวลา</span>
           </div>
-          <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#1d1d1f] dark:text-white tracking-tight flex items-baseline gap-1">
-            {kpis.avgDays}<span className="text-lg text-gray-400 font-bold">วัน</span>
+          <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-baseline gap-1 tabular-nums">
+            {kpis.avgDays}<span className="text-base text-slate-400 font-bold">วัน</span>
           </div>
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">เวลาเฉลี่ยในการดำเนินงาน</div>
+          <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">เวลาเฉลี่ยในการดำเนินงาน</div>
         </div>
 
-        <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[32px] p-5 sm:p-6 border border-gray-200/70 dark:border-white/[0.08] shadow-sm relative overflow-hidden group hover:scale-[1.02] transition-all">
-          <div className="flex items-center gap-3 mb-3">
-            <div className={`w-11 h-11 rounded-[16px] flex items-center justify-center apple-card-sm border ${kpis.urgentCount > 0 ? 'bg-rose-500/10 text-rose-500 border-rose-500/15' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/15'}`}>
-              <AlertTriangle className={`w-5 h-5 ${kpis.urgentCount > 0 ? 'text-rose-500' : 'text-emerald-500'}`} />
+        <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
+          <div className="flex items-center gap-2.5 mb-2.5">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${kpis.urgentCount > 0 ? 'bg-rose-500/10 text-rose-500 border-rose-500/15' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/15'}`}>
+              <AlertTriangle className={`w-4 h-4 ${kpis.urgentCount > 0 ? 'text-rose-500' : 'text-emerald-500'}`} />
             </div>
             <span className={`text-[11px] font-bold uppercase tracking-wider ${kpis.urgentCount > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
               {kpis.urgentCount > 0 ? 'ต้องติดตาม' : 'ปกติ'}
             </span>
           </div>
-          <div className={`text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight ${kpis.urgentCount > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+          <div className={`text-2xl sm:text-3xl font-extrabold tracking-tight tabular-nums ${kpis.urgentCount > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
             {kpis.urgentCount}
           </div>
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">งานค้างเกิน 15 วัน</div>
+          <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">งานค้างเกิน 15 วัน</div>
         </div>
       </div>
 
       {/* Row 2: Trend + Status Pipeline */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 md:gap-8 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 mb-6">
         {/* Weekly Trend - wider */}
-        <div className="lg:col-span-3 bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 border border-gray-200/70 dark:border-white/[0.08] shadow-sm">
+        <div className="lg:col-span-3 bg-white dark:bg-[#16181d] rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2.5">
@@ -523,15 +526,15 @@ export const ReportsPage: React.FC = () => {
         </div>
 
         {/* Status Pipeline */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 border border-gray-200/70 dark:border-white/[0.08] shadow-sm">
-          <div className="mb-6">
-            <h3 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-[12px] bg-emerald-500/10 text-emerald-500 flex items-center justify-center apple-card-sm">
+        <div className="lg:col-span-2 bg-white dark:bg-[#16181d] rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
+          <div className="mb-5">
+            <h3 className="text-base md:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                 <Wrench className="w-4 h-4" />
               </div>
               สถานะงาน
             </h3>
-            <p className="text-xs text-gray-400 mt-1">จำนวนงานในแต่ละสถานะ</p>
+            <p className="text-xs text-slate-400 mt-1">จำนวนงานในแต่ละสถานะ</p>
           </div>
           <div className="space-y-3">
             {statusData.filter(s => s.value > 0).map((item, i) => {
@@ -558,23 +561,23 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* Disclaimer */}
-      <div className="flex items-start gap-3 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-300/50 dark:border-amber-500/30 rounded-[22px] md:rounded-[26px] p-4.5 sm:p-5 mb-8 apple-card-inner">
-        <span className="text-amber-500 text-xl flex-shrink-0 mt-0.5">⚠️</span>
+      <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl p-4 mb-6">
+        <span className="text-amber-500 text-lg flex-shrink-0">⚠️</span>
         <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
           <span className="font-bold">หมายเหตุ:</span> ข้อมูลด้านล่างสะท้อน<span className="font-bold underline decoration-amber-500/40">ปริมาณงานเคลม</span> ไม่ใช่อัตราการเสียของสินค้า เพราะจำนวนเคลมขึ้นอยู่กับปริมาณการขายและการสั่งซื้อ ยี่ห้อหรือรุ่นที่ขายดีย่อมมีโอกาสเข้าเคลมมากกว่า
         </p>
       </div>
 
       {/* Row 3: Brand → Distributor Breakdown */}
-      <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 border border-gray-200/70 dark:border-white/[0.08] shadow-sm mb-8">
-        <div className="mb-6">
-          <h3 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-[12px] bg-orange-500/10 text-orange-500 flex items-center justify-center apple-card-sm">
+      <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-xs mb-6">
+        <div className="mb-5">
+          <h3 className="text-base md:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center">
               <Layers className="w-4 h-4" />
             </div>
             สินค้าแต่ละยี่ห้อมาจากผู้นำเข้าเจ้าไหน
           </h3>
-          <p className="text-xs text-gray-400 mt-1">คลิกยี่ห้อเพื่อดูรายละเอียดผู้นำเข้า</p>
+          <p className="text-xs text-slate-400 mt-1">คลิกยี่ห้อเพื่อดูรายละเอียดผู้นำเข้า</p>
         </div>
 
         {brandDistributorData.length > 0 ? (
@@ -583,7 +586,7 @@ export const ReportsPage: React.FC = () => {
               const isExpanded = expandedBrand === brand.name;
               const brandColor = getBrandColor(brand.name, i);
               return (
-                <div key={brand.name} className="border border-gray-200/70 dark:border-white/[0.08] rounded-[22px] md:rounded-[24px] overflow-hidden apple-card-inner transition-all">
+                <div key={brand.name} className="border border-slate-200/70 dark:border-white/[0.08] rounded-xl overflow-hidden transition-all">
                   <button
                     onClick={() => setExpandedBrand(isExpanded ? null : brand.name)}
                     className="w-full flex items-center gap-3.5 px-5 py-4 hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors text-left"
@@ -630,18 +633,18 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* Row 4: Top 10 Models + Brand Proportion */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 md:gap-8 mt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 mt-6">
 
         {/* Top 10 Models */}
-        <div className="lg:col-span-3 bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 border border-gray-200/70 dark:border-white/[0.08] shadow-sm">
-          <div className="mb-6">
-            <h3 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-[12px] bg-amber-500/10 text-amber-500 flex items-center justify-center apple-card-sm">
+        <div className="lg:col-span-3 bg-white dark:bg-[#16181d] rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
+          <div className="mb-5">
+            <h3 className="text-base md:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center">
                 <Award className="w-4 h-4" />
               </div>
               Top 10 รุ่นที่เคลมบ่อย
             </h3>
-            <p className="text-xs text-gray-400 mt-1">รุ่นสินค้าที่มีงานเคลมเข้ามามากที่สุด</p>
+            <p className="text-xs text-slate-400 mt-1">รุ่นสินค้าที่มีงานเคลมเข้ามามากที่สุด</p>
           </div>
           {topModels.length > 0 ? (
             <div className="space-y-2.5">
@@ -675,15 +678,15 @@ export const ReportsPage: React.FC = () => {
         </div>
 
         {/* Brand Proportion */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 border border-gray-200/70 dark:border-white/[0.08] shadow-sm">
-          <div className="mb-6">
-            <h3 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-[12px] bg-purple-500/10 text-purple-500 flex items-center justify-center apple-card-sm">
+        <div className="lg:col-span-2 bg-white dark:bg-[#16181d] rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
+          <div className="mb-5">
+            <h3 className="text-base md:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center">
                 <PieChartIcon className="w-4 h-4" />
               </div>
               สัดส่วนยี่ห้อ
             </h3>
-            <p className="text-xs text-gray-400 mt-1">สัดส่วนงานเคลมแยกตามยี่ห้อสินค้า</p>
+            <p className="text-xs text-slate-400 mt-1">สัดส่วนงานเคลมแยกตามยี่ห้อสินค้า</p>
           </div>
           {brandProportion.length > 0 ? (
             <>

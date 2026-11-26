@@ -4,7 +4,7 @@ import { RMA, Team } from '../types';
 import { Package, User, Clock, ArrowRight, CheckCircle2, Loader2, Info, ChevronRight, ChevronDown, Check, Box, Layers, Wifi, Zap, ShoppingBag, Truck, Pencil, Trash2, X, Search, ChevronLeft, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { GlassSelect } from '../components/GlassSelect';
-import { showToast } from '../services/toast';
+import { showToast, showConfirmDialog } from '../services/toast';
 import { AdminPageSkeleton } from '../components/AdminPageSkeleton';
 import { LINE_ACCOUNTS, getLineAccountById } from '../lineConfig';
 
@@ -207,7 +207,13 @@ export const IncomingClaims: React.FC = () => {
     // Delete Handlers
     const handleDeleteJob = async (job: GroupedJob, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!confirm(`คุณต้องการลบรายการแจ้งเคลมของ "${job.customerName}" (${job.rmas.length} รายการ) ใช่หรือไม่?`)) return;
+        const confirmed = await showConfirmDialog({
+            title: 'ลบรายการแจ้งเคลม',
+            message: `คุณต้องการลบรายการแจ้งเคลมของ "${job.customerName}" (${job.rmas.length} รายการ) ใช่หรือไม่?`,
+            confirmText: 'ลบรายการ',
+            variant: 'danger'
+        });
+        if (!confirmed) return;
         try {
             setLoading(true);
             for (const rma of job.rmas) {
@@ -225,7 +231,13 @@ export const IncomingClaims: React.FC = () => {
 
     const handleDeleteRMA = async (rma: RMA, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!confirm(`คุณต้องการลบรายการสินค้า "${rma.productModel} (${rma.serialNumber})" ใช่หรือไม่?`)) return;
+        const confirmed = await showConfirmDialog({
+            title: 'ลบรายการสินค้า',
+            message: `คุณต้องการลบรายการสินค้า "${rma.productModel} (${rma.serialNumber})" ใช่หรือไม่?`,
+            confirmText: 'ลบสินค้า',
+            variant: 'danger'
+        });
+        if (!confirmed) return;
         try {
             setLoading(true);
             await MockDb.deleteRMA(rma.id);
@@ -325,32 +337,32 @@ export const IncomingClaims: React.FC = () => {
             </div>
 
             {/* Search and Brand Filter Controls */}
-            <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[32px] sm:rounded-[36px] md:rounded-[42px] p-4 sm:p-5 md:p-6 shadow-sm mb-6 space-y-3">
+            <div className="bg-white dark:bg-[#16181d] border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-4 sm:p-5 shadow-xs mb-5 space-y-3">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                     <div className="relative w-full flex-1">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
                         <input
                             type="text"
                             placeholder="ค้นหาตามชื่อลูกค้า, เบอร์โทร, Ref #, S/N, รุ่นสินค้า, อาการเสีย..."
                             value={search}
                             onChange={(e) => handleSearchChange(e.target.value)}
-                            className="w-full bg-gray-50/70 dark:bg-white/[0.03] border border-gray-150/60 dark:border-white/5 apple-card-inner rounded-full py-2.5 pl-11 pr-10 text-xs md:text-sm dark:text-white focus:ring-2 focus:ring-[#0071e3]/30 transition-all outline-none"
+                            className="w-full bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/[0.08] rounded-xl py-2.5 pl-10 pr-9 text-xs md:text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-[#1f232b] focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] transition-all outline-none"
                         />
                         {search && (
                             <button
                                 onClick={handleClearSearch}
-                                className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-slate-400 hover:bg-slate-200/60 dark:hover:bg-white/10"
                             >
                                 <X className="w-3.5 h-3.5" />
                             </button>
                         )}
                     </div>
                     <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <span className="text-xs font-semibold text-gray-400 whitespace-nowrap">ยี่ห้อ:</span>
+                        <span className="text-xs font-semibold text-slate-400 whitespace-nowrap">ยี่ห้อ:</span>
                         <select
                             value={brandFilter}
                             onChange={(e) => setBrandFilter(e.target.value)}
-                            className="bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/10 apple-card-inner text-xs font-bold rounded-full px-4 py-2.5 text-gray-700 dark:text-white focus:ring-2 focus:ring-[#0071e3]/30 outline-none w-full sm:w-auto transition-all cursor-pointer"
+                            className="bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/10 text-xs font-semibold rounded-xl px-3.5 py-2.5 text-slate-700 dark:text-white focus:ring-2 focus:ring-[#0071e3]/25 outline-none w-full sm:w-auto transition-all cursor-pointer"
                         >
                             <option value="ALL">ยี่ห้อทั้งหมด</option>
                             {brandOptions.map(b => (
@@ -360,10 +372,10 @@ export const IncomingClaims: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 border-t border-black/5 dark:border-white/5 pt-2.5 px-1">
+                <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-white/5 pt-2.5 px-1">
                     <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-[#0071e3] inline-block"></span>
-                        พบงานรอดำเนินการ <span className="font-extrabold text-[#0071e3] dark:text-blue-400">{totalJobsCount}</span> ใบงาน ({filteredIncoming.length} รายการสินค้า)
+                        พบงานรอดำเนินการ <span className="font-bold text-[#0071e3] dark:text-blue-400">{totalJobsCount}</span> ใบงาน ({filteredIncoming.length} ชิ้นสินค้า)
                     </div>
                     {pageSize !== -1 && totalPages > 1 && (
                         <div className="font-medium">หน้า {activePage} / {totalPages}</div>
@@ -372,26 +384,26 @@ export const IncomingClaims: React.FC = () => {
             </div>
 
             {totalJobsCount === 0 ? (
-                <div className="bg-white dark:bg-[#16161a] apple-liquid-glass p-12 md:p-20 text-center rounded-[34px] sm:rounded-[38px] md:rounded-[44px]">
-                    <div className="w-14 h-14 md:w-20 md:h-20 bg-blue-50 dark:bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 text-[#0071e3]">
-                        <CheckCircle2 className="w-7 h-7 md:w-10 md:h-10 text-emerald-500" />
+                <div className="bg-white dark:bg-[#16181d] border border-slate-200/80 dark:border-white/[0.08] p-12 md:p-16 text-center rounded-2xl shadow-xs">
+                    <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <CheckCircle2 className="w-7 h-7 text-emerald-500" />
                     </div>
-                    <h3 className="text-base md:text-xl font-bold text-gray-700 dark:text-gray-300">{t('incoming.noIncoming')}</h3>
-                    <p className="text-xs md:text-sm text-gray-400 mt-1">ไม่มีงานแจ้งเคลมใหม่ที่รอดำเนินการ</p>
+                    <h3 className="text-base md:text-lg font-bold text-slate-800 dark:text-slate-200">{t('incoming.noIncoming')}</h3>
+                    <p className="text-xs md:text-sm text-slate-400 mt-1">ไม่มีงานแจ้งเคลมใหม่ที่รอดำเนินการ</p>
                 </div>
             ) : (
-                <div className="space-y-4 md:space-y-6">
+                <div className="space-y-4">
                     {paginatedGroupedJobs.map((job) => {
                         const isExpanded = expandedGroupId === job.groupId;
                         const isSelected = selectedGroupId === job.groupId;
 
                         return (
-                            <div 
-                                key={job.groupId} 
-                                className={`bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[32px] sm:rounded-[36px] md:rounded-[42px] overflow-hidden transition-all duration-200 ${
-                                    isSelected 
-                                        ? 'ring-2 ring-[#0071e3] shadow-2xl shadow-blue-500/25' 
-                                        : 'hover:-translate-y-0.5 hover:shadow-lg'
+                            <div
+                                key={job.groupId}
+                                className={`bg-white dark:bg-[#16181d] rounded-2xl border overflow-hidden transition-all duration-150 ${
+                                    isSelected
+                                        ? 'border-[#0071e3] ring-1 ring-[#0071e3]/30 shadow-md'
+                                        : 'border-slate-200/80 dark:border-white/[0.08] hover:border-[#0071e3]/40 hover:shadow-md'
                                 }`}
                             >
                                 <div className="p-5 sm:p-6 md:p-7 flex flex-col gap-4 md:gap-5">

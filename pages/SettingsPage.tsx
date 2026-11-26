@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { Settings, Save, Check, Loader2, Globe, Building, Zap, Trash2, AlertTriangle, Archive, X, Search, Wrench, Download, Upload, Mail, Send, Copy, Package } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { showToast } from '../services/toast';
+import { showToast, showConfirmDialog } from '../services/toast';
 import { RMAStatus } from '../types';
 import { AdminPageSkeleton } from '../components/AdminPageSkeleton';
 
@@ -103,7 +103,12 @@ export const SettingsPage: React.FC = () => {
   };
 
   const handleFixJobIds = async () => {
-    if (!confirm('ต้องการแก้ไขเลข Job ID ที่ผิดปกติ (เลขสุ่มจาก fallback) ให้เรียงลำดับถูกต้องหรือไม่?')) return;
+    if (!(await showConfirmDialog({
+      title: 'แก้ไขเลข Job ID',
+      message: 'ต้องการแก้ไขเลข Job ID ที่ผิดปกติ (เลขสุ่มจาก fallback) ให้เรียงลำดับถูกต้องหรือไม่?',
+      confirmText: 'ดำเนินการแก้ไข',
+      variant: 'warning'
+    }))) return;
     setIsFixingIds(true);
     setFixResult('');
     try {
@@ -326,11 +331,16 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
-  const handleRestoreBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRestoreBackup = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
-    if (!confirm('คำเตือน: การกู้คืนข้อมูลจะเขียนทับข้อมูลเดิมในระบบทั้งหมด ต้องการดำเนินการต่อหรือไม่?')) {
+    if (!(await showConfirmDialog({
+      title: 'กู้คืนข้อมูลจากไฟล์สำรอง',
+      message: 'คำเตือน: การกู้คืนข้อมูลจะเขียนทับข้อมูลเดิมในระบบทั้งหมด ต้องการดำเนินการต่อหรือไม่?',
+      confirmText: 'ยืนยันกู้คืนข้อมูล',
+      variant: 'danger'
+    }))) {
       e.target.value = '';
       return;
     }

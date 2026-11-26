@@ -8,7 +8,7 @@ import {
 import { PettyCashTransaction, PettyCashSummary, PettyCashAudit } from '../types';
 import { MockDb } from '../services/mockDb';
 import { useLanguage } from '../contexts/LanguageContext';
-import { showToast } from '../services/toast';
+import { showToast, showConfirmDialog } from '../services/toast';
 import { TransactionModal } from '../components/TransactionModal';
 import { CashAuditModal } from '../components/CashAuditModal';
 import { ReplenishmentPlanner } from '../components/ReplenishmentPlanner';
@@ -725,7 +725,12 @@ export const FinanceLedger: React.FC = () => {
     if (!tx) return;
     const amountToReimburse = tx.paidBy === 'SPLIT' ? (tx.splitPersonalAmount || 0) : tx.amount;
     const displayName = userMap[tx.staffName.trim()] ? `${userMap[tx.staffName.trim()]} (${tx.staffName})` : tx.staffName;
-    if (!confirm(`ยืนยันการคืนเงินสำรองจ่ายจำนวน ${formatCurrency(amountToReimburse)} ให้กับ ${displayName} เรียบร้อยแล้วใช่หรือไม่?`)) return;
+    if (!(await showConfirmDialog({
+      title: 'ยืนยันการคืนเงินสำรองจ่าย',
+      message: `ยืนยันการคืนเงินสำรองจ่ายจำนวน ${formatCurrency(amountToReimburse)} ให้กับ ${displayName} เรียบร้อยแล้วใช่หรือไม่?`,
+      confirmText: 'ยืนยันคืนเงิน',
+      variant: 'primary'
+    }))) return;
     try {
       await MockDb.updatePettyCashTransaction(txId, {
         isReimbursed: true,
@@ -741,7 +746,12 @@ export const FinanceLedger: React.FC = () => {
 
   const handleReimburseAllForStaff = async (staffName: string) => {
     const displayName = userMap[staffName.trim()] ? `${userMap[staffName.trim()]} (${staffName})` : staffName;
-    if (!confirm(`ยืนยันคืนเงินสำรองจ่ายทั้งหมดให้กับ ${displayName} หรือไม่?`)) return;
+    if (!(await showConfirmDialog({
+      title: 'ยืนยันคืนเงินสำรองจ่ายทั้งหมด',
+      message: `ยืนยันคืนเงินสำรองจ่ายทั้งหมดให้กับ ${displayName} หรือไม่?`,
+      confirmText: 'ยืนยันคืนเงินทั้งหมด',
+      variant: 'primary'
+    }))) return;
     try {
       // Find all unpaid advance transactions for this staff
       const unpaid = transactions.filter(
@@ -770,7 +780,12 @@ export const FinanceLedger: React.FC = () => {
       showToast('เฉพาะผู้ดูแลระบบเท่านั้นที่สามารถลบรายการการเงินได้', 'error');
       return;
     }
-    if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการการเงินนี้? การกระทำนี้ไม่สามารถกู้คืนได้')) return;
+    if (!(await showConfirmDialog({
+      title: 'ลบรายการการเงิน',
+      message: 'คุณแน่ใจหรือไม่ว่าต้องการลบรายการการเงินนี้? การกระทำนี้ไม่สามารถกู้คืนได้',
+      confirmText: 'ลบรายการ',
+      variant: 'danger'
+    }))) return;
     try {
       await MockDb.deletePettyCashTransaction(txId);
       showToast('ลบรายการการเงินสำเร็จ', 'success');
@@ -825,7 +840,12 @@ export const FinanceLedger: React.FC = () => {
       showToast('เฉพาะผู้ดูแลระบบเท่านั้นที่สามารถซิงค์ข้อมูลได้', 'error');
       return;
     }
-    if (!confirm('ต้องการล้างรายการเดิมทั้งหมด แล้วแทนที่ด้วยชุดข้อมูลแท้จาก Excel (262 รายการ) หรือไม่?\n\n(ระบบจะลบข้อมูลที่ซ้ำซ้อนออกทั้งหมด และบันทึกข้อมูลแท้ 262 รายการเข้าสู่ Cloud ถาวร)')) return;
+    if (!(await showConfirmDialog({
+      title: 'แทนที่ข้อมูลการเงินจาก Excel',
+      message: 'ต้องการล้างรายการเดิมทั้งหมด แล้วแทนที่ด้วยชุดข้อมูลแท้จาก Excel (262 รายการ) หรือไม่?\n\n(ระบบจะลบข้อมูลที่ซ้ำซ้อนออกทั้งหมด และบันทึกข้อมูลแท้ 262 รายการเข้าสู่ Cloud ถาวร)',
+      confirmText: 'ยืนยันแทนที่ข้อมูล',
+      variant: 'danger'
+    }))) return;
     try {
       setLoading(true);
       await (MockDb as any).resetAndSyncPettyCashDatabase();

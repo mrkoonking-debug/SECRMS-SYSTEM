@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { Trash2, RotateCcw, AlertTriangle, Search, Loader2, ArrowLeft, ShieldAlert } from 'lucide-react';
 import { RMA } from '../types';
-import { showToast } from '../services/toast';
+import { showToast, showConfirmDialog } from '../services/toast';
 import { AdminPageSkeleton } from '../components/AdminPageSkeleton';
 
 export const RecycleBin: React.FC = () => {
@@ -36,7 +36,13 @@ export const RecycleBin: React.FC = () => {
   }, [navigate, currentUser]);
 
   const handleRestore = async (id: string) => {
-    if (!confirm('คุณต้องการกู้คืนรายการเคลมนี้กลับสู่รายการปกติใช่หรือไม่?')) return;
+    const confirmed = await showConfirmDialog({
+      title: 'กู้คืนรายการเคลม',
+      message: 'คุณต้องการกู้คืนรายการเคลมนี้กลับสู่รายการปกติใช่หรือไม่?',
+      confirmText: 'กู้คืนรายการ',
+      variant: 'primary'
+    });
+    if (!confirmed) return;
     setActionLoading(id);
     try {
       await MockDb.restoreRMA(id);
@@ -50,7 +56,13 @@ export const RecycleBin: React.FC = () => {
   };
 
   const handlePermanentDelete = async (id: string) => {
-    if (!confirm('🚨 คำเตือน: คุณต้องการลบรายการนี้ออกจากฐานข้อมูลอย่างถาวรใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้!')) return;
+    const confirmed = await showConfirmDialog({
+      title: 'ลบข้อมูลถาวร',
+      message: '🚨 คำเตือน: คุณต้องการลบรายการนี้ออกจากฐานข้อมูลอย่างถาวรใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้!',
+      confirmText: 'ลบถาวร',
+      variant: 'danger'
+    });
+    if (!confirmed) return;
     setActionLoading(id);
     try {
       await MockDb.permanentlyDeleteRMA(id);

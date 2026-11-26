@@ -11,10 +11,10 @@ import { getCustomerInboundLabelHTML, printHtmlDocument } from '../services/prin
 import { useLanguage } from '../contexts/LanguageContext';
 import { ProductEntryForm } from '../components/ProductEntryForm';
 import { GlassSelect } from '../components/GlassSelect';
-import { showToast, showValidationError } from '../services/toast';
+import { showToast, showValidationError, showConfirmDialog, scrollAppToTop } from '../services/toast';
 
 
-const INPUT_CLASS = "w-full bg-white dark:bg-[#1a1a1c] border border-gray-200/90 dark:border-white/[0.08] apple-card-inner rounded-[18px] md:rounded-[22px] px-3.5 py-2 md:px-4 md:py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#1e1e1f] focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3] transition-all outline-none";
+const INPUT_CLASS = "w-full bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-[#1f232b] focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] transition-all outline-none";
 
 export const CustomerSubmit: React.FC = () => {
     const navigate = useNavigate();
@@ -24,6 +24,7 @@ export const CustomerSubmit: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [customer, setCustomer] = useState({ quotationNumber: '', companyName: '', contactName: '', phone: '', email: '', lineId: '', returnAddress: '', lineAccount: '' });
     const [basket, setBasket] = useState<any[]>([]);
+    const [hasProductDraft, setHasProductDraft] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [showLabelModal, setShowLabelModal] = useState(false);
     const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -43,6 +44,8 @@ export const CustomerSubmit: React.FC = () => {
             customerName: sCustomer.companyName ? `${sCustomer.companyName} - ${sCustomer.contactName}` : sCustomer.contactName,
             contactPerson: sCustomer.contactName,
             customerPhone: sCustomer.phone,
+            customerReturnAddress: sCustomer.returnAddress,
+            customerAddress: sCustomer.returnAddress,
             returnAddress: sCustomer.returnAddress,
             lineAccount: sCustomer.lineAccount
         };
@@ -67,9 +70,15 @@ export const CustomerSubmit: React.FC = () => {
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, [isDirty, step]);
 
-    const handleBack = () => {
+    const handleBack = async () => {
         if (isDirty && step === 'form') {
-            if (window.confirm(t('publicSubmit.confirmExit'))) {
+            const confirmed = await showConfirmDialog({
+                title: 'ยืนยันออกจากหน้านี้',
+                message: t('publicSubmit.confirmExit'),
+                confirmText: 'ออกจากหน้านี้',
+                variant: 'warning'
+            });
+            if (confirmed) {
                 navigate('/');
             }
         } else {
@@ -96,7 +105,6 @@ export const CustomerSubmit: React.FC = () => {
         if (!customer.returnAddress) newErrors.returnAddress = t('validation.addressRequired');
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
-            // แจ้ง popup ใหญ่ บอกว่ากรอกไม่ครบตรงไหน
             const missingFields: string[] = [];
             if (newErrors.lineAccount) missingFields.push('LINE Account');
             if (newErrors.companyName) missingFields.push('ชื่อบริษัท / ร้านค้าของท่าน');
@@ -104,13 +112,20 @@ export const CustomerSubmit: React.FC = () => {
             if (newErrors.phone) missingFields.push('เบอร์โทรศัพท์');
             if (newErrors.returnAddress) missingFields.push('ที่อยู่จัดส่งคืน');
             showValidationError(missingFields);
-            window.scrollTo(0, 0);
+            scrollAppToTop();
             return;
         }
         if (basket.length > 0) {
             processSubmission(basket);
         } else {
-            showValidationError(['ยังไม่ได้เพิ่มสินค้า — กรุณาเพิ่มอย่างน้อย 1 รายการ'], 'ยังไม่มีสินค้าในรายการ');
+            showValidationError(
+                [
+                    hasProductDraft
+                        ? 'ท่านกรอกข้อมูลสินค้าไว้ในส่วนที่ 2 แล้ว กรุณากดปุ่ม "เพิ่มรายการ" ด้านล่างฟอร์มสินค้าก่อนกดส่ง'
+                        : 'ยังไม่ได้เพิ่มสินค้า — กรุณาเพิ่มอย่างน้อย 1 รายการ'
+                ],
+                'ยังไม่มีสินค้าในรายการ'
+            );
         }
     };
 
@@ -119,13 +134,12 @@ export const CustomerSubmit: React.FC = () => {
         const groupRequestId = await MockDb.generateNextGroupRequestId();
 
         try {
-            // Create a promise that rejects after 15 seconds
             const timeoutPromise = new Promise((_, reject) => {
                 setTimeout(() => reject(new Error('Request timed out')), 15000);
             });
 
             const submissionPromise = () => {
-                const promises = items.map(item => 
+                const promises = items.map(item =>
                     MockDb.addRMA({
                         groupRequestId,
                         customerName: customer.companyName,
@@ -147,7 +161,7 @@ export const CustomerSubmit: React.FC = () => {
                         devicePassword: item.devicePassword || '',
                         lineAccount: customer.lineAccount,
                         team: null as any,
-                        attachments: [],
+                        attachments: item.attachments || [],
                         createdBy: 'Customer (Web)'
                     })
                 );
@@ -158,23 +172,21 @@ export const CustomerSubmit: React.FC = () => {
 
             setSubmittedRef(groupRequestId);
 
-            // Save data for success screen before clearing
             setSubmittedData({
                 customer: { ...customer },
                 altSender: { ...altSender },
                 sameAsReturn: sameAsReturn
             });
 
-            // Clear sensitive state to avoid dirty check triggering
             setBasket([]);
             setCustomer({ quotationNumber: '', companyName: '', contactName: '', phone: '', email: '', lineId: '', returnAddress: '', lineAccount: '' });
             setAltSender({ name: '', phone: '', address: '', postalCode: '' });
 
             setStep('success');
-            window.scrollTo(0, 0);
+            scrollAppToTop();
         } catch (error) {
             console.error("Submission error:", error);
-            alert(t('publicSubmit.error') || "Submission failed. Please try again.");
+            showToast(t('publicSubmit.error') || "ส่งข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง", 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -679,36 +691,34 @@ export const CustomerSubmit: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen py-4 md:py-12 px-2 sm:px-6 md:px-8">
+        <div className="min-h-screen py-5 md:py-10 px-3 sm:px-6 md:px-8">
             <div className="max-w-4xl mx-auto">
-                <div className="mb-6 md:mb-8 flex items-center gap-3 md:gap-4"><button onClick={handleBack} className="p-2 rounded-full bg-white/40 dark:bg-white/5 hover:bg-white/60 transition-colors"><ArrowLeft className="w-5 h-5 text-[#1d1d1f] dark:text-white" /></button><div><h1 className="text-2xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white">{t('publicSubmit.title')}</h1><p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm">{t('publicSubmit.subtitle')}</p></div></div>
-                <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[34px] md:rounded-[42px] border border-gray-200/70 dark:border-white/[0.08] p-4 sm:p-6 md:p-8 mb-4 md:mb-8 relative overflow-hidden shadow-sm">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500/0 via-blue-500/20 to-blue-500/0"></div>
-                    <h2 className="text-lg md:text-xl font-bold text-[#1d1d1f] dark:text-white mb-4 md:mb-6 text-center">{t('publicSubmit.howToTitle')}</h2>
-                    {/* Simplified steps display just as info */}
-                    <div className="flex flex-wrap justify-center gap-4 md:gap-12">
+                <div className="mb-5 md:mb-6 flex items-center gap-3"><button onClick={handleBack} className="p-2.5 rounded-xl bg-white dark:bg-[#16181d] border border-slate-200/80 dark:border-white/[0.08] hover:bg-slate-50 transition-colors"><ArrowLeft className="w-5 h-5 text-slate-900 dark:text-white" /></button><div><h1 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white">{t('publicSubmit.title')}</h1><p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm">{t('publicSubmit.subtitle')}</p></div></div>
+                <div className="bg-white dark:bg-[#16181d] rounded-2xl border border-slate-200/80 dark:border-white/[0.08] p-5 md:p-6 mb-5 relative overflow-hidden shadow-xs">
+                    <h2 className="text-base md:text-lg font-bold text-slate-900 dark:text-white mb-4 text-center">{t('publicSubmit.howToTitle')}</h2>
+                    <div className="flex flex-wrap justify-center gap-5 md:gap-12">
                         <div className="flex flex-col items-center text-center max-w-[120px]">
-                            <div className="w-9 h-9 md:w-11 md:h-11 apple-card-sm rounded-[16px] bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-1.5 md:mb-2"><Box className="w-4.5 h-4.5 md:w-5 md:h-5" /></div>
-                            <div className="text-[10px] md:text-xs font-bold text-gray-500">1. {t('publicSubmit.step1')}</div>
+                            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-[#0071e3] mb-2"><Box className="w-5 h-5" /></div>
+                            <div className="text-xs font-semibold text-slate-500">1. {t('publicSubmit.step1')}</div>
                         </div>
                         <div className="flex flex-col items-center text-center max-w-[120px]">
-                            <div className="w-9 h-9 md:w-11 md:h-11 apple-card-sm rounded-[16px] bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-1.5 md:mb-2"><User className="w-4.5 h-4.5 md:w-5 md:h-5" /></div>
-                            <div className="text-[10px] md:text-xs font-bold text-gray-500">2. {t('publicSubmit.step2')}</div>
+                            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-[#0071e3] mb-2"><User className="w-5 h-5" /></div>
+                            <div className="text-xs font-semibold text-slate-500">2. {t('publicSubmit.step2')}</div>
                         </div>
                         <div className="flex flex-col items-center text-center max-w-[120px]">
-                            <div className="w-9 h-9 md:w-11 md:h-11 apple-card-sm rounded-[16px] bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-1.5 md:mb-2"><PenTool className="w-4.5 h-4.5 md:w-5 md:h-5" /></div>
-                            <div className="text-[10px] md:text-xs font-bold text-gray-500">3. {t('publicSubmit.step3')}</div>
+                            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-[#0071e3] mb-2"><PenTool className="w-5 h-5" /></div>
+                            <div className="text-xs font-semibold text-slate-500">3. {t('publicSubmit.step3')}</div>
                         </div>
                     </div>
                 </div>
 
                 {/* Single Page Form Container */}
-                <div className="space-y-4 md:space-y-8">
+                <div className="space-y-5">
 
                     {/* Section 1: Customer Details */}
-                    <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[34px] md:rounded-[42px] border border-gray-200/70 dark:border-white/[0.08] p-4 sm:p-6 md:p-8 relative overflow-hidden shadow-sm">
-                        <h2 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
-                            <span className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-xs md:text-sm font-bold">1</span>
+                    <div className="bg-white dark:bg-[#16181d] rounded-2xl border border-slate-200/80 dark:border-white/[0.08] p-5 md:p-6 relative overflow-hidden shadow-xs">
+                        <h2 className="text-base md:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2.5 mb-5">
+                            <span className="w-7 h-7 rounded-lg bg-blue-500/10 text-[#0071e3] flex items-center justify-center text-xs font-bold">1</span>
                             {t('publicSubmit.contactInfo')}
                         </h2>
 
@@ -819,18 +829,18 @@ export const CustomerSubmit: React.FC = () => {
                     </div>
 
                     {/* Section 2: Product Info */}
-                    <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[34px] md:rounded-[42px] border border-gray-200/70 dark:border-white/[0.08] p-4 sm:p-6 md:p-8 relative overflow-hidden shadow-sm">
-                        <h2 className="text-base md:text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
-                            <span className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-xs md:text-sm font-bold">2</span>
+                    <div className="bg-white dark:bg-[#16181d] rounded-2xl border border-slate-200/80 dark:border-white/[0.08] p-5 md:p-6 relative overflow-hidden shadow-xs">
+                        <h2 className="text-base md:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2.5 mb-5">
+                            <span className="w-7 h-7 rounded-lg bg-blue-500/10 text-[#0071e3] flex items-center justify-center text-xs font-bold">2</span>
                             {t('publicSubmit.productInfo')}
                         </h2>
 
                         {/* Step-by-step guide for customers */}
-                        <div className="mb-4 md:mb-6 p-4 md:p-5 bg-gradient-to-br from-blue-50/80 to-indigo-50/80 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/60 dark:border-blue-800/30 apple-card-inner rounded-[22px] md:rounded-[26px]">
-                            <h3 className="text-xs md:text-sm font-bold text-blue-700 dark:text-blue-300 mb-2 md:mb-3 flex items-center gap-2">
+                        <div className="mb-5 p-4 bg-blue-50/70 dark:bg-blue-900/15 border border-blue-200/70 dark:border-blue-800/30 rounded-xl">
+                            <h3 className="text-xs md:text-sm font-bold text-blue-700 dark:text-blue-300 mb-2 flex items-center gap-2">
                                 📋 วิธีเพิ่มรายการเข้าระบบ
                             </h3>
-                            <div className="space-y-1.5 md:space-y-2">
+                            <div className="space-y-1.5">
                                 {[
                                     { num: '①', text: 'เลือกยี่ห้อสินค้า เช่น Hikvision, Dahua' },
                                     { num: '②', text: 'กรอกรุ่นสินค้า และ Serial Number (ดูจากสติกเกอร์บนตัวเครื่อง) หรือกด 📷 สแกน' },
@@ -838,41 +848,49 @@ export const CustomerSubmit: React.FC = () => {
                                     { num: '④', text: 'กดปุ่ม "เพิ่มรายการ" ด้านล่าง เพื่อเพิ่มเข้ารายการ' },
                                     { num: '⑤', text: 'ถ้ามีสินค้ามากกว่า 1 ชิ้น ให้กรอกข้อมูลชิ้นถัดไป แล้วกด "เพิ่มรายการ" อีกครั้ง ทำซ้ำจนครบทุกชิ้น' },
                                 ]?.map((s, i) => (
-                                    <div key={i} className="flex items-start gap-2 text-xs md:text-sm text-blue-800/80 dark:text-blue-200/80">
-                                        <span className="text-blue-500 font-bold text-sm md:text-base leading-4 md:leading-5">{s.num}</span>
+                                    <div key={i} className="flex items-start gap-2 text-xs md:text-sm text-blue-800/85 dark:text-blue-200/85">
+                                        <span className="text-blue-500 font-bold">{s.num}</span>
                                         <span>{s.text}</span>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        <ProductEntryForm mode="customer" onAddItem={handleAddItem} />
+                        <ProductEntryForm mode="customer" onAddItem={handleAddItem} onDraftChange={setHasProductDraft} />
 
                         {/* Basket List */}
                         {basket.length > 0 && (
-                            <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-100 dark:border-white/10">
-                                <h3 className="text-xs md:text-sm font-bold text-gray-500 uppercase mb-3 md:mb-4 flex items-center gap-2">
+                            <div className="mt-6 pt-5 border-t border-slate-100 dark:border-white/10">
+                                <h3 className="text-xs md:text-sm font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
                                     <Package className="w-4 h-4" /> {t('submit.itemsInJob')} ({basket.length})
                                 </h3>
                                 <div className="space-y-3">
                                     {basket.map((item, idx) => (
-                                        <div key={idx} className="p-4 bg-gray-50/70 dark:bg-white/[0.03] apple-card-inner rounded-[20px] md:rounded-[24px] border border-gray-200/60 dark:border-white/[0.06] flex justify-between items-start">
+                                        <div key={item.id || idx} className="p-4 bg-slate-50 dark:bg-[#1a1d24] rounded-xl border border-slate-200/70 dark:border-white/[0.06] flex justify-between items-start gap-3">
                                             <div>
-                                                <div className="font-bold text-sm text-[#1d1d1f] dark:text-white flex items-center gap-2">
-                                                    <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 text-[10px] flex items-center justify-center font-bold">{idx + 1}</span>
+                                                <div className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                                                    <span className="w-5 h-5 rounded-md bg-blue-100 dark:bg-blue-900/30 text-[#0071e3] text-[10px] flex items-center justify-center font-bold">{idx + 1}</span>
                                                     {item.brand} {item.model}
                                                 </div>
-                                                <div className="text-xs text-gray-500 font-mono mt-1 ml-7">S/N: {item.serial}</div>
-                                                <div className="text-xs text-gray-600 dark:text-gray-300 mt-1 ml-7">{item.issue}</div>
+                                                <div className="text-xs text-slate-500 font-mono mt-1 ml-7">S/N: {item.serial}</div>
+                                                <div className="text-xs text-slate-600 dark:text-slate-300 mt-1 ml-7">{item.issue}</div>
                                                 {item.accessories.length > 0 && (
                                                     <div className="flex flex-wrap gap-1 mt-2 ml-7">
                                                         {item.accessories.map((acc: string) => (
-                                                            <span key={acc} className="text-[10px] px-1.5 py-0.5 bg-gray-100 dark:bg-white/10 rounded text-gray-500">{formatAccessory(acc)}</span>
+                                                            <span key={acc} className="text-[10px] px-2 py-0.5 bg-white dark:bg-white/10 border border-slate-200/70 dark:border-white/5 rounded-md text-slate-600 dark:text-slate-300">{formatAccessory(acc)}</span>
                                                         ))}
                                                     </div>
                                                 )}
+                                                {item.attachments && item.attachments.length > 0 && (
+                                                    <div className="flex flex-wrap items-center gap-1.5 mt-2 ml-7">
+                                                        {item.attachments.map((att: any, aIdx: number) => (
+                                                            <img key={att.id || aIdx} src={att.previewUrl} alt={att.fileName || 'Photo'} className="w-10 h-10 rounded-lg object-cover border border-slate-200 dark:border-white/10" />
+                                                        ))}
+                                                        <span className="text-[11px] text-slate-500">แนบรูป {item.attachments.length} รูป</span>
+                                                    </div>
+                                                )}
                                             </div>
-                                            <button onClick={() => handleRemoveItem(item.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
+                                            <button onClick={() => handleRemoveItem(item.id)} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
                                         </div>
@@ -882,20 +900,25 @@ export const CustomerSubmit: React.FC = () => {
                         )}
                     </div>
                     {/* Submit Section */}
-                    <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[34px] md:rounded-[42px] border border-gray-200/70 dark:border-white/[0.08] p-6 md:p-8 text-center shadow-sm">
+                    <div className="bg-white dark:bg-[#16181d] rounded-2xl border border-slate-200/80 dark:border-white/[0.08] p-6 text-center shadow-xs">
                         <div className="max-w-md mx-auto">
+                            {hasProductDraft && (
+                                <div className="mb-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-xs text-amber-700 dark:text-amber-300 font-medium text-left">
+                                    💡 ท่านกรอกข้อมูลสินค้าไว้ในส่วนที่ 2 แล้ว อย่าลืมกดปุ่ม &quot;เพิ่มรายการ&quot; ด้านบนก่อนกดส่งข้อมูลนะครับ
+                                </div>
+                            )}
                             {!basket.length ? (
-                                <p className="text-sm text-gray-500 mb-4 italic">{t('validation.atLeastOneProduct')}</p>
+                                <p className="text-sm text-slate-500 mb-4 italic">{t('validation.atLeastOneProduct')}</p>
                             ) : (
-                                <p className="text-sm text-green-600 dark:text-green-400 mb-4 font-semibold flex items-center justify-center gap-2">
-                                    <CheckCircle2 className="w-4 h-4" /> Ready to Submit {basket.length} items
+                                <p className="text-sm text-emerald-600 dark:text-emerald-400 mb-4 font-semibold flex items-center justify-center gap-2">
+                                    <CheckCircle2 className="w-4 h-4" /> พร้อมส่งแจ้งเคลม {basket.length} รายการ
                                 </p>
                             )}
 
                             <button
                                 onClick={handleSubmit}
                                 disabled={isSubmitting || basket.length === 0}
-                                className="w-full py-4 bg-[#0071e3] hover:bg-[#0077ed] disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white apple-card-inner rounded-[22px] md:rounded-[26px] font-bold shadow-xl shadow-blue-500/30 transition-all hover:scale-[1.01] active:scale-[0.98] flex items-center justify-center gap-2"
+                                className="w-full py-3.5 bg-[#0071e3] hover:bg-[#0062c4] disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white rounded-xl font-bold shadow-sm transition-all active:scale-[0.99] flex items-center justify-center gap-2"
                             >
                                 {isSubmitting ? (
                                     <>Loading...</>

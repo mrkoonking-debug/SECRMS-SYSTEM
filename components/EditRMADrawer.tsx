@@ -35,9 +35,6 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
     const [customAction, setCustomAction] = useState('');
     const [customAccessory, setCustomAccessory] = useState('');
     const [showHddModal, setShowHddModal] = useState(false);
-    const [isAccessoriesLocked, setIsAccessoriesLocked] = useState(true);
-    const [accessoriesBackup, setAccessoriesBackup] = useState<string[]>([]);
-    const [showAccReview, setShowAccReview] = useState(false);
     const [showUnsavedModal, setShowUnsavedModal] = useState(false);
 
     // Soft Lock State - lock closed jobs
@@ -148,6 +145,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                     [RMAStatus.WAITING_PARTS]: 2,
                     [RMAStatus.REPLACED_FROM_STOCK]: 3,
                     [RMAStatus.REPAIRED]: 4,
+                    [RMAStatus.RETURNED_FROM_VENDOR]: 4,
                     [RMAStatus.CLOSED]: 5,
                 };
                 const oldLevel = statusOrder[prev.status] ?? 0;
@@ -294,21 +292,23 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             newDiffs.push({ field: t('track.internalNote'), old: fmt(rma.notes), new: fmt(formData.notes) });
         }
 
-        // Accessories
-        const oldAcc = (rma.accessories || []).sort().join(', ');
-        const newAcc = (formData.accessories || []).sort().join(', ');
+        // Accessories (copy before sort to avoid mutating source arrays)
+        const oldAcc = [...(rma.accessories || [])].sort().join(', ');
+        const newAcc = [...(formData.accessories || [])].sort().join(', ');
         if (oldAcc !== newAcc) {
-            const fmtAcc = (keys: string[]) => keys.length === 0 ? '(ไม่มี)' : keys.map(k => k.startsWith('acc_') || k === 'unit_only' ? t(`accessories_list.${k}`) : k).join(', ');
+            const fmtAcc = (keys: string[]) => keys.length === 0
+                ? '(ไม่มี)'
+                : keys.map(k => k.startsWith('acc_hdd::') ? `HDD (${k.split('::')[1]})` : (k.startsWith('acc_') || k === 'unit_only' ? t(`accessories_list.${k}`) : k)).join(', ');
             newDiffs.push({ field: t('submit.accessories'), old: fmtAcc(rma.accessories || []), new: fmtAcc(formData.accessories || []) });
         }
 
         // Distributor Sent Items
-        const oldSent = (rma.distributorSentItems || []).sort().join(', ');
-        const newSent = (formData.distributorSentItems || []).sort().join(', ');
+        const oldSent = [...(rma.distributorSentItems || [])].sort().join(', ');
+        const newSent = [...(formData.distributorSentItems || [])].sort().join(', ');
         if (oldSent !== newSent) {
             const fmtSent = (keys: string[]) => {
                 if (keys.length === 0) return '(ไม่ได้เลือก)';
-                return keys.map(k => k === 'unit' ? 'ตัวเครื่อง' : (k.startsWith('acc_') || k === 'unit_only' ? t(`accessories_list.${k}`) : k)).join(', ');
+                return keys.map(k => k === 'unit' ? 'ตัวเครื่อง' : (k.startsWith('acc_hdd::') ? `HDD (${k.split('::')[1]})` : (k.startsWith('acc_') || k === 'unit_only' ? t(`accessories_list.${k}`) : k))).join(', ');
             };
             newDiffs.push({ field: 'อุปกรณ์ที่ส่งเคลม', old: fmtSent(rma.distributorSentItems || []), new: fmtSent(formData.distributorSentItems || []) });
         }
@@ -430,7 +430,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             onClose();
         } catch (error) {
             console.error("Failed to save RMA updates:", error);
-            alert("เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง");
+            showToast('เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง', 'error');
         } finally {
             setIsSaving(false);
         }
@@ -454,52 +454,52 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
 
 
     return (
-        <div className="max-w-[1600px] w-full mx-auto py-6 px-4 animate-fade-in">
+        <div className="max-w-[1600px] w-full mx-auto py-5 px-3 sm:px-5 animate-fade-in">
             {/* PAGE HEADER */}
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-8 px-2">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-[#1d1d1f] dark:text-white mb-2 tracking-tight">{t('track.edit')}</h1>
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-gray-500">
-                        <span className="font-mono bg-black/[0.05] dark:bg-white/[0.08] border border-black/5 dark:border-white/10 px-3 py-1 rounded-full text-[#1d1d1f] dark:text-white font-bold whitespace-nowrap apple-card-sm">{rma.id}</span>
+                    <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-1.5 tracking-tight">{t('track.edit')}</h1>
+                    <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-slate-500">
+                        <span className="font-mono bg-slate-200/70 dark:bg-white/[0.08] border border-slate-200 dark:border-white/10 px-2.5 py-0.5 rounded-lg text-slate-900 dark:text-white font-bold whitespace-nowrap">{rma.id}</span>
                         {rma.groupRequestId && (
-                            <span className="font-mono bg-blue-500/10 text-[#0071e3] dark:text-blue-400 px-3 py-1 rounded-full font-bold border border-blue-500/20 whitespace-nowrap apple-card-sm">Job: {rma.groupRequestId}</span>
+                            <span className="font-mono bg-blue-500/10 text-[#0071e3] dark:text-blue-400 px-2.5 py-0.5 rounded-lg font-bold border border-blue-500/20 whitespace-nowrap">Job: {rma.groupRequestId}</span>
                         )}
-                        <span className="whitespace-nowrap">{rma.brand} {rma.productModel}</span>
-                        <span className="hidden sm:inline">•</span>
+                        <span className="whitespace-nowrap font-medium text-slate-700 dark:text-slate-300">{rma.brand} {rma.productModel}</span>
+                        <span className="hidden sm:inline text-slate-300 dark:text-slate-600">•</span>
                         <span className="font-mono whitespace-nowrap">{rma.serialNumber}</span>
                     </div>
                 </div>
-                <button onClick={handleSafeClose} className="w-fit px-5 py-2.5 rounded-full text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10 border border-gray-200/80 dark:border-white/10 apple-card-sm transition-all flex items-center gap-2">
+                <button onClick={handleSafeClose} className="w-fit px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#16181d] hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 transition-all flex items-center gap-1.5 shadow-xs">
                     <ArrowRight className="w-4 h-4 rotate-180" /> กลับ
                 </button>
             </div>
 
             {/* SOFT LOCK BANNER */}
             {isLocked && (
-                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-300/60 dark:border-amber-500/30 rounded-[22px] md:rounded-[26px] px-6 py-4.5 apple-card-inner">
+                <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-300/70 dark:border-amber-500/30 rounded-2xl px-5 py-4">
                     <div className="flex items-center gap-3">
-                        <span className="text-2xl">⚠️</span>
+                        <span className="text-xl">⚠️</span>
                         <div>
                             <p className="font-semibold text-amber-800 dark:text-amber-300 text-sm">งานนี้ปิดแล้ว — ข้อมูลถูกล็อค</p>
                             <p className="text-amber-600 dark:text-amber-400 text-xs mt-0.5">กดปลดล็อคเพื่อแก้ไขข้อมูล</p>
                         </div>
                     </div>
-                    <button onClick={() => setIsLocked(false)} className="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-full font-medium text-sm flex items-center gap-2 transition-colors whitespace-nowrap shadow-sm">
+                    <button onClick={() => setIsLocked(false)} className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 transition-colors whitespace-nowrap shadow-xs">
                         🔓 ปลดล็อคเพื่อแก้ไข
                     </button>
                 </div>
             )}
 
             <fieldset disabled={isLocked} className={isLocked ? 'opacity-60 pointer-events-none' : ''}>
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5 items-start">
                     {/* Left Column: Form Sections */}
-                    <div className="space-y-6">
-            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 mb-6 border border-gray-200/70 dark:border-white/[0.08]">
-                <h2 className="font-semibold text-lg flex items-center gap-3 mb-6 text-[#1d1d1f] dark:text-white">
-                    <span className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-sm font-bold">1</span>
+                    <div className="space-y-5">
+            <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
+                <h2 className="font-bold text-base sm:text-lg flex items-center gap-2.5 mb-5 text-slate-900 dark:text-white">
+                    <span className="w-7 h-7 rounded-lg bg-blue-500/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center text-xs font-bold">1</span>
                     ข้อมูลสินค้า
                 </h2>
-                <div className="space-y-5">
+                <div className="space-y-4">
                     <div className="relative z-40">
                         <GlassSelect
                             label="ยี่ห้อ (Brand)"
@@ -513,72 +513,41 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                             <input
                                 value={customBrand}
                                 onChange={e => setCustomBrand(e.target.value)}
-                                className="mt-2 w-full px-4 py-3.5 text-sm rounded-[18px] md:rounded-[20px] apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                className="mt-2 w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-[#1f232b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] transition-all"
                                 placeholder="ระบุยี่ห้อ..."
                             />
                         )}
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">รุ่น (Model)</label>
+                            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1.5">รุ่น (Model)</label>
                             <div className="relative">
-                                <input type="text" value={formData.productModel || ''} onChange={e => handleFormChange('productModel', e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase())} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 pr-11 text-sm text-[#1d1d1f] dark:text-white apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 uppercase transition-all" placeholder="e.g. DH-IPC-HFW2439S" style={{ textTransform: 'uppercase' }} />
-                                <button type="button" onClick={() => { setScanTarget('productModel'); setShowScanner(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 transition-colors"><ScanBarcode className="w-5 h-5" /></button>
+                                <input type="text" value={formData.productModel || ''} onChange={e => handleFormChange('productModel', e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase())} className="w-full rounded-xl px-3.5 py-2.5 pr-10 text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/[0.08] placeholder-slate-400 focus:bg-white dark:focus:bg-[#1f232b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] uppercase transition-all" placeholder="e.g. DH-IPC-HFW2439S" style={{ textTransform: 'uppercase' }} />
+                                <button type="button" onClick={() => { setScanTarget('productModel'); setShowScanner(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-[#0071e3] transition-colors"><ScanBarcode className="w-4 h-4" /></button>
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">S/N (Serial Number)</label>
+                            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1.5">S/N (Serial Number)</label>
                             <div className="relative">
-                                <input type="text" value={formData.serialNumber || ''} onChange={e => handleFormChange('serialNumber', e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase())} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 pr-11 text-sm text-[#1d1d1f] dark:text-white apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono uppercase transition-all" placeholder="Serial Number" style={{ textTransform: 'uppercase' }} />
-                                <button type="button" onClick={() => { setScanTarget('serialNumber'); setShowScanner(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 transition-colors"><ScanBarcode className="w-5 h-5" /></button>
+                                <input type="text" value={formData.serialNumber || ''} onChange={e => handleFormChange('serialNumber', e.target.value.replace(/[^\x20-\x7E]/g, '').toUpperCase())} className="w-full rounded-xl px-3.5 py-2.5 pr-10 text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/[0.08] placeholder-slate-400 focus:bg-white dark:focus:bg-[#1f232b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] font-mono uppercase transition-all" placeholder="Serial Number" style={{ textTransform: 'uppercase' }} />
+                                <button type="button" onClick={() => { setScanTarget('serialNumber'); setShowScanner(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-[#0071e3] transition-colors"><ScanBarcode className="w-4 h-4" /></button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Accessories */}
+                    {/* Accessories (Directly editable — saved cleanly with main Review Diff Modal) */}
                     <div>
-                        <div className="flex items-center justify-between mb-3 ml-2">
-                            <label className="block text-xs font-semibold text-gray-500 uppercase">{t('submit.accessories')}</label>
-                            {isAccessoriesLocked ? (
-                                <button type="button" onClick={() => {
-                                    setAccessoriesBackup([...(formData.accessories || [])]);
-                                    setIsAccessoriesLocked(false);
-                                }} className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-xl text-gray-500 hover:text-[#0071e3] hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all">
-                                    <Pencil className="w-3 h-3" /> แก้ไข
-                                </button>
-                            ) : (
-                                <div className="flex gap-1.5">
-                                    <button type="button" onClick={() => {
-                                        handleFormChange('accessories', accessoriesBackup);
-                                        setIsAccessoriesLocked(true);
-                                    }} className="flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
-                                        <RotateCcw className="w-3 h-3" /> ยกเลิก
-                                    </button>
-                                    <button type="button" onClick={() => {
-                                        const current = formData.accessories || [];
-                                        const added = current.filter(a => !accessoriesBackup.includes(a));
-                                        const removed = accessoriesBackup.filter(a => !current.includes(a));
-                                        if (added.length === 0 && removed.length === 0) {
-                                            setIsAccessoriesLocked(true);
-                                            return;
-                                        }
-                                        setShowAccReview(true);
-                                    }} className="flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 rounded-xl text-white bg-[#0071e3] hover:bg-[#0077ED] transition-all">
-                                        <Check className="w-3 h-3" /> บันทึก
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                        <div className={`flex flex-wrap gap-2 mb-2 ${isAccessoriesLocked ? 'opacity-60 pointer-events-none' : ''}`}>
+                        <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-2">{t('submit.accessories')}</label>
+                        <div className="flex flex-wrap gap-2 mb-2.5">
                             <button
                                 type="button"
                                 onClick={() => {
                                     const current = formData.accessories || [];
                                     handleFormChange('accessories', current.includes('unit_only') ? current.filter(a => a !== 'unit_only') : ['unit_only']);
                                 }}
-                                className={`px-4 py-2 text-xs font-medium rounded-full border transition-all flex items-center gap-2 ${(formData.accessories || []).includes('unit_only')
-                                    ? 'bg-yellow-500 text-white border-yellow-500 shadow-md'
-                                    : 'bg-white dark:bg-[#2c2c2e] border-[#d2d2d7] dark:border-[#424245] text-[#1d1d1f] dark:text-gray-300 hover:border-yellow-500 hover:text-yellow-500'
+                                className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1.5 ${(formData.accessories || []).includes('unit_only')
+                                    ? 'bg-amber-500 text-white border-amber-500 shadow-xs'
+                                    : 'bg-slate-50 dark:bg-[#1a1d24] border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-amber-500 hover:text-amber-600'
                                 }`}
                             >
                                 {t('accessories_list.unit_only')}
@@ -595,40 +564,57 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                             const current = (formData.accessories || []).filter(a => a !== 'unit_only');
                                             handleFormChange('accessories', isActive ? current.filter(a => a !== acc) : [...current, acc]);
                                         }}
-                                        className={`px-4 py-2 text-xs font-medium rounded-full border transition-all flex items-center gap-2 ${isActive
-                                            ? 'bg-[#0071e3] text-white border-[#0071e3] shadow-md'
-                                            : 'bg-white dark:bg-[#2c2c2e] border-[#d2d2d7] dark:border-[#424245] text-[#1d1d1f] dark:text-gray-300 hover:border-[#0071e3] hover:text-[#0071e3]'
+                                        className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1.5 ${isActive
+                                            ? 'bg-[#0071e3] text-white border-[#0071e3] shadow-xs'
+                                            : 'bg-slate-50 dark:bg-[#1a1d24] border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#0071e3] hover:text-[#0071e3]'
                                             }`}
                                     >
                                         {t(`accessories_list.${acc}`)}
-                                        {acc === 'acc_hdd' && <span className={`flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold ${hddCount > 0 ? 'bg-white text-[#0071e3]' : 'bg-gray-200 dark:bg-white/10 text-gray-500'}`}>{hddCount > 0 ? hddCount : <Plus className="w-2.5 h-2.5" />}</span>}
+                                        {acc === 'acc_hdd' && <span className={`flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold ${hddCount > 0 ? 'bg-white text-[#0071e3]' : 'bg-slate-200 dark:bg-white/10 text-slate-500'}`}>{hddCount > 0 ? hddCount : <Plus className="w-2.5 h-2.5" />}</span>}
                                     </button>
                                 );
                             })}
                         </div>
-                        <div className={`flex gap-2 mb-2 ${isAccessoriesLocked ? 'opacity-60 pointer-events-none' : ''}`}>
+                        <div className="flex gap-2 mb-2.5">
                             <input
                                 type="text"
                                 value={customAccessory}
                                 onChange={e => setCustomAccessory(e.target.value)}
-                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (customAccessory.trim()) { handleFormChange('accessories', [...(formData.accessories || []), customAccessory.trim()]); setCustomAccessory(''); } } }}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        const val = customAccessory.trim();
+                                        if (val) {
+                                            const base = (formData.accessories || []).filter(a => a !== 'unit_only');
+                                            if (!base.includes(val)) handleFormChange('accessories', [...base, val]);
+                                            setCustomAccessory('');
+                                        }
+                                    }
+                                }}
                                 placeholder="รายการอื่นๆ..."
-                                className="flex-1 px-4 py-2.5 text-sm rounded-[16px] outline-none apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                className="flex-1 px-3.5 py-2 text-sm rounded-xl outline-none bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-[#1f232b] focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] transition-all"
                             />
                             <button
                                 type="button"
-                                onClick={() => { if (customAccessory.trim()) { handleFormChange('accessories', [...(formData.accessories || []), customAccessory.trim()]); setCustomAccessory(''); } }}
-                                className="px-4 py-2.5 bg-gray-100 dark:bg-[#2c2c2e] border border-gray-200/80 dark:border-white/10 text-[#1d1d1f] dark:text-white rounded-[16px] hover:bg-gray-200 dark:hover:bg-[#3a3a3c] transition-colors"
+                                onClick={() => {
+                                    const val = customAccessory.trim();
+                                    if (val) {
+                                        const base = (formData.accessories || []).filter(a => a !== 'unit_only');
+                                        if (!base.includes(val)) handleFormChange('accessories', [...base, val]);
+                                        setCustomAccessory('');
+                                    }
+                                }}
+                                className="px-3.5 py-2 bg-slate-100 dark:bg-[#232730] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white rounded-xl hover:bg-slate-200 dark:hover:bg-white/15 transition-colors"
                             >
                                 <Plus className="w-4 h-4" />
                             </button>
                         </div>
                         {(formData.accessories || []).length > 0 && (
-                            <div className={`flex flex-wrap gap-2 p-3.5 apple-card-inner rounded-[20px] border border-gray-200/80 dark:border-white/[0.08] ${isAccessoriesLocked ? 'pointer-events-none' : ''}`}>
+                            <div className="flex flex-wrap gap-1.5 p-3 bg-slate-50 dark:bg-[#1a1d24] rounded-xl border border-slate-200/80 dark:border-white/[0.08]">
                                 {(formData.accessories || []).map((acc, idx) => (
-                                    <span key={`${acc}-${idx}`} className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#2a2a2c] text-xs font-medium rounded-full shadow-xs border border-gray-200/80 dark:border-white/10 text-[#1d1d1f] dark:text-white">
+                                    <span key={`${acc}-${idx}`} className="flex items-center gap-1.5 px-2.5 py-1 bg-white dark:bg-[#232730] text-xs font-medium rounded-lg border border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-white">
                                         {acc.startsWith('acc_hdd::') ? `HDD (${acc.split('::')[1]})` : (acc.startsWith('acc_') || acc === 'unit_only' ? t(`accessories_list.${acc}`) : acc)}
-                                        <button type="button" onClick={() => handleFormChange('accessories', (formData.accessories || []).filter(a => a !== acc))} className="text-gray-400 hover:text-red-500 ml-1"><X className="w-3 h-3" /></button>
+                                        <button type="button" onClick={() => handleFormChange('accessories', (formData.accessories || []).filter(a => a !== acc))} className="text-slate-400 hover:text-red-500 ml-0.5"><X className="w-3 h-3" /></button>
                                     </span>
                                 ))}
                             </div>
@@ -638,31 +624,31 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             </div>
 
             {/* SECTION 2: ข้อมูลการรับเข้า */}
-            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 mb-6 border border-gray-200/70 dark:border-white/[0.08]">
-                <h2 className="font-semibold text-lg flex items-center gap-3 mb-6 text-[#1d1d1f] dark:text-white">
-                    <span className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-sm font-bold">2</span>
+            <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
+                <h2 className="font-bold text-base sm:text-lg flex items-center gap-2.5 mb-5 text-slate-900 dark:text-white">
+                    <span className="w-7 h-7 rounded-lg bg-blue-500/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center text-xs font-bold">2</span>
                     {t('track.intakeInfo')}
                 </h2>
-                <div className="space-y-5">
+                <div className="space-y-4">
                     <div>
-                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">{t('track.issueReported')}</label>
-                        <textarea value={formData.issueDescription} onChange={e => handleFormChange('issueDescription', e.target.value)} rows={3} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" />
+                        <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1.5">{t('track.issueReported')}</label>
+                        <textarea value={formData.issueDescription} onChange={e => handleFormChange('issueDescription', e.target.value)} rows={3} className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/[0.08] placeholder-slate-400 focus:bg-white dark:focus:bg-[#1f232b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] transition-all" />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">Device Username (ยูสเซอร์)</label>
-                            <input type="text" value={formData.deviceUsername || ''} onChange={e => handleFormChange('deviceUsername', e.target.value)} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder="N/A" />
+                            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1.5">Device Username (ยูสเซอร์)</label>
+                            <input type="text" value={formData.deviceUsername || ''} onChange={e => handleFormChange('deviceUsername', e.target.value)} className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/[0.08] placeholder-slate-400 focus:bg-white dark:focus:bg-[#1f232b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] transition-all" placeholder="N/A" />
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2">Device Password (รหัสผ่าน)</label>
-                            <input type="text" value={formData.devicePassword || ''} onChange={e => handleFormChange('devicePassword', e.target.value)} className="w-full rounded-[18px] md:rounded-[20px] px-4 py-3.5 text-sm text-[#1d1d1f] dark:text-white apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder="N/A" />
+                            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1.5">Device Password (รหัสผ่าน)</label>
+                            <input type="text" value={formData.devicePassword || ''} onChange={e => handleFormChange('devicePassword', e.target.value)} className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/[0.08] placeholder-slate-400 focus:bg-white dark:focus:bg-[#1f232b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] transition-all" placeholder="N/A" />
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 relative z-30">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-30">
                         <div className="relative z-20">
                             <GlassSelect label={t('submit.distributor')} value={formData.distributor || ''} onChange={val => handleFormChange('distributor', val)} options={distOptions} searchable recentKey="distributor" />
                             {formData.distributor === 'Other' && (
-                                <input value={customDist} onChange={e => setCustomDist(e.target.value)} className="mt-2 w-full px-4 py-3 text-sm rounded-[18px] md:rounded-[20px] apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] text-[#1d1d1f] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder={t('submit.distributor')} />
+                                <input value={customDist} onChange={e => setCustomDist(e.target.value)} className="mt-2 w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-[#1f232b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/25 transition-all" placeholder={t('submit.distributor')} />
                             )}
                         </div>
                         <div className="relative z-10">
@@ -671,17 +657,17 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                     </div>
 
                     {/* แนบรูปภาพอุปกรณ์ */}
-                    <div className="border-t border-gray-100 dark:border-white/5 pt-4">
-                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-2 flex items-center gap-1.5">
-                            <ImageIcon className="w-4 h-4 text-gray-400" /> แนบรูปภาพตัวเครื่อง / อาการเสีย (สูงสุด 5 รูป)
+                    <div className="border-t border-slate-100 dark:border-white/5 pt-4">
+                        <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-2 flex items-center gap-1.5">
+                            <ImageIcon className="w-4 h-4 text-slate-400" /> แนบรูปภาพตัวเครื่อง / อาการเสีย (สูงสุด 5 รูป)
                         </label>
                         <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
                             {(formData.attachments || []).map((att: any, attIdx: number) => (
-                                <div key={att.id || attIdx} className="relative aspect-square w-full rounded-[20px] md:rounded-[22px] overflow-hidden border border-gray-200/80 dark:border-white/10 group apple-card-inner flex items-center justify-center cursor-pointer shadow-sm">
-                                    <img 
-                                        src={att.previewUrl} 
-                                        alt="Product Attachment" 
-                                        className="w-full h-full object-cover transition-transform group-hover:scale-105" 
+                                <div key={att.id || attIdx} className="relative aspect-square w-full rounded-xl overflow-hidden border border-slate-200/80 dark:border-white/10 group flex items-center justify-center cursor-pointer shadow-xs">
+                                    <img
+                                        src={att.previewUrl}
+                                        alt="Product Attachment"
+                                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
                                         onClick={() => setActiveZoomImage(att.previewUrl)}
                                         title="คลิกเพื่อดูรูปและซูมขยาย"
                                     />
@@ -692,25 +678,25 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                             const current = formData.attachments || [];
                                             handleFormChange('attachments', current.filter((_: any, idx: number) => idx !== attIdx));
                                         }}
-                                        className="absolute top-1.5 right-1.5 p-1.5 bg-red-500/90 backdrop-blur-md text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow z-10"
+                                        className="absolute top-1.5 right-1.5 p-1.5 bg-red-500/90 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow z-10"
                                         title="ลบรูปภาพ"
                                     >
                                         <Trash2 className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
                             ))}
-                            
+
                             {(!formData.attachments || formData.attachments.length < 5) && (
-                                <div className="relative aspect-square w-full border-2 border-dashed border-gray-300/80 dark:border-white/15 hover:border-blue-500 dark:hover:border-blue-400 transition-colors rounded-[20px] md:rounded-[22px] apple-card-inner flex flex-col items-center justify-center cursor-pointer p-2">
+                                <div className="relative aspect-square w-full border-2 border-dashed border-slate-300 dark:border-white/15 hover:border-[#0071e3] dark:hover:border-blue-400 transition-colors rounded-xl flex flex-col items-center justify-center cursor-pointer p-2">
                                     {isCompressingImage ? (
-                                        <div className="flex flex-col items-center gap-1 text-[10px] text-gray-400 text-center">
+                                        <div className="flex flex-col items-center gap-1 text-[10px] text-slate-400 text-center">
                                             <Loader2 className="w-4 h-4 text-[#0071e3] animate-spin" />
                                             <span>กำลังบีบอัด...</span>
                                         </div>
                                     ) : (
                                         <>
-                                            <Plus className="w-5 h-5 text-gray-400 mb-1" />
-                                            <span className="text-[9px] text-gray-400 text-center">แนบรูปภาพ</span>
+                                            <Plus className="w-5 h-5 text-slate-400 mb-1" />
+                                            <span className="text-[10px] text-slate-400 text-center">แนบรูปภาพ</span>
                                             <input
                                                 type="file"
                                                 accept="image/*"
@@ -879,9 +865,9 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             document.body)}
 
             {/* SECTION 3: สถานะและการดำเนินการ */}
-            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 mb-6 border border-gray-200/70 dark:border-white/[0.08]">
-                <h2 className="font-semibold text-lg flex items-center gap-3 mb-6 text-[#1d1d1f] dark:text-white">
-                    <span className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-sm font-bold">3</span>
+            <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
+                <h2 className="font-bold text-base sm:text-lg flex items-center gap-2.5 mb-5 text-slate-900 dark:text-white">
+                    <span className="w-7 h-7 rounded-lg bg-blue-500/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center text-xs font-bold">3</span>
                     {t('track.statusResolution')}
                 </h2>
                 <div className="space-y-5">
@@ -1097,12 +1083,12 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
 
             {/* SECTION 3.5: อุปกรณ์ที่ส่งให้ผู้นำเข้า */}
             {(formData.accessories || []).length > 0 && (
-                <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-6 sm:p-7 md:p-8 mb-6 border border-gray-200/70 dark:border-white/[0.08]">
-                    <h2 className="font-semibold text-lg flex items-center gap-3 mb-2 text-[#1d1d1f] dark:text-white">
-                        <span className="w-8 h-8 rounded-full bg-orange-500/10 text-orange-600 flex items-center justify-center text-sm font-bold"><Truck className="w-4 h-4" /></span>
+                <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
+                    <h2 className="font-bold text-base sm:text-lg flex items-center gap-2.5 mb-1.5 text-slate-900 dark:text-white">
+                        <span className="w-7 h-7 rounded-lg bg-orange-500/10 text-orange-600 flex items-center justify-center text-xs font-bold"><Truck className="w-4 h-4" /></span>
                         อุปกรณ์ที่ส่งเคลม
                     </h2>
-                    <p className="text-xs text-gray-400 mb-5 ml-11">เลือกรายการที่จะส่งไปให้ผู้นำเข้า (รายการที่ไม่เลือก = เก็บไว้ที่ร้าน)</p>
+                    <p className="text-xs text-slate-400 mb-4 pl-9.5">เลือกรายการที่จะส่งไปให้ผู้นำเข้า (รายการที่ไม่เลือก = เก็บไว้ที่ร้าน)</p>
                     <div className="flex flex-wrap gap-2">
                         {/* Unit always as option */}
                         <button
@@ -1179,7 +1165,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                     steps.push({ icon: CheckCircle2, label: 'ปิดงาน', done: level >= 4, active: level === 4 });
 
                     return (
-                        <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[32px] p-6 border border-gray-200/70 dark:border-white/[0.08] shadow-sm">
+                        <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
                                     <div className="w-5 h-5 rounded-md bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
@@ -1249,17 +1235,17 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                 })()}
 
                 {/* SECTION: บันทึกภายใน (Internal Company Notes Card) */}
-                <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[32px] p-6 border border-gray-200/70 dark:border-white/[0.08] shadow-sm space-y-3">
+                <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 border border-slate-200/80 dark:border-white/[0.08] shadow-xs space-y-3">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                             <div className="w-5 h-5 rounded-md bg-amber-500/10 text-amber-500 flex items-center justify-center">
                                 <FileText className="w-3 h-3" />
                             </div>
                             {t('track.internalNote')}
                         </h3>
                         {formData.notes?.trim() && (
-                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /> มีบันทึก
+                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> มีบันทึก
                             </span>
                         )}
                     </div>
@@ -1267,93 +1253,50 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                         value={formData.notes || ''}
                         onChange={e => handleFormChange('notes', e.target.value)}
                         rows={4}
-                        className="w-full rounded-[18px] md:rounded-[20px] p-3.5 text-xs text-[#1d1d1f] dark:text-white apple-card-inner bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-[#202024] outline-none focus:ring-2 focus:ring-amber-500/30 transition-all resize-none"
+                        className="w-full rounded-xl p-3 text-xs text-slate-900 dark:text-white bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/[0.08] placeholder-slate-400 focus:bg-white dark:focus:bg-[#1f232b] outline-none focus:ring-2 focus:ring-amber-500/30 transition-all resize-none"
                         placeholder={t('track.addNotesPlaceholder')}
                     />
                 </div>
 
                 {/* ACTION BUTTONS in Sticky Sidebar */}
-                <div className="flex flex-col gap-3 pt-1">
-                    <button onClick={handlePreSave} className="w-full py-3.5 px-4 rounded-[18px] md:rounded-[20px] text-sm font-bold text-white bg-[#0071e3] hover:bg-[#0077ed] shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all flex items-center justify-center gap-2 transform hover:scale-[1.01] active:scale-[0.98]">
-                        ตรวจสอบและบันทึก <ChevronRight className="w-4 h-4" />
-                    </button>
-                    <button onClick={handleSafeClose} className="w-full py-3 rounded-[18px] md:rounded-[20px] text-xs font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 border border-gray-200 dark:border-white/10 apple-card-sm transition-all text-center">
-                        {t('track.cancelBtn')}
-                    </button>
-                </div>
+                {(() => {
+                    const pendingCount = calculateDiffs().length;
+                    return (
+                        <div className="flex flex-col gap-2.5 pt-1">
+                            <button onClick={handlePreSave} className="w-full py-3 px-4 rounded-xl text-sm font-bold text-white bg-[#0071e3] hover:bg-[#0062c4] shadow-sm transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
+                                <span>ตรวจสอบและบันทึก</span>
+                                {pendingCount > 0 && (
+                                    <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-white/20 text-white">{pendingCount}</span>
+                                )}
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                            <button onClick={handleSafeClose} className="w-full py-2.5 rounded-xl text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10 transition-all text-center">
+                                {t('track.cancelBtn')}
+                            </button>
+                        </div>
+                    );
+                })()}
             </div>
             </div>
             </fieldset>
 
             {/* UNSAVED CHANGES MODAL */}
             {showUnsavedModal && createPortal(
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 animate-fade-in font-sans">
-                    <div className="bg-white dark:bg-[#16161a] w-full max-w-sm rounded-[28px] md:rounded-[34px] apple-card-lg shadow-2xl border border-gray-200/70 dark:border-white/[0.08] overflow-hidden">
-                        <div className="p-8 text-center">
-                            <div className="w-14 h-14 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-4">
-                                <AlertCircle className="w-7 h-7 text-amber-500" />
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 p-4 animate-fade-in font-sans">
+                    <div className="bg-white dark:bg-[#16181d] w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200/80 dark:border-white/[0.08] overflow-hidden">
+                        <div className="p-7 text-center">
+                            <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-3.5">
+                                <AlertCircle className="w-6 h-6 text-amber-500" />
                             </div>
-                            <h3 className="font-bold text-[#1d1d1f] dark:text-white text-lg mb-2">ยังไม่ได้บันทึก</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">คุณมีรายการที่แก้ไขแต่ยังไม่ได้บันทึก<br />หากออกจากหน้านี้ การแก้ไขทั้งหมดจะหายไป</p>
+                            <h3 className="font-bold text-slate-900 dark:text-white text-base mb-1.5">ยังไม่ได้บันทึก</h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">คุณมีรายการที่แก้ไขแต่ยังไม่ได้บันทึก<br />หากออกจากหน้านี้ การแก้ไขทั้งหมดจะหายไป</p>
                         </div>
-                        <div className="px-6 pb-6 flex gap-3">
-                            <button onClick={() => setShowUnsavedModal(false)} className="flex-1 py-3 rounded-2xl text-sm font-semibold text-[#0071e3] bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                        <div className="px-5 pb-5 flex gap-2.5">
+                            <button onClick={() => setShowUnsavedModal(false)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-[#0071e3] bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
                                 กลับไปแก้ไข
                             </button>
-                            <button onClick={() => { setShowUnsavedModal(false); onClose(); }} className="flex-1 py-3 rounded-2xl text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors">
+                            <button onClick={() => { setShowUnsavedModal(false); onClose(); }} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors">
                                 ออกโดยไม่บันทึก
-                            </button>
-                        </div>
-                    </div>
-                </div>,
-                document.body
-            )}
-
-            {/* ACCESSORIES REVIEW MODAL */}
-            {showAccReview && createPortal(
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 animate-fade-in font-sans">
-                    <div className="bg-white dark:bg-[#16161a] w-full max-w-md rounded-[28px] md:rounded-[34px] apple-card-lg shadow-2xl border border-gray-200/70 dark:border-white/[0.08] overflow-hidden">
-                        <div className="p-6 pb-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center">
-                                    <CheckCircle2 className="w-5 h-5 text-orange-500" />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-[#1d1d1f] dark:text-white text-base">ยืนยันการแก้ไขอุปกรณ์</h3>
-                                    <p className="text-xs text-gray-400 mt-0.5">กรุณาตรวจสอบรายการที่เปลี่ยนแปลง</p>
-                                </div>
-                            </div>
-                            <button onClick={() => setShowAccReview(false)} className="text-gray-400 hover:text-gray-600 p-1"><X className="w-5 h-5" /></button>
-                        </div>
-                        <div className="p-6 space-y-3">
-                            {(() => {
-                                const current = formData.accessories || [];
-                                const added = current.filter(a => !accessoriesBackup.includes(a));
-                                const removed = accessoriesBackup.filter(a => !current.includes(a));
-                                const fmtLabel = (a: string) => a.startsWith('acc_hdd::') ? `HDD (${a.split('::')[1]})` : (a.startsWith('acc_') || a === 'unit_only' ? t(`accessories_list.${a}`) : a);
-                                return (
-                                    <>
-                                        {added.map((a, i) => (
-                                            <div key={`add-${i}`} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-green-50 dark:bg-green-900/10 border border-green-100 dark:border-green-800/30">
-                                                <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0"><Plus className="w-3 h-3 text-white" /></div>
-                                                <span className="text-sm font-medium text-green-700 dark:text-green-400">เพิ่ม: {fmtLabel(a)}</span>
-                                            </div>
-                                        ))}
-                                        {removed.map((a, i) => (
-                                            <div key={`rm-${i}`} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-800/30">
-                                                <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0"><X className="w-3 h-3 text-white" /></div>
-                                                <span className="text-sm font-medium text-red-700 dark:text-red-400">เอาออก: {fmtLabel(a)}</span>
-                                            </div>
-                                        ))}
-                                        <p className="text-xs text-gray-400 text-center pt-1">{added.length + removed.length} รายการที่เปลี่ยนแปลง</p>
-                                    </>
-                                );
-                            })()}
-                        </div>
-                        <div className="p-6 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3">
-                            <button onClick={() => setShowAccReview(false)} className="px-5 py-2.5 text-sm font-medium rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">ยกเลิก</button>
-                            <button onClick={() => { setShowAccReview(false); setIsAccessoriesLocked(true); }} className="px-5 py-2.5 text-sm font-semibold rounded-full text-white bg-[#0071e3] hover:bg-[#0077ED] transition-colors flex items-center gap-2">
-                                <Check className="w-4 h-4" /> ยืนยันการเปลี่ยนแปลง
                             </button>
                         </div>
                     </div>

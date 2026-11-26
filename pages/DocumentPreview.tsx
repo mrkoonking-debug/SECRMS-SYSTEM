@@ -120,24 +120,24 @@ export const DocumentPreview: React.FC = () => {
             setTimeout(() => setCopySuccess(false), 2000);
         } catch (err) {
             console.error('Failed to copy image:', err);
-            alert('Failed to copy image to clipboard. Try downloading instead.');
+            showToast('ไม่สามารถคัดลอกรูปภาพได้ กรุณาลองดาวน์โหลดแทน', 'error');
         }
     };
 
-    if (!rma) return <div className="flex items-center justify-center min-h-[60vh] text-gray-500"><Loader2 className="w-6 h-6 animate-spin mr-2" /> Loading Document...</div>;
+    if (!rma) return <div className="flex items-center justify-center min-h-[60vh] text-slate-500"><Loader2 className="w-6 h-6 animate-spin mr-2" /> กำลังโหลดเอกสาร...</div>;
 
     return (
         <div className="max-w-5xl mx-auto px-4 py-6 sm:py-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 px-2 gap-3">
-                <Link to={`/admin/job/${encodeURIComponent(id || '')}`} className="flex items-center text-sm font-medium text-gray-500 hover:text-[#0071e3] transition-colors"><ArrowLeft className="h-4 w-4 mr-1" /> Back to RMA</Link>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 px-2 gap-3">
+                <Link to={`/admin/job/${encodeURIComponent(id || '')}`} className="flex items-center text-sm font-medium text-slate-500 hover:text-[#0071e3] transition-colors"><ArrowLeft className="h-4 w-4 mr-1" /> กลับไปหน้างาน</Link>
                 <div className="flex items-center gap-2 min-w-0">
-                    <h1 className="text-base sm:text-xl font-bold text-[#1d1d1f] dark:text-white capitalize truncate">{type === 'importer' ? 'Distributor RMA' : 'Customer Return'} Form</h1>
-                    <div className="text-xs font-mono text-gray-400 px-2 py-1 bg-white/50 dark:bg-white/10 rounded-lg border border-gray-200 dark:border-white/10 flex-shrink-0">{id}</div>
+                    <h1 className="text-base sm:text-xl font-bold text-slate-900 dark:text-white truncate">{type === 'importer' ? 'ใบส่งเคลมศูนย์ (Distributor)' : 'ใบส่งคืนสินค้า (Customer Return)'}</h1>
+                    <div className="text-xs font-mono text-slate-500 px-2.5 py-1 bg-white dark:bg-white/10 rounded-lg border border-slate-200 dark:border-white/10 flex-shrink-0">{id}</div>
                 </div>
             </div>
 
-            <div className="glass-panel rounded-2xl p-3 sm:p-4 mb-6 flex flex-wrap items-center justify-between gap-3 sticky top-24 z-30 shadow-sm">
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 pl-2"><span className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" /> A4 Ready (210mm x 297mm)</span></div>
+            <div className="glass-panel rounded-2xl p-3 sm:p-4 mb-6 flex flex-wrap items-center justify-between gap-3 sticky top-24 z-30 shadow-xs">
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 pl-2"><span className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> พร้อมพิมพ์ A4 (210mm x 297mm)</span></div>
                 <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                     {/* Copy Text Only */}
                     <button
@@ -164,8 +164,8 @@ export const DocumentPreview: React.FC = () => {
                                 if (rma.resolution.replacedSerialNumber) textLines.push(`S/N ใหม่: ${rma.resolution.replacedSerialNumber}`);
                             }
                             navigator.clipboard.writeText(textLines.join('\n')).then(() => {
-                                alert('✅ คัดลอกข้อความแล้ว!');
-                            }).catch(() => alert('ไม่สามารถคัดลอกได้'));
+                                showToast('คัดลอกข้อความแล้ว!', 'success');
+                            }).catch(() => showToast('ไม่สามารถคัดลอกได้', 'error'));
                         }}
                         className="px-3 sm:px-4 py-2 sm:py-2.5 bg-gray-600 hover:bg-gray-700 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 transition-colors"
                         title="คัดลอกเฉพาะข้อความ (Facebook)"

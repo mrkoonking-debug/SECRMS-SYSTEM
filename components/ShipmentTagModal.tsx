@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { renderHtmlToBlob, downloadHtmlAsPdf } from '../services/renderToImage';
-import { X, Package, Trash2, Expand, RefreshCw, Copy, Mail, Plus, Save, Truck, FileText, Loader2 } from 'lucide-react';
+import { X, Package, Trash2, Expand, Copy, Plus, Save, Truck, Loader2, Info } from 'lucide-react';
 import { RMA, Distributor } from '../types';
 import { ShippingLabelPayload, getCustomerShippingLabelHTML, getCustomerInboundLabelHTML, printHtmlDocument, wrapPrintableHtml } from '../services/printService';
 import { MockDb } from '../services/mockDb';
@@ -478,165 +478,192 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                 )}
 
                 {/* Content */}
-                <div className="p-4 md:p-6 overflow-y-auto flex-1 space-y-6 md:space-y-8">
+                <div className="p-4 md:p-6 overflow-y-auto flex-1 space-y-5">
 
                     {/* Order Info (Read-only) */}
                     <div>
-                        <h3 className="text-sm font-semibold text-[#0071e3] mb-4">ข้อมูลงานเคลม</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 dark:bg-white/5 p-4 rounded-xl border border-gray-100 dark:border-white/10 text-sm">
+                        <h3 className="text-xs font-bold text-[#0071e3] uppercase tracking-wider mb-3">ข้อมูลงานเคลม</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 dark:bg-white/[0.04] p-4 rounded-xl border border-slate-200/70 dark:border-white/10 text-sm">
                             <div>
-                                <span className="text-gray-500 dark:text-gray-400">รหัสงานเคลม (Job ID):</span>
-                                <div className="font-medium mt-1 text-[#1d1d1f] dark:text-white">{rma.groupRequestId || rma.id}</div>
+                                <span className="text-xs text-slate-500 dark:text-slate-400">รหัสงานเคลม (Job ID)</span>
+                                <div className="font-semibold mt-0.5 text-slate-900 dark:text-white">{rma.groupRequestId || rma.id}</div>
                             </div>
                             <div>
-                                <span className="text-gray-500 dark:text-gray-400">เลขอ้างอิง/ใบเสนอราคา:</span>
-                                <div className="font-medium mt-1 text-[#1d1d1f] dark:text-white">{rma.quotationNumber || '-'}</div>
+                                <span className="text-xs text-slate-500 dark:text-slate-400">เลขอ้างอิง/ใบเสนอราคา</span>
+                                <div className="font-semibold mt-0.5 text-slate-900 dark:text-white">{rma.quotationNumber || '-'}</div>
                             </div>
                             <div>
-                                <span className="text-gray-500 dark:text-gray-400">ชื่อลูกค้า:</span>
-                                <div className="font-medium mt-1 text-[#1d1d1f] dark:text-white">{rma.customerName || '-'}</div>
+                                <span className="text-xs text-slate-500 dark:text-slate-400">ชื่อลูกค้า</span>
+                                <div className="font-semibold mt-0.5 text-slate-900 dark:text-white">{rma.customerName || '-'}</div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Receiver Info (Editable) */}
-                    <div>
-                        <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-white mb-4">ข้อมูลผู้รับสินค้า</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-500 uppercase mb-2 ml-1">
-                                    {targetType === 'DISTRIBUTOR' ? 'ชื่อผู้นำเข้า / ชื่อบริษัท' : 'ชื่อผู้รับ / ชื่อบริษัท'}
-                                </label>
-                                <input
-                                    type="text"
-                                    value={effectiveReceiverName}
-                                    onChange={e => isTabbed ? updateTabField('receiverName', e.target.value) : setReceiverName(e.target.value)}
-                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-[#1d1d1f] dark:text-white bg-white dark:bg-[#1c1c1e] border border-gray-200 dark:border-[#424245] outline-none font-medium"
-                                    placeholder={targetType === 'DISTRIBUTOR' ? 'เช่น Synnex, SIS...' : 'ชื่อลูกค้า'}
-                                />
+                    {targetType === 'CUSTOMER_INBOUND' ? (
+                        <div className="space-y-4">
+                            <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/40 text-xs sm:text-sm text-emerald-800 dark:text-emerald-300">
+                                <Info className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
+                                <span>ใบปะหน้านี้ใช้ข้อมูลผู้ส่งของลูกค้าและที่อยู่รับของบริษัทฯ โดยตรง สามารถกด Preview เพื่อตรวจสอบและพิมพ์ได้เลย</span>
                             </div>
-                            <div>
-                                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">ผู้ติดต่อ</label>
-                                <input
-                                    type="text"
-                                    value={effectiveContactPerson}
-                                    onChange={(e) => isTabbed ? updateTabField('contactPerson', e.target.value) : setContactPerson(e.target.value)}
-                                    className="w-full px-4 py-2 bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#0071e3] outline-none text-[#1d1d1f] dark:text-white text-sm"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">เบอร์โทรติดต่อ</label>
-                                <input
-                                    type="text"
-                                    value={effectiveReceiverPhone}
-                                    onChange={(e) => isTabbed ? updateTabField('receiverPhone', e.target.value) : setReceiverPhone(e.target.value)}
-                                    className="w-full px-4 py-2 bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#0071e3] outline-none text-[#1d1d1f] dark:text-white text-sm"
-                                />
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200/70 dark:border-white/10 space-y-1.5 text-sm">
+                                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">ผู้ส่ง (ลูกค้า)</div>
+                                    <div className="font-semibold text-slate-900 dark:text-white">{rma.customerName || '-'}</div>
+                                    {rma.contactPerson && <div className="text-xs text-slate-600 dark:text-slate-300">ผู้ติดต่อ: {rma.contactPerson}</div>}
+                                    <div className="text-xs text-slate-600 dark:text-slate-300">โทร: {rma.customerPhone || '-'}</div>
+                                    <div className="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-line">{rma.customerReturnAddress || rma.customerAddress || '-'}</div>
+                                </div>
+                                <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200/70 dark:border-white/10 space-y-1.5 text-sm">
+                                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">ผู้รับ (บริษัทฯ)</div>
+                                    <div className="font-semibold text-slate-900 dark:text-white">บริษัท เอสอีซี เทคโนโลยี จำกัด (SEC Technology)</div>
+                                    <div className="text-xs text-slate-600 dark:text-slate-300">ฝ่ายรับเคลมสินค้า (RMA Center)</div>
+                                    <div className="text-xs text-slate-600 dark:text-slate-300">รายการสินค้าในใบปะหน้า: {currentRmas.length} ชิ้น</div>
+                                </div>
                             </div>
                         </div>
-                        <div className="mt-4">
-                            <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">ที่อยู่จัดส่ง</label>
-                            <textarea
-                                value={effectiveReceiverAddress}
-                                onChange={(e) => isTabbed ? updateTabField('receiverAddress', e.target.value) : setReceiverAddress(e.target.value)}
-                                rows={3}
-                                className="w-full px-4 py-2 bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#0071e3] outline-none text-[#1d1d1f] dark:text-white text-sm resize-none"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="h-px bg-gray-200 dark:bg-white/10 w-full my-6"></div>
-
-                    {/* Tracking IDs Section */}
-                    <div>
-                        <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-white mb-4">รายการ EMS / Tracking No. ({effectiveTrackingIds.length} กล่อง)</h3>
-                        <div className="space-y-3">
-                            {effectiveTrackingIds.map((tid, index) => (
-                                <div key={index} className="flex items-center gap-3">
-                                    <div className="text-gray-400 text-sm font-mono w-6">#{index + 1}</div>
-                                    <input
-                                        type="text"
-                                        value={tid}
-                                        onChange={(e) => {
-                                            if (isTabbed) {
-                                                const newIds = [...effectiveTrackingIds];
-                                                newIds[index] = e.target.value;
-                                                updateTabField('trackingIds', newIds);
-                                            } else {
-                                                handleTrackingIdChange(index, e.target.value);
-                                            }
-                                        }}
-                                        placeholder="กรอก EMS / Tracking No. (เว้นว่างไว้ได้)"
-                                        className="flex-1 px-4 py-2 bg-white dark:bg-[#2c2c2e] border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#0071e3] outline-none text-[#1d1d1f] dark:text-white text-sm"
-                                    />
-                                    {/* Action buttons mirroring UI */}
-                                    <div className="flex gap-1">
-                                        <button className="p-2 text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg"><RefreshCw className="w-4 h-4" /></button>
-                                        <button className="p-2 text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg"><Expand className="w-4 h-4" /></button>
-                                        <button
-                                            onClick={() => {
-                                                if (isTabbed) {
-                                                    const newIds = [...effectiveTrackingIds];
-                                                    newIds.splice(index, 1);
-                                                    if (newIds.length === 0) newIds.push('');
-                                                    updateTabField('trackingIds', newIds);
-                                                } else {
-                                                    handleRemoveTrackingId(index);
-                                                }
-                                            }}
-                                            className="p-2 text-red-400 hover:text-red-600 border border-red-100 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                    ) : (
+                        <>
+                            {/* Receiver Info (Editable) */}
+                            <div>
+                                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">ข้อมูลผู้รับสินค้า</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">
+                                            {targetType === 'DISTRIBUTOR' ? 'ชื่อผู้นำเข้า / ชื่อบริษัท' : 'ชื่อผู้รับ / ชื่อบริษัท'}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={effectiveReceiverName}
+                                            onChange={e => isTabbed ? updateTabField('receiverName', e.target.value) : setReceiverName(e.target.value)}
+                                            className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white bg-white dark:bg-[#1a1d24] border border-slate-200 dark:border-white/10 focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] outline-none font-medium"
+                                            placeholder={targetType === 'DISTRIBUTOR' ? 'เช่น Synnex, SIS...' : 'ชื่อลูกค้า'}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">ผู้ติดต่อ</label>
+                                        <input
+                                            type="text"
+                                            value={effectiveContactPerson}
+                                            onChange={(e) => isTabbed ? updateTabField('contactPerson', e.target.value) : setContactPerson(e.target.value)}
+                                            className="w-full px-3.5 py-2.5 bg-white dark:bg-[#1a1d24] border border-slate-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] outline-none text-slate-900 dark:text-white text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">เบอร์โทรติดต่อ</label>
+                                        <input
+                                            type="text"
+                                            value={effectiveReceiverPhone}
+                                            onChange={(e) => isTabbed ? updateTabField('receiverPhone', e.target.value) : setReceiverPhone(e.target.value)}
+                                            className="w-full px-3.5 py-2.5 bg-white dark:bg-[#1a1d24] border border-slate-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] outline-none text-slate-900 dark:text-white text-sm"
+                                        />
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                                <div className="mt-4">
+                                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">ที่อยู่จัดส่ง</label>
+                                    <textarea
+                                        value={effectiveReceiverAddress}
+                                        onChange={(e) => isTabbed ? updateTabField('receiverAddress', e.target.value) : setReceiverAddress(e.target.value)}
+                                        rows={3}
+                                        className="w-full px-3.5 py-2.5 bg-white dark:bg-[#1a1d24] border border-slate-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] outline-none text-slate-900 dark:text-white text-sm resize-none"
+                                    />
+                                </div>
+                            </div>
 
-                        <button
-                            onClick={() => isTabbed ? updateTabField('trackingIds', [...effectiveTrackingIds, '']) : handleAddTrackingId()}
-                            className="mt-4 w-full py-3 border border-dashed border-gray-300 dark:border-[#444] rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-[#0071e3] dark:hover:text-[#2997ff] hover:border-[#0071e3] dark:hover:border-[#2997ff] transition-all flex justify-center items-center gap-2 font-medium text-sm"
-                        >
-                            <Plus className="w-4 h-4" /> เพิ่ม EMS / Tracking No. (กล่องที่ {effectiveTrackingIds.length + 1})
-                        </button>
-                    </div>
+                            <div className="h-px bg-slate-200/80 dark:bg-white/10 w-full"></div>
+
+                            {/* Tracking IDs Section */}
+                            <div>
+                                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">รายการ EMS / Tracking No. ({effectiveTrackingIds.length} กล่อง)</h3>
+                                <div className="space-y-2.5">
+                                    {effectiveTrackingIds.map((tid, index) => (
+                                        <div key={index} className="flex items-center gap-2.5">
+                                            <div className="text-slate-400 text-xs font-mono w-6 text-right">#{index + 1}</div>
+                                            <input
+                                                type="text"
+                                                value={tid}
+                                                onChange={(e) => {
+                                                    if (isTabbed) {
+                                                        const newIds = [...effectiveTrackingIds];
+                                                        newIds[index] = e.target.value;
+                                                        updateTabField('trackingIds', newIds);
+                                                    } else {
+                                                        handleTrackingIdChange(index, e.target.value);
+                                                    }
+                                                }}
+                                                placeholder="กรอก EMS / Tracking No. (เว้นว่างไว้ได้)"
+                                                className="flex-1 px-3.5 py-2.5 bg-white dark:bg-[#1a1d24] border border-slate-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3] outline-none text-slate-900 dark:text-white text-sm"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (isTabbed) {
+                                                        const newIds = [...effectiveTrackingIds];
+                                                        newIds.splice(index, 1);
+                                                        if (newIds.length === 0) newIds.push('');
+                                                        updateTabField('trackingIds', newIds);
+                                                    } else {
+                                                        handleRemoveTrackingId(index);
+                                                    }
+                                                }}
+                                                title="ลบกล่องนี้"
+                                                className="p-2.5 text-red-500 hover:text-red-600 border border-red-200/80 dark:border-red-500/25 bg-red-50 dark:bg-red-900/15 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-xl transition-colors"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => isTabbed ? updateTabField('trackingIds', [...effectiveTrackingIds, '']) : handleAddTrackingId()}
+                                    className="mt-3 w-full py-2.5 border border-dashed border-slate-300 dark:border-white/15 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0071e3] dark:hover:text-[#2997ff] hover:border-[#0071e3] transition-all flex justify-center items-center gap-2 font-medium text-sm"
+                                >
+                                    <Plus className="w-4 h-4" /> เพิ่ม EMS / Tracking No. (กล่องที่ {effectiveTrackingIds.length + 1})
+                                </button>
+                            </div>
+                        </>
+                    )}
 
                 </div>
 
 
                 {/* Footer Buttons */}
-                <div className="p-3 md:p-4 border-t border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-[#1c1c1e] flex justify-between items-center gap-1.5 flex-shrink-0">
+                <div className="p-3 md:p-4 border-t border-slate-200/70 dark:border-white/[0.08] bg-slate-50 dark:bg-[#1a1d24] flex justify-between items-center gap-2 flex-shrink-0">
                     <button
                         onClick={onClose}
-                        className="px-3 sm:px-6 py-2 sm:py-2.5 bg-gray-500 hover:bg-gray-600 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium shadow-sm transition-colors flex-shrink-0"
+                        className="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/15 text-slate-700 dark:text-white rounded-xl text-xs sm:text-sm font-semibold transition-colors flex-shrink-0"
                     >
                         ปิด
                     </button>
 
-                    <div className="flex gap-1 sm:gap-2 overflow-x-auto">
-                        <button
-                            onClick={handleSaveClick}
-                            disabled={isSaving}
-                            className="px-3 sm:px-6 py-2 sm:py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium shadow-md shadow-orange-500/20 transition-all flex items-center gap-1 sm:gap-2 whitespace-nowrap"
-                        >
-                            <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> บันทึกข้อมูล
-                        </button>
+                    <div className="flex gap-2 overflow-x-auto">
+                        {targetType !== 'CUSTOMER_INBOUND' && (
+                            <button
+                                onClick={handleSaveClick}
+                                disabled={isSaving}
+                                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-all flex items-center gap-1.5 whitespace-nowrap"
+                            >
+                                <Save className="w-4 h-4" /> บันทึกข้อมูล
+                            </button>
+                        )}
 
                         <button
                             onClick={handleSaveAndPrint}
                             disabled={isSaving}
-                            className="px-3 sm:px-6 py-2 sm:py-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium shadow-md shadow-blue-500/20 transition-all flex items-center gap-1 sm:gap-2 whitespace-nowrap"
+                            className="px-4 py-2 bg-[#0071e3] hover:bg-[#0062c4] text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-all flex items-center gap-1.5 whitespace-nowrap"
                         >
-                            <Expand className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Preview {isTabbed ? `ศูนย์` : 'ใบปะหน้า'}
+                            <Expand className="w-4 h-4" /> Preview {isTabbed ? `ศูนย์` : 'ใบปะหน้า'}
                         </button>
 
                         {isTabbed && (
                             <button
                                 onClick={handlePreviewAll}
                                 disabled={isSaving}
-                                className="px-3 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-orange-500/20 transition-all flex items-center gap-1 sm:gap-2 whitespace-nowrap"
+                                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-all flex items-center gap-1.5 whitespace-nowrap"
                             >
-                                <Truck className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> ทั้งหมด ({tabNames.length} ใบ)
+                                <Truck className="w-4 h-4" /> ทั้งหมด ({tabNames.length} ใบ)
                             </button>
                         )}
                     </div>

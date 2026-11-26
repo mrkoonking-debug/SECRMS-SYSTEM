@@ -14,7 +14,7 @@ import { Printer, Copy, X as XIcon } from 'lucide-react';
 import { ShipmentTagModal } from '../components/ShipmentTagModal';
 // html2canvas loaded dynamically when needed — see usage below
 import { renderHtmlToBlob } from '../services/renderToImage';
-import { showToast } from '../services/toast';
+import { showToast, showConfirmDialog } from '../services/toast';
 const ProductEntryForm = lazy(() => import('../components/ProductEntryForm').then(m => ({ default: m.ProductEntryForm })));
 import { EditRMADrawer } from '../components/EditRMADrawer';
 import { ImageZoomModal } from '../components/ImageZoomModal';
@@ -344,7 +344,7 @@ export const JobDetail: React.FC = () => {
             await refreshRMAs();
         } catch (error) {
             console.error("Failed to save shipment tag data", error);
-            alert("Failed to save data");
+            showToast('บันทึกข้อมูลไม่สำเร็จ', 'error');
         }
     };
 
@@ -439,7 +439,13 @@ export const JobDetail: React.FC = () => {
         let latestRMAs = rmas;
 
         if (unclosedItems.length > 0) {
-            if (!confirm(`มีสินค้า ${unclosedItems.length} รายการที่แก้ไขเสร็จแล้ว ต้องการกดปิดงานและส่งคืนลูกค้าทันทีใช่หรือไม่?`)) {
+            const confirmed = await showConfirmDialog({
+                title: 'ยืนยันการปิดงานและส่งคืนลูกค้า',
+                message: `มีสินค้า ${unclosedItems.length} รายการที่แก้ไขเสร็จแล้ว ต้องการปิดงานและส่งคืนลูกค้าทันทีใช่หรือไม่?`,
+                confirmText: 'ปิดงานและส่งคืน',
+                variant: 'primary'
+            });
+            if (!confirmed) {
                 return;
             }
             setIsSavingCustomer(true);
@@ -493,58 +499,59 @@ export const JobDetail: React.FC = () => {
     };
 
     return (
-        <div className="max-w-[1600px] w-full mx-auto px-3 sm:px-6 md:px-8 py-4 md:py-6 pb-6">
-            <div className="flex items-center justify-between mb-4 md:mb-6">
-                <Link 
-                    to="/admin/rmas" 
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-white/[0.04] apple-card-sm border border-gray-200/70 dark:border-white/[0.08] text-xs md:text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-[#0071e3] dark:hover:text-blue-400 hover:border-[#0071e3]/30 transition-all shadow-xs active:scale-95"
+        <div className="max-w-[1600px] w-full mx-auto px-3 sm:px-6 md:px-8 py-4 md:py-5 pb-6">
+            <div className="flex items-center justify-between mb-4">
+                <Link
+                    to="/admin/rmas"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-[#16181d] border border-slate-200/80 dark:border-white/[0.08] text-xs md:text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-[#0071e3] dark:hover:text-blue-400 hover:border-[#0071e3]/40 transition-all shadow-xs active:scale-95"
                 >
                     <ArrowLeft className="h-4 w-4" /> <span>{t('track.backToList')}</span>
                 </Link>
             </div>
 
-            {/* Unified Job Header & Customer Info Card */}
-            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[36px] p-4 sm:p-6 md:p-8 mb-4 sm:mb-5 md:mb-8 border border-gray-200/70 dark:border-white/[0.08] shadow-sm relative overflow-hidden">
+            {/* Unified Job Header, Action Toolbar & Customer Info Card */}
+            <div className="bg-white dark:bg-[#16181d] rounded-2xl p-4 sm:p-6 mb-5 border border-slate-200/80 dark:border-white/[0.08] shadow-xs relative overflow-hidden">
 
                 {/* --- TOP HEADER SECTION --- */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 mb-5 md:mb-7">
-                    <div className="flex items-center gap-3.5 md:gap-5">
-                        <div className="w-12 h-12 md:w-16 md:h-16 rounded-[20px] md:rounded-[24px] bg-[#0071e3]/10 dark:bg-blue-500/15 text-[#0071e3] dark:text-blue-400 apple-card-sm flex items-center justify-center shadow-xs border border-blue-500/20 shrink-0">
-                            <Package className="w-6 h-6 md:w-7 md:h-7" />
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-5">
+                    <div className="flex items-center gap-3.5">
+                        <div className="w-11 h-11 md:w-12 md:h-12 rounded-xl bg-[#0071e3]/10 dark:bg-blue-500/15 text-[#0071e3] dark:text-blue-400 flex items-center justify-center border border-blue-500/20 shrink-0">
+                            <Package className="w-5 h-5 md:w-6 md:h-6" />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <div className="flex items-center flex-wrap gap-2 md:gap-3 mb-1.5 md:mb-2">
-                                <h1 className="text-base sm:text-lg md:text-2xl font-black text-[#1d1d1f] dark:text-white tracking-tight leading-tight whitespace-nowrap">
+                            <div className="flex items-center flex-wrap gap-2 mb-1.5">
+                                <h1 className="text-lg sm:text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight whitespace-nowrap">
                                     {jobInfo.id}
                                 </h1>
-                                <span className={`text-[10px] md:text-xs px-2.5 py-0.5 md:py-1 rounded-full border flex items-center gap-1 font-bold apple-card-sm ${jobInfo.quotationNumber ? 'bg-gray-100/80 dark:bg-white/[0.06] text-gray-600 dark:text-gray-300 border-gray-200/70 dark:border-white/[0.08]' : 'bg-gray-50/50 dark:bg-white/[0.02] text-gray-400 dark:text-gray-500 border-gray-100 dark:border-white/[0.04] italic'}`}>
-                                    <span className="uppercase text-[9px] md:text-[10px] font-bold opacity-60">Ref:</span>
+                                <span className={`text-xs px-2.5 py-0.5 rounded-lg border flex items-center gap-1 font-semibold ${jobInfo.quotationNumber ? 'bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-white/[0.08]' : 'bg-slate-50 dark:bg-white/[0.02] text-slate-400 dark:text-slate-500 border-slate-100 dark:border-white/[0.04] italic'}`}>
+                                    <span className="uppercase text-[10px] opacity-60">Ref:</span>
                                     {jobInfo.quotationNumber || 'ไม่มี Ref'}
                                 </span>
                             </div>
-                            <div className="flex flex-wrap items-center gap-2 md:gap-3.5 text-[11px] md:text-xs text-gray-500">
-                                <span className="flex items-center gap-1.5 font-bold text-gray-700 dark:text-gray-300 bg-gray-100/80 dark:bg-white/[0.04] px-2.5 py-1 rounded-full border border-gray-200/60 dark:border-white/10 apple-card-sm" title="เวลาลงทะเบียน">
+                            <div className="flex flex-wrap items-center gap-2 text-[11px] md:text-xs text-slate-500">
+                                <span className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300 bg-slate-100/80 dark:bg-white/[0.04] px-2.5 py-1 rounded-lg border border-slate-200/60 dark:border-white/10" title="เวลาลงทะเบียน">
                                     <Clock className="w-3.5 h-3.5 text-blue-500" />
                                     <span>{formatDetailedDateTime(jobInfo.date)}</span>
                                 </span>
-                                <span className="bg-gray-100/80 dark:bg-white/[0.04] px-2.5 py-1 rounded-full border border-gray-200/60 dark:border-white/10 apple-card-sm text-[#1d1d1f] dark:text-gray-300 font-bold">{jobInfo.count} {t('claimsList.items')}</span>
-                                <div className="flex gap-1.5 md:gap-2">
-                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] md:text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20 apple-card-sm">
-                                        <CheckCircle2 className="w-3 h-3" />
-                                        {rmas.filter(c => [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REPLACED_FROM_STOCK, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.REJECTED, RMAStatus.CANCELLED].includes(c.status)).length} {t('track.doneBadge')}
-                                    </div>
-                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] md:text-xs bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold border border-blue-500/20 apple-card-sm">
-                                        <Clock className="w-3 h-3" />
-                                        {rmas.filter(c => ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REPLACED_FROM_STOCK, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.REJECTED, RMAStatus.CANCELLED].includes(c.status)).length} {t('track.activeBadge')}
-                                    </div>
+                                <span className="bg-slate-100/80 dark:bg-white/[0.04] px-2.5 py-1 rounded-lg border border-slate-200/60 dark:border-white/10 text-slate-800 dark:text-slate-200 font-semibold">{jobInfo.count} {t('claimsList.items')}</span>
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/20">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    {rmas.filter(c => [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REPLACED_FROM_STOCK, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.REJECTED, RMAStatus.CANCELLED].includes(c.status)).length} {t('track.doneBadge')}
+                                </div>
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold border border-blue-500/20">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    {rmas.filter(c => ![RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REPLACED_FROM_STOCK, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.REJECTED, RMAStatus.CANCELLED].includes(c.status)).length} {t('track.activeBadge')}
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    {/* PRINT ACTION GROUPS — Clean 2x2 Symmetrical Grid */}
-                    <div className="grid grid-cols-2 gap-2 md:gap-2.5 w-full md:w-auto md:min-w-[340px] md:max-w-[420px]">
-                        {/* Top-Left: ใบส่งเคลม */}
+                {/* --- COHESIVE DOCUMENT & SHIPPING ACTION BAR --- */}
+                <div className="bg-slate-50/90 dark:bg-[#1a1d24] rounded-xl p-3 sm:p-3.5 border border-slate-200/70 dark:border-white/[0.06] mb-5 flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+                    {/* Group 1: เอกสารใบงาน */}
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mr-1">เอกสารใบงาน:</span>
                         <button
                             type="button"
                             onClick={() => {
@@ -560,16 +567,15 @@ export const JobDetail: React.FC = () => {
                                 openDocPreview('DISTRIBUTOR', activeRMAs);
                             }}
                             aria-disabled={!allHaveDistributor}
-                            className={`h-10 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-[18px] md:rounded-[20px] text-[11px] md:text-xs font-bold transition-all active:scale-95 apple-card-inner ${allHaveDistributor
-                                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 hover:scale-[1.01] cursor-pointer'
-                                : 'bg-gray-100 dark:bg-white/[0.04] text-gray-400 dark:text-gray-600 border border-gray-200/50 dark:border-white/5 cursor-not-allowed'}`}
+                            className={`h-9 px-3.5 inline-flex items-center gap-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${allHaveDistributor
+                                ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-xs cursor-pointer'
+                                : 'bg-slate-200/70 dark:bg-white/[0.05] text-slate-400 dark:text-slate-600 cursor-not-allowed'}`}
                             title={!allHaveDistributor ? `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)` : ''}
                         >
-                            <Printer className="w-3.5 h-3.5" strokeWidth={2.5} />
+                            <Printer className="w-3.5 h-3.5" />
                             ส่งให้ศูนย์
                         </button>
 
-                        {/* Top-Right: ใบส่งคืน */}
                         <button
                             type="button"
                             onClick={() => {
@@ -580,16 +586,19 @@ export const JobDetail: React.FC = () => {
                                 handleReturnToCustomerClick();
                             }}
                             aria-disabled={!hasReadyRMAs}
-                            className={`h-10 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-[18px] md:rounded-[20px] text-[11px] md:text-xs font-bold transition-all active:scale-95 apple-card-inner ${hasReadyRMAs
-                                ? 'bg-gradient-to-r from-[#0071e3] to-[#005bb5] text-white shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/35 hover:scale-[1.01] cursor-pointer'
-                                : 'bg-gray-100 dark:bg-white/[0.04] text-gray-400 dark:text-gray-600 border border-gray-200/50 dark:border-white/5 cursor-not-allowed'}`}
+                            className={`h-9 px-3.5 inline-flex items-center gap-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${hasReadyRMAs
+                                ? 'bg-[#0071e3] hover:bg-[#0062c4] text-white shadow-xs cursor-pointer'
+                                : 'bg-slate-200/70 dark:bg-white/[0.05] text-slate-400 dark:text-slate-600 cursor-not-allowed'}`}
                             title={!hasReadyRMAs ? 'ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะส่งคืนได้' : ''}
                         >
-                            <User className="w-3.5 h-3.5" strokeWidth={2.5} />
+                            <User className="w-3.5 h-3.5" />
                             ส่งคืนลูกค้า
                         </button>
+                    </div>
 
-                        {/* Bottom-Left: ใบปะหน้า (ศูนย์) */}
+                    {/* Group 2: ใบปะหน้าพัสดุ */}
+                    <div className="flex flex-wrap items-center gap-2 pt-2 xl:pt-0 border-t xl:border-t-0 xl:border-l border-slate-200/70 dark:border-white/[0.06] xl:pl-4">
+                        <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mr-1">ใบปะหน้าพัสดุ:</span>
                         <button
                             type="button"
                             onClick={() => {
@@ -614,16 +623,15 @@ export const JobDetail: React.FC = () => {
                                 }
                             }}
                             aria-disabled={!allHaveDistributor}
-                            className={`h-10 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-[18px] md:rounded-[20px] text-[11px] md:text-xs font-bold transition-all active:scale-95 apple-card-inner ${allHaveDistributor
-                                ? 'border border-orange-400/40 dark:border-orange-500/30 text-orange-600 dark:text-orange-400 bg-orange-50/50 dark:bg-orange-500/10 hover:bg-orange-100/60 dark:hover:bg-orange-500/20 hover:scale-[1.01] cursor-pointer'
-                                : 'border border-gray-200/60 dark:border-white/[0.06] bg-gray-50/50 dark:bg-white/[0.02] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
+                            className={`h-9 px-3.5 inline-flex items-center gap-1.5 rounded-xl text-xs font-semibold border transition-all active:scale-95 ${allHaveDistributor
+                                ? 'border-orange-300 dark:border-orange-500/35 text-orange-600 dark:text-orange-400 bg-white dark:bg-[#16181d] hover:bg-orange-50 dark:hover:bg-orange-500/10 cursor-pointer'
+                                : 'border-slate-200/70 dark:border-white/[0.06] bg-white/60 dark:bg-white/[0.02] text-slate-400 dark:text-slate-600 cursor-not-allowed'}`}
                             title={!allHaveDistributor ? `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)` : ''}
                         >
-                            <Truck className="w-3.5 h-3.5" strokeWidth={2.5} />
-                            ใบปะหน้า (ศูนย์)
+                            <Truck className="w-3.5 h-3.5" />
+                            ปะหน้าส่งศูนย์
                         </button>
 
-                        {/* Bottom-Right: ใบปะหน้าส่งกลับ (ลูกค้า) */}
                         <button
                             type="button"
                             onClick={() => {
@@ -637,54 +645,49 @@ export const JobDetail: React.FC = () => {
                                 setIsShipmentTagModalOpen(true);
                             }}
                             aria-disabled={!hasReadyRMAs}
-                            className={`h-10 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-[18px] md:rounded-[20px] text-[11px] md:text-xs font-bold transition-all active:scale-95 apple-card-inner ${hasReadyRMAs
-                                ? 'border border-blue-400/40 dark:border-blue-500/30 text-[#0071e3] dark:text-blue-400 bg-blue-50/50 dark:bg-blue-500/10 hover:bg-blue-100/60 dark:hover:bg-blue-500/20 hover:scale-[1.01] cursor-pointer'
-                                : 'border border-gray-200/60 dark:border-white/[0.06] bg-gray-50/50 dark:bg-white/[0.02] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
+                            className={`h-9 px-3.5 inline-flex items-center gap-1.5 rounded-xl text-xs font-semibold border transition-all active:scale-95 ${hasReadyRMAs
+                                ? 'border-blue-300 dark:border-blue-500/35 text-[#0071e3] dark:text-blue-400 bg-white dark:bg-[#16181d] hover:bg-blue-50 dark:hover:bg-blue-500/10 cursor-pointer'
+                                : 'border-slate-200/70 dark:border-white/[0.06] bg-white/60 dark:bg-white/[0.02] text-slate-400 dark:text-slate-600 cursor-not-allowed'}`}
                             title={!hasReadyRMAs ? 'ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะพิมพ์ใบปะหน้าได้' : ''}
                         >
-                            <Truck className="w-3.5 h-3.5" strokeWidth={2.5} />
-                            ใบปะหน้าส่งกลับ (ลูกค้า)
+                            <Truck className="w-3.5 h-3.5" />
+                            ปะหน้าส่งคืนลูกค้า
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const inboundList = activeRMAs.length > 0 ? activeRMAs : rmas;
+                                setShipmentDistGroupNames(undefined);
+                                setShipmentTagRmaIds(inboundList.map(r => r.id));
+                                setShipmentTagTarget('CUSTOMER_INBOUND');
+                                setIsShipmentTagModalOpen(true);
+                            }}
+                            className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-xl text-xs font-semibold border border-emerald-300 dark:border-emerald-500/35 text-emerald-600 dark:text-emerald-400 bg-white dark:bg-[#16181d] hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all active:scale-95 cursor-pointer"
+                            title="ดู / พิมพ์ / ดาวน์โหลด ใบปะหน้ากล่องที่ลูกค้าส่งมายังบริษัทฯ"
+                        >
+                            <Truck className="w-3.5 h-3.5" />
+                            ปะหน้าลูกค้าส่งเข้า
                         </button>
                     </div>
                 </div>
 
-                {/* SEC DIVIDER */}
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-200/80 dark:via-white/[0.08] to-transparent mb-5 md:mb-7"></div>
-
                 {/* --- CUSTOMER INFO SECTION --- */}
                 <div>
-                    <div className="flex justify-between items-center mb-4 md:mb-6">
-                        <h2 className="font-bold text-sm md:text-base flex items-center gap-2.5 text-[#1d1d1f] dark:text-white">
-                            <div className="w-8 h-8 rounded-[12px] bg-blue-500/10 text-blue-600 dark:text-blue-400 apple-card-sm flex items-center justify-center">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="font-bold text-sm md:text-base flex items-center gap-2 text-slate-900 dark:text-white">
+                            <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center">
                                 <User className="w-4 h-4" />
                             </div>
                             {t('submit.customerDetails')}
                         </h2>
                         {!isEditingCustomer ? (
-                            <div className="flex items-center gap-2">
-                                {/* Customer Inbound Shipping Label Button */}
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        const inboundList = activeRMAs.length > 0 ? activeRMAs : rmas;
-                                        setShipmentDistGroupNames(undefined);
-                                        setShipmentTagRmaIds(inboundList.map(r => r.id));
-                                        setShipmentTagTarget('CUSTOMER_INBOUND');
-                                        setIsShipmentTagModalOpen(true);
-                                    }}
-                                    className="px-3.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300/80 dark:border-emerald-700/60 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-full text-xs font-bold transition-all shadow-xs active:scale-95 flex items-center gap-1.5 cursor-pointer apple-card-sm"
-                                    title="ดู / พิมพ์ / ดาวน์โหลด PDF ใบปะหน้ากล่องที่ลูกค้าจ่าหน้าส่งมายังบริษัทฯ"
-                                >
-                                    <Truck className="w-3.5 h-3.5" strokeWidth={2.5} />
-                                    <span>ใบปะหน้าส่งบริษัท (ลูกค้าส่งของ)</span>
-                                </button>
-                                <button onClick={() => setIsEditingCustomer(true)} className="px-3.5 py-1.5 text-xs text-[#0071e3] dark:text-blue-400 bg-blue-50 dark:bg-blue-500/15 border border-blue-200/60 dark:border-blue-500/30 rounded-full font-bold hover:bg-blue-100 transition-all flex items-center gap-1 apple-card-sm active:scale-95"><Edit3 className="w-3 h-3" /> {t('track.changeBtn')}</button>
-                            </div>
+                            <button onClick={() => setIsEditingCustomer(true)} className="px-3.5 py-1.5 text-xs text-[#0071e3] dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border border-blue-200/70 dark:border-blue-500/30 rounded-xl font-semibold hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-all flex items-center gap-1.5 active:scale-95"><Edit3 className="w-3.5 h-3.5" /> {t('track.changeBtn')}</button>
                         ) : (
                             <div className="flex items-center gap-2">
-                                <button onClick={handleCancelCustomerEdit} className="px-4 py-1.5 text-xs text-gray-500 hover:text-red-500 rounded-full font-bold transition-colors">{t('track.cancelBtn')}</button>
-                                <button onClick={handleSaveCustomer} disabled={isSavingCustomer} className="px-5 py-1.5 text-xs font-bold text-white bg-[#0071e3] hover:bg-[#0077ed] rounded-full shadow-md shadow-blue-500/25 transition-all flex items-center gap-1.5 disabled:opacity-50 active:scale-95 apple-card-sm">
-                                    {isSavingCustomer ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                                <button onClick={handleCancelCustomerEdit} className="px-3.5 py-1.5 text-xs text-slate-500 hover:text-red-500 rounded-xl font-semibold transition-colors">{t('track.cancelBtn')}</button>
+                                <button onClick={handleSaveCustomer} disabled={isSavingCustomer} className="px-4 py-1.5 text-xs font-semibold text-white bg-[#0071e3] hover:bg-[#0062c4] rounded-xl shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-50 active:scale-95">
+                                    {isSavingCustomer ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                                     {isSavingCustomer ? 'กำลังบันทึก...' : 'บันทึก'}
                                 </button>
                             </div>
@@ -692,67 +695,63 @@ export const JobDetail: React.FC = () => {
                     </div>
 
                     {isEditingCustomer ? (
-                        <div className="space-y-4 animate-fade-in bg-gray-50/70 dark:bg-white/[0.02] p-5 sm:p-6 rounded-[22px] md:rounded-[26px] border border-gray-200/70 dark:border-white/[0.08] apple-card-inner">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+                        <div className="space-y-4 animate-fade-in bg-slate-50 dark:bg-[#1a1d24] p-4 sm:p-5 rounded-xl border border-slate-200/80 dark:border-white/[0.08]">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-[#0071e3] dark:text-blue-400 uppercase mb-1.5 ml-1">เลขที่ใบเสนอราคา/บิล</label>
-                                    <input type="text" value={customerForm.quotationNumber} onChange={e => setCustomerForm(p => ({ ...p, quotationNumber: e.target.value }))} className="w-full bg-white dark:bg-[#1a1a1c] border border-blue-200 dark:border-blue-800/50 apple-card-inner rounded-[18px] md:rounded-[20px] px-4 py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 outline-none ring-1 ring-blue-100 dark:ring-blue-900/30 transition-all focus:ring-2 focus:ring-[#0071e3]/30" placeholder="SECXXXXXX" />
+                                    <label className="block text-xs font-semibold text-[#0071e3] dark:text-blue-400 uppercase mb-1.5">เลขที่ใบเสนอราคา/บิล</label>
+                                    <input type="text" value={customerForm.quotationNumber} onChange={e => setCustomerForm(p => ({ ...p, quotationNumber: e.target.value }))} className="w-full bg-white dark:bg-[#16181d] border border-blue-200 dark:border-blue-800/50 rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3]" placeholder="SECXXXXXX" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">{t('publicSubmit.companyName')}</label>
-                                    <input type="text" value={customerForm.customerName} onChange={e => setCustomerForm(p => ({ ...p, customerName: e.target.value }))} className="w-full bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/[0.08] apple-card-inner rounded-[18px] md:rounded-[20px] px-4 py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]" placeholder="ชื่อลูกค้า / บริษัท" />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">{t('publicSubmit.contactName')}</label>
-                                    <input type="text" value={customerForm.contactPerson} onChange={e => setCustomerForm(p => ({ ...p, contactPerson: e.target.value }))} className="w-full bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/[0.08] apple-card-inner rounded-[18px] md:rounded-[20px] px-4 py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]" placeholder="ชื่อผู้ติดต่อ" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">{t('publicSubmit.phone')}</label>
-                                    <input type="text" value={customerForm.customerPhone} onChange={e => setCustomerForm(p => ({ ...p, customerPhone: e.target.value }))} className="w-full bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/[0.08] apple-card-inner rounded-[18px] md:rounded-[20px] px-4 py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]" placeholder="เบอร์โทรศัพท์" />
+                                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">{t('publicSubmit.companyName')}</label>
+                                    <input type="text" value={customerForm.customerName} onChange={e => setCustomerForm(p => ({ ...p, customerName: e.target.value }))} className="w-full bg-white dark:bg-[#16181d] border border-slate-200 dark:border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3]" placeholder="ชื่อลูกค้า / บริษัท" />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">{t('submit.lineId')}</label>
-                                    <input type="text" value={customerForm.customerLineId} onChange={e => setCustomerForm(p => ({ ...p, customerLineId: e.target.value }))} className="w-full bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/[0.08] apple-card-inner rounded-[18px] md:rounded-[20px] px-4 py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]" placeholder="LINE ID" />
+                                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">{t('publicSubmit.contactName')}</label>
+                                    <input type="text" value={customerForm.contactPerson} onChange={e => setCustomerForm(p => ({ ...p, contactPerson: e.target.value }))} className="w-full bg-white dark:bg-[#16181d] border border-slate-200 dark:border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3]" placeholder="ชื่อผู้ติดต่อ" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Email</label>
-                                    <input type="text" value={customerForm.customerEmail} onChange={e => setCustomerForm(p => ({ ...p, customerEmail: e.target.value }))} className="w-full bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/[0.08] apple-card-inner rounded-[18px] md:rounded-[20px] px-4 py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]" placeholder="อีเมล (ถ้ามี)" />
+                                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">{t('publicSubmit.phone')}</label>
+                                    <input type="text" value={customerForm.customerPhone} onChange={e => setCustomerForm(p => ({ ...p, customerPhone: e.target.value }))} className="w-full bg-white dark:bg-[#16181d] border border-slate-200 dark:border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3]" placeholder="เบอร์โทรศัพท์" />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">{t('submit.lineId')}</label>
+                                    <input type="text" value={customerForm.customerLineId} onChange={e => setCustomerForm(p => ({ ...p, customerLineId: e.target.value }))} className="w-full bg-white dark:bg-[#16181d] border border-slate-200 dark:border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3]" placeholder="LINE ID" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Email</label>
+                                    <input type="text" value={customerForm.customerEmail} onChange={e => setCustomerForm(p => ({ ...p, customerEmail: e.target.value }))} className="w-full bg-white dark:bg-[#16181d] border border-slate-200 dark:border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3]" placeholder="อีเมล (ถ้ามี)" />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">{t('submit.returnAddress')}</label>
-                                <textarea value={customerForm.customerReturnAddress} onChange={e => setCustomerForm(p => ({ ...p, customerReturnAddress: e.target.value }))} rows={2} className="w-full bg-white dark:bg-[#1a1a1c] border border-gray-200/80 dark:border-white/[0.08] apple-card-inner rounded-[18px] md:rounded-[20px] px-4 py-2.5 text-xs md:text-sm text-[#1d1d1f] dark:text-white placeholder-gray-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]" placeholder="ที่อยู่สำหรับจัดส่งคืน" />
+                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">{t('submit.returnAddress')}</label>
+                                <textarea value={customerForm.customerReturnAddress} onChange={e => setCustomerForm(p => ({ ...p, customerReturnAddress: e.target.value }))} rows={2} className="w-full bg-white dark:bg-[#16181d] border border-slate-200 dark:border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-all focus:ring-2 focus:ring-[#0071e3]/25 focus:border-[#0071e3]" placeholder="ที่อยู่สำหรับจัดส่งคืน" />
                             </div>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-3 md:gap-y-6 text-sm">
-                            <div className="flex flex-col gap-1">
-                                <span className="text-gray-400 font-bold text-[11px] tracking-wider uppercase">{t('publicSubmit.companyName')}</span>
-                                <span className="text-[#1d1d1f] dark:text-gray-200 font-semibold">{customerForm.customerName || '-'}</span>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                            <div className="flex flex-col gap-0.5">
+                                <span className="text-slate-400 font-semibold text-[11px] uppercase">{t('publicSubmit.companyName')}</span>
+                                <span className="text-slate-900 dark:text-slate-100 font-semibold">{customerForm.customerName || '-'}</span>
                             </div>
-                            <div className="flex flex-col gap-1">
-                                <span className="text-gray-400 font-bold text-[11px] tracking-wider uppercase">{t('publicSubmit.contactName')}</span>
-                                <span className="text-[#1d1d1f] dark:text-gray-200 font-semibold">{customerForm.contactPerson || '-'}</span>
+                            <div className="flex flex-col gap-0.5">
+                                <span className="text-slate-400 font-semibold text-[11px] uppercase">{t('publicSubmit.contactName')}</span>
+                                <span className="text-slate-900 dark:text-slate-100 font-semibold">{customerForm.contactPerson || '-'}</span>
                             </div>
-                            <div className="flex flex-col gap-1">
-                                <span className="text-gray-400 font-bold text-[11px] tracking-wider uppercase">{t('publicSubmit.phone')}</span>
-                                <span className="text-[#1d1d1f] dark:text-gray-200 font-semibold">{customerForm.customerPhone || '-'}</span>
+                            <div className="flex flex-col gap-0.5">
+                                <span className="text-slate-400 font-semibold text-[11px] uppercase">{t('publicSubmit.phone')}</span>
+                                <span className="text-slate-900 dark:text-slate-100 font-semibold">{customerForm.customerPhone || '-'}</span>
                             </div>
-                            <div className="flex flex-col gap-1">
-                                <span className="text-gray-400 font-bold text-[11px] tracking-wider uppercase">{t('submit.lineId')}</span>
-                                <span className="text-[#1d1d1f] dark:text-gray-200 font-semibold">{customerForm.customerLineId || '-'}</span>
+                            <div className="flex flex-col gap-0.5">
+                                <span className="text-slate-400 font-semibold text-[11px] uppercase">{t('submit.lineId')} / Email</span>
+                                <span className="text-slate-900 dark:text-slate-100 font-semibold truncate">{[customerForm.customerLineId, customerForm.customerEmail].filter(Boolean).join(' · ') || '-'}</span>
                             </div>
-                            <div className="flex flex-col gap-1 col-span-1 md:col-span-2">
-                                <span className="text-gray-400 font-bold text-[11px] tracking-wider uppercase">Email</span>
-                                <span className="text-[#1d1d1f] dark:text-gray-200 font-semibold">{customerForm.customerEmail || '-'}</span>
-                            </div>
-                            <div className="flex flex-col gap-1 col-span-1 md:col-span-2">
-                                <span className="text-gray-400 font-bold text-[11px] tracking-wider uppercase">{t('submit.returnAddress')}</span>
-                                <div className="text-[#1d1d1f] dark:text-gray-200 font-medium text-xs md:text-sm leading-relaxed bg-gray-50/80 dark:bg-white/[0.03] p-3 md:p-3.5 rounded-[18px] md:rounded-[20px] border border-gray-200/60 dark:border-white/[0.06] whitespace-pre-line mt-1 apple-card-inner">
+                            <div className="flex flex-col gap-1 col-span-1 md:col-span-2 lg:col-span-4">
+                                <span className="text-slate-400 font-semibold text-[11px] uppercase">{t('submit.returnAddress')}</span>
+                                <div className="text-slate-800 dark:text-slate-200 font-medium text-xs md:text-sm leading-relaxed bg-slate-50 dark:bg-[#1a1d24] p-3 rounded-xl border border-slate-200/70 dark:border-white/[0.06] whitespace-pre-line">
                                     {customerForm.customerReturnAddress || '-'}
                                 </div>
                             </div>
@@ -761,8 +760,8 @@ export const JobDetail: React.FC = () => {
                 </div>
             </div>
 
-            <div className="space-y-4">
-                <div className="flex items-center justify-between px-0.5 sm:px-1.5 mb-3 md:mb-4">
+            <div className="space-y-3">
+                <div className="flex items-center justify-between px-1 mb-2">
                     <div className="flex items-center gap-3">
                         {rmas.length > 1 && (
                             <button
@@ -773,17 +772,17 @@ export const JobDetail: React.FC = () => {
                                         setSelectedIds(new Set(rmas.map(r => r.id)));
                                     }
                                 }}
-                                className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#0071e3] transition-colors"
+                                className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-500 hover:text-[#0071e3] transition-colors"
                             >
                                 {selectedIds.size === rmas.length ? <CheckSquare className="w-4 h-4 text-[#0071e3]" /> : <Square className="w-4 h-4" />}
                                 เลือกทั้งหมด
                             </button>
                         )}
-                        <h2 className="text-lg font-bold text-[#1d1d1f] dark:text-white">{t('claimsList.items')}</h2>
+                        <h2 className="text-base md:text-lg font-bold text-slate-900 dark:text-white">{t('claimsList.items')}</h2>
                     </div>
                     <button
                         onClick={() => setShowAddItemModal(true)}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs md:text-sm font-bold rounded-full shadow-md shadow-blue-500/25 hover:scale-[1.02] active:scale-95 transition-all apple-card-sm"
+                        className="flex items-center gap-1.5 px-4 py-2 bg-[#0071e3] hover:bg-[#0062c4] text-white text-xs md:text-sm font-semibold rounded-xl shadow-xs active:scale-95 transition-all"
                     >
                         <Plus className="w-4 h-4" />
                         เพิ่มสินค้า
@@ -795,84 +794,83 @@ export const JobDetail: React.FC = () => {
                     const isExpanded = expandedRMAs.has(item.id);
                     const isSelected = selectedIds.has(item.id);
 
-                    // เรียงลำดับประวัติให้ล่าสุดอยู่บนสุด
                     const sortedHistory = item.history ? [...item.history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) : [];
 
                     return (
-                        <div 
-                            key={item.id} 
-                            className={`rounded-[22px] sm:rounded-[26px] md:rounded-[30px] p-4 sm:p-5 md:p-6 lg:p-7 transition-all duration-200 border relative overflow-hidden ${
-                                isCancelled 
-                                    ? 'bg-gray-100/40 dark:bg-[#161617]/50 border-gray-200/50 dark:border-white/[0.04] opacity-50 grayscale hover:bg-gray-100/50 dark:hover:bg-[#161617]/60 apple-card-inner'
-                                    : isSelected 
-                                        ? 'bg-white dark:bg-[#16161a] apple-liquid-glass border-[#0071e3] ring-2 ring-[#0071e3]/25 shadow-lg shadow-blue-500/10' 
-                                        : 'bg-white dark:bg-[#16161a] apple-liquid-glass border-gray-200/70 dark:border-white/[0.08] hover:border-[#0071e3]/30'
+                        <div
+                            key={item.id}
+                            onClick={() => !isCancelled && handleEditClick(item)}
+                            className={`rounded-2xl p-4 sm:p-5 transition-all duration-150 border relative overflow-hidden ${
+                                isCancelled
+                                    ? 'bg-slate-100/60 dark:bg-[#16181d]/50 border-slate-200/60 dark:border-white/[0.04] opacity-55 grayscale'
+                                    : isSelected
+                                        ? 'bg-white dark:bg-[#16181d] border-[#0071e3] ring-1 ring-[#0071e3]/30 shadow-md cursor-pointer'
+                                        : 'bg-white dark:bg-[#16181d] border-slate-200/80 dark:border-white/[0.08] hover:border-[#0071e3]/45 hover:shadow-md cursor-pointer'
                             }`}
                         >
-                            <div className="flex flex-col md:flex-row items-start md:items-center gap-3.5 md:gap-6">
+                            <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                                 {/* Header / Index Row */}
                                 <div className="flex-shrink-0 flex items-center justify-between w-full md:w-auto gap-3">
-                                    <div className="flex items-center gap-2.5 sm:gap-3">
+                                    <div className="flex items-center gap-2.5">
                                         {rmas.length > 1 && (
-                                            <button onClick={() => { const n = new Set(selectedIds); isSelected ? n.delete(item.id) : n.add(item.id); setSelectedIds(n); }} className="transition-transform hover:scale-110">
-                                                {isSelected ? <CheckSquare className="w-5 h-5 text-[#0071e3]" /> : <Square className="w-5 h-5 text-gray-300 dark:text-gray-600" />}
+                                            <button onClick={(e) => { e.stopPropagation(); const n = new Set(selectedIds); isSelected ? n.delete(item.id) : n.add(item.id); setSelectedIds(n); }} className="p-0.5 transition-transform hover:scale-110">
+                                                {isSelected ? <CheckSquare className="w-5 h-5 text-[#0071e3]" /> : <Square className="w-5 h-5 text-slate-300 dark:text-slate-600" />}
                                             </button>
                                         )}
                                         {isCancelled ? (
-                                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] sm:rounded-[14px] bg-gray-200/60 dark:bg-white/5 text-gray-400 dark:text-gray-600 flex items-center justify-center font-black apple-card-sm text-sm">{index + 1}</div>
+                                            <div className="w-9 h-9 rounded-xl bg-slate-200/70 dark:bg-white/5 text-slate-400 flex items-center justify-center font-bold text-sm">{index + 1}</div>
                                         ) : isClosed ? (
-                                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] sm:rounded-[14px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20 apple-card-sm"><CheckCircle2 className="w-4.5 h-4.5 sm:w-5 sm:h-5" /></div>
+                                            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20"><CheckCircle2 className="w-4.5 h-4.5" /></div>
                                         ) : (
-                                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] sm:rounded-[14px] bg-blue-500/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center font-black border border-blue-500/20 apple-card-sm text-sm">{index + 1}</div>
+                                            <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center font-bold border border-blue-500/20 text-sm">{index + 1}</div>
                                         )}
                                     </div>
-                                    {/* Mobile: Status Badge right aligned in card header */}
                                     <div className="md:hidden">
                                         <StatusBadge status={item.status} />
                                     </div>
                                 </div>
-                                <div className="flex-grow grid grid-cols-1 md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] gap-4 md:gap-8 w-full">
+                                <div className="flex-grow grid grid-cols-1 md:grid-cols-[260px_1fr] lg:grid-cols-[300px_1fr] gap-4 md:gap-6 w-full">
                                     <div className="space-y-2">
                                         <div>
-                                            <div className="font-bold text-base md:text-lg text-[#1d1d1f] dark:text-white leading-tight">{item.productModel}</div>
-                                            <div className="text-xs md:text-sm text-gray-500 font-medium">{item.brand}</div>
-                                            <div className="mt-1 inline-block text-[10px] md:text-xs font-mono bg-black/[0.04] dark:bg-white/[0.06] border border-black/5 dark:border-white/10 px-2.5 py-0.5 rounded-full text-gray-600 dark:text-gray-300 apple-card-sm font-bold">S/N: {item.serialNumber}</div>
+                                            <div className="font-bold text-base text-slate-900 dark:text-white leading-tight">{item.productModel}</div>
+                                            <div className="text-xs text-slate-500 font-medium">{item.brand}</div>
+                                            <div className="mt-1 inline-block text-[11px] font-mono bg-slate-100 dark:bg-white/[0.06] border border-slate-200/70 dark:border-white/10 px-2 py-0.5 rounded-md text-slate-700 dark:text-slate-300 font-semibold">S/N: {item.serialNumber}</div>
                                         </div>
-                                        
-                                        <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-1 text-xs text-gray-400">
+
+                                        <div className="pt-2 border-t border-slate-100 dark:border-white/5 space-y-1 text-xs text-slate-400">
                                             <div className="flex items-center gap-1.5">
-                                                <Truck className="w-3.5 h-3.5 text-gray-400 shrink-0" /> {t('submit.distributor')}:{' '}
-                                                <span className="text-[#1d1d1f] dark:text-white font-medium ml-0.5">{item.distributor || '-'}</span>
+                                                <Truck className="w-3.5 h-3.5 text-slate-400 shrink-0" /> {t('submit.distributor')}:{' '}
+                                                <span className="text-slate-800 dark:text-slate-200 font-medium">{item.distributor || '-'}</span>
                                             </div>
                                             <div className="flex items-center gap-1.5">
-                                                <ShieldCheck className="w-3.5 h-3.5 text-gray-400 shrink-0" /> {t('track.warrantyStatus')}:{' '}
-                                                <span className={`font-medium ml-0.5 ${item.repairCosts?.warrantyStatus === 'IN_WARRANTY' ? 'text-green-500' :
+                                                <ShieldCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" /> {t('track.warrantyStatus')}:{' '}
+                                                <span className={`font-medium ${item.repairCosts?.warrantyStatus === 'IN_WARRANTY' ? 'text-emerald-600 dark:text-emerald-400' :
                                                     item.repairCosts?.warrantyStatus === 'OUT_OF_WARRANTY' ? 'text-orange-500' :
                                                     item.repairCosts?.warrantyStatus === 'VOID' ? 'text-red-500' :
-                                                    'text-[#1d1d1f] dark:text-white'
+                                                    'text-slate-800 dark:text-slate-200'
                                                 }`}>{item.repairCosts?.warrantyStatus ? t(`warranty.${item.repairCosts.warrantyStatus}`) : '-'}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="space-y-3 min-w-0">
+                                    <div className="space-y-2.5 min-w-0">
                                         <div>
-                                            <div className="text-xs font-bold text-gray-400 uppercase mb-1 flex items-center gap-1">{t('track.issueReported')}</div>
-                                            <div className="text-sm text-gray-800 dark:text-gray-200 flex items-start gap-2 bg-rose-50/70 dark:bg-rose-500/10 p-3 rounded-[16px] border border-rose-200/60 dark:border-rose-500/20 apple-card-inner"><AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" /><span className="whitespace-pre-wrap leading-relaxed">{item.issueDescription}</span></div>
+                                            <div className="text-[11px] font-bold text-slate-400 uppercase mb-1">{t('track.issueReported')}</div>
+                                            <div className="text-sm text-slate-800 dark:text-slate-200 flex items-start gap-2 bg-rose-50/70 dark:bg-rose-500/10 p-2.5 rounded-xl border border-rose-200/60 dark:border-rose-500/20"><AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" /><span className="whitespace-pre-wrap leading-relaxed">{item.issueDescription}</span></div>
                                         </div>
                                         {item.resolution?.rootCause && (
                                             <div>
-                                                <div className="text-xs font-bold text-gray-400 uppercase mb-1 flex items-center gap-1">{t('track.rootCause')}</div>
-                                                <div className="text-sm text-gray-800 dark:text-gray-200 flex items-start gap-2 bg-blue-50/70 dark:bg-blue-500/10 p-3 rounded-[16px] border border-blue-200/60 dark:border-blue-500/20 apple-card-inner"><CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" /><span className="whitespace-pre-wrap leading-relaxed">{item.resolution.rootCause}</span></div>
+                                                <div className="text-[11px] font-bold text-slate-400 uppercase mb-1">{t('track.rootCause')}</div>
+                                                <div className="text-sm text-slate-800 dark:text-slate-200 flex items-start gap-2 bg-blue-50/70 dark:bg-blue-500/10 p-2.5 rounded-xl border border-blue-200/60 dark:border-blue-500/20"><CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" /><span className="whitespace-pre-wrap leading-relaxed">{item.resolution.rootCause}</span></div>
                                             </div>
                                         )}
                                         {item.resolution?.actionTaken && (
-                                            <div className="bg-gray-50/80 dark:bg-white/[0.03] p-3 sm:p-3.5 rounded-[16px] sm:rounded-[18px] border border-gray-200/60 dark:border-white/[0.06] space-y-1.5 apple-card-inner">
-                                                <div className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                            <div className="bg-slate-50 dark:bg-[#1a1d24] p-3 rounded-xl border border-slate-200/70 dark:border-white/[0.06] space-y-1">
+                                                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                                                     <ClipboardCheck className="w-3.5 h-3.5 text-blue-500" /> ผลการดำเนินการที่ศูนย์ส่งกลับมา
                                                 </div>
-                                                <div className="text-sm text-gray-700 dark:text-gray-200">
-                                                    <span className="text-gray-400 font-medium">วิธีดำเนินการ: </span>
-                                                    <strong className="text-gray-800 dark:text-gray-100">
+                                                <div className="text-sm text-slate-700 dark:text-slate-200">
+                                                    <span className="text-slate-400 font-medium">วิธีดำเนินการ: </span>
+                                                    <strong className="text-slate-900 dark:text-white">
                                                         {(() => {
                                                             const key = `actions.${item.resolution.actionTaken.toLowerCase().replace(/ /g, '_')}`;
                                                             const trans = t(key);
@@ -881,44 +879,45 @@ export const JobDetail: React.FC = () => {
                                                     </strong>
                                                 </div>
                                                 {item.resolution.actionDetails && (
-                                                    <div className="text-sm text-gray-700 dark:text-gray-200">
-                                                        <span className="text-gray-400 font-medium">รายละเอียด: </span>
+                                                    <div className="text-sm text-slate-700 dark:text-slate-200">
+                                                        <span className="text-slate-400 font-medium">รายละเอียด: </span>
                                                         <span>{item.resolution.actionDetails}</span>
                                                     </div>
                                                 )}
                                                 {item.resolution.replacedSerialNumber && (
-                                                    <div className="text-sm text-gray-700 dark:text-gray-200 flex items-center gap-1.5">
-                                                        <span className="text-gray-400 font-medium">S/N ใหม่: </span>
-                                                        <span className="font-mono bg-green-500/10 text-green-600 dark:text-green-400 px-2 py-0.5 rounded text-xs font-bold">{item.resolution.replacedSerialNumber}</span>
+                                                    <div className="text-sm text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                                                        <span className="text-slate-400 font-medium">S/N ใหม่: </span>
+                                                        <span className="font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-md text-xs font-bold">{item.resolution.replacedSerialNumber}</span>
                                                     </div>
                                                 )}
                                                 {item.resolution.vendorTicketRef && (
-                                                    <div className="text-sm text-gray-700 dark:text-gray-200">
-                                                        <span className="text-gray-400 font-medium">เลข RMA Vendor: </span>
-                                                        <span className="font-mono text-xs bg-gray-200/50 dark:bg-white/10 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300">{item.resolution.vendorTicketRef}</span>
+                                                    <div className="text-sm text-slate-700 dark:text-slate-200">
+                                                        <span className="text-slate-400 font-medium">เลข RMA Vendor: </span>
+                                                        <span className="font-mono text-xs bg-slate-200/60 dark:bg-white/10 px-1.5 py-0.5 rounded text-slate-700 dark:text-slate-300">{item.resolution.vendorTicketRef}</span>
                                                     </div>
                                                 )}
                                             </div>
                                         )}
-                                        <div className="text-xs text-gray-400 flex items-start gap-1.5 w-full">
-                                            <FileText className="w-3.5 h-3.5 mt-1 flex-shrink-0 text-gray-400" />
-                                            <span className="font-bold uppercase mt-1 w-20 sm:w-24 flex-shrink-0 truncate" title={t('track.internalNote') || 'Notes'}>{t('track.internalNote') || 'Notes'}:</span>
-                                            <div className="flex-grow py-0.5 text-sm text-[#1d1d1f] dark:text-white whitespace-pre-line" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
-                                                {item.notes ? item.notes : <span className="text-gray-400 italic">ไม่มีบันทึก</span>}
+                                        <div className="text-xs text-slate-400 flex items-start gap-1.5 w-full">
+                                            <FileText className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-slate-400" />
+                                            <span className="font-semibold uppercase mt-0.5 flex-shrink-0">{t('track.internalNote') || 'Notes'}:</span>
+                                            <div className="flex-grow text-xs sm:text-sm text-slate-800 dark:text-slate-200 whitespace-pre-line" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
+                                                {item.notes ? item.notes : <span className="text-slate-400 italic">ไม่มีบันทึก</span>}
                                             </div>
                                         </div>
 
                                         {item.attachments && item.attachments.length > 0 && (
-                                            <div className="mt-3 border-t border-gray-100 dark:border-white/5 pt-2.5">
-                                                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5 flex items-center gap-1">
+                                            <div className="mt-2.5 border-t border-slate-100 dark:border-white/5 pt-2.5">
+                                                <div className="text-[11px] font-bold text-slate-400 uppercase mb-1.5 flex items-center gap-1">
                                                     <ImageIcon className="w-3.5 h-3.5" /> รูปภาพอุปกรณ์ที่แนบมา ({item.attachments.length})
                                                 </div>
                                                 <div className="flex flex-wrap gap-2">
                                                     {item.attachments.map((att: any, attIdx: number) => (
                                                         <button
                                                             key={att.id || attIdx}
-                                                            onClick={() => setActiveImageUrl(att.previewUrl)}
-                                                            className="w-14 h-14 sm:w-16 sm:h-16 rounded-[14px] overflow-hidden border border-gray-200/80 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-transform apple-card-sm shadow-xs"
+                                                            type="button"
+                                                            onClick={(e) => { e.stopPropagation(); setActiveImageUrl(att.previewUrl); }}
+                                                            className="w-14 h-14 rounded-xl overflow-hidden border border-slate-200/80 dark:border-white/10 shrink-0 hover:scale-105 active:scale-95 transition-transform shadow-xs"
                                                             title="คลิกเพื่อขยายรูป"
                                                         >
                                                             <img src={att.previewUrl} className="w-full h-full object-cover" alt={att.fileName || 'Product'} />
@@ -929,59 +928,64 @@ export const JobDetail: React.FC = () => {
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex-shrink-0 flex items-center justify-end w-full md:w-auto md:flex-col md:items-end gap-2.5 md:gap-3 md:min-w-[140px] pt-3 md:pt-0 border-t border-gray-100 dark:border-white/5 md:border-0">
-                                    <div className="hidden md:block group relative inline-block">
+                                <div className="flex-shrink-0 flex items-center justify-end w-full md:w-auto md:flex-col md:items-end gap-2.5 md:min-w-[160px] pt-3 md:pt-0 border-t border-slate-100 dark:border-white/5 md:border-0">
+                                    <div className="hidden md:block">
                                         <StatusBadge status={item.status} />
                                     </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1.5 flex-wrap justify-end">
                                         <button
-                                            onClick={() => toggleHistory(item.id)}
-                                            className={`p-2 sm:p-2.5 rounded-[12px] sm:rounded-[14px] apple-card-sm transition-all active:scale-95 ${isExpanded ? 'bg-gray-200 dark:bg-white/20 text-gray-800 dark:text-white' : 'hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500'}`}
-                                            title="View Timeline"
+                                            type="button"
+                                            onClick={(e) => { e.stopPropagation(); toggleHistory(item.id); }}
+                                            className={`px-2.5 py-1.5 rounded-xl text-xs font-medium inline-flex items-center gap-1 border transition-all active:scale-95 ${isExpanded ? 'bg-slate-200 dark:bg-white/15 border-slate-300 dark:border-white/20 text-slate-900 dark:text-white' : 'bg-slate-50 dark:bg-[#1a1d24] border-slate-200/80 dark:border-white/[0.08] hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300'}`}
+                                            title="ดูประวัติการทำงาน"
                                         >
-                                            <History className="w-4 h-4" />
+                                            <History className="w-3.5 h-3.5" /> ประวัติ
                                         </button>
-                                        {/* Delete Button */}
                                         {isAdmin && (
                                         <button
-                                            onClick={async () => {
-                                                if (!confirm('คุณต้องการลบรายการนี้ใช่หรือไม่? รายการนี้จะถูกซ่อนจากการแสดงผลในระบบ แต่ยังคงบันทึกประวัติการยกเลิกไว้ในระบบ')) return;
+                                            type="button"
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
+                                                const confirmed = await showConfirmDialog({
+                                                    title: 'ลบรายการสินค้า',
+                                                    message: 'คุณต้องการลบรายการนี้ใช่หรือไม่? รายการนี้จะถูกซ่อนจากการแสดงผลในระบบ แต่ยังคงบันทึกประวัติการยกเลิกไว้ในระบบ',
+                                                    confirmText: 'ลบรายการ',
+                                                    variant: 'danger'
+                                                });
+                                                if (!confirmed) return;
                                                 try {
                                                     setLoading(true);
                                                     await MockDb.deleteRMA(item.id);
-                                                    // Check remaining RMAs in this job
-                                                    const allRMAs = await MockDb.getRMAs();
                                                     const decodedId = decodeURIComponent(jobId || '');
-                                                    const remaining = allRMAs.filter(c =>
-                                                        c.groupRequestId === decodedId ||
-                                                        (c.id === decodedId)
-                                                    );
+                                                    const remaining = await MockDb.getRMAsByJobId(decodedId);
                                                     if (remaining.length === 0) {
                                                         navigate('/admin/rmas');
                                                     } else {
                                                         setRMAs(remaining);
+                                                        setJobInfo(prev => prev ? { ...prev, count: remaining.length } : null);
                                                         setLoading(false);
                                                     }
                                                 } catch (err) {
                                                     console.error('Delete failed:', err);
-                                                    alert('ลบไม่สำเร็จ: ' + (err instanceof Error ? err.message : 'Unknown error'));
+                                                    showToast('ลบไม่สำเร็จ: ' + (err instanceof Error ? err.message : 'Unknown error'), 'error');
                                                     setLoading(false);
                                                 }
                                             }}
-                                            className="p-2 sm:p-2.5 rounded-[12px] sm:rounded-[14px] apple-card-sm hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-all active:scale-95"
-                                            title="Delete RMA"
+                                            className="px-2.5 py-1.5 rounded-xl text-xs font-medium inline-flex items-center gap-1 bg-red-50 dark:bg-red-900/15 border border-red-200/70 dark:border-red-500/25 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all active:scale-95"
+                                            title="ลบรายการนี้"
                                         >
-                                            <Trash2 className="w-4 h-4" />
-                                         </button>
-                                         )}
+                                            <Trash2 className="w-3.5 h-3.5" /> ลบ
+                                        </button>
+                                        )}
 
-{item.status !== RMAStatus.CANCELLED && (
+                                        {!isCancelled && (
                                         <button
-                                            onClick={() => handleEditClick(item)}
-                                            className="p-2 sm:p-2.5 rounded-[12px] sm:rounded-[14px] apple-card-sm hover:bg-blue-50 dark:hover:bg-blue-500/15 text-gray-400 hover:text-[#0071e3] transition-all active:scale-95"
-                                            title="Edit Details"
+                                            type="button"
+                                            onClick={(e) => { e.stopPropagation(); handleEditClick(item); }}
+                                            className="px-3 py-1.5 rounded-xl text-xs font-semibold inline-flex items-center gap-1 bg-[#0071e3]/10 hover:bg-[#0071e3] text-[#0071e3] dark:text-blue-400 hover:text-white border border-blue-200/70 dark:border-blue-500/25 transition-all active:scale-95"
+                                            title="แก้ไขรายละเอียด"
                                         >
-                                            <Edit3 className="w-4 h-4" />
+                                            <Edit3 className="w-3.5 h-3.5" /> แก้ไข
                                         </button>
                                         )}
                                     </div>
@@ -990,21 +994,21 @@ export const JobDetail: React.FC = () => {
 
                             {/* Expandable History Timeline */}
                             {isExpanded && (
-                                <div className="mt-6 pt-6 border-t border-gray-200/50 dark:border-white/10 animate-fade-in">
-                                    <h3 className="text-xs font-bold text-gray-400 uppercase mb-4 flex items-center gap-2"><Clock className="w-3 h-3" /> {t('track.activityLog')}</h3>
-                                    <div className="space-y-6 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200 dark:before:bg-white/10 pl-2">
+                                <div onClick={(e) => e.stopPropagation()} className="mt-5 pt-5 border-t border-slate-200/70 dark:border-white/10 animate-fade-in cursor-default">
+                                    <h3 className="text-xs font-bold text-slate-400 uppercase mb-4 flex items-center gap-2"><Clock className="w-3.5 h-3.5" /> {t('track.activityLog')}</h3>
+                                    <div className="space-y-5 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-white/10 pl-2">
                                         {sortedHistory.length > 0 ? (
                                             sortedHistory.map((evt) => (
-                                                <div key={evt.id} className="relative pl-8">
-                                                    <div className={`absolute left-0 top-1.5 w-4 h-4 rounded-full border-2 border-white dark:border-[#1c1c1e] ${evt.type === 'STATUS_CHANGE' ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+                                                <div key={evt.id} className="relative pl-7">
+                                                    <div className={`absolute left-0 top-1.5 w-4 h-4 rounded-full border-2 border-white dark:border-[#16181d] ${evt.type === 'STATUS_CHANGE' ? 'bg-blue-500' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
                                                     <div>
-                                                        <p className="text-sm font-medium text-[#1d1d1f] dark:text-white">{evt.description}</p>
-                                                        <p className="text-xs text-gray-400 mt-0.5">{new Date(evt.date).toLocaleString()} • {evt.user}</p>
+                                                        <p className="text-sm font-medium text-slate-900 dark:text-white">{evt.description}</p>
+                                                        <p className="text-xs text-slate-400 mt-0.5">{new Date(evt.date).toLocaleString()} • {evt.user}</p>
                                                     </div>
                                                 </div>
                                             ))
                                         ) : (
-                                            <div className="pl-8 text-sm text-gray-400">{t('track.noHistory')}</div>
+                                            <div className="pl-7 text-sm text-slate-400">{t('track.noHistory')}</div>
                                         )}
                                     </div>
                                 </div>
@@ -1528,21 +1532,21 @@ export const JobDetail: React.FC = () => {
 
             {/* Add Item Modal */}
             {showAddItemModal && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => !isAddingItem && setShowAddItemModal(false)}>
-                    <div className="bg-white dark:bg-[#1c1c1e] rounded-[2rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 p-4" onClick={() => !isAddingItem && setShowAddItemModal(false)}>
+                    <div className="bg-white dark:bg-[#16181d] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200/80 dark:border-white/[0.08]" onClick={e => e.stopPropagation()}>
                         {/* Header */}
-                        <div className="sticky top-0 bg-white dark:bg-[#1c1c1e] px-8 py-5 border-b border-gray-100 dark:border-gray-800 rounded-t-[2rem] flex items-center justify-between z-10">
+                        <div className="sticky top-0 bg-white dark:bg-[#16181d] px-6 py-4 border-b border-slate-100 dark:border-white/[0.08] rounded-t-2xl flex items-center justify-between z-10">
                             <div>
-                                <h2 className="text-lg font-bold text-[#1d1d1f] dark:text-white flex items-center gap-3">
+                                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
                                     <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                                        <Plus className="w-4 h-4 text-blue-500" />
+                                        <Plus className="w-4 h-4 text-[#0071e3]" />
                                     </div>
                                     เพิ่มสินค้าเข้า Job
                                 </h2>
-                                <p className="text-xs text-gray-400 mt-1 ml-11">เพิ่มรายการเข้า {jobInfo?.id}</p>
+                                <p className="text-xs text-slate-400 mt-0.5 ml-10">เพิ่มรายการเข้า {jobInfo?.id}</p>
                             </div>
-                            <button onClick={() => !isAddingItem && setShowAddItemModal(false)} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                                <XIcon className="w-4 h-4 text-gray-400" />
+                            <button onClick={() => !isAddingItem && setShowAddItemModal(false)} className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/10 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-white/15 transition-colors">
+                                <XIcon className="w-4 h-4 text-slate-400" />
                             </button>
                         </div>
 
