@@ -44,7 +44,13 @@ export const EditRMA: React.FC = () => {
     };
 
     const handleClose = () => {
-        navigate(-1);
+        if (window.history.state && typeof window.history.state.idx === 'number' && window.history.state.idx > 0) {
+            navigate(-1);
+        } else if (rma) {
+            navigate(`/admin/job/${encodeURIComponent(rma.groupRequestId || rma.id)}`);
+        } else {
+            navigate('/admin/rmas');
+        }
     };
 
     if (loading) {

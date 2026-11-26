@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useRef, lazy, Suspense } from 'react';
+import React, { useEffect, useState, useRef, useMemo, lazy, Suspense } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { RMA, RMAStatus, ProductType } from '../types';
@@ -9,7 +9,7 @@ import { StatusBadge } from '../components/StatusBadge';
 import { GlassSelect } from '../components/GlassSelect';
 import { createPortal } from 'react-dom';
 
-import { printDistributorDocuments, printCustomerDocuments, getDistributorDocumentsHTML, getCustomerDocumentsHTML } from '../services/printService';
+import { printDistributorDocuments, printCustomerDocuments, getDistributorDocumentsHTML, getCustomerDocumentsHTML, printHtmlDocument, wrapPrintableHtml } from '../services/printService';
 import { Printer, Copy, X as XIcon } from 'lucide-react';
 import { ShipmentTagModal } from '../components/ShipmentTagModal';
 // html2canvas loaded dynamically when needed — see usage below
@@ -34,25 +34,82 @@ export const JobDetail: React.FC = () => {
     // Shipment Tag Modal state
     const [isShipmentTagModalOpen, setIsShipmentTagModalOpen] = useState(false);
     const [shipmentTagTarget, setShipmentTagTarget] = useState<'CUSTOMER' | 'DISTRIBUTOR' | 'CUSTOMER_INBOUND'>('CUSTOMER');
-    const [shipmentTagRmas, setShipmentTagRmas] = useState<RMA[]>([]); // Selected RMAs for shipment tag
+    const [shipmentTagRmaIds, setShipmentTagRmaIds] = useState<string[]>([]); // Selected RMA IDs for shipment tag (always resolved from latest rmas)
 
     // Distributor Picker state (appears before ShipmentTagModal when multiple distributors)
     const [showDistributorPicker, setShowDistributorPicker] = useState(false);
     const [selectedDistRmas, setSelectedDistRmas] = useState<Set<string>>(new Set());
-    const [shipmentDistGroups, setShipmentDistGroups] = useState<Record<string, RMA[]> | undefined>(undefined);
+    const [shipmentDistGroupNames, setShipmentDistGroupNames] = useState<string[] | undefined>(undefined);
+
+    // Resolve fresh RMAs & distributor groups so edits/saves never leave stale objects in ShipmentTagModal
+    const resolvedShipmentTagRmas = useMemo(() => {
+        if (shipmentTagRmaIds.length === 0) return rmas;
+        const idSet = new Set(shipmentTagRmaIds);
+        const matched = rmas.filter(r => idSet.has(r.id));
+        return matched.length > 0 ? matched : rmas;
+    }, [rmas, shipmentTagRmaIds]);
+
+    const resolvedShipmentDistGroups = useMemo(() => {
+        if (!shipmentDistGroupNames || shipmentDistGroupNames.length <= 1) return undefined;
+        const idSet = new Set(shipmentTagRmaIds);
+        const scoped = shipmentTagRmaIds.length > 0 ? rmas.filter(r => idSet.has(r.id)) : rmas;
+        const groups: Record<string, RMA[]> = {};
+        for (const distName of shipmentDistGroupNames) {
+            const items = scoped.filter(r => (r.distributor || 'Unknown') === distName);
+            if (items.length > 0) groups[distName] = items;
+        }
+        return Object.keys(groups).length > 1 ? groups : undefined;
+    }, [rmas, shipmentTagRmaIds, shipmentDistGroupNames]);
 
     // Document Preview Popup state
     const [docPreviewHtml, setDocPreviewHtml] = useState<string | null>(null);
     const [docPreviewType, setDocPreviewType] = useState<'DISTRIBUTOR' | 'CUSTOMER'>('DISTRIBUTOR');
     const [docPreviewRmas, setDocPreviewRmas] = useState<RMA[]>([]);
     const [isDocPreviewOpen, setIsDocPreviewOpen] = useState(false);
+    const [isDocPreviewLoading, setIsDocPreviewLoading] = useState(false);
+    const [docPreviewRequestId, setDocPreviewRequestId] = useState(0);
+    const [isPrintingDoc, setIsPrintingDoc] = useState(false);
     const [selectedDistTab, setSelectedDistTab] = useState<string>('ALL');
     const docPreviewRenderRef = useRef<HTMLDivElement>(null);
     const [isCopyingImage, setIsCopyingImage] = useState(false);
     const [previewScale, setPreviewScale] = useState(0.8);
 
+    const openDocPreview = (type: 'DISTRIBUTOR' | 'CUSTOMER', targetRmas: RMA[]) => {
+        if (!targetRmas || targetRmas.length === 0) {
+            showToast('ไม่พบรายการสินค้าสำหรับสร้างเอกสาร', 'warning');
+            return;
+        }
+        setSelectedDistTab('ALL');
+        setDocPreviewType(type);
+        setDocPreviewRmas([...targetRmas]);
+        setDocPreviewHtml(null);
+        setIsDocPreviewOpen(true);
+        setDocPreviewRequestId(prev => prev + 1);
+    };
+
+    const closeDocPreview = () => {
+        setIsDocPreviewOpen(false);
+        setDocPreviewHtml(null);
+        setDocPreviewRmas([]);
+        setIsDocPreviewLoading(false);
+    };
+
+    const handlePrintDocPreview = async () => {
+        if (!docPreviewHtml || isPrintingDoc) return;
+        setIsPrintingDoc(true);
+        try {
+            const docTitle = `${jobInfo?.id || jobId || 'RMA'}_${docPreviewType === 'DISTRIBUTOR' ? 'Distributor_Form' : 'Customer_Return'}`;
+            await printHtmlDocument(docPreviewHtml, docTitle);
+        } catch (err) {
+            console.error('Print document failed:', err);
+            showToast(err instanceof Error ? err.message : 'ไม่สามารถสั่งพิมพ์ได้ กรุณาลองใหม่อีกครั้ง', 'error');
+        } finally {
+            setIsPrintingDoc(false);
+        }
+    };
+
     useEffect(() => {
-        if (!docPreviewHtml) return;
+        if (!isDocPreviewOpen) return;
         const handleResize = () => {
             const vw = window.innerWidth;
             const vh = window.innerHeight;
@@ -63,34 +120,61 @@ export const JobDetail: React.FC = () => {
             const scaleH = availableHeight / 1123;
             
             // Limit maximum scale to 0.85 and scale down for smaller screen heights
-            setPreviewScale(Math.min(0.85, scaleW, scaleH));
+            setPreviewScale(Math.max(0.3, Math.min(0.85, scaleW, scaleH)));
+        };
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') closeDocPreview();
         };
 
         window.addEventListener('resize', handleResize);
+        window.addEventListener('keydown', handleKeyDown);
         handleResize();
-        return () => window.removeEventListener('resize', handleResize);
-    }, [docPreviewHtml]);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isDocPreviewOpen]);
 
     useEffect(() => {
+        if (!isDocPreviewOpen || docPreviewRmas.length === 0) {
+            setDocPreviewHtml(null);
+            setIsDocPreviewLoading(false);
+            return;
+        }
+        let cancelled = false;
         const updateHtml = async () => {
-            if (docPreviewRmas.length === 0) {
-                setDocPreviewHtml(null);
-                return;
-            }
-            if (docPreviewType === 'DISTRIBUTOR') {
-                const filtered = selectedDistTab === 'ALL'
-                    ? docPreviewRmas
-                    : docPreviewRmas.filter(r => (r.distributor || 'Unknown') === selectedDistTab);
-                
-                const html = await getDistributorDocumentsHTML(filtered);
-                setDocPreviewHtml(html);
-            } else {
-                const html = await getCustomerDocumentsHTML(docPreviewRmas);
-                setDocPreviewHtml(html);
+            setIsDocPreviewLoading(true);
+            try {
+                let html = '';
+                if (docPreviewType === 'DISTRIBUTOR') {
+                    const filtered = selectedDistTab === 'ALL'
+                        ? docPreviewRmas
+                        : docPreviewRmas.filter(r => (r.distributor || 'Unknown') === selectedDistTab);
+                    html = await getDistributorDocumentsHTML(filtered);
+                } else {
+                    html = await getCustomerDocumentsHTML(docPreviewRmas);
+                }
+                if (!cancelled) {
+                    setDocPreviewHtml(html);
+                }
+            } catch (err) {
+                console.error('Failed to generate document preview:', err);
+                if (!cancelled) {
+                    showToast('ไม่สามารถสร้างเอกสาร Preview ได้ กรุณาลองใหม่อีกครั้ง', 'error');
+                    setIsDocPreviewOpen(false);
+                    setDocPreviewHtml(null);
+                    setDocPreviewRmas([]);
+                }
+            } finally {
+                if (!cancelled) {
+                    setIsDocPreviewLoading(false);
+                }
             }
         };
         updateHtml();
-    }, [selectedDistTab, docPreviewRmas, docPreviewType]);
+        return () => { cancelled = true; };
+    }, [isDocPreviewOpen, selectedDistTab, docPreviewRmas, docPreviewType, docPreviewRequestId]);
 
     // Add item modal
     const [showAddItemModal, setShowAddItemModal] = useState(false);
@@ -142,10 +226,12 @@ export const JobDetail: React.FC = () => {
 
 
 
-    const refreshRMAs = async () => {
+    const refreshRMAs = async (): Promise<RMA[]> => {
         const decodedId = decodeURIComponent(jobId || '');
         const jobRMAs = await MockDb.getRMAsByJobId(decodedId);
-        setRMAs(jobRMAs);
+        const sorted = [...jobRMAs].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        setRMAs(sorted);
+        return sorted;
     };
 
     useEffect(() => {
@@ -157,10 +243,10 @@ export const JobDetail: React.FC = () => {
                 const jobRMAs = await MockDb.getRMAsByJobId(decodedId);
 
                 if (jobRMAs.length > 0) {
-                    setRMAs(jobRMAs);
-                    jobRMAs.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+                    const sortedRMAs = [...jobRMAs].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+                    setRMAs(sortedRMAs);
 
-                    const first = jobRMAs[0];
+                    const first = sortedRMAs[0];
                     setJobInfo({
                         id: first.groupRequestId || first.id || decodedId,
                         quotationNumber: first.quotationNumber,
@@ -329,18 +415,20 @@ export const JobDetail: React.FC = () => {
         }
     };
 
-    if (loading) return <div className="p-12 text-center">Loading Job...</div>;
-    if (!jobInfo) return null;
+    if (loading || !jobInfo) {
+        return <AdminPageSkeleton title="กำลังโหลดข้อมูลใบงาน..." />;
+    }
 
-    const readyRMAs = rmas.filter(rma => [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REPLACED_FROM_STOCK, RMAStatus.RETURNED_FROM_VENDOR].includes(rma.status));
-    const closedRMAs = rmas.filter(rma => rma.status === RMAStatus.CLOSED);
+    const activeRMAs = rmas.filter(rma => rma.status !== RMAStatus.CANCELLED);
+    const readyRMAs = activeRMAs.filter(rma => [RMAStatus.CLOSED, RMAStatus.REPAIRED, RMAStatus.REPLACED_FROM_STOCK, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.REJECTED].includes(rma.status));
+    const closedRMAs = activeRMAs.filter(rma => rma.status === RMAStatus.CLOSED);
     const hasReadyRMAs = readyRMAs.length > 0;
     const hasClosedRMAs = closedRMAs.length > 0;
-    const allHaveDistributor = rmas.every(rma => rma.distributor && rma.distributor.trim() !== '' && rma.distributor !== 'Pending Staff Input');
-    const missingDistributorCount = rmas.filter(rma => !rma.distributor || rma.distributor.trim() === '' || rma.distributor === 'Pending Staff Input').length;
+    const allHaveDistributor = activeRMAs.length > 0 && activeRMAs.every(rma => rma.distributor && rma.distributor.trim() !== '' && rma.distributor !== 'Pending Staff Input');
+    const missingDistributorCount = activeRMAs.filter(rma => !rma.distributor || rma.distributor.trim() === '' || rma.distributor === 'Pending Staff Input').length;
 
     const handleReturnToCustomerClick = async () => {
-        const readyItems = rmas.filter(rma => [RMAStatus.REPAIRED, RMAStatus.REPLACED_FROM_STOCK, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.CLOSED].includes(rma.status));
+        const readyItems = activeRMAs.filter(rma => [RMAStatus.REPAIRED, RMAStatus.REPLACED_FROM_STOCK, RMAStatus.RETURNED_FROM_VENDOR, RMAStatus.REJECTED, RMAStatus.CLOSED].includes(rma.status));
 
         if (readyItems.length === 0) {
             showToast('ยังไม่มีรายการสินค้าที่ซ่อมหรือแก้ไขเสร็จแล้ว', 'warning');
@@ -348,6 +436,7 @@ export const JobDetail: React.FC = () => {
         }
 
         const unclosedItems = readyItems.filter(rma => rma.status !== RMAStatus.CLOSED);
+        let latestRMAs = rmas;
 
         if (unclosedItems.length > 0) {
             if (!confirm(`มีสินค้า ${unclosedItems.length} รายการที่แก้ไขเสร็จแล้ว ต้องการกดปิดงานและส่งคืนลูกค้าทันทีใช่หรือไม่?`)) {
@@ -367,7 +456,7 @@ export const JobDetail: React.FC = () => {
                         user
                     });
                 }
-                await refreshRMAs();
+                latestRMAs = await refreshRMAs();
                 showToast('ปิดงานและส่งคืนสินค้าให้ลูกค้าเรียบร้อยแล้ว!', 'success');
             } catch (err) {
                 console.error('Return to customer error:', err);
@@ -378,11 +467,11 @@ export const JobDetail: React.FC = () => {
             }
         }
 
-        const finalClosedRMAs = rmas.filter(rma => rma.status === RMAStatus.CLOSED || readyItems.some(r => r.id === rma.id));
-        setSelectedDistTab('ALL');
-        setDocPreviewType('CUSTOMER');
-        setDocPreviewRmas(finalClosedRMAs);
-        setIsDocPreviewOpen(true);
+        const readyIdSet = new Set(readyItems.map(r => r.id));
+        const finalClosedRMAs = latestRMAs.filter(rma =>
+            rma.status !== RMAStatus.CANCELLED && (rma.status === RMAStatus.CLOSED || readyIdSet.has(rma.id))
+        );
+        openDocPreview('CUSTOMER', finalClosedRMAs);
     };
 
     const formatDetailedDateTime = (dateVal?: any) => {
@@ -402,10 +491,6 @@ export const JobDetail: React.FC = () => {
             return '-';
         }
     };
-
-    if (loading || !jobInfo) {
-        return <AdminPageSkeleton title="กำลังโหลดข้อมูลใบงาน..." />;
-    }
 
     return (
         <div className="max-w-[1600px] w-full mx-auto px-3 sm:px-6 md:px-8 py-4 md:py-6 pb-6">
@@ -461,15 +546,22 @@ export const JobDetail: React.FC = () => {
                     <div className="grid grid-cols-2 gap-2 md:gap-2.5 w-full md:w-auto md:min-w-[340px] md:max-w-[420px]">
                         {/* Top-Left: ใบส่งเคลม */}
                         <button
+                            type="button"
                             onClick={() => {
-                                setSelectedDistTab('ALL');
-                                setDocPreviewType('DISTRIBUTOR');
-                                setDocPreviewRmas(rmas);
-                                setIsDocPreviewOpen(true);
+                                if (!allHaveDistributor) {
+                                    showToast(
+                                        activeRMAs.length === 0
+                                            ? 'ไม่มีรายการสินค้าที่ใช้งานได้สำหรับพิมพ์เอกสาร'
+                                            : `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)`,
+                                        'warning'
+                                    );
+                                    return;
+                                }
+                                openDocPreview('DISTRIBUTOR', activeRMAs);
                             }}
-                            disabled={!allHaveDistributor}
+                            aria-disabled={!allHaveDistributor}
                             className={`h-10 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-[18px] md:rounded-[20px] text-[11px] md:text-xs font-bold transition-all active:scale-95 apple-card-inner ${allHaveDistributor
-                                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 hover:scale-[1.01]'
+                                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 hover:scale-[1.01] cursor-pointer'
                                 : 'bg-gray-100 dark:bg-white/[0.04] text-gray-400 dark:text-gray-600 border border-gray-200/50 dark:border-white/5 cursor-not-allowed'}`}
                             title={!allHaveDistributor ? `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)` : ''}
                         >
@@ -479,8 +571,15 @@ export const JobDetail: React.FC = () => {
 
                         {/* Top-Right: ใบส่งคืน */}
                         <button
-                            onClick={handleReturnToCustomerClick}
-                            disabled={!hasReadyRMAs}
+                            type="button"
+                            onClick={() => {
+                                if (!hasReadyRMAs) {
+                                    showToast('ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะส่งคืนได้', 'warning');
+                                    return;
+                                }
+                                handleReturnToCustomerClick();
+                            }}
+                            aria-disabled={!hasReadyRMAs}
                             className={`h-10 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-[18px] md:rounded-[20px] text-[11px] md:text-xs font-bold transition-all active:scale-95 apple-card-inner ${hasReadyRMAs
                                 ? 'bg-gradient-to-r from-[#0071e3] to-[#005bb5] text-white shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/35 hover:scale-[1.01] cursor-pointer'
                                 : 'bg-gray-100 dark:bg-white/[0.04] text-gray-400 dark:text-gray-600 border border-gray-200/50 dark:border-white/5 cursor-not-allowed'}`}
@@ -492,20 +591,31 @@ export const JobDetail: React.FC = () => {
 
                         {/* Bottom-Left: ใบปะหน้า (ศูนย์) */}
                         <button
+                            type="button"
                             onClick={() => {
-                                const distributorGroups = new Set(rmas.map(r => r.distributor || '').filter(Boolean));
+                                if (!allHaveDistributor) {
+                                    showToast(
+                                        activeRMAs.length === 0
+                                            ? 'ไม่มีรายการสินค้าที่ใช้งานได้สำหรับพิมพ์ใบปะหน้า'
+                                            : `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)`,
+                                        'warning'
+                                    );
+                                    return;
+                                }
+                                const distributorGroups = new Set(activeRMAs.map(r => r.distributor || '').filter(Boolean));
                                 if (distributorGroups.size > 1) {
-                                    setSelectedDistRmas(new Set(rmas.map(r => r.id)));
+                                    setSelectedDistRmas(new Set(activeRMAs.map(r => r.id)));
                                     setShowDistributorPicker(true);
                                 } else {
-                                    setShipmentTagRmas(rmas);
+                                    setShipmentDistGroupNames(undefined);
+                                    setShipmentTagRmaIds(activeRMAs.map(r => r.id));
                                     setShipmentTagTarget('DISTRIBUTOR');
                                     setIsShipmentTagModalOpen(true);
                                 }
                             }}
-                            disabled={!allHaveDistributor}
+                            aria-disabled={!allHaveDistributor}
                             className={`h-10 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-[18px] md:rounded-[20px] text-[11px] md:text-xs font-bold transition-all active:scale-95 apple-card-inner ${allHaveDistributor
-                                ? 'border border-orange-400/40 dark:border-orange-500/30 text-orange-600 dark:text-orange-400 bg-orange-50/50 dark:bg-orange-500/10 hover:bg-orange-100/60 dark:hover:bg-orange-500/20 hover:scale-[1.01]'
+                                ? 'border border-orange-400/40 dark:border-orange-500/30 text-orange-600 dark:text-orange-400 bg-orange-50/50 dark:bg-orange-500/10 hover:bg-orange-100/60 dark:hover:bg-orange-500/20 hover:scale-[1.01] cursor-pointer'
                                 : 'border border-gray-200/60 dark:border-white/[0.06] bg-gray-50/50 dark:bg-white/[0.02] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
                             title={!allHaveDistributor ? `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)` : ''}
                         >
@@ -515,12 +625,18 @@ export const JobDetail: React.FC = () => {
 
                         {/* Bottom-Right: ใบปะหน้าส่งกลับ (ลูกค้า) */}
                         <button
+                            type="button"
                             onClick={() => {
-                                setShipmentTagRmas(readyRMAs);
+                                if (!hasReadyRMAs) {
+                                    showToast('ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะพิมพ์ใบปะหน้าได้', 'warning');
+                                    return;
+                                }
+                                setShipmentDistGroupNames(undefined);
+                                setShipmentTagRmaIds(readyRMAs.map(r => r.id));
                                 setShipmentTagTarget('CUSTOMER');
                                 setIsShipmentTagModalOpen(true);
                             }}
-                            disabled={!hasReadyRMAs}
+                            aria-disabled={!hasReadyRMAs}
                             className={`h-10 md:h-11 flex items-center justify-center gap-1.5 md:gap-2 rounded-[18px] md:rounded-[20px] text-[11px] md:text-xs font-bold transition-all active:scale-95 apple-card-inner ${hasReadyRMAs
                                 ? 'border border-blue-400/40 dark:border-blue-500/30 text-[#0071e3] dark:text-blue-400 bg-blue-50/50 dark:bg-blue-500/10 hover:bg-blue-100/60 dark:hover:bg-blue-500/20 hover:scale-[1.01] cursor-pointer'
                                 : 'border border-gray-200/60 dark:border-white/[0.06] bg-gray-50/50 dark:bg-white/[0.02] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
@@ -548,8 +664,11 @@ export const JobDetail: React.FC = () => {
                             <div className="flex items-center gap-2">
                                 {/* Customer Inbound Shipping Label Button */}
                                 <button
+                                    type="button"
                                     onClick={() => {
-                                        setShipmentTagRmas(rmas);
+                                        const inboundList = activeRMAs.length > 0 ? activeRMAs : rmas;
+                                        setShipmentDistGroupNames(undefined);
+                                        setShipmentTagRmaIds(inboundList.map(r => r.id));
                                         setShipmentTagTarget('CUSTOMER_INBOUND');
                                         setIsShipmentTagModalOpen(true);
                                     }}
@@ -898,17 +1017,17 @@ export const JobDetail: React.FC = () => {
             {/* Distributor Picker Modal — Choose which items to create shipping label for */}
             {showDistributorPicker && (() => {
                 const distGrouped: Record<string, RMA[]> = {};
-                for (const r of rmas) {
+                for (const r of activeRMAs) {
                     const key = r.distributor || 'Unknown';
                     if (!distGrouped[key]) distGrouped[key] = [];
                     distGrouped[key].push(r);
                 }
                 const distributorNames = Object.keys(distGrouped);
-                const selectedRmasArr = rmas.filter(r => selectedDistRmas.has(r.id));
+                const selectedRmasArr = activeRMAs.filter(r => selectedDistRmas.has(r.id));
                 const selectedDistributors = [...new Set(selectedRmasArr.map(r => r.distributor || 'Unknown'))];
 
-                return (
-                    <div className="fixed inset-0 z-[55] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                return createPortal(
+                    <div className="fixed inset-0 z-[65] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                         <div className="bg-white dark:bg-[#1c1c1e] w-full max-w-lg rounded-2xl shadow-2xl border border-gray-200 dark:border-[#333] flex flex-col max-h-[80vh] overflow-hidden">
                             {/* Header */}
                             <div className="px-6 py-5 border-b border-gray-200 dark:border-[#333] bg-orange-50/50 dark:bg-orange-900/10">
@@ -967,27 +1086,25 @@ export const JobDetail: React.FC = () => {
 
                             {/* Footer */}
                             <div className="p-4 border-t border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#2c2c2e] flex justify-between items-center gap-3">
-                                <button onClick={() => setShowDistributorPicker(false)} className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">ยกเลิก</button>
+                                <button type="button" onClick={() => setShowDistributorPicker(false)} className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">ยกเลิก</button>
                                 <div className="text-xs text-gray-500">
                                     {selectedDistributors.length > 1 && <span className="text-orange-500 font-medium">📄 จะสร้าง {selectedDistributors.length} ใบ (ศูนย์ละ 1 ใบ)</span>}
                                 </div>
                                 <button
+                                    type="button"
                                     disabled={selectedRmasArr.length === 0}
                                     onClick={() => {
                                         setShowDistributorPicker(false);
                                         if (selectedDistributors.length <= 1) {
                                             // Single distributor — open modal directly
-                                            setShipmentTagRmas(selectedRmasArr);
+                                            setShipmentDistGroupNames(undefined);
+                                            setShipmentTagRmaIds(selectedRmasArr.map(r => r.id));
                                             setShipmentTagTarget('DISTRIBUTOR');
                                             setIsShipmentTagModalOpen(true);
                                         } else {
                                             // Multiple distributors — pass all groups to modal with tabs
-                                            const selectedGroups: Record<string, RMA[]> = {};
-                                            for (const d of selectedDistributors) {
-                                                selectedGroups[d] = distGrouped[d];
-                                            }
-                                            setShipmentDistGroups(selectedGroups);
-                                            setShipmentTagRmas(selectedRmasArr);
+                                            setShipmentDistGroupNames(selectedDistributors);
+                                            setShipmentTagRmaIds(selectedRmasArr.map(r => r.id));
                                             setShipmentTagTarget('DISTRIBUTOR');
                                             setIsShipmentTagModalOpen(true);
                                         }
@@ -998,7 +1115,8 @@ export const JobDetail: React.FC = () => {
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </div>,
+                    document.body
                 );
             })()}
 
@@ -1010,26 +1128,26 @@ export const JobDetail: React.FC = () => {
                         setIsShipmentTagModalOpen(false);
                         setShowDistributorPicker(false);
                         setSelectedDistRmas(new Set());
-                        setShipmentDistGroups(undefined);
+                        setShipmentDistGroupNames(undefined);
                     }}
-                    rma={shipmentTagRmas[0] || rmas[0]}
-                    allRmas={shipmentTagRmas.length > 0 ? shipmentTagRmas : rmas}
+                    rma={resolvedShipmentTagRmas[0] || rmas[0]}
+                    allRmas={resolvedShipmentTagRmas}
                     onSave={handleSaveShipmentTagData}
                     targetType={shipmentTagTarget}
-                    distributorGroups={shipmentDistGroups}
+                    distributorGroups={resolvedShipmentDistGroups}
                 />
             )}
 
             {/* Document Preview Popup */}
-            {docPreviewHtml && (() => {
+            {isDocPreviewOpen && (() => {
                 const filteredRmas = docPreviewType === 'DISTRIBUTOR'
                     ? (selectedDistTab === 'ALL'
                         ? docPreviewRmas
                         : docPreviewRmas.filter(r => (r.distributor || 'Unknown') === selectedDistTab))
                     : docPreviewRmas;
 
-                return (
-                    <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex flex-col animate-in fade-in duration-200">
+                return createPortal(
+                    <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm flex flex-col animate-in fade-in duration-200">
                         {/* Toolbar */}
                         <div className="flex-shrink-0 flex items-center justify-between gap-3 px-3 md:px-6 py-2.5 bg-white dark:bg-[#1c1c1e] border-b border-gray-200 dark:border-white/10 shadow-sm w-full overflow-x-auto scrollbar-none">
                             <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
@@ -1350,16 +1468,16 @@ export const JobDetail: React.FC = () => {
                                 {isCopyingImage ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />} ทั้งหมด
                             </button>
                             <button
-                                onClick={() => {
-                                    const iframe = document.getElementById('doc-preview-iframe') as HTMLIFrameElement;
-                                    iframe?.contentWindow?.print();
-                                }}
-                                className="px-2.5 py-1.5 sm:px-5 sm:py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-[11px] sm:text-sm flex items-center gap-1 sm:gap-2 transition-colors whitespace-nowrap"
+                                type="button"
+                                onClick={handlePrintDocPreview}
+                                disabled={!docPreviewHtml || isDocPreviewLoading || isPrintingDoc}
+                                className="px-2.5 py-1.5 sm:px-5 sm:py-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-wait text-white rounded-lg font-medium text-[11px] sm:text-sm flex items-center gap-1 sm:gap-2 transition-colors whitespace-nowrap"
                             >
-                                🖨️ พิมพ์
+                                {isPrintingDoc ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" /> : '🖨️'} {isPrintingDoc ? 'กำลังเตรียมพิมพ์...' : 'พิมพ์'}
                             </button>
                             <button
-                                onClick={() => setDocPreviewHtml(null)}
+                                type="button"
+                                onClick={closeDocPreview}
                                 className="px-2.5 py-1.5 sm:px-5 sm:py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium text-[11px] sm:text-sm flex items-center gap-1 sm:gap-2 transition-colors whitespace-nowrap"
                             >
                                 <XIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> ปิด
@@ -1367,36 +1485,44 @@ export const JobDetail: React.FC = () => {
                             </div>
                         </div>
                         {/* Warning banner for partial customer documents */}
-                        {docPreviewType === 'CUSTOMER' && filteredRmas.length < rmas.length && (
+                        {docPreviewType === 'CUSTOMER' && filteredRmas.length < activeRMAs.length && (
                             <div className="flex-shrink-0 flex items-center gap-2 px-6 py-2 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800/40">
                                 <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                                 <span className="text-sm text-amber-700 dark:text-amber-300">
-                                    แสดงเฉพาะงานที่ปิดแล้ว <strong>{filteredRmas.length}</strong> จาก <strong>{rmas.length}</strong> รายการ — อีก <strong>{rmas.length - filteredRmas.length}</strong> รายการยังไม่ได้ปิดงาน ไม่แสดงในเอกสาร
+                                    แสดงเฉพาะงานที่ปิดแล้ว <strong>{filteredRmas.length}</strong> จาก <strong>{activeRMAs.length}</strong> รายการ — อีก <strong>{activeRMAs.length - filteredRmas.length}</strong> รายการยังไม่ได้ปิดงาน ไม่แสดงในเอกสาร
                                 </span>
                             </div>
                         )}
                         {/* Preview Content - A4 */}
                         <div className="flex-1 overflow-auto flex justify-start lg:justify-center py-8 px-4 md:px-12 bg-gray-100/50 dark:bg-black/50">
-                            <div className="origin-top flex justify-center" style={{ zoom: previewScale }}>
-                                <iframe
-                                    id="doc-preview-iframe"
-                                    srcDoc={`<!DOCTYPE html><html><head><title>Preview</title><meta name="viewport" content="width=794"><style>@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff;width:100%}</style></head><body style="margin:0;padding:0;">${docPreviewHtml}</body></html>`}
-                                    className="border-0 shadow-2xl bg-white"
-                                    style={{
-                                        width: '794px',
-                                        minWidth: '794px',
-                                        height: (() => {
-                                            if (docPreviewType === 'DISTRIBUTOR') {
-                                                const distCount = new Set(filteredRmas.map(r => r.distributor || 'Unknown')).size;
-                                                return `${Math.max(1, distCount) * 1123}px`;
-                                            }
-                                            return '1123px';
-                                        })()
-                                    }}
-                                />
-                            </div>
+                            {isDocPreviewLoading || !docPreviewHtml ? (
+                                <div className="m-auto flex flex-col items-center gap-3 bg-white dark:bg-[#1c1c1e] px-8 py-6 rounded-2xl shadow-xl border border-gray-200 dark:border-white/10">
+                                    <Loader2 className="w-7 h-7 animate-spin text-[#0071e3]" />
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-300">กำลังสร้างเอกสาร Preview...</span>
+                                </div>
+                            ) : (
+                                <div className="origin-top flex justify-center" style={{ zoom: previewScale }}>
+                                    <iframe
+                                        id="doc-preview-iframe"
+                                        srcDoc={wrapPrintableHtml(docPreviewHtml, 'Preview')}
+                                        className="border-0 shadow-2xl bg-white"
+                                        style={{
+                                            width: '794px',
+                                            minWidth: '794px',
+                                            height: (() => {
+                                                if (docPreviewType === 'DISTRIBUTOR') {
+                                                    const distCount = new Set(filteredRmas.map(r => r.distributor || 'Unknown')).size;
+                                                    return `${Math.max(1, distCount) * 1123}px`;
+                                                }
+                                                return '1123px';
+                                            })()
+                                        }}
+                                    />
+                                </div>
+                            )}
                         </div>
-                    </div>
+                    </div>,
+                    document.body
                 );
             })()}
 

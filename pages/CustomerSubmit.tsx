@@ -7,7 +7,7 @@ import { renderHtmlToBlob, downloadHtmlAsPdf } from '../services/renderToImage';
 import { escapeHtml } from '../services/sanitize';
 import { ProductType, Team } from '../types';
 import { LINE_ACCOUNTS, SEC_ADDRESS, getLineAccountById } from '../lineConfig';
-import { getCustomerInboundLabelHTML } from '../services/printService';
+import { getCustomerInboundLabelHTML, printHtmlDocument } from '../services/printService';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ProductEntryForm } from '../components/ProductEntryForm';
 import { GlassSelect } from '../components/GlassSelect';
@@ -207,31 +207,13 @@ export const CustomerSubmit: React.FC = () => {
             ? sSelectedLineConfig.recipients.map(r => `${r.name}: ${r.phone}`).join(' / ')
             : '-';
 
-        // Use hidden iframe approach instead of popup window
-        // This prevents the unprofessional about:blank window from lingering
-        const existingFrame = document.getElementById('print-label-frame');
-        if (existingFrame) existingFrame.remove();
-
-        const iframe = document.createElement('iframe');
-        iframe.id = 'print-label-frame';
-        iframe.style.position = 'fixed';
-        iframe.style.top = '-10000px';
-        iframe.style.left = '-10000px';
-        iframe.style.width = '800px';
-        iframe.style.height = '600px';
-        iframe.style.border = 'none';
-        document.body.appendChild(iframe);
-
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-        if (!iframeDoc) return;
-
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(submittedRef)}&margin=0`;
 
-        iframeDoc.open();
-        iframeDoc.write(`
+        const labelHtml = `
+            <!DOCTYPE html>
             <html>
             <head>
-                <title>Shipping Label - ${submittedRef}</title>
+                <title>Shipping Label - ${escapeHtml(submittedRef)}</title>
                 <style>
                     @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
                     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -477,19 +459,12 @@ export const CustomerSubmit: React.FC = () => {
                 </div>
             </body>
             </html>
-        `);
-        iframeDoc.close();
+        `;
 
-        // Wait for fonts to load, then print from iframe and clean up
-        iframe.onload = () => {
-            setTimeout(() => {
-                iframe.contentWindow?.print();
-                // Clean up iframe after print dialog closes
-                setTimeout(() => {
-                    iframe.remove();
-                }, 1000);
-            }, 500);
-        };
+        printHtmlDocument(labelHtml, `Shipping_Label_${submittedRef}`).catch(err => {
+            console.error('Customer label print failed:', err);
+            showToast(err instanceof Error ? err.message : 'ไม่สามารถสั่งพิมพ์ได้ กรุณาลองใหม่อีกครั้ง', 'error');
+        });
 
         setShowLabelModal(false);
     };

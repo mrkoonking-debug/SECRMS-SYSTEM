@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { RMA } from '../types';
-import { getImporterFormHTML, getCustomerFormHTML, getCustomerInboundLabelHTML } from '../services/printService';
+import { getImporterFormHTML, getCustomerFormHTML, getCustomerInboundLabelHTML, printHtmlDocument } from '../services/printService';
 import { ArrowLeft, Printer, Download, Loader2, Image as ImageIcon, X, Check, Copy, FileText } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { renderHtmlToBlob, downloadHtmlAsPdf } from '../services/renderToImage';
@@ -48,23 +48,18 @@ export const DocumentPreview: React.FC = () => {
         fetchDoc();
     }, [id, type, navigate]);
 
-    const handlePrint = () => {
-        const iframe = document.createElement('iframe');
-        iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1123px;border:0;visibility:hidden;';
-        document.body.appendChild(iframe);
+    const [isPrinting, setIsPrinting] = useState(false);
 
-        const doc = iframe.contentWindow?.document;
-        if (doc) {
-            doc.open();
-            doc.write(`<!DOCTYPE html><html><head><title>Print</title><meta name="viewport" content="width=794"><style>@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff;width:100%}</style></head><body style="margin:0;padding:0;">${htmlContent}</body></html>`);
-            doc.close();
-            iframe.contentWindow?.focus();
-            setTimeout(() => {
-                iframe.contentWindow?.print();
-                setTimeout(() => {
-                    if (document.body.contains(iframe)) document.body.removeChild(iframe);
-                }, 1000);
-            }, 800);
+    const handlePrint = async () => {
+        if (!htmlContent || isPrinting) return;
+        setIsPrinting(true);
+        try {
+            await printHtmlDocument(htmlContent, `RMA_${id || ''}_${type || 'document'}`);
+        } catch (err) {
+            console.error('Print failed:', err);
+            showToast(err instanceof Error ? err.message : 'ไม่สามารถสั่งพิมพ์ได้ กรุณาลองใหม่อีกครั้ง', 'error');
+        } finally {
+            setIsPrinting(false);
         }
     };
 

@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { renderHtmlToBlob, downloadHtmlAsPdf } from '../services/renderToImage';
 import { X, Package, Trash2, Expand, RefreshCw, Copy, Mail, Plus, Save, Truck, FileText, Loader2 } from 'lucide-react';
 import { RMA, Distributor } from '../types';
-import { ShippingLabelPayload, getCustomerShippingLabelHTML, getCustomerInboundLabelHTML } from '../services/printService';
+import { ShippingLabelPayload, getCustomerShippingLabelHTML, getCustomerInboundLabelHTML, printHtmlDocument, wrapPrintableHtml } from '../services/printService';
 import { MockDb } from '../services/mockDb';
 import { useLanguage } from '../contexts/LanguageContext';
 import { showToast } from '../services/toast';
@@ -54,7 +55,10 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
     const [trackingIds, setTrackingIds] = useState<string[]>(['']); // Start with 1 empty box
 
     const [isSaving, setIsSaving] = useState(false);
+    const [isPrinting, setIsPrinting] = useState(false);
     const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+    const [previewScale, setPreviewScale] = useState(0.8);
+    const prevInitKeyRef = useRef<string | null>(null);
 
     // Tabbed multi-distributor state
     const [activeTab, setActiveTab] = useState('');
@@ -62,6 +66,7 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
     const isTabbed = !!distributorGroups && Object.keys(distributorGroups).length > 1;
     const tabNames = isTabbed ? Object.keys(distributorGroups!) : [];
+    const tabKey = tabNames.join('|');
 
     // Get current RMAs for the active tab (or all RMAs in single mode)
     const currentRmas = isTabbed && distributorGroups
@@ -95,88 +100,117 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
     }, []);
 
     useEffect(() => {
-        if (isOpen) {
+        if (!previewHtml) return;
+        const handleResize = () => {
+            const availableWidth = window.innerWidth - 48;
+            setPreviewScale(Math.max(0.3, Math.min(0.85, availableWidth / 794)));
+        };
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setPreviewHtml(null);
+        };
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('keydown', handleKeyDown);
+        handleResize();
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [previewHtml]);
+
+    useEffect(() => {
+        if (!isOpen) {
+            prevInitKeyRef.current = null;
             setPreviewHtml(null);
-            if (isTabbed && distributorGroups) {
-                // Tabbed mode: initialize all tabs
-                const tabs = Object.keys(distributorGroups);
-                setActiveTab(tabs[0]);
-                MockDb.getDistributors().then((distributors: Distributor[]) => {
-                    const initial: Record<string, TabState> = {};
-                    for (const distName of tabs) {
-                        const firstRma = distributorGroups[distName][0];
-                        const sc = (firstRma as any).distributorContactPerson || '';
-                        const sp = (firstRma as any).distributorPhone || '';
-                        const sa = (firstRma as any).distributorAddress || '';
-                        const match = distributors.find(d => d.value === distName);
-                        initial[distName] = {
-                            receiverName: match?.label || distName,
-                            contactPerson: match?.contactPerson || sc,
-                            receiverPhone: match?.phone || sp,
-                            receiverAddress: match?.address || sa,
-                            trackingIds: firstRma.trackingIds?.length ? firstRma.trackingIds : ['']
-                        };
-                    }
-                    setTabData(initial);
-                    // Load first tab into form
-                    const first = initial[tabs[0]];
-                    setReceiverName(first.receiverName);
-                    setContactPerson(first.contactPerson);
-                    setReceiverPhone(first.receiverPhone);
-                    setReceiverAddress(first.receiverAddress);
-                    setTrackingIds(first.trackingIds);
-                }).catch(() => {
-                    const initial: Record<string, TabState> = {};
-                    for (const distName of tabs) {
-                        const firstRma = distributorGroups[distName][0];
-                        initial[distName] = {
-                            receiverName: distName,
-                            contactPerson: (firstRma as any).distributorContactPerson || '',
-                            receiverPhone: (firstRma as any).distributorPhone || '',
-                            receiverAddress: (firstRma as any).distributorAddress || '',
-                            trackingIds: firstRma.trackingIds?.length ? firstRma.trackingIds : ['']
-                        };
-                    }
-                    setTabData(initial);
-                    const first = initial[tabs[0]];
-                    setReceiverName(first.receiverName);
-                    setContactPerson(first.contactPerson);
-                    setReceiverPhone(first.receiverPhone);
-                    setReceiverAddress(first.receiverAddress);
-                    setTrackingIds(first.trackingIds);
-                });
-            } else if (targetType === 'DISTRIBUTOR') {
-                // Single distributor mode (original logic)
-                const savedContact = (rma as any).distributorContactPerson || '';
-                const savedPhone = (rma as any).distributorPhone || '';
-                const savedAddress = (rma as any).distributorAddress || '';
-                setContactPerson(savedContact);
-                setReceiverPhone(savedPhone);
-                setReceiverAddress(savedAddress);
-                if (rma.distributor) {
-                    setReceiverName(rma.distributor);
-                    MockDb.getDistributors().then((distributors: Distributor[]) => {
-                        const match = distributors.find(d => d.value === rma.distributor);
-                        if (match) {
-                            setReceiverName(match.label || rma.distributor || '');
-                            if (match.contactPerson && !savedContact) setContactPerson(match.contactPerson);
-                            if (match.phone && !savedPhone) setReceiverPhone(match.phone);
-                            if (match.address && !savedAddress) setReceiverAddress(match.address);
-                        }
-                    }).catch(() => {});
-                } else {
-                    setReceiverName('');
-                }
-                setTrackingIds(rma.trackingIds?.length ? rma.trackingIds : ['']);
-            } else {
-                setReceiverName(rma.customerName || '');
-                setContactPerson(rma.contactPerson || '');
-                setReceiverPhone(rma.customerPhone || '');
-                setReceiverAddress(rma.customerReturnAddress || '');
-                setTrackingIds(rma.customerTrackingIds?.length ? rma.customerTrackingIds : ['']);
-            }
+            return;
         }
-    }, [isOpen, rma, targetType]);
+
+        // Only initialize when modal opens or switches target/RMA/tabs — NOT when onSave refreshes the same rma object reference
+        const initKey = `${rma?.id || ''}|${targetType}|${tabKey}`;
+        if (prevInitKeyRef.current === initKey) {
+            return;
+        }
+        prevInitKeyRef.current = initKey;
+
+        setPreviewHtml(null);
+        if (isTabbed && distributorGroups) {
+            // Tabbed mode: initialize all tabs
+            const tabs = Object.keys(distributorGroups);
+            setActiveTab(tabs[0]);
+            MockDb.getDistributors().then((distributors: Distributor[]) => {
+                const initial: Record<string, TabState> = {};
+                for (const distName of tabs) {
+                    const firstRma = distributorGroups[distName][0];
+                    const sc = (firstRma as any).distributorContactPerson || '';
+                    const sp = (firstRma as any).distributorPhone || '';
+                    const sa = (firstRma as any).distributorAddress || '';
+                    const match = distributors.find(d => d.value === distName);
+                    initial[distName] = {
+                        receiverName: match?.label || distName,
+                        contactPerson: match?.contactPerson || sc,
+                        receiverPhone: match?.phone || sp,
+                        receiverAddress: match?.address || sa,
+                        trackingIds: firstRma.trackingIds?.length ? firstRma.trackingIds : ['']
+                    };
+                }
+                setTabData(initial);
+                // Load first tab into form
+                const first = initial[tabs[0]];
+                setReceiverName(first.receiverName);
+                setContactPerson(first.contactPerson);
+                setReceiverPhone(first.receiverPhone);
+                setReceiverAddress(first.receiverAddress);
+                setTrackingIds(first.trackingIds);
+            }).catch(() => {
+                const initial: Record<string, TabState> = {};
+                for (const distName of tabs) {
+                    const firstRma = distributorGroups[distName][0];
+                    initial[distName] = {
+                        receiverName: distName,
+                        contactPerson: (firstRma as any).distributorContactPerson || '',
+                        receiverPhone: (firstRma as any).distributorPhone || '',
+                        receiverAddress: (firstRma as any).distributorAddress || '',
+                        trackingIds: firstRma.trackingIds?.length ? firstRma.trackingIds : ['']
+                    };
+                }
+                setTabData(initial);
+                const first = initial[tabs[0]];
+                setReceiverName(first.receiverName);
+                setContactPerson(first.contactPerson);
+                setReceiverPhone(first.receiverPhone);
+                setReceiverAddress(first.receiverAddress);
+                setTrackingIds(first.trackingIds);
+            });
+        } else if (targetType === 'DISTRIBUTOR') {
+            // Single distributor mode (original logic)
+            const savedContact = (rma as any).distributorContactPerson || '';
+            const savedPhone = (rma as any).distributorPhone || '';
+            const savedAddress = (rma as any).distributorAddress || '';
+            setContactPerson(savedContact);
+            setReceiverPhone(savedPhone);
+            setReceiverAddress(savedAddress);
+            if (rma.distributor) {
+                setReceiverName(rma.distributor);
+                MockDb.getDistributors().then((distributors: Distributor[]) => {
+                    const match = distributors.find(d => d.value === rma.distributor);
+                    if (match) {
+                        setReceiverName(match.label || rma.distributor || '');
+                        if (match.contactPerson && !savedContact) setContactPerson(match.contactPerson);
+                        if (match.phone && !savedPhone) setReceiverPhone(match.phone);
+                        if (match.address && !savedAddress) setReceiverAddress(match.address);
+                    }
+                }).catch(() => {});
+            } else {
+                setReceiverName('');
+            }
+            setTrackingIds(rma.trackingIds?.length ? rma.trackingIds : ['']);
+        } else {
+            setReceiverName(rma.customerName || '');
+            setContactPerson(rma.contactPerson || '');
+            setReceiverPhone(rma.customerPhone || '');
+            setReceiverAddress(rma.customerReturnAddress || rma.customerAddress || '');
+            setTrackingIds(rma.customerTrackingIds?.length ? rma.customerTrackingIds : ['']);
+        }
+    }, [isOpen, rma, targetType, isTabbed, tabKey, distributorGroups]);
 
     if (!isOpen) return null;
 
@@ -224,14 +258,14 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
     const handleSaveAndPrint = async () => {
         try {
             setIsSaving(true);
-            const rmaIds = isTabbed ? currentRmas.map(r => r.id) : undefined;
-            await onSave(buildSavePayload(), rmaIds);
-
             if (targetType === 'CUSTOMER_INBOUND') {
                 const html = await getCustomerInboundLabelHTML(currentRmas);
                 setPreviewHtml(html);
                 return;
             }
+
+            const rmaIds = isTabbed ? currentRmas.map(r => r.id) : undefined;
+            await onSave(buildSavePayload(), rmaIds);
 
             const payloads: ShippingLabelPayload[] = effectiveTrackingIds.map((tid, index) => ({
                 rma: currentRma,
@@ -255,10 +289,17 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
         }
     };
 
-    const handlePrintFromPreview = () => {
-        const iframe = document.getElementById('preview-iframe') as HTMLIFrameElement;
-        if (iframe?.contentWindow) {
-            iframe.contentWindow.print();
+    const handlePrintFromPreview = async () => {
+        if (!previewHtml || isPrinting) return;
+        setIsPrinting(true);
+        try {
+            const jobLabel = currentRma.groupRequestId || currentRma.id || 'Shipping_Label';
+            await printHtmlDocument(previewHtml, `${jobLabel}_Shipping_Label`);
+        } catch (err) {
+            console.error('Shipping label print failed:', err);
+            showToast(err instanceof Error ? err.message : 'ไม่สามารถสั่งพิมพ์ได้ กรุณาลองใหม่อีกครั้ง', 'error');
+        } finally {
+            setIsPrinting(false);
         }
     };
 
@@ -383,8 +424,8 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
         });
     };
 
-    return (<>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 animate-in fade-in duration-200">
+    return createPortal(<>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 animate-in fade-in duration-200">
             <div className="bg-white dark:bg-[#1c1c1e] w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-gray-200 dark:border-[#333]">
 
                 {/* Sticky Header */}
@@ -395,7 +436,11 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                         </div>
                         <div>
                             <h2 className="text-lg md:text-xl font-bold text-[#1d1d1f] dark:text-white leading-tight">
-                                {targetType === 'CUSTOMER' ? 'สร้างใบปะหน้า - ส่งคืนลูกค้า' : 'สร้างใบปะหน้า - ส่งเคลมศูนย์'}
+                                {targetType === 'CUSTOMER'
+                                    ? 'สร้างใบปะหน้า - ส่งคืนลูกค้า'
+                                    : targetType === 'CUSTOMER_INBOUND'
+                                        ? 'ใบปะหน้าส่งบริษัท (ลูกค้าส่งของ)'
+                                        : 'สร้างใบปะหน้า - ส่งเคลมศูนย์'}
                             </h2>
                             <p className="text-xs md:text-sm text-gray-500 font-mono mt-0.5">ID: {displayId}</p>
                         </div>
@@ -601,7 +646,7 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
 
         {/* Preview Overlay */}
         {previewHtml && (
-            <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex flex-col animate-in fade-in duration-200">
+            <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm flex flex-col animate-in fade-in duration-200">
                 {/* Toolbar */}
                 <div className="flex-shrink-0 flex items-center justify-between gap-1.5 px-3 md:px-6 py-2 bg-white dark:bg-[#1c1c1e] border-b border-gray-200 dark:border-white/10 shadow-sm w-full overflow-x-auto scrollbar-none">
                     <h2 className="text-gray-800 dark:text-white font-bold text-xs sm:text-base flex-shrink-0 whitespace-nowrap mr-1">📋 Preview</h2>
@@ -702,13 +747,16 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                         </button>
                         
                         <button
+                            type="button"
                             onClick={handlePrintFromPreview}
-                            className="px-2.5 py-1.5 md:px-4 md:py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-[11px] md:text-sm flex items-center gap-1 md:gap-2 transition-colors whitespace-nowrap"
+                            disabled={isPrinting}
+                            className="px-2.5 py-1.5 md:px-4 md:py-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-wait text-white rounded-lg font-medium text-[11px] md:text-sm flex items-center gap-1 md:gap-2 transition-colors whitespace-nowrap"
                         >
-                            🖨️ พิมพ์
+                            {isPrinting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : '🖨️'} {isPrinting ? 'กำลังเตรียมพิมพ์...' : 'พิมพ์'}
                         </button>
 
                         <button
+                            type="button"
                             onClick={() => setPreviewHtml(null)}
                             className="px-2.5 py-1.5 md:px-4 md:py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium text-[11px] md:text-sm flex items-center gap-1.5 md:gap-2 transition-colors whitespace-nowrap"
                         >
@@ -718,16 +766,16 @@ export const ShipmentTagModal: React.FC<ShipmentTagModalProps> = ({
                 </div>
                 {/* Preview Content - A4 size (794px = 210mm) */}
                 <div className="flex-1 overflow-auto flex justify-center py-6 px-4 bg-gray-900/70 dark:bg-black/80">
-                    <div className="origin-top flex justify-center shadow-2xl rounded-sm overflow-hidden" style={{ zoom: 'min(0.85, calc((100vw - 48px) / 794))' }}>
+                    <div className="origin-top flex justify-center shadow-2xl rounded-sm overflow-hidden" style={{ zoom: previewScale }}>
                         <iframe
                             id="preview-iframe"
-                            srcDoc={previewHtml}
+                            srcDoc={wrapPrintableHtml(previewHtml, 'Preview')}
                             className="border-0 bg-white"
-                            style={{ width: '794px', height: `${isTabbed ? Math.max(1, tabNames.length) * 1123 : 1123}px` }}
+                            style={{ width: '794px', height: `${isTabbed ? Math.max(1, tabNames.length) * 1123 : Math.max(1, effectiveTrackingIds.length) * 1123}px` }}
                         />
                     </div>
                 </div>
             </div>
         )}
-    </>);
+    </>, document.body);
 };

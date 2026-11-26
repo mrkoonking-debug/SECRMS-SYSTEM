@@ -4,6 +4,7 @@ import { RMA } from '../types';
 import { SEC_ADDRESS, getLineAccountById } from '../lineConfig';
 import { escapeHtml } from '../services/sanitize';
 import { showToast } from '../services/toast';
+import { printHtmlDocument } from '../services/printService';
 
 interface PrintLabelModalProps {
   isOpen: boolean;
@@ -39,20 +40,7 @@ export const PrintLabelModal: React.FC<PrintLabelModalProps> = ({ isOpen, onClos
     const sSelectedLineConfig = getLineAccountById(rma.lineAccount || '');
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(submittedRef)}&margin=0`;
 
-    // Hidden iframe printing technique
-    const existingFrame = document.getElementById('print-label-frame');
-    if (existingFrame) existingFrame.remove();
-
-    const iframe = document.createElement('iframe');
-    iframe.id = 'print-label-frame';
-    iframe.style.cssText = 'position:fixed;top:-10000px;left:-10000px;width:800px;height:600px;border:none;';
-    document.body.appendChild(iframe);
-
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (!iframeDoc) return;
-
-    iframeDoc.open();
-    iframeDoc.write(`
+    const labelHtml = `
       <!DOCTYPE html>
       <html>
       <head>
@@ -137,17 +125,12 @@ export const PrintLabelModal: React.FC<PrintLabelModalProps> = ({ isOpen, onClos
           </div>
       </body>
       </html>
-    `);
-    iframeDoc.close();
+    `;
 
-    iframe.onload = () => {
-      setTimeout(() => {
-        iframe.contentWindow?.print();
-        setTimeout(() => {
-          iframe.remove();
-        }, 1000);
-      }, 500);
-    };
+    printHtmlDocument(labelHtml, `Shipping_Label_${submittedRef}`).catch(err => {
+      console.error('Print label failed:', err);
+      showToast(err instanceof Error ? err.message : 'ไม่สามารถสั่งพิมพ์ได้ กรุณาลองใหม่อีกครั้ง', 'error');
+    });
 
     onClose();
   };

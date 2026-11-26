@@ -74,7 +74,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             setFormData(initialData);
             setIsReviewing(false);
             setDiffs([]);
-            setCustomDist(rma.distributor || '');
+            setCustomDist(rma.distributor && rma.distributor !== 'Pending Staff Input' ? rma.distributor : '');
 
             // Initialize lock state for closed jobs
             setIsLocked(rma.status === RMAStatus.CLOSED);
@@ -104,6 +104,15 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                 const [dists, brands] = await Promise.all([MockDb.getDistributors(), MockDb.getBrands()]);
                 setDistOptions([...dists, { value: 'Other', label: t('submit.other') }]);
                 setBrandOptions([...brands, { value: 'Other', label: t('submit.other') }]);
+
+                // If current distributor is custom (not in list and not Pending Staff Input), map to 'Other'
+                const distValues = dists.map((d: any) => d.value);
+                if (rma.distributor && rma.distributor !== 'Pending Staff Input' && !distValues.includes(rma.distributor)) {
+                    setCustomDist(rma.distributor);
+                    setFormData(prev => prev ? ({ ...prev, distributor: 'Other' }) : null);
+                } else {
+                    setCustomDist('');
+                }
 
                 // If current brand is not in the predefined list, set it as custom
                 const brandValues = brands.map((b: any) => b.value);

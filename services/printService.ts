@@ -774,8 +774,9 @@ export const getCustomerInboundLabelHTML = async (rmas: RMA[]): Promise<string> 
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { font-family: 'Sarabun', 'Inter', sans-serif; padding: 12mm; background: #fff; }
-            .label { border: 2.5px solid #000; max-width: 190mm; margin: 0 auto; overflow: hidden; page-break-after: always; }
+            body { font-family: 'Sarabun', 'Inter', sans-serif; padding: 12mm; background: #fff; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .label { border: 2.5px solid #000; max-width: 190mm; margin: 0 auto; overflow: hidden; }
+            @media print { @page { size: A4 portrait; margin: 0; } body { padding: 8mm; } }
             .header { display: flex; border-bottom: 2.5px solid #000; }
             .header-left { flex: 1; padding: 14px 20px; display: flex; flex-direction: column; justify-content: center; }
             .header-title { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 2px; }
@@ -960,6 +961,8 @@ export const getCustomerShippingLabelHTML = async (payloads: ShippingLabelPayloa
         position: relative;
         box-sizing: border-box;
         background: #fff;
+      }
+      .shipping-label:not(:last-child) {
         page-break-after: always;
       }
       
@@ -1218,9 +1221,14 @@ export const getCustomerShippingLabelHTML = async (payloads: ShippingLabelPayloa
           height: 297mm; /* Full A4 white page */
           padding: 8mm;
           margin: 0;
-          page-break-after: always;
           box-shadow: none;
           border-radius: 0;
+        }
+        .shipping-label:not(:last-child) {
+          page-break-after: always;
+        }
+        .shipping-label:last-child {
+          page-break-after: auto;
         }
         .st-container {
           width: 100%;
@@ -1338,28 +1346,184 @@ export const getCustomerDocumentsHTML = async (rmas: RMA[]): Promise<string> => 
   return await getCustomerFormHTML(rmas);
 };
 
-const executePrint = (html: string, titleName: string) => {
+const PRINT_IFRAME_ID = 'sec-rms-print-frame';
+let activePrintCleanup: (() => void) | null = null;
+
+/**
+ * Wraps an HTML fragment (or enhances a full HTML document) into a standards-mode
+ * A4 printable HTML document with print color preservation and zoom/transform reset.
+ */
+export const wrapPrintableHtml = (html: string, title = 'Print'): string => {
+  const trimmed = (html || '').trim();
+  const isFullDoc = /^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed);
+
+  if (isFullDoc) {
+    const printReset = `<style>@page{size:A4 portrait;margin:0}@media print{html,body{zoom:1!important;transform:none!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}}</style>`;
+    if (/<\/head>/i.test(trimmed)) {
+      return trimmed.replace(/<\/head>/i, `${printReset}</head>`);
+    }
+    return trimmed;
+  }
+
+  return `<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>${escapeHtml(title)}</title>
+  <meta name="viewport" content="width=794" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    @page { size: A4 portrait; margin: 0; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #fff;
+      width: 100%;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    @media print {
+      html, body {
+        zoom: 1 !important;
+        transform: none !important;
+      }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#fff;">${trimmed}</body>
+</html>`;
+};
+
+/**
+ * Reliable cross-browser print helper using a dedicated off-screen full-A4 iframe
+ * attached directly to document.body (avoids CSS zoom, visibility:hidden, broken
+ * iframe.onload after document.write, and srcDoc + SPA history.back() quirks).
+ */
+export const printHtmlDocument = async (html: string, title = 'Document'): Promise<void> => {
+  if (!html || !html.trim()) {
+    throw new Error('ไม่มีเนื้อหาเอกสารสำหรับพิมพ์');
+  }
+
+  if (activePrintCleanup) {
+    activePrintCleanup();
+    activePrintCleanup = null;
+  }
+  const existing = document.getElementById(PRINT_IFRAME_ID);
+  if (existing) existing.remove();
+
+  const fullHtml = wrapPrintableHtml(html, title);
+
   const iframe = document.createElement('iframe');
-  iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1123px;border:0;visibility:hidden;';
+  iframe.id = PRINT_IFRAME_ID;
+  iframe.setAttribute('aria-hidden', 'true');
+  // Off-screen full A4 dimensions — avoid display:none, visibility:hidden, opacity:0, and CSS zoom
+  iframe.style.cssText = 'position:fixed;left:-10000px;top:-10000px;width:794px;height:1123px;border:0;pointer-events:none;';
   document.body.appendChild(iframe);
 
-  const doc = iframe.contentWindow?.document;
-  if (!doc) {
-    console.error("Failed to access iframe document for printing.");
-    return;
+  let cleaned = false;
+  let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const cleanup = () => {
+    if (cleaned) return;
+    cleaned = true;
+    if (fallbackTimer) {
+      clearTimeout(fallbackTimer);
+      fallbackTimer = null;
+    }
+    try {
+      iframe.contentWindow?.removeEventListener('afterprint', cleanup);
+    } catch { /* ignore */ }
+    if (document.body.contains(iframe)) {
+      document.body.removeChild(iframe);
+    }
+    if (activePrintCleanup === cleanup) {
+      activePrintCleanup = null;
+    }
+  };
+  activePrintCleanup = cleanup;
+
+  const win = iframe.contentWindow;
+  const doc = iframe.contentDocument || win?.document;
+  if (!win || !doc) {
+    cleanup();
+    throw new Error('ไม่สามารถสร้างหน้าต่างสำหรับพิมพ์ได้');
   }
-  doc.write(`<!DOCTYPE html><html><head><title>Print - ${titleName}</title><meta name="viewport" content="width=794"><style>@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff;width:100%}</style></head><body style="margin:0;padding:0;">${html}</body></html>`);
+
+  doc.open();
+  doc.write(fullHtml);
   doc.close();
 
-  setTimeout(() => {
-    iframe.contentWindow?.focus();
-    iframe.contentWindow?.print();
+  // Wait for fonts & images with tight timeouts so we stay inside user-activation window
+  try {
+    if (doc.fonts?.ready) {
+      await Promise.race([
+        doc.fonts.ready.catch(() => {}),
+        new Promise<void>(resolve => setTimeout(resolve, 1200))
+      ]);
+    }
+
+    const imgs = Array.from(doc.querySelectorAll('img')) as HTMLImageElement[];
+    if (imgs.length > 0) {
+      await Promise.allSettled(
+        imgs.map(img =>
+          img.complete
+            ? Promise.resolve()
+            : new Promise<void>(resolve => {
+                const done = () => resolve();
+                img.addEventListener('load', done, { once: true });
+                img.addEventListener('error', done, { once: true });
+                setTimeout(done, 2000);
+              })
+        )
+      );
+    }
+
+    await new Promise<void>(resolve =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+    );
+  } catch {
+    // Proceed even if resource wait fails
+  }
+
+  // Abort if superseded by a newer print trigger or already cleaned up
+  if (cleaned || !document.body.contains(iframe) || !iframe.contentWindow) {
+    return;
+  }
+
+  win.addEventListener('afterprint', cleanup, { once: true });
+  fallbackTimer = setTimeout(cleanup, 60000);
+
+  try {
+    win.focus();
+    win.print();
+  } catch (err) {
+    console.error('Iframe print failed, falling back to popup window:', err);
+    cleanup();
+    const popup = window.open('', '_blank', 'width=900,height=1000');
+    if (!popup) {
+      throw new Error('ไม่สามารถเปิดหน้าต่างพิมพ์ได้ กรุณาอนุญาต Popup หรือรีเฟรชหน้าเว็บ');
+    }
+    popup.document.open();
+    popup.document.write(fullHtml);
+    popup.document.close();
+    popup.focus();
     setTimeout(() => {
-      if (document.body.contains(iframe)) {
-        document.body.removeChild(iframe);
+      try {
+        popup.print();
+      } catch (e) {
+        console.error('Popup print failed:', e);
       }
-    }, 1000);
-  }, 500);
+    }, 300);
+  }
+};
+
+const executePrint = (html: string, titleName: string) => {
+  printHtmlDocument(html, `Print - ${titleName}`).catch(err => {
+    console.error('executePrint failed:', err);
+    alert(err instanceof Error ? err.message : 'ไม่สามารถสั่งพิมพ์เอกสารได้ กรุณาลองใหม่อีกครั้ง');
+  });
 };
 
 const executePreview = (html: string, titleName: string, copyText: string) => {
