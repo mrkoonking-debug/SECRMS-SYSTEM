@@ -5,6 +5,9 @@
   "targets": {
     "my-sec-claim-system": {
       "hosting": {
+        "secrms": [
+          "secrms"
+        ],
         "secrmssystem": [
           "secrmssystem"
         ]

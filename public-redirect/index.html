@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="refresh" content="0; url=https://secrms.web.app/" />
+  <link rel="canonical" href="https://secrms.web.app/" />
+  <title>กำลังย้ายไปยัง SEC RMS (secrms.web.app)...</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      padding: 28px 32px;
+      border-radius: 20px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+      max-width: 420px;
+    }
+    a {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 10px 20px;
+      border-radius: 9999px;
+      background: #0071e3;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+    }
+  </style>
+  <script>
+    (function () {
+      var target = 'https://secrms.web.app' + window.location.pathname + window.location.search + window.location.hash;
+      var redirected = false;
+      function go() {
+        if (redirected) return;
+        redirected = true;
+        window.location.replace(target);
+      }
+      if ('serviceWorker' in navigator) {
+        setTimeout(go, 250);
+        navigator.serviceWorker.getRegistrations()
+          .then(function (regs) {
+            return Promise.all(regs.map(function (r) { return r.unregister(); }));
+          })
+          .catch(function () {})
+          .finally(go);
+      } else {
+        go();
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div class="card">
+    <h2 style="margin:0 0 8px;font-size:18px;">SEC RMS ย้ายไปยังลิงก์ใหม่แล้ว</h2>
+    <p style="margin:0;color:#6e6e73;font-size:14px;">กำลังพาคุณไปยัง <strong>https://secrms.web.app/</strong></p>
+    <a id="fallback-link" href="https://secrms.web.app/">เข้าสู่เว็บไซต์ใหม่ทันที</a>
+  </div>
+  <script>
+    var el = document.getElementById('fallback-link');
+    if (el) {
+      el.href = 'https://secrms.web.app' + window.location.pathname + window.location.search + window.location.hash;
+    }
+  </script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 ระบบบริหารจัดการงานเคลมสินค้า สำหรับ **บริษัท เอสอีซี เทคโนโลยี จำกัด**
 
-🔗 **เว็บไซต์จริง:** [https://secrmssystem.web.app](https://secrmssystem.web.app)
+🔗 **เว็บไซต์จริง:** [https://secrms.web.app](https://secrms.web.app) (โดเมนเดิม `secrmssystem.web.app` จะเด้งเปลี่ยนหน้ามาที่นี่อัตโนมัติ)
 
 ---
 
