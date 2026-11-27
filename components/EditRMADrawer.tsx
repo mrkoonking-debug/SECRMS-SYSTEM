@@ -526,7 +526,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             )}
 
             <fieldset disabled={isLocked} className={isLocked ? 'opacity-60 pointer-events-none' : ''}>
-                <div className={slideOver ? 'space-y-5' : 'grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5 items-start'}>
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5 items-start">
                     {/* Main Column — Workflow FIRST (Apple Progressive Disclosure: Status & Action on top, Product Details below) */}
                     <div className="flex flex-col gap-5">
             <div className="order-2 bg-white dark:bg-[#16161a] apple-card-lg rounded-[26px] p-5 sm:p-6 border border-gray-200/75 dark:border-white/[0.08] shadow-sm">
@@ -1595,11 +1595,11 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
     if (slideOver) {
         return createPortal(
             <div
-                className="fixed inset-0 z-[58] bg-black/45 backdrop-blur-sm flex justify-end animate-fade-in"
+                className="fixed inset-0 z-[58] bg-black/60 flex items-center justify-center p-2 sm:p-4 md:p-6 animate-fade-in"
                 onClick={handleSafeClose}
             >
                 <div
-                    className="w-full max-w-[820px] h-full bg-[#f2f2f7] dark:bg-[#131317] shadow-[0_0_60px_rgba(0,0,0,0.35)] border-l border-gray-200/80 dark:border-white/[0.1] flex flex-col overflow-hidden"
+                    className="w-full max-w-[1360px] h-[94dvh] max-h-[920px] bg-[#f2f2f7] dark:bg-[#131317] rounded-[24px] md:rounded-[30px] shadow-[0_24px_80px_rgba(0,0,0,0.45)] border border-gray-200/80 dark:border-white/[0.1] flex flex-col overflow-hidden animate-scale-in"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Sticky Apple Inspector Top Header */}
