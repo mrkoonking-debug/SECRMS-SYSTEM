@@ -168,86 +168,123 @@ export const Dashboard: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col gap-2 w-full md:w-[480px] flex-shrink-0">
-                    {/* Apple Liquid Pill Segmented Control */}
-                    <div className="apple-liquid-pill p-1 rounded-full grid grid-cols-4 gap-1 items-center w-full bg-gray-100/90 dark:bg-[#121215] border border-gray-200/70 dark:border-white/[0.08] shadow-inner">
-                        <button 
-                            type="button"
-                            onClick={() => handleMainFilterClick('ALL')} 
-                            className={`w-full px-2 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-extrabold whitespace-nowrap text-center flex items-center justify-center transition-all duration-200 outline-none cursor-pointer ${
-                                selectedTeam === 'ALL' ? getTeamColorClass('ALL') : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
-                            }`}
-                        >
-                            {language === 'en' ? 'All Teams' : 'ทุกทีม'}
-                        </button>
-                        <button 
-                            type="button"
-                            onClick={() => handleMainFilterClick('A')} 
-                            className={`w-full px-2 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-extrabold whitespace-nowrap text-center flex items-center justify-center gap-1.5 transition-all duration-200 outline-none cursor-pointer ${
-                                selectedTeam === Team.HIKVISION ? getTeamColorClass('A') : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
-                            }`}
-                        >
-                            <Box className="w-3.5 h-3.5 hidden sm:inline shrink-0" /> <span>Team A</span>
-                        </button>
-                        <button 
-                            type="button"
-                            onClick={() => handleMainFilterClick('B')} 
-                            className={`w-full px-2 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-extrabold whitespace-nowrap text-center flex items-center justify-center gap-1.5 transition-all duration-200 outline-none cursor-pointer ${
-                                selectedTeam === Team.DAHUA ? getTeamColorClass('B') : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
-                            }`}
-                        >
-                            <Layers className="w-3.5 h-3.5 hidden sm:inline shrink-0" /> <span>Team B</span>
-                        </button>
-                        <button 
-                            type="button"
-                            onClick={() => handleMainFilterClick('C')} 
-                            className={`w-full px-2 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-extrabold whitespace-nowrap text-center flex items-center justify-center gap-1 transition-all duration-200 outline-none cursor-pointer ${
-                                isGroupCActive ? getTeamColorClass('C') : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
-                            }`}
-                        >
-                            <Wifi className="w-3.5 h-3.5 hidden sm:inline shrink-0" /> <span>Team C</span> <ChevronDown className={`w-3 h-3 shrink-0 ${isGroupCActive ? 'rotate-180' : ''} transition-transform hidden sm:inline`} />
-                        </button>
-                    </div>
+                    {/* Apple Liquid Pill Segmented Control with Exact Sliding Capsule */}
+                    {(() => {
+                        const activeMainIdx =
+                            selectedTeam === 'ALL' ? 0 :
+                            selectedTeam === Team.HIKVISION ? 1 :
+                            selectedTeam === Team.DAHUA ? 2 : 3;
+                        const activeColor = getTeamColorClass(
+                            activeMainIdx === 0 ? 'ALL' :
+                            activeMainIdx === 1 ? 'A' :
+                            activeMainIdx === 2 ? 'B' : 'C'
+                        );
+                        return (
+                            <div className="apple-liquid-pill p-1 rounded-full w-full bg-gray-100/90 dark:bg-[#121215] border border-gray-200/70 dark:border-white/[0.08] shadow-inner">
+                                <div className="relative grid grid-cols-4 items-center w-full">
+                                    <div
+                                        aria-hidden="true"
+                                        className={`pointer-events-none absolute inset-y-0 left-0 w-1/4 rounded-full transition-[transform,background-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${activeColor}`}
+                                        style={{ transform: `translateX(${activeMainIdx * 100}%)` }}
+                                    />
+                                    <button 
+                                        type="button"
+                                        onClick={() => handleMainFilterClick('ALL')} 
+                                        className={`relative z-10 w-full px-2 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-extrabold whitespace-nowrap text-center flex items-center justify-center transition-colors duration-200 outline-none cursor-pointer ${
+                                            selectedTeam === 'ALL' ? 'text-white dark:text-black' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                                        }`}
+                                    >
+                                        {language === 'en' ? 'All Teams' : 'ทุกทีม'}
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => handleMainFilterClick('A')} 
+                                        className={`relative z-10 w-full px-2 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-extrabold whitespace-nowrap text-center flex items-center justify-center gap-1.5 transition-colors duration-200 outline-none cursor-pointer ${
+                                            selectedTeam === Team.HIKVISION ? 'text-white' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                                        }`}
+                                    >
+                                        <Box className="w-3.5 h-3.5 hidden sm:inline shrink-0" /> <span>Team A</span>
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => handleMainFilterClick('B')} 
+                                        className={`relative z-10 w-full px-2 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-extrabold whitespace-nowrap text-center flex items-center justify-center gap-1.5 transition-colors duration-200 outline-none cursor-pointer ${
+                                            selectedTeam === Team.DAHUA ? 'text-white' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                                        }`}
+                                    >
+                                        <Layers className="w-3.5 h-3.5 hidden sm:inline shrink-0" /> <span>Team B</span>
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => handleMainFilterClick('C')} 
+                                        className={`relative z-10 w-full px-2 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-extrabold whitespace-nowrap text-center flex items-center justify-center gap-1 transition-colors duration-200 outline-none cursor-pointer ${
+                                            isGroupCActive ? 'text-white' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                                        }`}
+                                    >
+                                        <Wifi className="w-3.5 h-3.5 hidden sm:inline shrink-0" /> <span>Team C</span> <ChevronDown className={`w-3 h-3 shrink-0 ${isGroupCActive ? 'rotate-180' : ''} transition-transform hidden sm:inline`} />
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    })()}
 
-                    {isGroupCActive && (
-                        <div className="apple-liquid-pill p-1 rounded-full grid grid-cols-4 gap-1 items-center w-full animate-fade-in bg-gray-100/90 dark:bg-[#121215] border border-gray-200/70 dark:border-white/[0.08] shadow-inner">
-                            <button
-                                type="button"
-                                onClick={() => setSelectedTeam('GROUP_C')}
-                                className={`w-full px-2 py-1.5 rounded-full text-[11px] md:text-xs font-bold whitespace-nowrap text-center transition-all duration-200 outline-none cursor-pointer ${
-                                    selectedTeam === 'GROUP_C' ? 'bg-violet-500 text-white shadow-md shadow-violet-500/25' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
-                                }`}
-                            >
-                                รวมทีม C
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setSelectedTeam(Team.TEAM_C)}
-                                className={`w-full px-2 py-1.5 rounded-full text-[11px] md:text-xs font-bold whitespace-nowrap text-center transition-all duration-200 outline-none cursor-pointer ${
-                                    selectedTeam === Team.TEAM_C ? getSubTeamColorClass(Team.TEAM_C) : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
-                                }`}
-                            >
-                                Network
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setSelectedTeam(Team.TEAM_E)}
-                                className={`w-full px-2 py-1.5 rounded-full text-[11px] md:text-xs font-bold whitespace-nowrap text-center transition-all duration-200 outline-none cursor-pointer ${
-                                    selectedTeam === Team.TEAM_E ? getSubTeamColorClass(Team.TEAM_E) : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
-                                }`}
-                            >
-                                UPS
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setSelectedTeam(Team.TEAM_G)}
-                                className={`w-full px-2 py-1.5 rounded-full text-[11px] md:text-xs font-bold whitespace-nowrap text-center transition-all duration-200 outline-none cursor-pointer ${
-                                    selectedTeam === Team.TEAM_G ? getSubTeamColorClass(Team.TEAM_G) : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
-                                }`}
-                            >
-                                Online
-                            </button>
-                        </div>
-                    )}
+                    {isGroupCActive && (() => {
+                        const activeSubIdx =
+                            selectedTeam === 'GROUP_C' ? 0 :
+                            selectedTeam === Team.TEAM_C ? 1 :
+                            selectedTeam === Team.TEAM_E ? 2 : 3;
+                        const activeSubColor =
+                            selectedTeam === 'GROUP_C'
+                                ? 'bg-violet-500 text-white shadow-md shadow-violet-500/25'
+                                : getSubTeamColorClass(selectedTeam);
+                        return (
+                            <div className="apple-liquid-pill p-1 rounded-full w-full animate-fade-in bg-gray-100/90 dark:bg-[#121215] border border-gray-200/70 dark:border-white/[0.08] shadow-inner">
+                                <div className="relative grid grid-cols-4 items-center w-full">
+                                    <div
+                                        aria-hidden="true"
+                                        className={`pointer-events-none absolute inset-y-0 left-0 w-1/4 rounded-full transition-[transform,background-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${activeSubColor}`}
+                                        style={{ transform: `translateX(${activeSubIdx * 100}%)` }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedTeam('GROUP_C')}
+                                        className={`relative z-10 w-full px-2 py-1.5 rounded-full text-[11px] md:text-xs font-bold whitespace-nowrap text-center transition-colors duration-200 outline-none cursor-pointer ${
+                                            selectedTeam === 'GROUP_C' ? 'text-white' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                                        }`}
+                                    >
+                                        รวมทีม C
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedTeam(Team.TEAM_C)}
+                                        className={`relative z-10 w-full px-2 py-1.5 rounded-full text-[11px] md:text-xs font-bold whitespace-nowrap text-center transition-colors duration-200 outline-none cursor-pointer ${
+                                            selectedTeam === Team.TEAM_C ? 'text-white' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                                        }`}
+                                    >
+                                        Network
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedTeam(Team.TEAM_E)}
+                                        className={`relative z-10 w-full px-2 py-1.5 rounded-full text-[11px] md:text-xs font-bold whitespace-nowrap text-center transition-colors duration-200 outline-none cursor-pointer ${
+                                            selectedTeam === Team.TEAM_E ? 'text-white' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                                        }`}
+                                    >
+                                        UPS
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedTeam(Team.TEAM_G)}
+                                        className={`relative z-10 w-full px-2 py-1.5 rounded-full text-[11px] md:text-xs font-bold whitespace-nowrap text-center transition-colors duration-200 outline-none cursor-pointer ${
+                                            selectedTeam === Team.TEAM_G ? 'text-white' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                                        }`}
+                                    >
+                                        Online
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    })()}
                 </div>
             </div>
 
