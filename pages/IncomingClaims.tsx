@@ -198,10 +198,19 @@ export const IncomingClaims: React.FC = () => {
     };
 
     const assignJobToTeam = async (job: GroupedJob, targetTeam: Team) => {
+        const teamLabel = getTeamDisplayLabel(targetTeam);
+        const confirmed = await showConfirmDialog({
+            title: 'ยืนยันการรับงานเข้าทีม',
+            message: `ต้องการรับงานของ "${job.customerName}"\nเลขที่: ${job.groupId} (${job.rmas.length} รายการสินค้า)\nเข้าสู่ ${teamLabel} ใช่หรือไม่?`,
+            confirmText: `ยืนยันรับเข้า ${teamLabel}`,
+            cancelText: 'ยกเลิก',
+            variant: 'primary'
+        });
+        if (!confirmed) return;
+
         setIsAssigning(true);
         setAssigningJobId(job.groupId);
         const nowIso = new Date().toISOString();
-        const teamLabel = getTeamDisplayLabel(targetTeam);
         try {
             await Promise.all(
                 job.rmas.map(async (rma) => {
@@ -372,7 +381,7 @@ export const IncomingClaims: React.FC = () => {
         <div className="max-w-[1600px] w-full mx-auto px-2 sm:px-4 md:px-6 py-4 sm:py-8 pb-6">
             <div className="mb-5 md:mb-6">
                 <h1 className="text-xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white mb-1 md:mb-1.5">{t('incoming.title')}</h1>
-                <p className="text-xs md:text-sm text-gray-500">รายการที่ลูกค้าลงทะเบียนผ่านหน้าเว็บ — กดเลือกทีมเพื่อรับเข้างานได้ทันทีใน 1 คลิก</p>
+                <p className="text-xs md:text-sm text-gray-500">รายการที่ลูกค้าลงทะเบียนผ่านหน้าเว็บ — กดเลือกทีมและยืนยันเพื่อรับเข้างาน</p>
             </div>
 
             {/* Instant Jump Banner after accepting a job into a team */}
@@ -648,7 +657,7 @@ export const IncomingClaims: React.FC = () => {
                                     {/* Inline Quick Sub-Team Picker for Team C */}
                                     {openTeamCJobId === job.groupId && (
                                         <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-black/5 dark:border-white/5 animate-fade-in">
-                                            <span className="text-[11px] font-bold text-violet-500">เลือกแผนกย่อยทีม C เพื่อรับเข้าทันที:</span>
+                                            <span className="text-[11px] font-bold text-violet-500">เลือกแผนกย่อยทีม C:</span>
                                             <button
                                                 type="button"
                                                 disabled={assigningJobId === job.groupId}
