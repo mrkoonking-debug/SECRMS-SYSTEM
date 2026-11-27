@@ -50,6 +50,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --bg-primary: #131314;
   --bg-secondary: #1e1e1f;
   --text-primary: #e3e3e3;
@@ -137,14 +138,45 @@ textarea,
   line-height: 1.5 !important;
 }
 
-/* Hide scrollbar utility */
+/* Global sleek scrollbar (prevents chunky bright Windows scrollbar in Dark Mode) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.14) transparent;
+}
+.dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.14);
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+.dark *::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+}
+.dark *::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+/* Hide scrollbar utility (must override global thin rule) */
 .scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* ===== Animations — hoverstat.es-inspired smooth entrances ===== */

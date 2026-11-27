@@ -1666,10 +1666,10 @@ export const JobDetail: React.FC = () => {
 
             {/* Add Item Modal */}
             {showAddItemModal && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 p-4" onClick={() => !isAddingItem && setShowAddItemModal(false)}>
-                    <div className="bg-white dark:bg-[#16181d] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200/80 dark:border-white/[0.08]" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 p-2 sm:p-4 md:p-6" onClick={() => !isAddingItem && setShowAddItemModal(false)}>
+                    <div className="bg-white dark:bg-[#16181d] rounded-2xl w-full max-w-6xl max-h-[92dvh] overflow-y-auto scrollbar-hide shadow-2xl border border-slate-200/80 dark:border-white/[0.08]" onClick={e => e.stopPropagation()}>
                         {/* Header */}
-                        <div className="sticky top-0 bg-white dark:bg-[#16181d] px-6 py-4 border-b border-slate-100 dark:border-white/[0.08] rounded-t-2xl flex items-center justify-between z-10">
+                        <div className="sticky top-0 bg-white dark:bg-[#16181d] px-5 sm:px-6 py-3.5 border-b border-slate-100 dark:border-white/[0.08] rounded-t-2xl flex items-center justify-between z-10">
                             <div>
                                 <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
                                     <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center">
@@ -1685,7 +1685,7 @@ export const JobDetail: React.FC = () => {
                         </div>
 
                         {/* Form */}
-                        <div className="p-8">
+                        <div className="p-4 sm:p-6">
                             {isAddingItem ? (
                                 <div className="flex flex-col items-center justify-center py-12 gap-3">
                                     <Loader2 className="w-8 h-8 animate-spin text-[#0071e3]" />
@@ -1693,7 +1693,7 @@ export const JobDetail: React.FC = () => {
                                 </div>
                             ) : (
                                 <Suspense fallback={<div className="flex items-center justify-center py-12"><div className="w-8 h-8 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" /></div>}>
-                                    <ProductEntryForm mode="admin" onAddItem={handleAddItemToJob} />
+                                    <ProductEntryForm mode="admin" wideLayout={true} onAddItem={handleAddItemToJob} />
                                 </Suspense>
                             )}
                         </div>
