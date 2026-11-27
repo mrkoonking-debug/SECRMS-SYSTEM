@@ -3,7 +3,7 @@ import { MockDb, matchesSmartRef } from '../services/mockDb';
 import { RMA, RMAStatus, Team } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
 import { Search, Plus, ChevronRight, ChevronDown, Package, ChevronsUpDown, AlertTriangle, RefreshCw, CheckCircle2, X, Calendar, ChevronLeft, ChevronsLeft, ChevronsRight, Clock, Wrench, TrendingUp, Building2, ArrowUpDown, Filter } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ModernDateRangePickerModal, DateRangeSelection } from '../components/ModernDateRangePickerModal';
 import { AdminPageSkeleton } from '../components/AdminPageSkeleton';
@@ -62,6 +62,11 @@ const DONE_STATUSES = [RMAStatus.CLOSED, RMAStatus.CANCELLED, RMAStatus.REPAIRED
 
 const isRMAOverdue = (c: RMA) => !DONE_STATUSES.includes(c.status) && (Math.floor((Date.now() - new Date(c.createdAt).getTime()) / 86400000) > 15);
 
+// Effective date in team queue: when staff accepted into team (assignedAt) or createdAt — ensures newly accepted jobs ALWAYS appear #1 at the top!
+const getEffectiveDate = (c: RMA) => c.assignedAt || c.createdAt;
+const isRecentlyAssigned = (items: RMA[]) =>
+    items.some(i => i.assignedAt && (Date.now() - new Date(i.assignedAt).getTime()) < 12 * 60 * 60 * 1000);
+
 interface JobCardProps {
     jobKey: string;
     jobItems: RMA[];
@@ -94,6 +99,11 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
                     <div className="flex items-center gap-1.5 flex-wrap">
                         <span className={`text-[10px] px-2 py-0.5 apple-card-sm rounded-[10px] border whitespace-nowrap ${quotationNumber ? 'bg-gray-100/80 dark:bg-white/[0.08] text-gray-600 dark:text-gray-300 border-gray-200/60 dark:border-white/[0.08]' : 'bg-gray-50/80 dark:bg-white/[0.03] text-gray-400 dark:text-gray-500 border-gray-100 dark:border-white/[0.04] italic'}`}>{quotationNumber ? `Ref: ${quotationNumber}` : 'ไม่มี Ref'}</span>
                         {jobTeam && getTeamBadge(jobTeam)}
+                        {isRecentlyAssigned(jobItems) && !isJobDone && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> เพิ่งรับเข้าทีม
+                            </span>
+                        )}
                     </div>
                 </div>
                 
@@ -189,19 +199,61 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
 });
 
 export const ClaimsList: React.FC = () => {
-    const [rmas, setRMAs] = useState<RMA[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const initialCachedRMAs = useMemo(() => {
+        const cached = MockDb.getCachedRMAs();
+        return cached ? cached.filter(c => c && c.id && c.team && (c.team as any) !== 'UNASSIGNED') : null;
+    }, []);
+    const [rmas, setRMAs] = useState<RMA[]>(() => initialCachedRMAs || []);
+    const [loading, setLoading] = useState(() => !initialCachedRMAs);
     const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState(() => sessionStorage.getItem('rmas_search') || '');
     const [debouncedSearch, setDebouncedSearch] = useState(() => sessionStorage.getItem('rmas_search') || '');
-    const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'IN_PROGRESS' | 'DONE'>(() => (sessionStorage.getItem('rmas_statusFilter') as any) || 'ALL');
-    const [teamFilter, setTeamFilter] = useState<'ALL' | 'GROUP_C' | Team>(() => (sessionStorage.getItem('rmas_teamFilter') as any) || 'ALL');
+    const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'IN_PROGRESS' | 'DONE'>(() => {
+        const urlStatus = searchParams.get('status');
+        if (urlStatus && ['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].includes(urlStatus)) return urlStatus as any;
+        return (sessionStorage.getItem('rmas_statusFilter') as any) || 'ALL';
+    });
+    const [teamFilter, setTeamFilter] = useState<'ALL' | 'GROUP_C' | Team>(() => {
+        const urlTeam = searchParams.get('team');
+        if (urlTeam) return urlTeam as any;
+        return (sessionStorage.getItem('rmas_teamFilter') as any) || 'ALL';
+    });
+    const [overdueOnly, setOverdueOnly] = useState<boolean>(() => searchParams.get('overdue') === '1');
     const [dateFilter, setDateFilter] = useState<string>(() => (sessionStorage.getItem('rmas_dateFilter') || 'ALL'));
     const [customStartDate, setCustomStartDate] = useState<string>(() => sessionStorage.getItem('rmas_customStartDate') || '');
     const [customEndDate, setCustomEndDate] = useState<string>(() => sessionStorage.getItem('rmas_customEndDate') || '');
     const [showDatePickerModal, setShowDatePickerModal] = useState(false);
     const [expandedDates, setExpandedDates] = useState<Set<string> | null>(null);
-    const [isTeamCExpanded, setIsTeamCExpanded] = useState(() => sessionStorage.getItem('rmas_isTeamCExpanded') === 'true');
+    const [isTeamCExpanded, setIsTeamCExpanded] = useState(() => {
+        const urlTeam = searchParams.get('team');
+        if (urlTeam && ['GROUP_C', Team.TEAM_C, Team.TEAM_E, Team.TEAM_G].includes(urlTeam as any)) return true;
+        return sessionStorage.getItem('rmas_isTeamCExpanded') === 'true';
+    });
+
+    // Apply deep-linked query filters when coming from Dashboard or IncomingClaims
+    useEffect(() => {
+        const urlTeam = searchParams.get('team');
+        const urlStatus = searchParams.get('status');
+        const urlOverdue = searchParams.get('overdue');
+        if (urlTeam || urlStatus || urlOverdue) {
+            if (urlTeam) {
+                setTeamFilter(urlTeam as any);
+                setIsTeamCExpanded(['GROUP_C', Team.TEAM_C, Team.TEAM_E, Team.TEAM_G].includes(urlTeam as any));
+            }
+            if (urlStatus && ['ALL', 'PENDING', 'IN_PROGRESS', 'DONE'].includes(urlStatus)) {
+                setStatusFilter(urlStatus as any);
+            }
+            if (urlOverdue === '1') {
+                setOverdueOnly(true);
+                setStatusFilter('ALL');
+            }
+            setDateFilter('ALL');
+            setCustomStartDate('');
+            setCustomEndDate('');
+            setSearchParams({}, { replace: true });
+        }
+    }, [searchParams, setSearchParams]);
     const [filterLayoutOrder, setFilterLayoutOrder] = useState<'TEAM_FIRST' | 'STATUS_FIRST'>(() => {
         return (localStorage.getItem('sec_claims_filter_order') as any) || 'TEAM_FIRST';
     });
@@ -229,8 +281,9 @@ export const ClaimsList: React.FC = () => {
         monthSet.add(currentYM);
 
         rmas.forEach(c => {
-            if (!c || !c.createdAt) return;
-            const d = new Date(c.createdAt);
+            const eff = c ? getEffectiveDate(c) : '';
+            if (!eff) return;
+            const d = new Date(eff);
             if (!isNaN(d.getTime())) {
                 const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
                 monthSet.add(ym);
@@ -243,8 +296,9 @@ export const ClaimsList: React.FC = () => {
     const monthItemCounts = useMemo(() => {
         const counts: Record<string, number> = {};
         rmas.forEach(c => {
-            if (!c || !c.createdAt) return;
-            const d = new Date(c.createdAt);
+            const eff = c ? getEffectiveDate(c) : '';
+            if (!eff) return;
+            const d = new Date(eff);
             if (!isNaN(d.getTime())) {
                 const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
                 counts[ym] = (counts[ym] || 0) + 1;
@@ -448,8 +502,9 @@ export const ClaimsList: React.FC = () => {
             // When actively searching, search across all dates so older jobs are found
             if (debouncedSearch.trim()) return true;
             if (dateFilter === 'ALL' && !customStartDate && !customEndDate) return true;
-            if (!c.createdAt) return false;
-            const d = new Date(c.createdAt);
+            const eff = getEffectiveDate(c);
+            if (!eff) return false;
+            const d = new Date(eff);
             if (isNaN(d.getTime())) return false;
 
             const now = new Date();
@@ -501,16 +556,17 @@ export const ClaimsList: React.FC = () => {
             return itemYM === dateFilter;
         };
 
-        return rmas.filter(c => matchesSearch(c) && matchesStatus(c) && matchesTeam(c) && matchesDate(c));
-    }, [rmas, debouncedSearch, statusFilter, teamFilter, dateFilter, customStartDate, customEndDate]);
+        return rmas.filter(c => matchesSearch(c) && matchesStatus(c) && matchesTeam(c) && matchesDate(c) && (!overdueOnly || isRMAOverdue(c)));
+    }, [rmas, debouncedSearch, statusFilter, teamFilter, dateFilter, customStartDate, customEndDate, overdueOnly]);
 
-    // Group jobs across dates and create a flat list of sorted jobs
+    // Group jobs across dates and create a flat list of sorted jobs (latest accepted/created ALWAYS #1)
     const allFilteredJobsList = useMemo(() => {
         const dateGroups: Record<string, RMA[]> = {};
         filteredRMAs.forEach(c => {
             let ym = 'Earlier';
-            if (c.createdAt) {
-                const d = new Date(c.createdAt);
+            const eff = getEffectiveDate(c);
+            if (eff) {
+                const d = new Date(eff);
                 if (!isNaN(d.getTime())) {
                     ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
                 }
@@ -531,12 +587,12 @@ export const ClaimsList: React.FC = () => {
 
             Object.keys(jobs).forEach(jobKey => {
                 const jobItems = jobs[jobKey];
-                const latestDate = Math.max(...jobItems.map(i => new Date(i.createdAt).getTime()));
+                const latestDate = Math.max(...jobItems.map(i => new Date(getEffectiveDate(i)).getTime()));
                 list.push({ ymKey, jobKey, jobItems, latestDate });
             });
         });
 
-        // Sort overall by latest job date descending
+        // Sort overall by latest accepted/created job date descending
         return list.sort((a, b) => b.latestDate - a.latestDate);
     }, [filteredRMAs]);
 
@@ -695,9 +751,9 @@ export const ClaimsList: React.FC = () => {
 
     const handleGroupCClick = () => { setIsTeamCExpanded(!isTeamCExpanded); setTeamFilter('GROUP_C'); };
     const handleClearFilters = () => {
-        setSearch(''); setDebouncedSearch(''); setStatusFilter('ALL'); setTeamFilter('ALL'); setDateFilter('ALL'); setCustomStartDate(''); setCustomEndDate(''); setIsTeamCExpanded(false);
+        setSearch(''); setDebouncedSearch(''); setStatusFilter('ALL'); setTeamFilter('ALL'); setDateFilter('ALL'); setCustomStartDate(''); setCustomEndDate(''); setIsTeamCExpanded(false); setOverdueOnly(false);
     };
-    const isAnyFilterActive = search !== '' || statusFilter !== 'ALL' || teamFilter !== 'ALL' || dateFilter !== 'ALL' || customStartDate !== '' || customEndDate !== '';
+    const isAnyFilterActive = search !== '' || statusFilter !== 'ALL' || teamFilter !== 'ALL' || dateFilter !== 'ALL' || customStartDate !== '' || customEndDate !== '' || overdueOnly;
 
     if (error) return (
         <div className="max-w-md mx-auto mt-20 text-center">
@@ -867,7 +923,17 @@ export const ClaimsList: React.FC = () => {
             {/* List Results Counter */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1 mb-3 text-xs font-medium text-gray-500 dark:text-gray-400">
                 <div className="flex items-center gap-2 flex-wrap">
-                    <span>พบข้อมูลทั้งหมด <span className="font-bold text-[#0071e3]">{totalJobsCount}</span> ใบงาน ({filteredRMAs.length} รายการสินค้า)</span>
+                    <span>พบข้อมูลทั้งหมด <span className="font-bold text-[#0071e3]">{totalJobsCount}</span> ใบงาน ({filteredRMAs.length} ชิ้นสินค้า)</span>
+                    {overdueOnly && (
+                        <button
+                            type="button"
+                            onClick={() => setOverdueOnly(false)}
+                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 font-bold text-[11px] hover:bg-red-500/25 cursor-pointer"
+                        >
+                            <span>เฉพาะงานเกินกำหนด (&gt;15 วัน)</span>
+                            <X className="w-3 h-3" />
+                        </button>
+                    )}
                     {closedMatchJobsCount > 0 && statusFilter !== 'ALL' && totalJobsCount > 0 && (
                         <button 
                             onClick={() => setStatusFilter('ALL')}

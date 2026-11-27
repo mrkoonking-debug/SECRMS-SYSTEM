@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MockDb, matchesSmartRef } from '../services/mockDb';
 import { RMA, Team } from '../types';
 import { Package, User, Clock, ArrowRight, CheckCircle2, Loader2, Info, ChevronRight, ChevronDown, Check, Box, Layers, Wifi, Zap, ShoppingBag, Truck, Pencil, Trash2, X, Search, ChevronLeft, ChevronsLeft, ChevronsRight } from 'lucide-react';
@@ -19,10 +20,18 @@ interface GroupedJob {
 }
 
 export const IncomingClaims: React.FC = () => {
-    const [incoming, setIncoming] = useState<RMA[]>([]);
-    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+    const initialCachedIncoming = useMemo(() => {
+        const cached = MockDb.getCachedRMAs();
+        return cached ? cached.filter(r => !r.team || (r.team as any) === 'UNASSIGNED') : null;
+    }, []);
+    const [incoming, setIncoming] = useState<RMA[]>(() => initialCachedIncoming || []);
+    const [loading, setLoading] = useState(() => !initialCachedIncoming);
     const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
     const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+    const [openTeamCJobId, setOpenTeamCJobId] = useState<string | null>(null);
+    const [assigningJobId, setAssigningJobId] = useState<string | null>(null);
+    const [lastAssignedBanner, setLastAssignedBanner] = useState<{ jobId: string; customerName: string; team: Team; teamLabel: string } | null>(null);
 
     // Search and Filter States
     const [search, setSearch] = useState('');
@@ -91,14 +100,14 @@ export const IncomingClaims: React.FC = () => {
         return list.map(b => ({ value: b, label: b }));
     }, [brandOptions, rmaForm.brand]);
 
-    const fetchIncoming = async () => {
-        setLoading(true);
+    const fetchIncoming = async (silent = false) => {
+        if (!silent) setLoading(true);
         const data = await MockDb.getUnassignedRMAs();
         setIncoming(data);
         setLoading(false);
     };
 
-    useEffect(() => { fetchIncoming(); }, []);
+    useEffect(() => { fetchIncoming(Boolean(initialCachedIncoming)); }, []);
 
     // Filter incoming RMAs across full dataset
     const filteredIncoming = useMemo(() => {
@@ -177,27 +186,59 @@ export const IncomingClaims: React.FC = () => {
         else setFinalTeam('');
     };
 
+    const getTeamDisplayLabel = (team: Team) => {
+        switch (team) {
+            case Team.HIKVISION: return 'ทีม A (HIKVISION)';
+            case Team.DAHUA: return 'ทีม B (DAHUA)';
+            case Team.TEAM_C: return 'ทีม C (Network)';
+            case Team.TEAM_E: return 'ทีม C (UPS)';
+            case Team.TEAM_G: return 'ทีม C (Online)';
+            default: return team;
+        }
+    };
+
+    const assignJobToTeam = async (job: GroupedJob, targetTeam: Team) => {
+        setIsAssigning(true);
+        setAssigningJobId(job.groupId);
+        const nowIso = new Date().toISOString();
+        const teamLabel = getTeamDisplayLabel(targetTeam);
+        try {
+            await Promise.all(
+                job.rmas.map(async (rma) => {
+                    await MockDb.updateRMA(rma.id, {
+                        team: targetTeam,
+                        assignedAt: nowIso,
+                        updatedAt: nowIso
+                    });
+                    await MockDb.addTimelineEvent(rma.id, {
+                        type: 'SYSTEM',
+                        description: `พนักงานรับเรื่องเข้าทีม: ${teamLabel}`,
+                        user: MockDb.getCurrentUser()?.name || 'Staff'
+                    });
+                })
+            );
+
+            // Optimistic removal for instant snappy feel
+            const assignedIds = new Set(job.rmas.map(r => r.id));
+            setIncoming(prev => prev.filter(r => !assignedIds.has(r.id)));
+            resetSelection();
+            setExpandedGroupId(null);
+            setOpenTeamCJobId(null);
+            setLastAssignedBanner({ jobId: job.groupId, customerName: job.customerName, team: targetTeam, teamLabel });
+            showToast(`รับงานเข้า ${teamLabel} แล้ว (แสดงเป็นงานล่าสุดอันแรก)`, 'success');
+            fetchIncoming(true);
+        } catch (err) {
+            console.error('Assign group error:', err);
+            showToast('เกิดข้อผิดพลาดในการรับงานเข้าทีม กรุณาลองใหม่', 'error');
+        } finally {
+            setIsAssigning(false);
+            setAssigningJobId(null);
+        }
+    };
+
     const handleAssignGroup = async (job: GroupedJob) => {
         if (!finalTeam) return;
-        setIsAssigning(true);
-
-        for (const rma of job.rmas) {
-            await MockDb.updateRMA(rma.id, {
-                team: finalTeam as Team,
-                updatedAt: new Date().toISOString()
-            });
-
-            await MockDb.addTimelineEvent(rma.id, {
-                type: 'SYSTEM',
-                description: `พนักงานรับเรื่องเข้าทีม: ${t(`teams.${finalTeam.toLowerCase()}`)}`,
-                user: MockDb.getCurrentUser()?.name || 'Staff'
-            });
-        }
-
-        resetSelection();
-        setExpandedGroupId(null);
-        setIsAssigning(false);
-        await fetchIncoming();
+        await assignJobToTeam(job, finalTeam as Team);
     };
 
     const toggleExpand = (groupId: string) => {
@@ -329,10 +370,49 @@ export const IncomingClaims: React.FC = () => {
 
     return (
         <div className="max-w-[1600px] w-full mx-auto px-2 sm:px-4 md:px-6 py-4 sm:py-8 pb-6">
-            <div className="mb-5 md:mb-8">
-                <h1 className="text-xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white mb-1 md:mb-2">{t('incoming.title')}</h1>
-                <p className="text-xs md:text-base text-gray-500">{t('incoming.subtitle')}</p>
+            <div className="mb-5 md:mb-6">
+                <h1 className="text-xl md:text-3xl font-bold text-[#1d1d1f] dark:text-white mb-1 md:mb-1.5">{t('incoming.title')}</h1>
+                <p className="text-xs md:text-sm text-gray-500">รายการที่ลูกค้าลงทะเบียนผ่านหน้าเว็บ — กดเลือกทีมเพื่อรับเข้างานได้ทันทีใน 1 คลิก</p>
             </div>
+
+            {/* Instant Jump Banner after accepting a job into a team */}
+            {lastAssignedBanner && (
+                <div className="mb-4 p-3.5 sm:p-4 rounded-[22px] bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                            <Check className="w-4 h-4" />
+                        </div>
+                        <div className="text-xs sm:text-sm min-w-0">
+                            <span className="font-bold text-emerald-700 dark:text-emerald-300">รับงาน &quot;{lastAssignedBanner.customerName}&quot; เข้า {lastAssignedBanner.teamLabel} แล้ว</span>
+                            <span className="text-emerald-600/80 dark:text-emerald-400/80 block sm:inline sm:ml-1.5 text-xs">• งานจะขึ้นอยู่อันแรกสุดของทีมทันที</span>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            type="button"
+                            onClick={() => navigate(`/admin/rmas?team=${encodeURIComponent(lastAssignedBanner.team)}`)}
+                            className="px-3.5 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer flex items-center gap-1"
+                        >
+                            <span>ไปดูใน{lastAssignedBanner.teamLabel.split(' ')[0]} {lastAssignedBanner.teamLabel.split(' ')[1]}</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => navigate(`/admin/job/${encodeURIComponent(lastAssignedBanner.jobId)}`)}
+                            className="px-3 py-1.5 rounded-full bg-white dark:bg-white/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-xs font-bold hover:bg-emerald-50 dark:hover:bg-white/15 transition-all cursor-pointer"
+                        >
+                            เปิดใบงาน
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setLastAssignedBanner(null)}
+                            className="p-1.5 rounded-full text-emerald-600/70 hover:bg-emerald-500/15"
+                        >
+                            <X className="w-3.5 h-3.5" />
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Search and Brand Filter Controls */}
             <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[32px] sm:rounded-[36px] md:rounded-[42px] p-4 sm:p-5 md:p-6 shadow-sm mb-6 space-y-3">
@@ -484,13 +564,29 @@ export const IncomingClaims: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    {/* Metadata & Assign Button Row (Tactile Capsule Design) */}
-                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
+                                    {/* Quick Item Preview Chips (see brand/model at a glance before clicking team) */}
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                        {job.rmas.slice(0, 4).map((rma, idx) => (
+                                            <span
+                                                key={rma.id}
+                                                onClick={() => toggleExpand(job.groupId)}
+                                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100/90 dark:bg-white/[0.05] border border-gray-200/70 dark:border-white/[0.08] text-[11px] font-semibold text-gray-700 dark:text-gray-200 cursor-pointer hover:border-[#0071e3]/40 transition-colors"
+                                            >
+                                                <span className="font-extrabold text-[#0071e3] dark:text-blue-400">{rma.brand || 'ไม่ระบุ'}</span>
+                                                <span className="truncate max-w-[160px]">{rma.productModel}</span>
+                                                {rma.serialNumber && <span className="font-mono text-[10px] text-gray-400 hidden sm:inline">({rma.serialNumber})</span>}
+                                                {idx === 3 && job.rmas.length > 4 && <span className="text-gray-400">+{job.rmas.length - 4}</span>}
+                                            </span>
+                                        ))}
+                                    </div>
+
+                                    {/* Metadata & 1-Click Quick Assign Pills Row */}
+                                    <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 pt-1">
                                         <div className="flex items-center gap-3 flex-wrap">
                                             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/[0.03] dark:bg-black/40 border border-black/5 dark:border-white/[0.08] text-xs text-gray-500 dark:text-gray-400 apple-card-sm">
                                                 <span className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 font-medium">
                                                     <Clock className="w-3.5 h-3.5 text-[#0071e3] shrink-0" />
-                                                    {new Date(job.createdAt).toLocaleString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                                    {new Date(job.createdAt).toLocaleString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                                 </span>
                                                 {job.quotationNumber && job.quotationNumber !== 'N/A' && (
                                                     <>
@@ -507,20 +603,78 @@ export const IncomingClaims: React.FC = () => {
                                                 className="flex items-center gap-1.5 text-xs md:text-sm text-[#0071e3] dark:text-blue-400 font-bold hover:underline transition-colors cursor-pointer"
                                             >
                                                 {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                                                {isExpanded ? 'ซ่อนรายละเอียด' : `ดูรายละเอียด ${job.rmas.length} รายการ`}
+                                                {isExpanded ? 'ซ่อนรายละเอียด' : `ดูรายละเอียด ${job.rmas.length} ชิ้น`}
                                             </button>
                                         </div>
 
-                                        {!isSelected && (
+                                        {/* 1-Click Apple Team Triage Pills */}
+                                        <div className="flex flex-wrap items-center gap-1.5 w-full lg:w-auto">
+                                            <span className="text-[11px] font-bold text-gray-400 mr-1 hidden sm:inline">รับเข้าทีม:</span>
                                             <button
-                                                onClick={() => { setSelectedGroupId(job.groupId); setExpandedGroupId(job.groupId); }}
-                                                className="w-full sm:w-auto py-2.5 md:py-3 px-6 md:px-8 bg-white hover:bg-gray-100 text-[#111] dark:bg-white dark:text-[#111] dark:hover:bg-gray-150 rounded-full text-xs md:text-sm font-black flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(0,0,0,0.12)] dark:shadow-[0_4px_24px_rgba(255,255,255,0.16)] transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                                                type="button"
+                                                disabled={assigningJobId === job.groupId}
+                                                onClick={() => assignJobToTeam(job, Team.HIKVISION)}
+                                                className="flex-1 sm:flex-none px-3.5 py-2 rounded-full bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white border border-red-500/25 text-xs font-extrabold transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
                                             >
-                                                <span>{t('incoming.assignBtn')}</span>
-                                                <ChevronRight className="w-4 h-4 text-black" />
+                                                {assigningJobId === job.groupId ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Box className="w-3.5 h-3.5" />}
+                                                <span>ทีม A · HIK</span>
                                             </button>
-                                        )}
+                                            <button
+                                                type="button"
+                                                disabled={assigningJobId === job.groupId}
+                                                onClick={() => assignJobToTeam(job, Team.DAHUA)}
+                                                className="flex-1 sm:flex-none px-3.5 py-2 rounded-full bg-orange-500/10 hover:bg-orange-500 text-orange-600 dark:text-orange-400 hover:text-white border border-orange-500/25 text-xs font-extrabold transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                                            >
+                                                <Layers className="w-3.5 h-3.5" />
+                                                <span>ทีม B · DAHUA</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                disabled={assigningJobId === job.groupId}
+                                                onClick={() => setOpenTeamCJobId(prev => prev === job.groupId ? null : job.groupId)}
+                                                className={`flex-1 sm:flex-none px-3.5 py-2 rounded-full border text-xs font-extrabold transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 ${
+                                                    openTeamCJobId === job.groupId
+                                                        ? 'bg-violet-500 text-white border-violet-500 shadow-sm'
+                                                        : 'bg-violet-500/10 hover:bg-violet-500 text-violet-600 dark:text-violet-400 hover:text-white border-violet-500/25'
+                                                }`}
+                                            >
+                                                <Wifi className="w-3.5 h-3.5" />
+                                                <span>ทีม C</span>
+                                                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${openTeamCJobId === job.groupId ? 'rotate-180' : ''}`} />
+                                            </button>
+                                        </div>
                                     </div>
+
+                                    {/* Inline Quick Sub-Team Picker for Team C */}
+                                    {openTeamCJobId === job.groupId && (
+                                        <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-black/5 dark:border-white/5 animate-fade-in">
+                                            <span className="text-[11px] font-bold text-violet-500">เลือกแผนกย่อยทีม C เพื่อรับเข้าทันที:</span>
+                                            <button
+                                                type="button"
+                                                disabled={assigningJobId === job.groupId}
+                                                onClick={() => assignJobToTeam(job, Team.TEAM_C)}
+                                                className="px-3.5 py-1.5 rounded-full bg-cyan-500/10 hover:bg-cyan-500 text-cyan-700 dark:text-cyan-300 hover:text-white border border-cyan-500/30 text-xs font-bold transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                                            >
+                                                <Wifi className="w-3.5 h-3.5" /> Network
+                                            </button>
+                                            <button
+                                                type="button"
+                                                disabled={assigningJobId === job.groupId}
+                                                onClick={() => assignJobToTeam(job, Team.TEAM_E)}
+                                                className="px-3.5 py-1.5 rounded-full bg-amber-500/10 hover:bg-amber-500 text-amber-700 dark:text-amber-300 hover:text-white border border-amber-500/30 text-xs font-bold transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                                            >
+                                                <Zap className="w-3.5 h-3.5" /> UPS
+                                            </button>
+                                            <button
+                                                type="button"
+                                                disabled={assigningJobId === job.groupId}
+                                                onClick={() => assignJobToTeam(job, Team.TEAM_G)}
+                                                className="px-3.5 py-1.5 rounded-full bg-fuchsia-500/10 hover:bg-fuchsia-500 text-fuchsia-700 dark:text-fuchsia-300 hover:text-white border border-fuchsia-500/30 text-xs font-bold transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                                            >
+                                                <ShoppingBag className="w-3.5 h-3.5" /> Online
+                                            </button>
+                                        </div>
+                                    )}
 
                                     {/* Expanded Item Details */}
                                     {isExpanded && (

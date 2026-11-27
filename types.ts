@@ -106,6 +106,7 @@ export interface RMA {
   // เวลา (Timestamp)
   createdAt: string;  // วันที่สร้างรายการ
   updatedAt: string;  // วันที่แก้ไขล่าสุด
+  assignedAt?: string;// วันที่พนักงานกดรับเรื่องเข้าทีม
   resolvedAt?: string;// วันที่ปิดงาน (เอาไว้คำนวณเวลาทำงานเฉลี่ย)
 
   history: TimelineEvent[]; // ประวัติการทำงานทั้งหมด (Array)

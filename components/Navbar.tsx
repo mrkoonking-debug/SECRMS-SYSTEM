@@ -1,11 +1,12 @@
 
 import React, { useEffect, useState, useRef } from 'react';
-import { ShieldCheck, LogOut, Globe, LayoutGrid, List, PlusCircle, Plus, User, Users, Menu, X, Truck, Settings, BarChart3, Tag, Building2, Bell, History, RefreshCw, Wallet, Trash2, ChevronRight } from 'lucide-react';
+import { LogOut, Globe, LayoutGrid, List, PlusCircle, Users, Menu, Settings, BarChart3, Tag, Building2, Bell, History, RefreshCw, Wallet, Trash2, ChevronRight, Search } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { useLanguage } from '../contexts/LanguageContext';
 import { LanguageToggle } from './LanguageToggle';
 import { ThemeToggle } from './ThemeToggle';
+import { SpotlightSearch } from './SpotlightSearch';
 
 interface NavbarProps {
   embedded?: boolean;
@@ -68,11 +69,24 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
   const [unassignedCount, setUnassignedCount] = useState(0);
   const [overdueCount, setOverdueCount] = useState(0);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
   const [isScrollingDown, setIsScrollingDown] = useState(false);
   const isScrollingDownRef = useRef(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useLanguage();
+
+  // Global Spotlight Shortcut: Ctrl+K / Cmd+K
+  useEffect(() => {
+    const onGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSpotlightOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', onGlobalKeyDown);
+    return () => window.removeEventListener('keydown', onGlobalKeyDown);
+  }, []);
 
   // Track scroll direction to collapse bottom tab bar on mobile (High Performance requestAnimationFrame throttling)
   useEffect(() => {
@@ -136,8 +150,13 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
     };
 
     checkIncoming();
+    const handleChanged = () => { checkIncoming(); };
+    window.addEventListener('sec-rma-changed', handleChanged);
     const interval = setInterval(checkIncoming, 30000); // Check every 30 seconds
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('sec-rma-changed', handleChanged);
+    };
   }, [location]);
 
   // Close mobile menu on route change
@@ -220,16 +239,14 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
       return (
         <Link 
           to={to} 
-          className={`group relative flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all duration-200 active:scale-[0.98] ${
+          className={`group relative flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all duration-150 active:scale-[0.98] ${
             isActive 
-              ? 'bg-black/[0.05] dark:bg-white/[0.08] backdrop-blur-md text-[#0071e3] dark:text-white font-bold' 
-              : 'text-[#1d1d1f] dark:text-gray-200 hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
+              ? 'bg-[#0071e3]/10 dark:bg-white/[0.1] text-[#0071e3] dark:text-white font-bold' 
+              : 'text-[#1d1d1f] dark:text-gray-200 hover:bg-black/[0.03] dark:hover:bg-white/[0.05]'
           }`}
         >
-          <div className={`rounded-full flex items-center justify-center flex-shrink-0 text-white ${getIconStyle()} ${
-            isActive ? 'w-9 h-9 shadow-md' : 'w-8 h-8 shadow-sm'
-          }`}>
-            <Icon className="w-4.5 h-4.5 text-white" strokeWidth={2.2} />
+          <div className={`w-7 h-7 rounded-[8px] flex items-center justify-center flex-shrink-0 text-white shadow-sm ${getIconStyle()}`}>
+            <Icon className="w-4 h-4 text-white" strokeWidth={2.2} />
           </div>
           <span className="text-xs font-semibold tracking-tight flex-1 truncate">{label}</span>
           {badgeCount > 0 && (
@@ -244,54 +261,41 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
     return (
       <Link 
         to={to} 
-        className={`group relative flex items-center gap-3 px-3.5 py-2.5 rounded-[18px] transition-all duration-200 active:scale-[0.98] min-h-[58px] ${
+        className={`group relative flex items-center gap-2.5 px-2.5 py-2 rounded-[13px] transition-all duration-150 active:scale-[0.98] ${
           isActive 
-            ? 'bg-black/[0.04] dark:bg-white/[0.08] backdrop-blur-md text-[#0071e3] dark:text-white' 
-            : 'text-[#1d1d1f] dark:text-gray-200 hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
+            ? 'bg-[#0071e3]/10 dark:bg-white/[0.11] text-[#0071e3] dark:text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.45)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]' 
+            : 'text-[#1d1d1f] dark:text-gray-200 hover:bg-black/[0.04] dark:hover:bg-white/[0.05]'
         }`}
       >
-        {/* Circular Icon with fixed-size alignment wrapper so text column never jumps */}
-        <div className="w-11 h-11 flex items-center justify-center shrink-0">
-          <div className={`rounded-full flex items-center justify-center text-white transition-all duration-200 ${getIconStyle()} ${
-            isActive 
-              ? 'w-11 h-11 shadow-lg shadow-indigo-500/25 ring-1 ring-white/10' 
-              : 'w-10 h-10 shadow-sm group-hover:scale-105'
-          }`}>
-            <Icon className={`${isActive ? 'w-5.5 h-5.5' : 'w-5 h-5'} text-white transition-all duration-200`} strokeWidth={2.2} />
-          </div>
+        {/* macOS Settings-style Vibrant Squircle Icon Badge */}
+        <div className={`w-8 h-8 rounded-[9px] flex items-center justify-center text-white shrink-0 transition-transform duration-150 ${getIconStyle()} ${
+          isActive 
+            ? 'shadow-md ring-1 ring-white/25 scale-[1.03]' 
+            : 'shadow-sm group-hover:scale-105'
+        }`}>
+          <Icon className="w-4 h-4 text-white" strokeWidth={2.2} />
         </div>
 
-        {/* 2-line Text Column (Title + Subtitle) */}
-        <div className="flex flex-col min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <span className={`text-[13.5px] md:text-[14px] tracking-tight truncate transition-colors ${
-              isActive ? 'font-extrabold text-[#0071e3] dark:text-white' : 'font-semibold text-[#1d1d1f] dark:text-gray-200 group-hover:text-[#0071e3] dark:group-hover:text-white'
-            }`}>
-              {label}
-            </span>
-            {badgeCount > 0 && (
-              <span className="min-w-[18px] h-4.5 flex items-center justify-center text-[10px] font-bold px-1.5 rounded-full bg-red-500 text-white shadow-sm">
-                {badgeCount > 99 ? '99+' : badgeCount}
-              </span>
-            )}
-          </div>
-          {subLabel && (
-            <span className={`text-[11px] truncate leading-tight mt-0.5 transition-colors ${
-              isActive ? 'text-gray-500 dark:text-gray-300 font-medium' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400'
-            }`}>
-              {subLabel}
-            </span>
-          )}
-        </div>
+        {/* Clean Single-Line Title so ALL menus fit effortlessly without scrolling */}
+        <span className={`text-[13.5px] tracking-tight truncate flex-1 transition-colors ${
+          isActive ? 'font-bold text-[#0071e3] dark:text-white' : 'font-semibold text-[#1d1d1f] dark:text-gray-200 group-hover:text-[#0071e3] dark:group-hover:text-white'
+        }`}>
+          {label}
+        </span>
 
-        {/* Right Indicator: Clean subtle Chevron matching Apple HIG */}
-        <div className="shrink-0 flex items-center pl-1">
-          <ChevronRight className={`w-4 h-4 transition-all duration-200 ${
+        {badgeCount > 0 && (
+          <span className="min-w-[20px] h-5 flex items-center justify-center text-[10px] font-extrabold px-1.5 rounded-full bg-[#ff3b30] text-white shadow-sm shrink-0">
+            {badgeCount > 99 ? '99+' : badgeCount}
+          </span>
+        )}
+
+        {badgeCount === 0 && (
+          <ChevronRight className={`w-3.5 h-3.5 shrink-0 transition-all duration-150 ${
             isActive 
-              ? 'text-[#0071e3] dark:text-white/80 translate-x-0.5' 
-              : 'text-gray-300 dark:text-gray-600 group-hover:translate-x-0.5 group-hover:text-gray-400'
+              ? 'text-[#0071e3] dark:text-white/80 opacity-100' 
+              : 'text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5'
           }`} />
-        </div>
+        )}
       </Link>
     );
   };
@@ -299,112 +303,94 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
   const navContent = (
     <>
       {user ? (
-        <div className="space-y-4">
-          {/* Section 1: การนำทางหลัก · NAVIGATION */}
+        <div className="space-y-3.5">
+          {/* Section 1: งานประจำวัน */}
           <div>
-            <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-3 mb-2 flex items-center gap-1.5">
-              <span>การนำทางหลัก</span>
-              <span className="text-gray-300 dark:text-gray-600 font-mono">·</span>
-              <span className="text-[9px] text-gray-400/80 dark:text-gray-500 tracking-widest font-sans">NAVIGATION</span>
+            <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-2.5 mb-1.5">
+              งานหลัก
             </div>
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <NavLink 
                 to="/admin/dashboard" 
                 label={t('nav.overview')} 
-                subLabel="ภาพรวมระบบ & สถิติสำคัญ"
                 icon={LayoutGrid} 
                 badgeCount={overdueCount} 
               />
               <NavLink 
                 to="/admin/incoming" 
                 label={t('nav.incoming')} 
-                subLabel="งานรอดำเนินการจากลูกค้า"
                 icon={Bell} 
                 badgeCount={unassignedCount} 
               />
               <NavLink 
                 to="/admin/rmas" 
                 label={t('nav.claims')} 
-                subLabel="ติดตามสถานะ & ค้นหางาน"
                 icon={List} 
               />
               <NavLink 
                 to="/admin/submit" 
                 label={t('nav.newRequest')} 
-                subLabel="ลงทะเบียนรับเคลมสินค้า"
                 icon={PlusCircle} 
               />
               <NavLink 
                 to="/admin/reports" 
                 label={t('nav.reports')} 
-                subLabel="วิเคราะห์ข้อมูล & ออกรายงาน"
                 icon={BarChart3} 
               />
             </div>
           </div>
 
-          {/* Section 2: การเงินและบัญชี · FINANCE */}
+          {/* Section 2: การเงิน */}
           {(user.role === 'admin' || (user as any).canAccessFinance) && (
             <div>
-              <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-3 mb-2 flex items-center gap-1.5">
-                <span>การเงินและบัญชี</span>
-                <span className="text-gray-300 dark:text-gray-600 font-mono">·</span>
-                <span className="text-[9px] text-gray-400/80 dark:text-gray-500 tracking-widest font-sans">FINANCE</span>
+              <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-2.5 mb-1.5">
+                การเงินและบัญชี
               </div>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 <NavLink 
                   to="/admin/finance" 
-                  label="การเงิน / บันทึกรายจ่าย" 
-                  subLabel="เงินสดย่อย & รายรับรายจ่าย"
+                  label="การเงิน / รายจ่าย" 
                   icon={Wallet} 
                 />
               </div>
             </div>
           )}
 
-          {/* Section 3: การจัดการระบบ · SYSTEM */}
+          {/* Section 3: จัดการระบบ */}
           {user.role === 'admin' && (
             <div>
-              <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-3 mb-2 flex items-center gap-1.5">
-                <span>การจัดการระบบ</span>
-                <span className="text-gray-300 dark:text-gray-600 font-mono">·</span>
-                <span className="text-[9px] text-gray-400/80 dark:text-gray-500 tracking-widest font-sans">SYSTEM</span>
+              <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-2.5 mb-1.5">
+                จัดการระบบ
               </div>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 <NavLink 
                   to="/admin/users" 
                   label={t('nav.users')} 
-                  subLabel="ผู้ใช้งาน & สิทธิ์การเข้าถึง"
                   icon={Users} 
                 />
                 <NavLink 
                   to="/admin/logs" 
                   label="System Logs" 
-                  subLabel="ประวัติการทำงานในระบบ"
                   icon={History} 
                 />
                 <NavLink 
                   to="/admin/brands" 
                   label={t('nav.brands')} 
-                  subLabel="ข้อมูลยี่ห้อ & การรับประกัน"
                   icon={Tag} 
                 />
                 <NavLink 
                   to="/admin/distributors" 
                   label={t('nav.distributors')} 
-                  subLabel="ศูนย์เคลม & ผู้นำเข้าสินค้า"
                   icon={Building2} 
                 />
                 <NavLink 
                   to="/admin/settings" 
                   label={t('nav.settings')} 
-                  subLabel="ตั้งค่าการทำงานของระบบ"
                   icon={Settings} 
                 />
                 <NavLink 
                   to="/admin/recycle-bin" 
                   label="ถังขยะระบบ" 
-                  subLabel="กู้คืน & ลบข้อมูลถาวร"
                   icon={Trash2} 
                 />
               </div>
@@ -444,13 +430,26 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
           <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
           <span className="font-bold text-[15px] text-[#1d1d1f] dark:text-white tracking-tight">SEC RMS</span>
         </Link>
-        <button
-          onClick={clearAllCachesAndReload}
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#0071e3] hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all active:scale-90"
-          title="ล้างแคช & รีเฟรช"
-        >
-          <RefreshCw className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          {user && (
+            <button
+              type="button"
+              onClick={() => setIsSpotlightOpen(true)}
+              className="h-8 px-2.5 rounded-full bg-black/[0.04] dark:bg-white/[0.07] flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-300 active:scale-95 transition-all"
+              title="ค้นหาด่วน"
+            >
+              <Search className="w-3.5 h-3.5 text-[#0071e3]" />
+              <span>ค้นหา</span>
+            </button>
+          )}
+          <button
+            onClick={clearAllCachesAndReload}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#0071e3] hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all active:scale-90"
+            title="ล้างแคช & รีเฟรช"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
        {/* ===== Mobile Bottom Tab Bar (Premium Floating Capsule Style) ===== */}
@@ -601,45 +600,62 @@ export const Navbar: React.FC<NavbarProps> = ({ embedded = false }) => {
 
 
 
-      <aside className={`hidden md:flex flex-col w-80 z-50 bg-white dark:bg-[#1c1c1e] shrink-0 border-r border-gray-200/50 dark:border-white/[0.08] ${embedded ? 'h-full' : 'fixed left-0 top-0 bottom-0'}`}>
-        <div className="p-6 pb-3">
-          <Link to={user ? "/admin/dashboard" : "/"} className="flex items-center gap-3 group">
-            <div className="h-9 w-9 flex items-center justify-center transition-transform group-hover:scale-105">
+      <aside className={`hidden md:flex flex-col w-64 z-50 bg-white/95 dark:bg-[#1c1c1e]/95 backdrop-blur-xl shrink-0 border-r border-gray-200/60 dark:border-white/[0.08] ${embedded ? 'h-full' : 'fixed left-0 top-0 bottom-0'}`}>
+        <div className="px-4 pt-4 pb-2.5 space-y-3">
+          <Link to={user ? "/admin/dashboard" : "/"} className="flex items-center gap-2.5 group px-1">
+            <div className="h-8 w-8 flex items-center justify-center transition-transform group-hover:scale-105 shrink-0">
               <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
             </div>
-            <span className="font-bold text-lg text-[#1d1d1f] dark:text-white tracking-tighter text-nowrap">SEC RMS SYSTEM</span>
+            <span className="font-extrabold text-[16px] text-[#1d1d1f] dark:text-white tracking-tight text-nowrap">SEC RMS</span>
           </Link>
+
+          {/* Apple Spotlight Search Trigger */}
+          {user && (
+            <button
+              type="button"
+              onClick={() => setIsSpotlightOpen(true)}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-[12px] bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.07] dark:hover:bg-white/[0.1] border border-black/[0.04] dark:border-white/[0.07] text-xs text-gray-500 dark:text-gray-400 transition-all cursor-pointer group"
+            >
+              <Search className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#0071e3] transition-colors shrink-0" />
+              <span className="flex-1 text-left font-medium truncate">ค้นหาด่วน...</span>
+              <kbd className="px-1.5 py-0.5 text-[9.5px] font-bold bg-white/80 dark:bg-black/40 text-gray-400 rounded-md border border-black/5 dark:border-white/10">
+                Ctrl K
+              </kbd>
+            </button>
+          )}
         </div>
 
-        <div className="flex-1 flex flex-col gap-1 px-3.5 py-3 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 flex flex-col gap-1 px-2.5 py-2 overflow-y-auto custom-scrollbar">
           {navContent}
         </div>
 
-        <div className="p-4 mt-auto">
-          <div className="flex items-center justify-between mb-6 bg-white/50 dark:bg-white/[0.03] p-2 rounded-full shadow-sm border border-gray-200/30 dark:border-white/[0.06]">
+        <div className="p-3 mt-auto border-t border-gray-100 dark:border-white/[0.06] space-y-2">
+          <div className="flex items-center justify-between bg-black/[0.03] dark:bg-white/[0.04] px-2 py-1.5 rounded-full border border-gray-200/40 dark:border-white/[0.06]">
             <div className="flex gap-1"><ThemeToggle /><LanguageToggle /></div>
-            <div className="flex gap-1">
+            <div className="flex gap-0.5">
               <button
                 onClick={clearAllCachesAndReload}
-                className="p-2 rounded-full text-[#86868b] hover:text-[#0071e3] transition-colors"
+                className="p-1.5 rounded-full text-[#86868b] hover:text-[#0071e3] hover:bg-white dark:hover:bg-white/10 transition-colors cursor-pointer"
                 title="ล้างแคช & รีเฟรช"
-              ><RefreshCw className="h-4 w-4" /></button>
-              {user && <Link to="/" title="Go to Website" className="p-2 rounded-full text-[#86868b] hover:text-[#0071e3] transition-colors"><Globe className="h-4 w-4" /></Link>}
+              ><RefreshCw className="h-3.5 w-3.5" /></button>
+              {user && <Link to="/" title="หน้าเว็บลูกค้า" className="p-1.5 rounded-full text-[#86868b] hover:text-[#0071e3] hover:bg-white dark:hover:bg-white/10 transition-colors"><Globe className="h-3.5 w-3.5" /></Link>}
             </div>
           </div>
 
           {user && (
-            <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/60 dark:bg-white/[0.04] border border-gray-200/30 dark:border-white/[0.06] shadow-sm">
-              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#3a3a3c] flex items-center justify-center font-bold text-gray-400">{user.name.charAt(0)}</div>
+            <div className="flex items-center gap-2.5 p-2 rounded-[16px] bg-black/[0.02] dark:bg-white/[0.04] border border-gray-200/40 dark:border-white/[0.06]">
+              <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-[#007aff] to-[#005bb5] flex items-center justify-center font-bold text-white text-xs shadow-xs shrink-0">{user.name.charAt(0)}</div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold text-[#1d1d1f] dark:text-white truncate">{user.name}</div>
-                <div className="text-[10px] text-[#86868b] truncate uppercase tracking-wider">{user.role}</div>
+                <div className="text-xs font-bold text-[#1d1d1f] dark:text-white truncate">{user.name}</div>
+                <div className="text-[9.5px] text-[#86868b] truncate uppercase tracking-wider">{user.role}</div>
               </div>
-              <button onClick={handleLogout} className="p-2 text-[#86868b] hover:text-red-500 transition-colors" title="Logout"><LogOut className="w-4 h-4" /></button>
+              <button onClick={handleLogout} className="p-1.5 rounded-lg text-[#86868b] hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer" title="ออกจากระบบ"><LogOut className="w-3.5 h-3.5" /></button>
             </div>
           )}
         </div>
       </aside>
+
+      <SpotlightSearch isOpen={isSpotlightOpen} onClose={() => setIsSpotlightOpen(false)} />
     </>
   );
 };

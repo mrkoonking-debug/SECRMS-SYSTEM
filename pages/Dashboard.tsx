@@ -4,7 +4,7 @@ import { DashboardStats, Team, RMAStatus } from '../types';
 import { MockDb } from '../services/mockDb';
 import { Clock, CheckCircle2, AlertTriangle, Truck, TrendingUp, AlertOctagon, Timer, ChevronRight, Layers, Box, Wifi, Zap, ShoppingBag, ChevronDown, RefreshCw, Activity, Package, ArrowUpRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { StatusBadge } from '../components/StatusBadge';
 import { AdminPageSkeleton } from '../components/AdminPageSkeleton';
 
@@ -35,27 +35,39 @@ interface StatCardProps {
     pillLabel?: string;
     pillColor?: string;
     subLabel?: string;
+    onClick?: () => void;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ label, value, icon, color, pillLabel, pillColor, subLabel }) => (
-    <div className="bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[32px] md:rounded-[38px] p-5 sm:p-6 md:p-7 flex flex-col justify-between relative overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-xl group border border-gray-200/80 dark:border-white/[0.08]">
-        <div className="flex items-center justify-between gap-2 mb-3.5 md:mb-5">
+const StatCard: React.FC<StatCardProps> = ({ label, value, icon, color, pillLabel, pillColor, subLabel, onClick }) => (
+    <button
+        type="button"
+        onClick={onClick}
+        className={`text-left w-full bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[30px] md:rounded-[34px] p-5 sm:p-6 flex flex-col justify-between relative overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-xl group border border-gray-200/80 dark:border-white/[0.08] ${onClick ? 'cursor-pointer active:scale-[0.98] hover:border-[#0071e3]/40' : ''}`}
+    >
+        <div className="flex items-center justify-between gap-2 mb-3.5 md:mb-5 w-full">
             {/* macOS / Apple-style Squircle Icon Badge with 3D Bevel */}
-            <div className={`w-11 h-11 md:w-12 md:h-12 rounded-[18px] flex items-center justify-center flex-shrink-0 text-white shadow-md ${color} apple-card-sm transition-transform group-hover:scale-105`}>
+            <div className={`w-11 h-11 md:w-12 md:h-12 rounded-[16px] flex items-center justify-center flex-shrink-0 text-white shadow-md ${color} apple-card-sm transition-transform group-hover:scale-105`}>
                 {icon}
             </div>
-            {pillLabel && (
-                <span className={`text-[10px] md:text-[11px] font-bold px-3 py-1 rounded-full border apple-card-sm ${pillColor || 'bg-black/5 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400 border-black/5 dark:border-white/10'}`}>
-                    {pillLabel}
-                </span>
-            )}
+            <div className="flex items-center gap-1.5">
+                {pillLabel && (
+                    <span className={`text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full border apple-card-sm ${pillColor || 'bg-black/5 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400 border-black/5 dark:border-white/10'}`}>
+                        {pillLabel}
+                    </span>
+                )}
+                {onClick && (
+                    <span className="w-6 h-6 rounded-full bg-black/[0.04] dark:bg-white/[0.06] flex items-center justify-center text-gray-400 group-hover:bg-[#0071e3] group-hover:text-white transition-all">
+                        <ArrowUpRight className="w-3.5 h-3.5" />
+                    </span>
+                )}
+            </div>
         </div>
 
         <div>
             <div className="text-2xl sm:text-3xl md:text-[34px] font-black text-[#1d1d1f] dark:text-white tracking-tight leading-none mb-1.5">
                 {value}
             </div>
-            <div className="text-xs md:text-sm font-bold text-gray-600 dark:text-gray-400">
+            <div className="text-xs md:text-sm font-bold text-gray-600 dark:text-gray-400 group-hover:text-[#0071e3] dark:group-hover:text-blue-400 transition-colors">
                 {label}
             </div>
             {subLabel && (
@@ -64,15 +76,24 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon, color, pillLabe
                 </div>
             )}
         </div>
-    </div>
+    </button>
 );
 
 export const Dashboard: React.FC = () => {
+    const navigate = useNavigate();
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [selectedTeam, setSelectedTeam] = useState<Team | 'ALL' | 'GROUP_C'>('ALL');
     const [isGroupCActive, setIsGroupCActive] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { t, language } = useLanguage();
+
+    const goToClaims = (extra: Record<string, string>) => {
+        const params = new URLSearchParams(extra);
+        if (selectedTeam !== 'ALL') {
+            params.set('team', selectedTeam);
+        }
+        navigate(`/admin/rmas?${params.toString()}`);
+    };
 
     useEffect(() => {
         // Trigger overdue email notifications in background only once on page mount
@@ -214,7 +235,7 @@ export const Dashboard: React.FC = () => {
                 </div>
             </div>
 
-            {/* 4 Bento Stat Cards with Apple Liquid Glass Tactile Surfaces */}
+            {/* 4 Bento Stat Cards with Apple Liquid Glass Tactile Surfaces — Clickable to jump directly to filtered list */}
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mb-8">
                 <StatCard 
                     label={t('dashboard.pendingAction')} 
@@ -223,7 +244,8 @@ export const Dashboard: React.FC = () => {
                     color="bg-gradient-to-br from-blue-500 to-[#0071e3]" 
                     pillLabel="รอดำเนินการ"
                     pillColor="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
-                    subLabel="ต้องตรวจสอบที่ร้าน"
+                    subLabel="คลิกเพื่อดูงานรอตรวจเช็ก"
+                    onClick={() => goToClaims({ status: 'PENDING' })}
                 />
                 <StatCard 
                     label={t('dashboard.revenuePipeline')} 
@@ -232,7 +254,8 @@ export const Dashboard: React.FC = () => {
                     color="bg-gradient-to-br from-orange-500 to-amber-600" 
                     pillLabel="ส่งซ่อมศูนย์"
                     pillColor="bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20"
-                    subLabel="ของค้างที่ซัพพลายเออร์"
+                    subLabel="คลิกเพื่อดูงานที่กำลังดำเนินการ"
+                    onClick={() => goToClaims({ status: 'IN_PROGRESS' })}
                 />
                 <StatCard 
                     label={t('dashboard.avgTurnaround')} 
@@ -241,7 +264,8 @@ export const Dashboard: React.FC = () => {
                     color="bg-gradient-to-br from-purple-500 to-indigo-600" 
                     pillLabel="รอบเวลาเคลม"
                     pillColor="bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
-                    subLabel={`~${stats.avgTurnaroundHours} ชม. ต่อใบงาน`}
+                    subLabel={`~${stats.avgTurnaroundHours} ชม. · คลิกดูรายงาน`}
+                    onClick={() => navigate('/admin/reports')}
                 />
                 <StatCard 
                     label={t('dashboard.overdue')} 
@@ -250,7 +274,8 @@ export const Dashboard: React.FC = () => {
                     color={stats.overdueCount > 0 ? "bg-gradient-to-br from-red-500 to-rose-600" : "bg-gradient-to-br from-emerald-500 to-teal-600"} 
                     pillLabel={stats.overdueCount > 0 ? 'เกินกำหนด' : 'ปกติ'}
                     pillColor={stats.overdueCount > 0 ? "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30" : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"}
-                    subLabel="ล่าช้ามากกว่า 15 วัน"
+                    subLabel="คลิกดูงานล่าช้า > 15 วัน"
+                    onClick={() => goToClaims({ overdue: '1' })}
                 />
             </div>
 

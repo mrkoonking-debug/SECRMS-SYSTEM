@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { RMA, RMAStatus, Team, DelayReason, ResolutionDetails } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
-import { X, Save, AlertCircle, ArrowRight, CheckCircle2, ChevronRight, RotateCcw, Truck, Box, Layers, Wifi, Zap, ShoppingBag, ShieldCheck, RefreshCw, AlertOctagon, Plus, Check, Pencil, Lock, Search, Package, Wrench, Undo2, PackageCheck, ClipboardCheck, Settings2, Maximize2, ScanBarcode, Image as ImageIcon, Loader2, Trash2, FileText, Inbox, HelpCircle } from 'lucide-react';
+import { X, Save, AlertCircle, ArrowRight, CheckCircle2, ChevronRight, ChevronLeft, Truck, Box, Layers, Wifi, Zap, ShoppingBag, ShieldCheck, RefreshCw, Plus, Check, Lock, Search, Package, Wrench, Undo2, PackageCheck, ClipboardCheck, Settings2, Maximize2, ScanBarcode, Image as ImageIcon, Loader2, Trash2, FileText, Inbox, HelpCircle } from 'lucide-react';
 import { GlassSelect } from './GlassSelect';
 import { ImageZoomModal } from './ImageZoomModal';
 import { MockDb } from '../services/mockDb';
@@ -16,9 +16,12 @@ interface EditRMADrawerProps {
     onClose: () => void;
     rma: RMA;
     onSave: (rmaId: string, updates: Partial<RMA>, diffs: { field: string, old: string, new: string }[]) => Promise<void>;
+    slideOver?: boolean;
+    siblings?: RMA[];
+    onSelectSibling?: (rma: RMA) => void;
 }
 
-export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, rma, onSave }) => {
+export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, rma, onSave, slideOver = false, siblings, onSelectSibling }) => {
     const { t } = useLanguage();
     const [formData, setFormData] = useState<RMA | null>(null);
     const [activeZoomImage, setActiveZoomImage] = useState<string | null>(null);
@@ -355,12 +358,27 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             showToast('ℹ️ ไม่มีข้อมูลที่เปลี่ยนแปลง', 'info');
             return;
         }
+
+        // Apple Fast-Save UX: Minor edits (1-2 fields without status/team change) save immediately with 1 click!
+        // Critical edits (status transition, team transfer, or 3+ changes) open Diff Review Modal for safety.
+        const isCriticalChange =
+            formData.status !== rma.status ||
+            tempTeam !== rma.team ||
+            calculatedDiffs.length >= 3;
+
+        if (!isCriticalChange) {
+            setDiffs(calculatedDiffs);
+            handleFinalSave(calculatedDiffs);
+            return;
+        }
+
         setDiffs(calculatedDiffs);
         setIsReviewing(true);
     };
 
-    const handleFinalSave = async () => {
+    const handleFinalSave = async (overrideDiffs?: { field: string, old: string, new: string }[]) => {
         if (!formData) return;
+        const activeDiffs = overrideDiffs ?? diffs;
         setIsSaving(true);
         const updates: Partial<RMA> = {};
 
@@ -425,8 +443,10 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
         stripUndefined(updates);
 
         try {
-            await onSave(rma.id, updates, diffs);
-            setIsLocked(true); // Auto-lock back after save
+            await onSave(rma.id, updates, activeDiffs);
+            showToast('บันทึกการแก้ไขเรียบร้อยแล้ว', 'success');
+            setIsReviewing(false);
+            setIsLocked(formData.status === RMAStatus.CLOSED);
             onClose();
         } catch (error) {
             console.error("Failed to save RMA updates:", error);
@@ -453,51 +473,66 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
     ];
 
 
-    return (
-        <div className="max-w-[1600px] w-full mx-auto py-5 px-3 sm:px-5 animate-fade-in">
-            {/* PAGE HEADER */}
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
-                <div>
-                    <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-1.5 tracking-tight">{t('track.edit')}</h1>
-                    <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-slate-500">
-                        <span className="font-mono bg-slate-200/70 dark:bg-white/[0.08] border border-slate-200 dark:border-white/10 px-2.5 py-0.5 rounded-lg text-slate-900 dark:text-white font-bold whitespace-nowrap">{rma.id}</span>
-                        {rma.groupRequestId && (
-                            <span className="font-mono bg-blue-500/10 text-[#0071e3] dark:text-blue-400 px-2.5 py-0.5 rounded-lg font-bold border border-blue-500/20 whitespace-nowrap">Job: {rma.groupRequestId}</span>
-                        )}
-                        <span className="whitespace-nowrap font-medium text-slate-700 dark:text-slate-300">{rma.brand} {rma.productModel}</span>
-                        <span className="hidden sm:inline text-slate-300 dark:text-slate-600">•</span>
-                        <span className="font-mono whitespace-nowrap">{rma.serialNumber}</span>
+    const siblingList = siblings && siblings.length > 1 ? siblings.filter(s => s.status !== RMAStatus.CANCELLED) : [];
+    const currentSiblingIdx = siblingList.findIndex(s => s.id === rma.id);
+    const pendingDiffCount = calculateDiffs().length;
+
+    const handleSwitchSibling = (target: RMA) => {
+        if (!onSelectSibling || target.id === rma.id) return;
+        if (pendingDiffCount > 0) {
+            showToast('กรุณากดบันทึกหรือยกเลิกการแก้ไขก่อนเปลี่ยนชิ้นสินค้า', 'warning');
+            return;
+        }
+        onSelectSibling(target);
+    };
+
+    const drawerInnerContent = (
+        <div className={slideOver ? 'p-4 sm:p-6 animate-fade-in' : 'max-w-[1600px] w-full mx-auto py-5 px-3 sm:px-5 animate-fade-in'}>
+            {/* PAGE HEADER (only shown in standalone full-page mode; Slide-Over has its own sticky Apple Header) */}
+            {!slideOver && (
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
+                    <div>
+                        <h1 className="text-2xl font-black text-[#1d1d1f] dark:text-white mb-1.5 tracking-tight">{t('track.edit')}</h1>
+                        <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-500">
+                            <span className="font-mono bg-black/[0.05] dark:bg-white/[0.08] border border-black/5 dark:border-white/10 px-3 py-0.5 rounded-full text-[#1d1d1f] dark:text-white font-bold whitespace-nowrap apple-card-sm">{rma.id}</span>
+                            {rma.groupRequestId && (
+                                <span className="font-mono bg-blue-500/10 text-[#0071e3] dark:text-blue-400 px-3 py-0.5 rounded-full font-bold border border-blue-500/20 whitespace-nowrap apple-card-sm">Job: {rma.groupRequestId}</span>
+                            )}
+                            <span className="whitespace-nowrap font-semibold text-[#1d1d1f] dark:text-gray-200">{rma.brand} {rma.productModel}</span>
+                            <span className="hidden sm:inline text-gray-300 dark:text-gray-600">•</span>
+                            <span className="font-mono whitespace-nowrap">{rma.serialNumber}</span>
+                        </div>
                     </div>
+                    <button onClick={handleSafeClose} className="w-fit px-4 py-2 rounded-full text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-[#16161a] hover:bg-gray-50 dark:hover:bg-white/10 border border-gray-200/80 dark:border-white/10 apple-card-sm transition-all flex items-center gap-1.5 shadow-xs">
+                        <ArrowRight className="w-4 h-4 rotate-180" /> กลับ
+                    </button>
                 </div>
-                <button onClick={handleSafeClose} className="w-fit px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#16181d] hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 transition-all flex items-center gap-1.5 shadow-xs">
-                    <ArrowRight className="w-4 h-4 rotate-180" /> กลับ
-                </button>
-            </div>
+            )}
 
             {/* SOFT LOCK BANNER */}
             {isLocked && (
-                <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-300/70 dark:border-amber-500/30 rounded-2xl px-5 py-4">
+                <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-300/60 dark:border-amber-500/30 rounded-[22px] px-5 py-4 apple-card-inner">
                     <div className="flex items-center gap-3">
                         <span className="text-xl">⚠️</span>
                         <div>
-                            <p className="font-semibold text-amber-800 dark:text-amber-300 text-sm">งานนี้ปิดแล้ว — ข้อมูลถูกล็อค</p>
+                            <p className="font-bold text-amber-800 dark:text-amber-300 text-sm">งานนี้ปิดแล้ว — ข้อมูลถูกล็อค</p>
                             <p className="text-amber-600 dark:text-amber-400 text-xs mt-0.5">กดปลดล็อคเพื่อแก้ไขข้อมูล</p>
                         </div>
                     </div>
-                    <button onClick={() => setIsLocked(false)} className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 transition-colors whitespace-nowrap shadow-xs">
+                    <button onClick={() => setIsLocked(false)} className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-full font-bold text-xs sm:text-sm flex items-center gap-2 transition-colors whitespace-nowrap shadow-sm cursor-pointer">
                         🔓 ปลดล็อคเพื่อแก้ไข
                     </button>
                 </div>
             )}
 
             <fieldset disabled={isLocked} className={isLocked ? 'opacity-60 pointer-events-none' : ''}>
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5 items-start">
-                    {/* Left Column: Form Sections */}
-                    <div className="space-y-5">
-            <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
-                <h2 className="font-bold text-base sm:text-lg flex items-center gap-2.5 mb-5 text-slate-900 dark:text-white">
-                    <span className="w-7 h-7 rounded-lg bg-blue-500/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center text-xs font-bold">1</span>
-                    ข้อมูลสินค้า
+                <div className={slideOver ? 'space-y-5' : 'grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5 items-start'}>
+                    {/* Main Column — Workflow FIRST (Apple Progressive Disclosure: Status & Action on top, Product Details below) */}
+                    <div className="flex flex-col gap-5">
+            <div className="order-2 bg-white dark:bg-[#16161a] apple-card-lg rounded-[26px] p-5 sm:p-6 border border-gray-200/75 dark:border-white/[0.08] shadow-sm">
+                <h2 className="font-extrabold text-base sm:text-lg flex items-center gap-2.5 mb-5 text-[#1d1d1f] dark:text-white">
+                    <span className="w-7 h-7 rounded-full bg-blue-500/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center text-xs font-extrabold">2</span>
+                    ข้อมูลสินค้า & อุปกรณ์เสริม
                 </h2>
                 <div className="space-y-4">
                     <div className="relative z-40">
@@ -624,9 +659,9 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             </div>
 
             {/* SECTION 2: ข้อมูลการรับเข้า */}
-            <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
-                <h2 className="font-bold text-base sm:text-lg flex items-center gap-2.5 mb-5 text-slate-900 dark:text-white">
-                    <span className="w-7 h-7 rounded-lg bg-blue-500/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center text-xs font-bold">2</span>
+            <div className="order-3 bg-white dark:bg-[#16161a] apple-card-lg rounded-[26px] p-5 sm:p-6 border border-gray-200/75 dark:border-white/[0.08] shadow-sm">
+                <h2 className="font-extrabold text-base sm:text-lg flex items-center gap-2.5 mb-5 text-[#1d1d1f] dark:text-white">
+                    <span className="w-7 h-7 rounded-full bg-blue-500/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center text-xs font-extrabold">3</span>
                     {t('track.intakeInfo')}
                 </h2>
                 <div className="space-y-4">
@@ -864,10 +899,10 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                 </div>,
             document.body)}
 
-            {/* SECTION 3: สถานะและการดำเนินการ */}
-            <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
-                <h2 className="font-bold text-base sm:text-lg flex items-center gap-2.5 mb-5 text-slate-900 dark:text-white">
-                    <span className="w-7 h-7 rounded-lg bg-blue-500/10 text-[#0071e3] dark:text-blue-400 flex items-center justify-center text-xs font-bold">3</span>
+            {/* SECTION 1 (WORKFLOW HERO): สถานะและการดำเนินการ — Placed FIRST for instant 1-click daily operation */}
+            <div className="order-1 bg-white dark:bg-[#16161a] apple-card-lg rounded-[26px] p-5 sm:p-6 border border-gray-200/75 dark:border-white/[0.08] shadow-sm">
+                <h2 className="font-extrabold text-base sm:text-lg flex items-center gap-2.5 mb-5 text-[#1d1d1f] dark:text-white">
+                    <span className="w-7 h-7 rounded-full bg-gradient-to-br from-[#007aff] to-[#005bb5] text-white flex items-center justify-center text-xs font-extrabold shadow-xs">1</span>
                     {t('track.statusResolution')}
                 </h2>
                 <div className="space-y-5">
@@ -1083,9 +1118,9 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
 
             {/* SECTION 3.5: อุปกรณ์ที่ส่งให้ผู้นำเข้า */}
             {(formData.accessories || []).length > 0 && (
-                <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
-                    <h2 className="font-bold text-base sm:text-lg flex items-center gap-2.5 mb-1.5 text-slate-900 dark:text-white">
-                        <span className="w-7 h-7 rounded-lg bg-orange-500/10 text-orange-600 flex items-center justify-center text-xs font-bold"><Truck className="w-4 h-4" /></span>
+                <div className="order-1 bg-white dark:bg-[#16161a] apple-card-lg rounded-[26px] p-5 sm:p-6 border border-gray-200/75 dark:border-white/[0.08] shadow-sm">
+                    <h2 className="font-extrabold text-base sm:text-lg flex items-center gap-2.5 mb-1.5 text-[#1d1d1f] dark:text-white">
+                        <span className="w-7 h-7 rounded-full bg-orange-500/10 text-orange-600 flex items-center justify-center text-xs font-bold"><Truck className="w-4 h-4" /></span>
                         อุปกรณ์ที่ส่งเคลม
                     </h2>
                     <p className="text-xs text-slate-400 mb-4 pl-9.5">เลือกรายการที่จะส่งไปให้ผู้นำเข้า (รายการที่ไม่เลือก = เก็บไว้ที่ร้าน)</p>
@@ -1165,7 +1200,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                     steps.push({ icon: CheckCircle2, label: 'ปิดงาน', done: level >= 4, active: level === 4 });
 
                     return (
-                        <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 border border-slate-200/80 dark:border-white/[0.08] shadow-xs">
+                        <div className="bg-white dark:bg-[#16161a] apple-card rounded-[24px] p-5 border border-gray-200/75 dark:border-white/[0.08] shadow-sm">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
                                     <div className="w-5 h-5 rounded-md bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
@@ -1235,16 +1270,16 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                 })()}
 
                 {/* SECTION: บันทึกภายใน (Internal Company Notes Card) */}
-                <div className="bg-white dark:bg-[#16181d] rounded-2xl p-5 border border-slate-200/80 dark:border-white/[0.08] shadow-xs space-y-3">
+                <div className="bg-white dark:bg-[#16161a] apple-card rounded-[24px] p-5 border border-gray-200/75 dark:border-white/[0.08] shadow-sm space-y-3">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
                             <div className="w-5 h-5 rounded-md bg-amber-500/10 text-amber-500 flex items-center justify-center">
                                 <FileText className="w-3 h-3" />
                             </div>
                             {t('track.internalNote')}
                         </h3>
                         {formData.notes?.trim() && (
-                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md flex items-center gap-1">
+                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> มีบันทึก
                             </span>
                         )}
@@ -1253,24 +1288,24 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                         value={formData.notes || ''}
                         onChange={e => handleFormChange('notes', e.target.value)}
                         rows={4}
-                        className="w-full rounded-xl p-3 text-xs text-slate-900 dark:text-white bg-slate-50 dark:bg-[#1a1d24] border border-slate-200 dark:border-white/[0.08] placeholder-slate-400 focus:bg-white dark:focus:bg-[#1f232b] outline-none focus:ring-2 focus:ring-amber-500/30 transition-all resize-none"
+                        className="w-full rounded-[16px] p-3.5 text-xs sm:text-sm text-[#1d1d1f] dark:text-white bg-gray-50/70 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] placeholder-gray-400 focus:bg-white dark:focus:bg-[#202024] outline-none focus:ring-2 focus:ring-amber-500/30 transition-all resize-none"
                         placeholder={t('track.addNotesPlaceholder')}
                     />
                 </div>
 
                 {/* ACTION BUTTONS in Sticky Sidebar */}
                 {(() => {
-                    const pendingCount = calculateDiffs().length;
+                    const pendingCount = pendingDiffCount;
                     return (
                         <div className="flex flex-col gap-2.5 pt-1">
-                            <button onClick={handlePreSave} className="w-full py-3 px-4 rounded-xl text-sm font-bold text-white bg-[#0071e3] hover:bg-[#0062c4] shadow-sm transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
-                                <span>ตรวจสอบและบันทึก</span>
+                            <button onClick={handlePreSave} disabled={isSaving} className="w-full py-3.5 px-5 rounded-full text-sm font-extrabold text-white bg-gradient-to-r from-[#007aff] to-[#005bb5] hover:brightness-105 shadow-md shadow-blue-500/25 transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer disabled:opacity-60">
+                                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                <span>{pendingCount > 0 ? 'บันทึกการเปลี่ยนแปลง' : 'บันทึก'}</span>
                                 {pendingCount > 0 && (
-                                    <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-white/20 text-white">{pendingCount}</span>
+                                    <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-white/25 text-white">{pendingCount}</span>
                                 )}
-                                <ChevronRight className="w-4 h-4" />
                             </button>
-                            <button onClick={handleSafeClose} className="w-full py-2.5 rounded-xl text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10 transition-all text-center">
+                            <button onClick={handleSafeClose} className="w-full py-2.5 rounded-full text-xs font-bold text-gray-500 dark:text-gray-400 hover:bg-black/[0.04] dark:hover:bg-white/5 border border-gray-200/80 dark:border-white/10 transition-all text-center cursor-pointer">
                                 {t('track.cancelBtn')}
                             </button>
                         </div>
@@ -1519,7 +1554,7 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
                                 <button onClick={() => setIsReviewing(false)} className="px-6 py-2.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                                     {t('track.cancelEdit')}
                                 </button>
-                                <button onClick={handleFinalSave} disabled={isSaving} className="px-8 py-2.5 rounded-full text-sm font-bold text-white bg-green-500 hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all flex items-center gap-2 transform active:scale-95">
+                                <button onClick={() => handleFinalSave()} disabled={isSaving} className="px-8 py-2.5 rounded-full text-sm font-bold text-white bg-green-500 hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all flex items-center gap-2 transform active:scale-95">
                                     {isSaving ? (
                                         <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Processing...</>
                                     ) : (
@@ -1556,5 +1591,86 @@ export const EditRMADrawer: React.FC<EditRMADrawerProps> = ({ isOpen, onClose, r
             />
         </div>
     );
+
+    if (slideOver) {
+        return createPortal(
+            <div
+                className="fixed inset-0 z-[58] bg-black/45 backdrop-blur-sm flex justify-end animate-fade-in"
+                onClick={handleSafeClose}
+            >
+                <div
+                    className="w-full max-w-[820px] h-full bg-[#f2f2f7] dark:bg-[#131317] shadow-[0_0_60px_rgba(0,0,0,0.35)] border-l border-gray-200/80 dark:border-white/[0.1] flex flex-col overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {/* Sticky Apple Inspector Top Header */}
+                    <div className="shrink-0 px-4 sm:px-6 py-3.5 bg-white/90 dark:bg-[#1c1c20]/95 backdrop-blur-xl border-b border-gray-200/70 dark:border-white/[0.08] flex items-center justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-[11px] font-mono font-extrabold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-[#0071e3] dark:text-blue-400 border border-blue-500/20">
+                                    {rma.id}
+                                </span>
+                                {siblingList.length > 1 && currentSiblingIdx >= 0 && (
+                                    <div className="inline-flex items-center gap-1 bg-black/[0.04] dark:bg-white/[0.07] rounded-full p-0.5 border border-black/5 dark:border-white/10">
+                                        <button
+                                            type="button"
+                                            disabled={currentSiblingIdx <= 0}
+                                            onClick={() => currentSiblingIdx > 0 && handleSwitchSibling(siblingList[currentSiblingIdx - 1])}
+                                            className="p-1 rounded-full hover:bg-white dark:hover:bg-white/15 disabled:opacity-30 transition-colors cursor-pointer"
+                                            title="ชิ้นก่อนหน้า"
+                                        >
+                                            <ChevronLeft className="w-3.5 h-3.5 text-[#1d1d1f] dark:text-white" />
+                                        </button>
+                                        <span className="text-[11px] font-bold text-gray-600 dark:text-gray-300 px-1.5">
+                                            ชิ้นที่ {currentSiblingIdx + 1} / {siblingList.length}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            disabled={currentSiblingIdx >= siblingList.length - 1}
+                                            onClick={() => currentSiblingIdx < siblingList.length - 1 && handleSwitchSibling(siblingList[currentSiblingIdx + 1])}
+                                            className="p-1 rounded-full hover:bg-white dark:hover:bg-white/15 disabled:opacity-30 transition-colors cursor-pointer"
+                                            title="ชิ้นถัดไป"
+                                        >
+                                            <ChevronRight className="w-3.5 h-3.5 text-[#1d1d1f] dark:text-white" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="text-sm sm:text-base font-extrabold text-[#1d1d1f] dark:text-white truncate mt-1">
+                                {rma.brand} {rma.productModel} <span className="text-xs font-mono font-medium text-gray-400 ml-1">S/N: {rma.serialNumber || '-'}</span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                type="button"
+                                onClick={handlePreSave}
+                                disabled={isSaving || isLocked}
+                                className="px-4 py-2 rounded-full text-xs font-extrabold text-white bg-[#0071e3] hover:bg-[#0077ed] shadow-sm shadow-blue-500/25 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
+                            >
+                                {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                                <span>บันทึก{pendingDiffCount > 0 ? ` (${pendingDiffCount})` : ''}</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleSafeClose}
+                                className="w-8 h-8 rounded-full bg-black/[0.05] dark:bg-white/[0.08] hover:bg-black/10 dark:hover:bg-white/15 flex items-center justify-center text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
+                                title="ปิดหน้าต่าง"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Scrollable Inspector Body */}
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                        {drawerInnerContent}
+                    </div>
+                </div>
+            </div>,
+            document.body
+        );
+    }
+
+    return drawerInnerContent;
 };
 

@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef, useMemo, lazy, Suspense } from 'rea
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
 import { RMA, RMAStatus, ProductType } from '../types';
-import { ArrowLeft, Package, User, Clock, Edit2, AlertCircle, CheckCircle2, History, Trash2, Truck, ShieldCheck, FileText, Edit3, Save, Loader2, Plus, CheckSquare, Square, Zap, X as XClose, Search, Wrench, Undo2, RefreshCw, ClipboardCheck, Settings2, PackageCheck, Check, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Package, User, Clock, Edit2, AlertCircle, CheckCircle2, History, Trash2, Truck, ShieldCheck, FileText, Edit3, Save, Loader2, Plus, CheckSquare, Square, Zap, X as XClose, Search, Wrench, Undo2, RefreshCw, ClipboardCheck, Settings2, PackageCheck, Check, Image as ImageIcon, ChevronDown } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { StatusBadge } from '../components/StatusBadge';
 import { GlassSelect } from '../components/GlassSelect';
@@ -23,10 +23,50 @@ import { AdminPageSkeleton } from '../components/AdminPageSkeleton';
 
 export const JobDetail: React.FC = () => {
     const { jobId } = useParams<{ jobId: string }>();
-    const [rmas, setRMAs] = useState<RMA[]>([]);
-    const [jobInfo, setJobInfo] = useState<{ id: string, quotationNumber?: string, customerName: string, count: number, date: string, status: string, type: string } | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [rmas, setRMAs] = useState<RMA[]>(() => {
+        if (!jobId) return [];
+        const cached = MockDb.getCachedRMAsByJobId(decodeURIComponent(jobId));
+        return cached ? [...cached].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()) : [];
+    });
+    const [jobInfo, setJobInfo] = useState<{ id: string, quotationNumber?: string, customerName: string, count: number, date: string, status: string, type: string } | null>(() => {
+        if (!jobId) return null;
+        const decodedId = decodeURIComponent(jobId);
+        const cached = MockDb.getCachedRMAsByJobId(decodedId);
+        if (!cached || cached.length === 0) return null;
+        const first = cached[0];
+        return {
+            id: first.groupRequestId || first.id || decodedId,
+            quotationNumber: first.quotationNumber,
+            customerName: first.customerName,
+            count: cached.length,
+            date: first.createdAt,
+            status: cached.every(r => r.status === RMAStatus.CLOSED) ? 'Completed' : 'In Progress',
+            type: first.quotationNumber ? 'QUOTATION' : first.groupRequestId ? 'GROUP' : 'SINGLE'
+        };
+    });
+    const [loading, setLoading] = useState(() => !(jobId && MockDb.getCachedRMAsByJobId(decodeURIComponent(jobId))));
     const [expandedRMAs, setExpandedRMAs] = useState<Set<string>>(new Set());
+    const [editingRmaId, setEditingRmaId] = useState<string | null>(null);
+    const [openToolbarMenu, setOpenToolbarMenu] = useState<'DOC' | 'LABEL' | null>(null);
+    const toolbarMenuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!openToolbarMenu) return;
+        const handleOutside = (e: MouseEvent) => {
+            if (toolbarMenuRef.current && !toolbarMenuRef.current.contains(e.target as Node)) {
+                setOpenToolbarMenu(null);
+            }
+        };
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setOpenToolbarMenu(null);
+        };
+        document.addEventListener('mousedown', handleOutside);
+        window.addEventListener('keydown', handleEsc);
+        return () => {
+            document.removeEventListener('mousedown', handleOutside);
+            window.removeEventListener('keydown', handleEsc);
+        };
+    }, [openToolbarMenu]);
 
     const currentUser = MockDb.getCurrentUser();
     const isAdmin = currentUser?.role === 'admin';
@@ -207,14 +247,35 @@ export const JobDetail: React.FC = () => {
     // Customer edit state
     const [isEditingCustomer, setIsEditingCustomer] = useState(false);
     const [isSavingCustomer, setIsSavingCustomer] = useState(false);
-    const [customerForm, setCustomerForm] = useState({
-        quotationNumber: '',
-        customerName: '',
-        contactPerson: '',
-        customerPhone: '',
-        customerLineId: '',
-        customerEmail: '',
-        customerReturnAddress: ''
+    const [customerForm, setCustomerForm] = useState(() => {
+        const first = rmas[0];
+        if (!first) {
+            return {
+                quotationNumber: '',
+                customerName: '',
+                contactPerson: '',
+                customerPhone: '',
+                customerLineId: '',
+                customerEmail: '',
+                customerReturnAddress: ''
+            };
+        }
+        let cName = first.customerName || '';
+        let cContact = first.contactPerson || '';
+        if (!cContact && cName.includes(' - ')) {
+            const parts = cName.split(' - ');
+            cName = parts[0].trim();
+            cContact = parts.slice(1).join(' - ').trim();
+        }
+        return {
+            quotationNumber: first.quotationNumber || '',
+            customerName: cName,
+            contactPerson: cContact,
+            customerPhone: first.customerPhone || '',
+            customerLineId: first.customerLineId || '',
+            customerEmail: first.customerEmail || '',
+            customerReturnAddress: first.customerReturnAddress || ''
+        };
     });
 
     const [searchParams, setSearchParams] = useSearchParams();
@@ -237,9 +298,12 @@ export const JobDetail: React.FC = () => {
     useEffect(() => {
         const fetchJobData = async () => {
             if (!jobId) return;
-            setLoading(true);
+            const decodedId = decodeURIComponent(jobId);
+            const cached = MockDb.getCachedRMAsByJobId(decodedId);
+            if (!cached || cached.length === 0) {
+                setLoading(true);
+            }
             try {
-                const decodedId = decodeURIComponent(jobId);
                 const jobRMAs = await MockDb.getRMAsByJobId(decodedId);
 
                 if (jobRMAs.length > 0) {
@@ -278,7 +342,8 @@ export const JobDetail: React.FC = () => {
 
                     const editRmaId = searchParams.get('editRmaId');
                     if (editRmaId) {
-                        navigate(`/admin/rma/${editRmaId}/edit`, { replace: true });
+                        setEditingRmaId(editRmaId);
+                        setSearchParams({}, { replace: true });
                     }
                 } else {
                     navigate('/admin/rmas');
@@ -304,7 +369,23 @@ export const JobDetail: React.FC = () => {
     };
 
     const handleEditClick = (rma: RMA) => {
-        navigate(`/admin/rma/${rma.id}/edit`);
+        setEditingRmaId(rma.id);
+    };
+
+    const handleInspectorSave = async (rmaId: string, updates: Partial<RMA>, diffs: { field: string, old: string, new: string }[]) => {
+        const nowIso = new Date().toISOString();
+        await MockDb.updateRMA(rmaId, { ...updates, updatedAt: nowIso });
+        if (diffs.length > 0) {
+            const changeDesc = diffs.map(d => `${d.field}: ${d.old} -> ${d.new}`).join(', ');
+            await MockDb.addTimelineEvent(rmaId, {
+                type: updates.status ? 'STATUS_CHANGE' : 'SYSTEM',
+                description: `Edited: ${changeDesc}`,
+                user: MockDb.getCurrentUser()?.name || 'Staff'
+            });
+        }
+        // Optimistic instant update in local list + silent Firestore sync
+        setRMAs(prev => prev.map(r => (r.id === rmaId ? { ...r, ...updates, updatedAt: nowIso } : r)));
+        refreshRMAs().catch(() => {});
     };
 
     const handleSaveCustomer = async () => {
@@ -510,7 +591,7 @@ export const JobDetail: React.FC = () => {
             </div>
 
             {/* Unified Job Header, Action Dock & Customer Info Card */}
-            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-4 sm:p-6 md:p-7 mb-5 md:mb-6 border border-gray-200/70 dark:border-white/[0.08] shadow-sm relative overflow-hidden">
+            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[28px] md:rounded-[34px] p-4 sm:p-6 md:p-7 mb-5 md:mb-6 border border-gray-200/70 dark:border-white/[0.08] shadow-sm relative">
 
                 {/* --- TOP HEADER SECTION --- */}
                 <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 md:gap-6 mb-5 md:mb-6">
@@ -546,110 +627,185 @@ export const JobDetail: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* PRINT & SHIPPING ACTION DOCK — Compact 2x2 Frosted Glass Grid */}
-                    <div className="w-full xl:w-auto xl:min-w-[370px] xl:max-w-[430px] bg-gray-50/80 dark:bg-white/[0.03] p-2 rounded-[22px] border border-gray-200/70 dark:border-white/[0.08] apple-card-inner shrink-0">
-                        <div className="grid grid-cols-2 gap-2">
-                            {/* Top-Left: เอกสารส่งให้ศูนย์ */}
+                    {/* UNIFIED APPLE TOOLBAR POPOVER DOCK — All 5 Document & Shipping Label Actions in 2 Clean Menus */}
+                    <div ref={toolbarMenuRef} className="flex flex-wrap items-center gap-2 shrink-0 w-full xl:w-auto justify-end">
+                        {/* Menu 1: เอกสารใบงาน */}
+                        <div className="relative flex-1 sm:flex-none">
                             <button
                                 type="button"
-                                onClick={() => {
-                                    if (!allHaveDistributor) {
-                                        showToast(
-                                            activeRMAs.length === 0
-                                                ? 'ไม่มีรายการสินค้าที่ใช้งานได้สำหรับพิมพ์เอกสาร'
-                                                : `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)`,
-                                            'warning'
-                                        );
-                                        return;
-                                    }
-                                    openDocPreview('DISTRIBUTOR', activeRMAs);
-                                }}
-                                aria-disabled={!allHaveDistributor}
-                                className={`h-10 px-3 flex items-center justify-center gap-1.5 rounded-[15px] text-xs font-bold transition-all active:scale-95 ${allHaveDistributor
-                                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-sm shadow-orange-500/25 hover:shadow-md hover:shadow-orange-500/30 hover:brightness-[1.03] cursor-pointer'
-                                    : 'bg-gray-200/70 dark:bg-white/[0.05] text-gray-400 dark:text-gray-600 border border-gray-200/60 dark:border-white/[0.05] cursor-not-allowed'}`}
-                                title={!allHaveDistributor ? `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)` : 'พิมพ์เอกสารใบส่งเคลมศูนย์'}
+                                onClick={() => setOpenToolbarMenu(prev => prev === 'DOC' ? null : 'DOC')}
+                                className={`w-full sm:w-auto h-10 px-4 inline-flex items-center justify-center gap-2 rounded-full text-xs sm:text-[13px] font-bold transition-all active:scale-95 cursor-pointer shadow-sm ${
+                                    openToolbarMenu === 'DOC'
+                                        ? 'bg-[#0071e3] text-white shadow-blue-500/30'
+                                        : 'bg-gradient-to-r from-[#007aff] to-[#005bb5] text-white hover:brightness-105 shadow-blue-500/20'
+                                }`}
                             >
-                                <Printer className="w-3.5 h-3.5 shrink-0" strokeWidth={2.5} />
-                                <span className="truncate">ส่งให้ศูนย์</span>
+                                <Printer className="w-4 h-4 shrink-0" />
+                                <span>เอกสารใบงาน</span>
+                                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${openToolbarMenu === 'DOC' ? 'rotate-180' : ''}`} />
                             </button>
 
-                            {/* Top-Right: เอกสารส่งคืนลูกค้า */}
+                            {openToolbarMenu === 'DOC' && (
+                                <div className="absolute right-0 mt-2 w-[280px] bg-white/98 dark:bg-[#1e1e24]/98 backdrop-blur-2xl rounded-[20px] border border-gray-200/80 dark:border-white/[0.12] shadow-[0_18px_50px_rgba(0,0,0,0.2)] p-1.5 z-40 animate-fade-in">
+                                    <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">เลือกเอกสารที่ต้องการพิมพ์</div>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setOpenToolbarMenu(null);
+                                            if (!allHaveDistributor) {
+                                                showToast(
+                                                    activeRMAs.length === 0
+                                                        ? 'ไม่มีรายการสินค้าที่ใช้งานได้สำหรับพิมพ์เอกสาร'
+                                                        : `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)`,
+                                                    'warning'
+                                                );
+                                                return;
+                                            }
+                                            openDocPreview('DISTRIBUTOR', activeRMAs);
+                                        }}
+                                        className="w-full flex items-center gap-3 p-2.5 rounded-[14px] hover:bg-black/[0.04] dark:hover:bg-white/[0.07] text-left transition-colors cursor-pointer"
+                                    >
+                                        <div className={`w-9 h-9 rounded-[11px] flex items-center justify-center shrink-0 text-white ${allHaveDistributor ? 'bg-gradient-to-br from-orange-500 to-amber-500 shadow-xs' : 'bg-gray-300 dark:bg-white/10 text-gray-500'}`}>
+                                            <Printer className="w-4 h-4" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="text-xs font-extrabold text-[#1d1d1f] dark:text-white">ใบส่งเคลมศูนย์ (Distributor)</div>
+                                            <div className={`text-[10.5px] mt-0.5 ${allHaveDistributor ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-amber-600 dark:text-amber-400'}`}>
+                                                {allHaveDistributor ? `พร้อมพิมพ์ (${activeRMAs.length} ชิ้น)` : `ยังขาดผู้นำเข้า ${missingDistributorCount} ชิ้น`}
+                                            </div>
+                                        </div>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setOpenToolbarMenu(null);
+                                            if (!hasReadyRMAs) {
+                                                showToast('ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะส่งคืนได้', 'warning');
+                                                return;
+                                            }
+                                            handleReturnToCustomerClick();
+                                        }}
+                                        className="w-full flex items-center gap-3 p-2.5 rounded-[14px] hover:bg-black/[0.04] dark:hover:bg-white/[0.07] text-left transition-colors cursor-pointer"
+                                    >
+                                        <div className={`w-9 h-9 rounded-[11px] flex items-center justify-center shrink-0 text-white ${hasReadyRMAs ? 'bg-gradient-to-br from-[#007aff] to-[#005bb5] shadow-xs' : 'bg-gray-300 dark:bg-white/10 text-gray-500'}`}>
+                                            <User className="w-4 h-4" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="text-xs font-extrabold text-[#1d1d1f] dark:text-white">ใบส่งคืนลูกค้า (Return)</div>
+                                            <div className={`text-[10.5px] mt-0.5 ${hasReadyRMAs ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-gray-400'}`}>
+                                                {hasReadyRMAs ? `พร้อมส่งคืน (${readyRMAs.length} ชิ้น)` : 'ยังไม่มีชิ้นที่ซ่อมเสร็จ'}
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Menu 2: ใบปะหน้าพัสดุ (รวมครบทั้ง 3 แบบไว้ในจุดเดียว!) */}
+                        <div className="relative flex-1 sm:flex-none">
                             <button
                                 type="button"
-                                onClick={() => {
-                                    if (!hasReadyRMAs) {
-                                        showToast('ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะส่งคืนได้', 'warning');
-                                        return;
-                                    }
-                                    handleReturnToCustomerClick();
-                                }}
-                                aria-disabled={!hasReadyRMAs}
-                                className={`h-10 px-3 flex items-center justify-center gap-1.5 rounded-[15px] text-xs font-bold transition-all active:scale-95 ${hasReadyRMAs
-                                    ? 'bg-gradient-to-r from-[#0071e3] to-[#005bb5] text-white shadow-sm shadow-blue-500/25 hover:shadow-md hover:shadow-blue-500/30 hover:brightness-[1.05] cursor-pointer'
-                                    : 'bg-gray-200/70 dark:bg-white/[0.05] text-gray-400 dark:text-gray-600 border border-gray-200/60 dark:border-white/[0.05] cursor-not-allowed'}`}
-                                title={!hasReadyRMAs ? 'ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะส่งคืนได้' : 'พิมพ์เอกสารใบส่งคืนลูกค้า'}
+                                onClick={() => setOpenToolbarMenu(prev => prev === 'LABEL' ? null : 'LABEL')}
+                                className={`w-full sm:w-auto h-10 px-4 inline-flex items-center justify-center gap-2 rounded-full text-xs sm:text-[13px] font-bold border transition-all active:scale-95 cursor-pointer shadow-xs ${
+                                    openToolbarMenu === 'LABEL'
+                                        ? 'bg-[#1d1d1f] dark:bg-white text-white dark:text-[#1d1d1f] border-transparent'
+                                        : 'bg-gray-100/90 dark:bg-white/[0.07] hover:bg-gray-200/80 dark:hover:bg-white/[0.12] text-[#1d1d1f] dark:text-white border-gray-200/80 dark:border-white/[0.1]'
+                                }`}
                             >
-                                <User className="w-3.5 h-3.5 shrink-0" strokeWidth={2.5} />
-                                <span className="truncate">ส่งคืนลูกค้า</span>
+                                <Truck className="w-4 h-4 shrink-0 text-[#0071e3] dark:text-blue-400" />
+                                <span>ใบปะหน้าพัสดุ</span>
+                                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${openToolbarMenu === 'LABEL' ? 'rotate-180' : ''}`} />
                             </button>
 
-                            {/* Bottom-Left: ใบปะหน้า (ศูนย์) */}
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    if (!allHaveDistributor) {
-                                        showToast(
-                                            activeRMAs.length === 0
-                                                ? 'ไม่มีรายการสินค้าที่ใช้งานได้สำหรับพิมพ์ใบปะหน้า'
-                                                : `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)`,
-                                            'warning'
-                                        );
-                                        return;
-                                    }
-                                    const distributorGroups = new Set(activeRMAs.map(r => r.distributor || '').filter(Boolean));
-                                    if (distributorGroups.size > 1) {
-                                        setSelectedDistRmas(new Set(activeRMAs.map(r => r.id)));
-                                        setShowDistributorPicker(true);
-                                    } else {
-                                        setShipmentDistGroupNames(undefined);
-                                        setShipmentTagRmaIds(activeRMAs.map(r => r.id));
-                                        setShipmentTagTarget('DISTRIBUTOR');
-                                        setIsShipmentTagModalOpen(true);
-                                    }
-                                }}
-                                aria-disabled={!allHaveDistributor}
-                                className={`h-9 px-3 flex items-center justify-center gap-1.5 rounded-[14px] text-[11px] md:text-xs font-bold border transition-all active:scale-95 ${allHaveDistributor
-                                    ? 'border-orange-300/70 dark:border-orange-500/30 text-orange-600 dark:text-orange-400 bg-white dark:bg-orange-500/10 hover:bg-orange-50 dark:hover:bg-orange-500/20 shadow-sm cursor-pointer'
-                                    : 'border-gray-200/60 dark:border-white/[0.06] bg-white/50 dark:bg-white/[0.02] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
-                                title={!allHaveDistributor ? `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)` : 'พิมพ์ใบปะหน้าพัสดุส่งศูนย์'}
-                            >
-                                <Truck className="w-3.5 h-3.5 shrink-0" strokeWidth={2.2} />
-                                <span className="truncate">ใบปะหน้า (ศูนย์)</span>
-                            </button>
+                            {openToolbarMenu === 'LABEL' && (
+                                <div className="absolute right-0 mt-2 w-[290px] bg-white/98 dark:bg-[#1e1e24]/98 backdrop-blur-2xl rounded-[20px] border border-gray-200/80 dark:border-white/[0.12] shadow-[0_18px_50px_rgba(0,0,0,0.2)] p-1.5 z-40 animate-fade-in">
+                                    <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">เลือกใบปะหน้าพัสดุ (ครบทั้ง 3 แบบ)</div>
 
-                            {/* Bottom-Right: ใบปะหน้าส่งกลับ (ลูกค้า) */}
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    if (!hasReadyRMAs) {
-                                        showToast('ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะพิมพ์ใบปะหน้าได้', 'warning');
-                                        return;
-                                    }
-                                    setShipmentDistGroupNames(undefined);
-                                    setShipmentTagRmaIds(readyRMAs.map(r => r.id));
-                                    setShipmentTagTarget('CUSTOMER');
-                                    setIsShipmentTagModalOpen(true);
-                                }}
-                                aria-disabled={!hasReadyRMAs}
-                                className={`h-9 px-3 flex items-center justify-center gap-1.5 rounded-[14px] text-[11px] md:text-xs font-bold border transition-all active:scale-95 ${hasReadyRMAs
-                                    ? 'border-blue-300/70 dark:border-blue-500/30 text-[#0071e3] dark:text-blue-400 bg-white dark:bg-blue-500/10 hover:bg-blue-50 dark:hover:bg-blue-500/20 shadow-sm cursor-pointer'
-                                    : 'border-gray-200/60 dark:border-white/[0.06] bg-white/50 dark:bg-white/[0.02] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
-                                title={!hasReadyRMAs ? 'ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะพิมพ์ใบปะหน้าได้' : 'พิมพ์ใบปะหน้าพัสดุส่งคืนลูกค้า'}
-                            >
-                                <Truck className="w-3.5 h-3.5 shrink-0" strokeWidth={2.2} />
-                                <span className="truncate">ใบปะหน้าส่งกลับ (ลูกค้า)</span>
-                            </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setOpenToolbarMenu(null);
+                                            const inboundList = activeRMAs.length > 0 ? activeRMAs : rmas;
+                                            setShipmentDistGroupNames(undefined);
+                                            setShipmentTagRmaIds(inboundList.map(r => r.id));
+                                            setShipmentTagTarget('CUSTOMER_INBOUND');
+                                            setIsShipmentTagModalOpen(true);
+                                        }}
+                                        className="w-full flex items-center gap-3 p-2.5 rounded-[14px] hover:bg-black/[0.04] dark:hover:bg-white/[0.07] text-left transition-colors cursor-pointer"
+                                    >
+                                        <div className="w-9 h-9 rounded-[11px] bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                                            <Truck className="w-4 h-4" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="text-xs font-extrabold text-[#1d1d1f] dark:text-white">ลูกค้าส่งมาบริษัท (Inbound)</div>
+                                            <div className="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">พร้อมพิมพ์ทันที</div>
+                                        </div>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setOpenToolbarMenu(null);
+                                            if (!allHaveDistributor) {
+                                                showToast(
+                                                    activeRMAs.length === 0
+                                                        ? 'ไม่มีรายการสินค้าที่ใช้งานได้สำหรับพิมพ์ใบปะหน้า'
+                                                        : `กรุณาเลือกผู้นำเข้าให้ครบทุกรายการก่อน (ยังขาด ${missingDistributorCount} รายการ)`,
+                                                    'warning'
+                                                );
+                                                return;
+                                            }
+                                            const distributorGroups = new Set(activeRMAs.map(r => r.distributor || '').filter(Boolean));
+                                            if (distributorGroups.size > 1) {
+                                                setSelectedDistRmas(new Set(activeRMAs.map(r => r.id)));
+                                                setShowDistributorPicker(true);
+                                            } else {
+                                                setShipmentDistGroupNames(undefined);
+                                                setShipmentTagRmaIds(activeRMAs.map(r => r.id));
+                                                setShipmentTagTarget('DISTRIBUTOR');
+                                                setIsShipmentTagModalOpen(true);
+                                            }
+                                        }}
+                                        className="w-full flex items-center gap-3 p-2.5 rounded-[14px] hover:bg-black/[0.04] dark:hover:bg-white/[0.07] text-left transition-colors cursor-pointer"
+                                    >
+                                        <div className={`w-9 h-9 rounded-[11px] flex items-center justify-center shrink-0 text-white ${allHaveDistributor ? 'bg-gradient-to-br from-orange-500 to-amber-500 shadow-xs' : 'bg-gray-300 dark:bg-white/10 text-gray-500'}`}>
+                                            <Truck className="w-4 h-4" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="text-xs font-extrabold text-[#1d1d1f] dark:text-white">ส่งไปศูนย์ (Distributor)</div>
+                                            <div className={`text-[10.5px] mt-0.5 ${allHaveDistributor ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-amber-600 dark:text-amber-400'}`}>
+                                                {allHaveDistributor ? `พร้อมพิมพ์ (${activeRMAs.length} ชิ้น)` : `ยังขาดผู้นำเข้า ${missingDistributorCount} ชิ้น`}
+                                            </div>
+                                        </div>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setOpenToolbarMenu(null);
+                                            if (!hasReadyRMAs) {
+                                                showToast('ต้องมีรายการสินค้าที่ซ่อม/แก้ไขเสร็จแล้วถึงจะพิมพ์ใบปะหน้าได้', 'warning');
+                                                return;
+                                            }
+                                            setShipmentDistGroupNames(undefined);
+                                            setShipmentTagRmaIds(readyRMAs.map(r => r.id));
+                                            setShipmentTagTarget('CUSTOMER');
+                                            setIsShipmentTagModalOpen(true);
+                                        }}
+                                        className="w-full flex items-center gap-3 p-2.5 rounded-[14px] hover:bg-black/[0.04] dark:hover:bg-white/[0.07] text-left transition-colors cursor-pointer"
+                                    >
+                                        <div className={`w-9 h-9 rounded-[11px] flex items-center justify-center shrink-0 text-white ${hasReadyRMAs ? 'bg-gradient-to-br from-[#007aff] to-[#005bb5] shadow-xs' : 'bg-gray-300 dark:bg-white/10 text-gray-500'}`}>
+                                            <Truck className="w-4 h-4" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="text-xs font-extrabold text-[#1d1d1f] dark:text-white">ส่งคืนลูกค้า (Return)</div>
+                                            <div className={`text-[10.5px] mt-0.5 ${hasReadyRMAs ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-gray-400'}`}>
+                                                {hasReadyRMAs ? `พร้อมส่งคืน (${readyRMAs.length} ชิ้น)` : 'ยังไม่มีชิ้นที่ซ่อมเสร็จ'}
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -667,24 +823,7 @@ export const JobDetail: React.FC = () => {
                             {t('submit.customerDetails')}
                         </h2>
                         {!isEditingCustomer ? (
-                            <div className="flex flex-wrap items-center gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        const inboundList = activeRMAs.length > 0 ? activeRMAs : rmas;
-                                        setShipmentDistGroupNames(undefined);
-                                        setShipmentTagRmaIds(inboundList.map(r => r.id));
-                                        setShipmentTagTarget('CUSTOMER_INBOUND');
-                                        setIsShipmentTagModalOpen(true);
-                                    }}
-                                    className="px-3.5 py-1.5 bg-emerald-50/90 dark:bg-emerald-950/40 border border-emerald-300/80 dark:border-emerald-700/60 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-full text-xs font-bold transition-all shadow-xs active:scale-95 flex items-center gap-1.5 cursor-pointer apple-card-sm"
-                                    title="ดู / พิมพ์ / ดาวน์โหลด PDF ใบปะหน้ากล่องที่ลูกค้าจ่าหน้าส่งมายังบริษัทฯ"
-                                >
-                                    <Truck className="w-3.5 h-3.5" strokeWidth={2.5} />
-                                    <span>ใบปะหน้าส่งบริษัท (ลูกค้าส่งของ)</span>
-                                </button>
-                                <button onClick={() => setIsEditingCustomer(true)} className="px-3.5 py-1.5 text-xs text-[#0071e3] dark:text-blue-400 bg-blue-50 dark:bg-blue-500/15 border border-blue-200/60 dark:border-blue-500/30 rounded-full font-bold hover:bg-blue-100 dark:hover:bg-blue-500/25 transition-all flex items-center gap-1.5 apple-card-sm active:scale-95"><Edit3 className="w-3.5 h-3.5" /> {t('track.changeBtn')}</button>
-                            </div>
+                            <button onClick={() => setIsEditingCustomer(true)} className="px-3.5 py-1.5 text-xs text-[#0071e3] dark:text-blue-400 bg-blue-50 dark:bg-blue-500/15 border border-blue-200/60 dark:border-blue-500/30 rounded-full font-bold hover:bg-blue-100 dark:hover:bg-blue-500/25 transition-all flex items-center gap-1.5 apple-card-sm active:scale-95 cursor-pointer"><Edit3 className="w-3.5 h-3.5" /> {t('track.changeBtn')}</button>
                         ) : (
                             <div className="flex items-center gap-2">
                                 <button onClick={handleCancelCustomerEdit} className="px-4 py-1.5 text-xs text-gray-500 hover:text-red-500 rounded-full font-bold transition-colors">{t('track.cancelBtn')}</button>
@@ -2265,6 +2404,23 @@ export const JobDetail: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            {/* Apple Slide-Over Inspector Drawer — Edit items right inside JobDetail without page reload */}
+            {editingRmaId && (() => {
+                const targetRma = rmas.find(r => r.id === editingRmaId);
+                if (!targetRma) return null;
+                return (
+                    <EditRMADrawer
+                        isOpen={true}
+                        slideOver={true}
+                        rma={targetRma}
+                        siblings={rmas}
+                        onSelectSibling={(nextRma) => setEditingRmaId(nextRma.id)}
+                        onClose={() => setEditingRmaId(null)}
+                        onSave={handleInspectorSave}
+                    />
+                );
+            })()}
 
             {/* Lightbox Modal for Viewing Product Attachments with Zoom, Pan, & Rotate */}
             <ImageZoomModal

@@ -53,6 +53,32 @@ let _loginAttempts = 0;
 let _loginLockUntil = 0;
 // Nav counts cache (30 second TTL)
 let _navCountsCache: { data: { unassigned: number; overdue: number }; ts: number } | null = null;
+// In-memory SWR cache for RMAs (instant page transitions while refreshing silently in background)
+let _rmaListCache: { data: RMA[]; ts: number } | null = null;
+
+const notifyRMAChanged = () => {
+  _statsCache = null;
+  _navCountsCache = null;
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('sec-rma-changed'));
+  }
+};
+
+const patchRMACache = (id: string, updates: Partial<RMA>) => {
+  if (!_rmaListCache) return;
+  _rmaListCache = {
+    data: _rmaListCache.data.map(r => (r.id === id ? { ...r, ...updates, updatedAt: new Date().toISOString() } : r)),
+    ts: Date.now()
+  };
+};
+
+const removeFromRMACache = (id: string) => {
+  if (!_rmaListCache) return;
+  _rmaListCache = {
+    data: _rmaListCache.data.filter(r => r.id !== id),
+    ts: Date.now()
+  };
+};
 let OFFLINE_USERS: any[] = [
   {
     uid: 'offline-admin',
@@ -130,6 +156,7 @@ const mapDocToRMA = (d: any): RMA => {
     id: d.id,
     createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data.createdAt || new Date().toISOString(),
     updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : data.updatedAt || new Date().toISOString(),
+    assignedAt: data.assignedAt?.toDate ? data.assignedAt.toDate().toISOString() : data.assignedAt,
     history: (data.history || []).map((h: any) => ({
       ...h,
       date: h.date?.toDate ? h.date.toDate().toISOString() : h.date
@@ -731,6 +758,24 @@ export const MockDb = {
   },
 
   // --- RMA Management ---
+  getCachedRMAs: (): RMA[] | null => {
+    return _rmaListCache ? _rmaListCache.data : null;
+  },
+
+  getCachedRMAsByJobId: (jobId: string): RMA[] | null => {
+    if (!_rmaListCache) return null;
+    const trimmed = jobId.trim();
+    const upper = trimmed.toUpperCase();
+    const matches = _rmaListCache.data.filter(
+      r =>
+        !r.isDeleted &&
+        ((r.groupRequestId && (r.groupRequestId === trimmed || r.groupRequestId.toUpperCase() === upper)) ||
+          r.id === trimmed ||
+          r.id.toUpperCase() === upper)
+    );
+    return matches.length > 0 ? matches : null;
+  },
+
   getRMAs: async (): Promise<RMA[]> => {
     if (!isConfigured || !db) {
       console.error("Firebase not configured!");
@@ -739,7 +784,9 @@ export const MockDb = {
     try {
       const q = query(collection(db, 'rmas'), orderBy('createdAt', 'desc'), limit(2000));
       const snap = await getDocs(q);
-      return snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
+      const list = snap.docs.map(mapDocToRMA).filter(r => !r.isDeleted);
+      _rmaListCache = { data: list, ts: Date.now() };
+      return list;
     } catch (e) {
       console.error("getRMAs failed:", e);
       throw e;
@@ -1165,7 +1212,12 @@ export const MockDb = {
     try {
       await setDoc(doc(db, 'rmas', id), newRMAData);
       // Return with ID but use local time for immediate UI update since serverTimestamp is async
-      return { ...newRMAData, id, createdAt: now, updatedAt: now } as any;
+      const created = { ...newRMAData, id, createdAt: now, updatedAt: now } as any;
+      if (_rmaListCache) {
+        _rmaListCache = { data: [created, ..._rmaListCache.data], ts: Date.now() };
+      }
+      notifyRMAChanged();
+      return created;
     } catch (e) {
       console.error("Write RMA failed", e);
       throw e;
@@ -1177,6 +1229,8 @@ export const MockDb = {
     await withRetry(async () => {
       await updateDoc(doc(db, 'rmas', id), { ...flattened, updatedAt: serverTimestamp() });
     });
+    patchRMACache(id, updates);
+    notifyRMAChanged();
   },
   addTimelineEvent: async (id: string, evt: any) => {
     if (!isConfigured || !db) throw new Error("Firebase Disconnected");
@@ -1256,6 +1310,8 @@ export const MockDb = {
 
     if (updated > 0) {
       await batch.commit();
+      _rmaListCache = null;
+      notifyRMAChanged();
     }
     return updated;
   },
@@ -1331,6 +1387,8 @@ export const MockDb = {
 
     if (updated > 0) {
       await batch.commit();
+      _rmaListCache = null;
+      notifyRMAChanged();
     }
     return updated;
   },
@@ -1580,6 +1638,8 @@ export const MockDb = {
         updatedAt: serverTimestamp(),
         history: [...currentHistory, event]
       });
+      removeFromRMACache(id);
+      notifyRMAChanged();
       // Counter is NOT recalculated — it only goes up, never down.
       console.log(`Cancelled/Deleted RMA: ${id}`);
     }
