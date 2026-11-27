@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MockDb } from '../services/mockDb';
@@ -9,15 +8,21 @@ import { Loader2 } from 'lucide-react';
 export const EditRMA: React.FC = () => {
     const { rmaId } = useParams<{ rmaId: string }>();
     const navigate = useNavigate();
-    const [rma, setRma] = useState<RMA | null>(null);
-    const [loading, setLoading] = useState(true);
+    const decodedId = rmaId ? decodeURIComponent(rmaId) : '';
+    const cachedRMA = decodedId
+        ? MockDb.getCachedRMAs()?.find(r => r.id === decodedId) || null
+        : null;
+    const [rma, setRma] = useState<RMA | null>(() => cachedRMA);
+    const [loading, setLoading] = useState(() => !cachedRMA);
 
     useEffect(() => {
         const fetchRMA = async () => {
-            if (!rmaId) return;
-            setLoading(true);
+            if (!decodedId) return;
+            if (!MockDb.getCachedRMAs()?.some(r => r.id === decodedId)) {
+                setLoading(true);
+            }
             try {
-                const found = await MockDb.getRMAById(rmaId);
+                const found = await MockDb.getRMAById(decodedId);
                 if (found) {
                     setRma(found);
                 } else {
@@ -30,17 +35,19 @@ export const EditRMA: React.FC = () => {
             }
         };
         fetchRMA();
-    }, [rmaId]);
+    }, [decodedId, navigate]);
 
-    const handleSave = async (rmaId: string, updates: Partial<RMA>, diffs: { field: string, old: string, new: string }[]) => {
-        await MockDb.updateRMA(rmaId, { ...updates, updatedAt: new Date().toISOString() });
+    const handleSave = async (targetId: string, updates: Partial<RMA>, diffs: { field: string, old: string, new: string }[]) => {
+        await MockDb.updateRMA(targetId, { ...updates, updatedAt: new Date().toISOString() });
 
-        const changeDesc = diffs.map(d => `${d.field}: ${d.old} -> ${d.new}`).join(', ');
-        await MockDb.addTimelineEvent(rmaId, {
-            type: 'SYSTEM',
-            description: `Edited: ${changeDesc}`,
-            user: MockDb.getCurrentUser()?.name || 'Staff'
-        });
+        if (diffs.length > 0) {
+            const changeDesc = diffs.map(d => `${d.field}: ${d.old} -> ${d.new}`).join(', ');
+            await MockDb.addTimelineEvent(targetId, {
+                type: updates.status ? 'STATUS_CHANGE' : 'SYSTEM',
+                description: `Edited: ${changeDesc}`,
+                user: MockDb.getCurrentUser()?.name || 'Staff'
+            });
+        }
     };
 
     const handleClose = () => {

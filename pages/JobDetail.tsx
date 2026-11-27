@@ -16,7 +16,6 @@ import { ShipmentTagModal } from '../components/ShipmentTagModal';
 import { renderHtmlToBlob } from '../services/renderToImage';
 import { showToast, showConfirmDialog } from '../services/toast';
 const ProductEntryForm = lazy(() => import('../components/ProductEntryForm').then(m => ({ default: m.ProductEntryForm })));
-import { EditRMADrawer } from '../components/EditRMADrawer';
 import { ImageZoomModal } from '../components/ImageZoomModal';
 import { AdminPageSkeleton } from '../components/AdminPageSkeleton';
 
@@ -46,7 +45,6 @@ export const JobDetail: React.FC = () => {
     });
     const [loading, setLoading] = useState(() => !(jobId && MockDb.getCachedRMAsByJobId(decodeURIComponent(jobId))));
     const [expandedRMAs, setExpandedRMAs] = useState<Set<string>>(new Set());
-    const [editingRmaId, setEditingRmaId] = useState<string | null>(null);
     const [openToolbarMenu, setOpenToolbarMenu] = useState<'DOC' | 'LABEL' | null>(null);
     const toolbarMenuRef = useRef<HTMLDivElement>(null);
 
@@ -278,7 +276,7 @@ export const JobDetail: React.FC = () => {
         };
     });
 
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
 
     const { t } = useLanguage();
     const navigate = useNavigate();
@@ -342,8 +340,8 @@ export const JobDetail: React.FC = () => {
 
                     const editRmaId = searchParams.get('editRmaId');
                     if (editRmaId) {
-                        setEditingRmaId(editRmaId);
-                        setSearchParams({}, { replace: true });
+                        navigate(`/admin/rma/${encodeURIComponent(editRmaId)}/edit`, { replace: true });
+                        return;
                     }
                 } else {
                     navigate('/admin/rmas');
@@ -369,23 +367,7 @@ export const JobDetail: React.FC = () => {
     };
 
     const handleEditClick = (rma: RMA) => {
-        setEditingRmaId(rma.id);
-    };
-
-    const handleInspectorSave = async (rmaId: string, updates: Partial<RMA>, diffs: { field: string, old: string, new: string }[]) => {
-        const nowIso = new Date().toISOString();
-        await MockDb.updateRMA(rmaId, { ...updates, updatedAt: nowIso });
-        if (diffs.length > 0) {
-            const changeDesc = diffs.map(d => `${d.field}: ${d.old} -> ${d.new}`).join(', ');
-            await MockDb.addTimelineEvent(rmaId, {
-                type: updates.status ? 'STATUS_CHANGE' : 'SYSTEM',
-                description: `Edited: ${changeDesc}`,
-                user: MockDb.getCurrentUser()?.name || 'Staff'
-            });
-        }
-        // Optimistic instant update in local list + silent Firestore sync
-        setRMAs(prev => prev.map(r => (r.id === rmaId ? { ...r, ...updates, updatedAt: nowIso } : r)));
-        refreshRMAs().catch(() => {});
+        navigate(`/admin/rma/${encodeURIComponent(rma.id)}/edit`);
     };
 
     const handleSaveCustomer = async () => {
@@ -2404,23 +2386,6 @@ export const JobDetail: React.FC = () => {
                     </div>
                 </div>
             )}
-
-            {/* Apple Slide-Over Inspector Drawer — Edit items right inside JobDetail without page reload */}
-            {editingRmaId && (() => {
-                const targetRma = rmas.find(r => r.id === editingRmaId);
-                if (!targetRma) return null;
-                return (
-                    <EditRMADrawer
-                        isOpen={true}
-                        slideOver={true}
-                        rma={targetRma}
-                        siblings={rmas}
-                        onSelectSibling={(nextRma) => setEditingRmaId(nextRma.id)}
-                        onClose={() => setEditingRmaId(null)}
-                        onSave={handleInspectorSave}
-                    />
-                );
-            })()}
 
             {/* Lightbox Modal for Viewing Product Attachments with Zoom, Pan, & Rotate */}
             <ImageZoomModal
