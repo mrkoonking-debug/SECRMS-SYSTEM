@@ -84,14 +84,14 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
     return (
         <div 
             onClick={() => onJobClick(jobKey)} 
-            className={`p-4 md:p-5 flex flex-col gap-3.5 cursor-pointer bg-white dark:bg-[#16161a] apple-liquid-glass rounded-[26px] md:rounded-[30px] group ${isJobCancelled ? 'opacity-50 grayscale bg-gray-50/20 dark:bg-black/10' : ''}`}
+            className={`p-4 md:p-5 flex flex-col gap-3.5 cursor-pointer bg-white dark:bg-[#141419] border border-gray-200/80 dark:border-white/[0.08] hover:border-[#0071e3]/40 rounded-[24px] shadow-sm transition-all group ${isJobCancelled ? 'opacity-50 grayscale bg-gray-50/20 dark:bg-black/10' : ''}`}
         >
             {/* Top Row: Icon, Key, Badges, and Chevron */}
             <div className="flex items-center justify-between gap-3 w-full">
                 <div className="flex items-center gap-2.5 flex-wrap min-w-0 flex-1">
                     <div className="flex items-center gap-2.5">
-                        {/* macOS-style Icon Badge */}
-                        <div className={`w-9 h-9 apple-card-sm rounded-[13px] flex items-center justify-center flex-shrink-0 text-white shadow-sm transition-transform group-hover:scale-105 ${isJobCancelled ? 'bg-gray-400 dark:bg-gray-600' : isJobDone ? 'bg-[#34c759]' : jobItems.some(i => isRMAOverdue(i)) ? 'bg-[#ff3b30]' : 'bg-[#007aff]'}`}>
+                        {/* Circular Gradient Icon Badge */}
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-white shadow-sm transition-transform group-hover:scale-105 ${isJobCancelled ? 'bg-gray-400 dark:bg-gray-600' : isJobDone ? 'bg-gradient-to-br from-[#34c759] to-[#248a3d]' : jobItems.some(i => isRMAOverdue(i)) ? 'bg-gradient-to-br from-[#ff3b30] to-[#d62217]' : 'bg-gradient-to-br from-[#38bdf8] to-[#0284c7]'}`}>
                             {isJobCancelled ? <X className="w-[18px] h-[18px] text-white" /> : isJobDone ? <CheckCircle2 className="w-[18px] h-[18px] text-white" /> : <Package className="w-[18px] h-[18px] text-white" />}
                         </div>
                         <span className="text-[13px] md:text-[15px] font-bold text-[#1d1d1f] dark:text-white whitespace-nowrap shrink-0">{jobKey}</span>
@@ -133,7 +133,7 @@ const JobCard: React.FC<JobCardProps> = React.memo(({ jobKey, jobItems, onJobCli
 
             {/* Bottom Row: Detailed Items Preview */}
             <div className="w-full pl-0 sm:pl-10">
-                <div className="mt-1 bg-black/[0.03] dark:bg-black/35 rounded-[18px] px-3.5 py-2 max-w-full overflow-hidden">
+                <div className="mt-1 bg-gray-50/90 dark:bg-[#1a1a22] border border-gray-200/60 dark:border-white/[0.05] rounded-[16px] px-3.5 py-2 max-w-full overflow-hidden">
                     {jobItems.slice(0, 3).map((item, idx) => (
                         <div key={item.id} className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3.5 py-2.5 ${idx < Math.min(jobItems.length, 3) - 1 ? 'border-b border-black/[0.04] dark:border-white/[0.03]' : ''}` }>
                             {/* Left: Product Icon + Info */}
@@ -799,22 +799,24 @@ export const ClaimsList: React.FC = () => {
                 setCustomEndDate={setCustomEndDate}
             />
 
-            <div className="bg-white dark:bg-[#16161a] apple-card-lg rounded-[22px] sm:rounded-[28px] md:rounded-[36px] p-2.5 sm:p-3.5 md:p-4.5 shadow-sm mb-3 sm:mb-4 md:mb-6 space-y-2 sm:space-y-2.5">
-                <div className="flex items-center gap-2">
-                    {/* Search Input */}
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 dark:text-gray-500" />
+            {/* Compact King's Wealth Glass Search & Filter Bar */}
+            <div className="rounded-[20px] bg-white dark:bg-[#141419] border border-gray-200/80 dark:border-white/[0.08] p-2 sm:p-2.5 mb-3 space-y-2 shadow-sm">
+                {/* Row 1: Single-line Search + Calendar Picker + Expand/Collapse */}
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className="relative flex-1 min-w-0">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 dark:text-gray-500" />
                         <input 
                             type="text" 
                             placeholder={t('claimsList.searchPlaceholder')} 
                             value={search} 
                             onChange={(e) => handleSearchChange(e.target.value)} 
-                            className="w-full bg-gray-50/70 dark:bg-white/[0.03] border border-gray-150/60 dark:border-white/5 apple-card-inner rounded-[18px] sm:rounded-[22px] py-2 sm:py-2.5 pl-9 sm:pl-11 pr-9 sm:pr-10 text-xs sm:text-sm dark:text-white focus:ring-2 focus:ring-[#0071e3]/30 transition-all" 
+                            className="w-full bg-gray-50 dark:bg-[#1a1a22] border border-gray-200/70 dark:border-white/[0.06] rounded-full py-2 pl-9 pr-9 text-xs sm:text-sm dark:text-white focus:ring-2 focus:ring-[#0071e3]/30 transition-all" 
                         />
                         {search && (
                             <button 
+                                type="button"
                                 onClick={handleClearSearch}
-                                className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:bg-gray-200/70 dark:hover:bg-white/10"
                                 title="ล้างการค้นหา"
                             >
                                 <X className="w-3.5 h-3.5" />
@@ -822,21 +824,41 @@ export const ClaimsList: React.FC = () => {
                         )}
                     </div>
 
-
+                    {/* Compact Calendar Picker Trigger */}
+                    <button
+                        type="button"
+                        onClick={() => setShowDatePickerModal(true)}
+                        className={`shrink-0 h-9 px-3 rounded-full text-xs font-bold border flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
+                            dateFilter !== 'ALL' || customStartDate || customEndDate
+                                ? 'bg-[#0071e3]/12 text-[#0071e3] dark:text-[#38bdf8] border-[#0071e3]/40'
+                                : 'bg-gray-50 dark:bg-[#1a1a22] text-gray-600 dark:text-gray-300 border-gray-200/70 dark:border-white/[0.06] hover:border-[#0071e3]/40'
+                        }`}
+                        title={activePeriodLabel}
+                    >
+                        <Calendar className="w-3.5 h-3.5 text-[#0071e3] dark:text-[#38bdf8] shrink-0" />
+                        <span className="max-w-[96px] sm:max-w-[180px] truncate">
+                            {dateFilter === 'ALL' && !customStartDate && !customEndDate ? 'ช่วงเวลา' : activePeriodLabel}
+                        </span>
+                    </button>
 
                     {/* Expand/Collapse all month groups */}
-                    <button onClick={handleExpandAll} className="shrink-0 p-2 sm:p-2.5 apple-card-sm rounded-[14px] sm:rounded-[16px] text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06]" title="ขยาย/หุบทั้งหมด"><ChevronsUpDown className="w-4 h-4" /></button>
+                    <button
+                        type="button"
+                        onClick={handleExpandAll}
+                        className="shrink-0 w-9 h-9 rounded-full bg-gray-50 dark:bg-[#1a1a22] border border-gray-200/70 dark:border-white/[0.06] text-gray-500 dark:text-gray-400 hover:text-[#0071e3] dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer active:scale-95"
+                        title="ขยาย/หุบทั้งหมด"
+                    >
+                        <ChevronsUpDown className="w-4 h-4" />
+                    </button>
                 </div>
 
-                {/* Modern Standard Period / Date Filter Control */}
-                <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-2.5 border-t border-gray-150/50 dark:border-white/5 pt-2 sm:pt-2.5">
-                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                        <span className="text-gray-400 dark:text-gray-500 font-bold text-[10.5px] sm:text-[11px] uppercase tracking-wider shrink-0 flex items-center gap-1 sm:gap-1.5 mr-0.5">
-                            <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#0071e3]" /> ช่วงเวลา:
+                {/* Row 2 (Desktop only): 1-Click Quick Date Presets */}
+                <div className="hidden sm:flex items-center justify-between gap-2 pt-1.5 border-t border-gray-100 dark:border-white/[0.05]">
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-gray-400 dark:text-gray-500 font-bold text-[11px] uppercase tracking-wider shrink-0 flex items-center gap-1 mr-1">
+                            <Calendar className="w-3.5 h-3.5 text-[#0071e3] dark:text-[#38bdf8]" /> ช่วงเวลา:
                         </span>
-
-                        {/* Standard Quick Presets (Modern Capsule Segmented Bar) */}
-                        <div className="inline-flex bg-gray-100/90 dark:bg-white/[0.05] p-0.5 sm:p-1 rounded-full border border-gray-200/70 dark:border-white/[0.08] shadow-inner max-w-full overflow-x-auto no-scrollbar">
+                        <div className="inline-flex bg-gray-100 dark:bg-[#0e0e13] p-0.5 rounded-full border border-gray-200/70 dark:border-white/[0.06]">
                             {[
                                 { id: 'ALL', label: 'ทั้งหมด' },
                                 { id: 'THIS_MONTH', label: 'เดือนนี้' },
@@ -853,10 +875,10 @@ export const ClaimsList: React.FC = () => {
                                             setCustomStartDate('');
                                             setCustomEndDate('');
                                         }}
-                                        className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold transition-all whitespace-nowrap ${
+                                        className={`px-3 py-1 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
                                             isActive
-                                                ? 'bg-white dark:bg-[#252528] text-[#0071e3] dark:text-white shadow-sm font-bold'
-                                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/[0.04]'
+                                                ? 'bg-white dark:bg-[#23232e] text-[#0071e3] dark:text-white shadow-sm font-bold'
+                                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                                         }`}
                                     >
                                         {preset.label}
@@ -864,23 +886,6 @@ export const ClaimsList: React.FC = () => {
                                 );
                             })}
                         </div>
-
-                        {/* Interactive Custom Calendar / Extended Period Trigger Button (Capsule Style) */}
-                        <button
-                            type="button"
-                            onClick={() => setShowDatePickerModal(true)}
-                            className={`inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold border transition-all ${
-                                (dateFilter !== 'ALL' && dateFilter !== 'THIS_MONTH' && dateFilter !== 'LAST_MONTH' && dateFilter !== '3_MONTHS') || (customStartDate && customEndDate)
-                                    ? 'bg-[#0071e3]/10 text-[#0071e3] dark:text-blue-400 border-[#0071e3]/40 font-bold shadow-sm'
-                                    : 'bg-white dark:bg-[#1c1c1e] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 shadow-sm hover:bg-gray-50 dark:hover:bg-white/5'
-                            }`}
-                        >
-                            <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#0071e3]" />
-                            <span>{activePeriodLabel}</span>
-                            <ChevronDown className="w-3 h-3 text-gray-400 ml-0.5" />
-                        </button>
-
-                        {/* Clear Date Filter Button if active (Capsule Style) */}
                         {(dateFilter !== 'ALL' || customStartDate || customEndDate) && (
                             <button
                                 type="button"
@@ -889,41 +894,24 @@ export const ClaimsList: React.FC = () => {
                                     setCustomStartDate('');
                                     setCustomEndDate('');
                                 }}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-dashed border-gray-300 dark:border-white/10"
-                                title="ล้างตัวกรองช่วงเวลา"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-gray-500 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
                             >
-                                <X className="w-3 h-3" />
-                                <span>รีเซ็ตช่วงเวลา</span>
+                                <X className="w-3 h-3" /> รีเซ็ตเวลา
                             </button>
                         )}
                     </div>
 
-                    {/* Summary count & Clear all filters */}
-                    <div className="flex items-center gap-2.5">
-                        <div className="text-[11px] text-gray-400 dark:text-gray-500 hidden sm:block font-medium">
-                            พบ <strong className="text-gray-700 dark:text-gray-300 font-bold">{filteredRMAs.length}</strong> รายการ
-                            {filteredRMAs.length !== rmas.length && (
-                                <span> (จากทั้งหมด {rmas.length})</span>
-                            )}
-                        </div>
-
-                        {isAnyFilterActive && (
-                            <button
-                                onClick={handleClearFilters}
-                                className="px-3.5 py-1.5 text-xs font-bold rounded-full bg-red-500/10 text-red-600 hover:bg-red-500/20 flex items-center gap-1.5 transition-colors shrink-0"
-                                title="ล้างตัวกรองทั้งหมด"
-                            >
-                                <X className="w-3.5 h-3.5" /> ล้างตัวกรอง
-                            </button>
-                        )}
+                    <div className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">
+                        พบ <strong className="text-gray-700 dark:text-gray-300 font-bold">{filteredRMAs.length}</strong> ชิ้น
+                        {filteredRMAs.length !== rmas.length && <span> (จากทั้งหมด {rmas.length})</span>}
                     </div>
                 </div>
             </div>
 
-            {/* List Results Counter */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1 mb-3 text-xs font-medium text-gray-500 dark:text-gray-400">
+            {/* List Results Counter & Inline Clear Filter */}
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1 mb-3 text-xs font-medium text-gray-500 dark:text-gray-400">
                 <div className="flex items-center gap-2 flex-wrap">
-                    <span>พบข้อมูลทั้งหมด <span className="font-bold text-[#0071e3]">{totalJobsCount}</span> ใบงาน ({filteredRMAs.length} ชิ้นสินค้า)</span>
+                    <span>พบข้อมูลทั้งหมด <span className="font-bold text-[#0071e3] dark:text-[#38bdf8]">{totalJobsCount}</span> ใบงาน ({filteredRMAs.length} ชิ้นสินค้า)</span>
                     {overdueOnly && (
                         <button
                             type="button"
@@ -934,8 +922,20 @@ export const ClaimsList: React.FC = () => {
                             <X className="w-3 h-3" />
                         </button>
                     )}
+                    {isAnyFilterActive && (
+                        <button
+                            type="button"
+                            onClick={handleClearFilters}
+                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-500/12 text-red-600 dark:text-red-400 border border-red-500/25 font-bold text-[11px] hover:bg-red-500/20 transition-colors cursor-pointer"
+                            title="ล้างตัวกรองทั้งหมด"
+                        >
+                            <X className="w-3 h-3" />
+                            <span>ล้างตัวกรอง</span>
+                        </button>
+                    )}
                     {closedMatchJobsCount > 0 && statusFilter !== 'ALL' && totalJobsCount > 0 && (
                         <button 
+                            type="button"
                             onClick={() => setStatusFilter('ALL')}
                             className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 font-bold transition-all text-[11px] cursor-pointer"
                         >
