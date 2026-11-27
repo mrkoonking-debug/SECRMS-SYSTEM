@@ -201,8 +201,13 @@ export const IncomingClaims: React.FC = () => {
         const teamLabel = getTeamDisplayLabel(targetTeam);
         const confirmed = await showConfirmDialog({
             title: 'ยืนยันการรับงานเข้าทีม',
-            message: `ต้องการรับงานของ "${job.customerName}"\nเลขที่: ${job.groupId} (${job.rmas.length} รายการสินค้า)\nเข้าสู่ ${teamLabel} ใช่หรือไม่?`,
-            confirmText: `ยืนยันรับเข้า ${teamLabel}`,
+            message: 'ตรวจสอบรายละเอียดก่อนยืนยัน',
+            details: [
+                { label: 'ลูกค้า', value: job.customerName },
+                { label: 'เลขที่ใบงาน', value: `${job.groupId} (${job.rmas.length} ชิ้น)` },
+                { label: 'รับเข้าทีม', value: teamLabel, highlight: true },
+            ],
+            confirmText: 'ยืนยันรับเข้าทีม',
             cancelText: 'ยกเลิก',
             variant: 'primary'
         });

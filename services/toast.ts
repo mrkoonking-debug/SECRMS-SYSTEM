@@ -17,6 +17,7 @@ export function scrollAppToTop(behavior: ScrollBehavior = 'smooth') {
 export interface ConfirmDialogOptions {
   title?: string;
   message: string;
+  details?: { label: string; value: string; highlight?: boolean }[];
   confirmText?: string;
   cancelText?: string;
   variant?: 'primary' | 'danger' | 'warning';
@@ -50,7 +51,7 @@ export function showConfirmDialog(options: ConfirmDialogOptions): Promise<boolea
       border: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.08)'};
       border-radius: 16px;
       padding: 24px;
-      max-width: min(420px, calc(100vw - 32px));
+      max-width: min(460px, calc(100vw - 32px));
       width: 100%;
       box-shadow: 0 20px 50px rgba(0,0,0,${isDark ? '0.55' : '0.18'});
       transform: translateY(8px) scale(0.97);
@@ -104,16 +105,60 @@ export function showConfirmDialog(options: ConfirmDialogOptions): Promise<boolea
     `;
 
     const msgEl = document.createElement('div');
-    msgEl.textContent = options.message;
-    msgEl.style.cssText = `
-      font-size: 13.5px; line-height: 1.55; white-space: pre-line; word-break: break-word;
-      color: ${isDark ? '#94a3b8' : '#475569'};
-    `;
+    if (options.message) {
+      msgEl.textContent = options.message;
+      msgEl.style.cssText = `
+        font-size: 13.5px; line-height: 1.55; white-space: pre-line; word-break: break-word;
+        color: ${isDark ? '#94a3b8' : '#475569'};
+      `;
+    }
 
     textWrap.appendChild(titleEl);
-    textWrap.appendChild(msgEl);
+    if (options.message) {
+      textWrap.appendChild(msgEl);
+    } else {
+      titleEl.style.marginBottom = '0';
+    }
     header.appendChild(iconWrap);
     header.appendChild(textWrap);
+
+    let detailsCard: HTMLDivElement | null = null;
+    if (options.details && options.details.length > 0) {
+      detailsCard = document.createElement('div');
+      detailsCard.style.cssText = `
+        background: ${isDark ? 'rgba(255,255,255,0.04)' : '#f8fafc'};
+        border: 1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.07)'};
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      `;
+      options.details.forEach((row) => {
+        const rowEl = document.createElement('div');
+        rowEl.style.cssText = 'display: flex; justify-content: space-between; align-items: baseline; gap: 14px;';
+
+        const labelEl = document.createElement('span');
+        labelEl.textContent = row.label;
+        labelEl.style.cssText = `
+          font-size: 12.5px; white-space: nowrap; flex-shrink: 0;
+          color: ${isDark ? '#94a3b8' : '#64748b'};
+        `;
+
+        const valueEl = document.createElement('span');
+        valueEl.textContent = row.value;
+        valueEl.style.cssText = `
+          font-size: 13px; font-weight: ${row.highlight ? '700' : '600'}; text-align: right;
+          line-height: 1.4; word-break: break-word;
+          color: ${row.highlight ? (isDark ? '#38bdf8' : '#0071e3') : (isDark ? '#f8fafc' : '#0f172a')};
+        `;
+
+        rowEl.appendChild(labelEl);
+        rowEl.appendChild(valueEl);
+        detailsCard!.appendChild(rowEl);
+      });
+    }
 
     const actions = document.createElement('div');
     actions.style.cssText = 'display: flex; justify-content: flex-end; gap: 10px;';
@@ -167,6 +212,7 @@ export function showConfirmDialog(options: ConfirmDialogOptions): Promise<boolea
     actions.appendChild(cancelBtn);
     actions.appendChild(confirmBtn);
     card.appendChild(header);
+    if (detailsCard) card.appendChild(detailsCard);
     card.appendChild(actions);
     overlay.appendChild(card);
     document.body.appendChild(overlay);
